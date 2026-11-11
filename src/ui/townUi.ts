@@ -456,7 +456,7 @@ export class TownUi {
 
   private openWares(who: string | null): void {
     this.page();
-    this.show(waresPage(who, { state: () => this.st, act: (a) => this.run(a, true), close: () => this.leave() }));
+    this.show(waresPage(who, { state: () => this.st, act: (a) => this.run(a, true), close: () => this.leave(), poor: () => this.hint('poor') }));
     // a keeper's goods, the first time (journal Passe TU3, TU-3: bargaining)
     if (who) this.hint('shop');
   }

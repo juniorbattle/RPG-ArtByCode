@@ -18,6 +18,8 @@ import { nameOf, standings } from './pool';
  *  Pure. */
 
 export const V2_DAYS = 10;
+/** the champion's purse, at the crowning (the guide reads it: journal Passe ECO2) */
+export const CHAMPION_PURSE = 100;
 /** the days a game lasts: today's slice (3), or the version 2's tournament (10) */
 export function daysOf(s: Pick<GameState, 'flags'>): number { return isV2(s) ? V2_DAYS : DAYS; }
 
@@ -101,7 +103,7 @@ function crown(s: GameState, emit: Emit): void {
   const champ = f.winner;
   s.flags.champion = champ;
   const c = s.competitors[champ]; if (c) { c.phaseStatus = 'champion'; c.reputation = clamp(c.reputation + 15); }
-  if (champ === PLAYER_ID) { s.player.reputation = clamp(s.player.reputation + 20); s.player.coins += 100; }
+  if (champ === PLAYER_ID) { s.player.reputation = clamp(s.player.reputation + 20); s.player.coins += CHAMPION_PURSE; }
   emit({ kind: 'match', id: champ === PLAYER_ID ? 'crowned' : 'champion', cause: 'tournament:final', visible: true,
     text: champ === PLAYER_ID ? tx('v2.crowned') : tx('v2.champion', { name: RIVALS[champ].name }) });
 }

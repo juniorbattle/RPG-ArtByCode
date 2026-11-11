@@ -2,7 +2,9 @@ import { placeName, type GameState, type PlaceId, type SlotId } from '../simulat
 import { lang, shortName, tx, type TextKey } from '../narrative/text';
 import { PEOPLE } from '../narrative/people';
 import { POINTS } from '../narrative/roster';
-import { V2_DAY_KIND, V2_DAYS } from '../tournament/v2calendar';
+import { CHAMPION_PURSE, V2_DAY_KIND, V2_DAYS } from '../tournament/v2calendar';
+import { PURSES } from '../tournament/pool';
+import { WORK } from '../simulation/v2work';
 import { LAW, marksOf } from '../simulation/v2law';
 import { CHALLENGERS, STAKE, STEAL_FINE } from '../simulation/v2town';
 import { RUMOUR, STRONGROOM } from '../simulation/v2intel';
@@ -86,6 +88,8 @@ const dayOf = (k: string): number => daysOfKind(k)[0];
 const nameOf = (id: string): string => PEOPLE[id]?.name ?? id;
 /** a place in a chapter's text: without its article in English (« the Arena Forecourt » read « Arena Forecourt »), with it in French, where the table finds it
  *  and the article meets the word before it (journal Passe RG4) */
+/** the town's four jobs, with their employers (journal Passe ECO2) */
+const jobsLine = (): string => tx('tut.money.jobs', { mara: nameOf('mara'), corvin: nameOf('corvin'), hilde: nameOf('hilde'), lio: nameOf('lio') });
 const placeShort = (p: PlaceId): string => (lang() === 'fr' ? placeName(p, true) : placeName(p, true).replace(/^the /, ''));
 /** the player's first bout's day */
 const firstBout = (s: GameState): number => Math.min(...s.tournament.matches.filter((m) => m.a === 'player' || m.b === 'player').map((m) => m.day), dayOf('pool'));
@@ -148,7 +152,7 @@ export function runTour(s: GameState, steps: TourStep[]): Promise<boolean> {
 
 // ------------------------------------------------------------------------------------------------ the hints (TU-3, TU-8)
 
-export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide';
+export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor';
 const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> = {
   square: { title: 'tut.hint.square.title', body: 'tut.hint.square.body', chapter: 'places' },
   shop: { title: 'tut.hint.shop.title', body: 'tut.hint.shop.body', chapter: 'shops' },
@@ -159,6 +163,8 @@ const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> =
   evening: { title: 'tut.hint.evening.title', body: 'tut.hint.evening.body', chapter: 'intel' },
   hurt: { title: 'tut.hint.hurt.title', body: 'tut.hint.hurt.body', chapter: 'prepare' },
   guide: { title: 'tut.hint.guide.title', body: 'tut.hint.guide.body', chapter: 'tournament' },
+  // a purchase refused for want of coins, the first time (the operator's ECO-7, journal Passe ECO2): where to work
+  poor: { title: 'tut.hint.poor.title', body: 'tut.hint.poor.body', chapter: 'money' },
 };
 function hintText(s: GameState, id: HintId, who?: string): string {
   const k = HINT[id].body;
@@ -168,6 +174,7 @@ function hintText(s: GameState, id: HintId, who?: string): string {
   if (id === 'hurt') return tx(k, { wound: pct(INJURY_HP), anwen: nameOf('anwen') });
   if (id === 'eve') return tx(k, { odo: nameOf('odo'), room: STRONGROOM });
   if (id === 'evening') return tx(k, { lio: RUMOUR.lio.coins, stranger: RUMOUR.stranger.coins });
+  if (id === 'poor') return tx(k, { pay: WORK.pay, jobs: jobsLine(), mara: nameOf('mara') });
   return tx(k);
 }
 export const hintChapter = (id: HintId): string => HINT[id].chapter;
@@ -214,6 +221,7 @@ export const CHAPTERS: Chapter[] = [
   { id: 'moving', title: 'tut.ch.moving.title', line: 'tut.ch.moving.line', body: 'tut.ch.moving.body', fig: 'scene', keys: 'explore' },
   { id: 'places', title: 'tut.ch.places.title', line: 'tut.ch.places.line', body: 'tut.ch.places.body', fig: 'places' },
   { id: 'shops', title: 'tut.ch.shops.title', line: 'tut.ch.shops.line', body: 'tut.ch.shops.body', fig: 'odds' },
+  { id: 'money', title: 'tut.ch.money.title', line: 'tut.ch.money.line', body: 'tut.ch.money.body', fig: 'none' },
   { id: 'law', title: 'tut.ch.law.title', line: 'tut.ch.law.line', body: 'tut.ch.law.body', fig: 'marks' },
   { id: 'challenges', title: 'tut.ch.challenges.title', line: 'tut.ch.challenges.line', body: 'tut.ch.challenges.body', fig: 'none' },
   { id: 'intel', title: 'tut.ch.intel.title', line: 'tut.ch.intel.line', body: 'tut.ch.intel.body', fig: 'none' },
@@ -229,6 +237,7 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'tournament': return tx(c.body, { days: V2_DAYS, pool: list(daysOfKind('pool', 'cut')), win: POINTS.win, close: POINTS.close, loss: POINTS.loss, cut: dayOf('cut'), semis: dayOf('semis'), major: dayOf('major'), final: dayOf('final'), free: list(daysOfKind('free')) });
     case 'places': return tx(c.body, { quay: placeShort('district'), a: placeShort('forecourt'), b: placeShort('training'), c: placeShort('lanterns') });
     case 'shops': return tx(c.body, { mara: nameOf('mara'), hilde: nameOf('hilde'), corvin: nameOf('corvin'), pip: nameOf('pip'), bram: nameOf('bram') });
+    case 'money': return tx(c.body, { jobs: jobsLine(), pay: WORK.pay, mara: nameOf('mara'), pool: PURSES.pool[0], poolL: PURSES.pool[1], semi: PURSES.semi[0], semiL: PURSES.semi[1], semiDay: dayOf('semis'), third: PURSES.third[0], thirdL: PURSES.third[1], majorDay: dayOf('major'), final: PURSES.final[0], finalL: PURSES.final[1], champ: CHAMPION_PURSE });
     case 'law': return tx(c.body, { day: STEAL_FINE.day, night: STEAL_FINE.night, max: LAW.wanted, fee: LAW.fee, hale: nameOf('hale') });
     case 'challenges': return tx(c.body, { names: list(Object.keys(CHALLENGERS).map(nameOf)), coins: STAKE.coins, name: STAKE.name, day: dayOf('semis') });
     case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM });

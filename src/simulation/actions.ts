@@ -18,6 +18,7 @@ import { V2_BARTER_ACTIONS, type V2BarterAction } from './v2barter';
 import { V2_INTEL_ACTIONS, type V2IntelAction } from './v2intel';
 import { V2_RIVAL_ACTIONS, sandRefusal, type V2RivalAction } from './v2rivals';
 import { V2_FESTIVAL_ACTIONS, paradeBlocks, type V2FestivalAction } from './v2festival';
+import { V2_WORK_ACTIONS, type V2WorkAction } from './v2work';
 import { TRAINED_STATS, TRAIN_POINT, type TrainedStat } from '../combat/stats';
 import type { TextKey } from '../narrative/text';
 
@@ -34,7 +35,7 @@ export function recordSession(s: GameState, stat: TrainedStat): void { if (s.v2)
  *  talking, consulting, GAMEPLAY § 4.2; 1 = a significant action that takes the slot, § 4.1), when it is refused and why (a readable
  *  reason, the state untouched), and what it changes (`apply` works on the copy `advance` made). */
 
-export type Action = BaseAction | RoleAction | V2SkillAction | V2GearAction | V2TownAction | V2StoryAction | V2LawAction | V2BarterAction | V2IntelAction | V2RivalAction | V2FestivalAction;
+export type Action = BaseAction | RoleAction | V2SkillAction | V2GearAction | V2TownAction | V2StoryAction | V2LawAction | V2BarterAction | V2IntelAction | V2RivalAction | V2FestivalAction | V2WorkAction;
 type BaseAction =
   | { type: 'move'; to: PlaceId }
   | { type: 'talk'; who: string }
@@ -52,6 +53,8 @@ export interface ActionDef<A extends Action = Action> {
   cost(st: GameState, a: A): number;
   /** the coins it takes from the player's purse (absent = none): the interface shows it beside the slot (journal Passe UI2) */
   coins?(st: GameState, a: A): number;
+  /** the coins it puts in the player's purse (absent = none; a version 2 game's jobs and resale, journal Passe ECO2): the interface shows it beside the slot (ECO-7) */
+  gain?(st: GameState, a: A): number;
   /** a slot the action books now and spends later (a challenge's, at its result; absent = none): never spent here, `cost` stays the rule; the
    *  interface counts it in its tag, so « free » is said only when nothing is spent (rule P2, journal Passe EVL1) */
   later?(st: GameState, a: A): number;
@@ -155,4 +158,4 @@ const BASE: Table = {
 /** every action: the player's own, and those the town's people offer (roles.ts) */
 /** every action: the player's own, those the town's people offer (roles.ts), and the version 2's (listed only in a version 2 game, after
  *  today's: the default game's options keep their order) */
-export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS, ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS };
+export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS, ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS, ...V2_WORK_ACTIONS };

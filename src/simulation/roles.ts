@@ -15,11 +15,12 @@ import { V2_BARTER_ACTIONS } from './v2barter';
 import { V2_INTEL_ACTIONS } from './v2intel';
 import { V2_RIVAL_ACTIONS, anwenBusy } from './v2rivals';
 import { V2_FESTIVAL_ACTIONS } from './v2festival';
+import { V2_WORK_ACTIONS } from './v2work';
 import { TRAINED_STATS, TRAIN_POINT, type TrainedStat } from '../combat/stats';
 /** the stats' names (keys written whole: tests/texts.test.mjs) */
 const SPAR_STAT: Record<TrainedStat, TextKey> = { atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv' };
 
-const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS };
+const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS, ...V2_WORK_ACTIONS };
 
 /** The town's people in game roles (choice P4, journal Passe L4): the district's existing characters offer services, quests and clues;
  *  the forecourt's officials and the rivals offer care, sparring and scouting (choice K3: portraits and dialogues). Each action names who
@@ -113,7 +114,8 @@ export const ROLE_ACTIONS: T = {
   },
   restock: {
     by: 'mara',
-    list: (st) => (st.place === 'district' ? [{ type: 'restock' }] : []),
+    // a version 2 game: Mara's crates are the quay's job (src/simulation/v2work.ts, journal Passe ECO2: 10 coins, one of the town's jobs)
+    list: (st) => (st.place === 'district' && !isV2(st) ? [{ type: 'restock' }] : []),
     label: () => tx('restock.label'),
     cost: () => 1,
     check: (st) => available(st, 'mara') ?? (st.slot !== 'morning' ? tx('restock.morning') : st.flags['restocked'] === st.day ? tx('restock.done') : null),

@@ -19,6 +19,8 @@ const INTEL = await load('/src/simulation/v2intel.ts');
 const GEAR = await load('/src/simulation/v2gear.ts');
 const STATS = await load('/src/combat/stats.ts');
 const { POINTS } = await load('/src/narrative/roster.ts');
+const WORK = await load('/src/simulation/v2work.ts');
+const POOL = await load('/src/tournament/pool.ts');
 
 const src = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\r\n/g, '\n');
 const v2 = () => { const s = G.newGame(1842, 'Ren'); G.makeV2(s); return s; };
@@ -42,9 +44,9 @@ test('the texts: in the table, numbers only through slots, every cap known (TU-5
   assert.match(html, /&lt;b&gt;x&lt;\/b&gt;/, 'the rest is escaped');
 });
 
-test('the guide: twelve chapters, each filled from the game\'s data (TU-1, TU-6)', () => {
+test('the guide: thirteen chapters (« Earning coins » since journal Passe ECO2, ECO-7), each filled from the game\'s data (TU-1, TU-6)', () => {
   const s = v2();
-  assert.deepEqual(TU.CHAPTERS.map((c) => c.id), ['tournament', 'time', 'moving', 'places', 'shops', 'law', 'challenges', 'intel', 'renown', 'prepare', 'duel', 'keys']);
+  assert.deepEqual(TU.CHAPTERS.map((c) => c.id), ['tournament', 'time', 'moving', 'places', 'shops', 'money', 'law', 'challenges', 'intel', 'renown', 'prepare', 'duel', 'keys']);
   const text = Object.fromEntries(TU.CHAPTERS.map((c) => [c.id, TU.chapterText(s, c)]));
   for (const [id, t] of Object.entries(text)) assert.doesNotMatch(t, /[{}]/, id);
   assert.match(text.tournament, new RegExp(`a win is worth ${POINTS.win} points, a close defeat ${POINTS.close}`));
@@ -52,6 +54,10 @@ test('the guide: twelve chapters, each filled from the game\'s data (TU-1, TU-6)
   assert.match(text.tournament, /semi-finals on day 6/);
   assert.match(text.law, new RegExp(`up to ${TOWN.STEAL_FINE.day} coins by day, ${TOWN.STEAL_FINE.night} at night`));
   assert.match(text.law, new RegExp(`At ${LAW.LAW.wanted} marks`));
+  // the money (journal Passe ECO2): the jobs' pay and the purses by stage read from the game's own tables
+  assert.match(text.money, new RegExp(`pays ${WORK.WORK.pay} coins`));
+  assert.match(text.money, new RegExp(`${POOL.PURSES.pool[0]} or ${POOL.PURSES.pool[1]} coins in the pool, ${POOL.PURSES.semi[0]} or ${POOL.PURSES.semi[1]} on day 6, ${POOL.PURSES.third[0]} or ${POOL.PURSES.third[1]} on day 8, ${POOL.PURSES.final[0]} or ${POOL.PURSES.final[1]} in the final`));
+  assert.match(text.money, /Mara's crates on the quay/);
   assert.match(text.challenges, new RegExp(`You stake ${TOWN.STAKE.coins} coins or ${TOWN.STAKE.name} of your reputation`));
   assert.match(text.intel, new RegExp(`${INTEL.RUMOUR.lio.coins} coins, right about 67 %`));
   assert.match(text.intel, new RegExp(`for ${INTEL.STRONGROOM} coins`));

@@ -123,7 +123,7 @@ try {
   const pad = await page.evaluate(() => ({ mode: window.__pad?.mode ?? null, family: window.__pad?.family ?? null, cap: document.querySelector('#pm-hints kbd')?.getAttribute('aria-label') ?? null }));
   check(pad.mode === 'pad' && pad.family === 'xbox', `A wakes the pad: ${JSON.stringify(pad)}`);
   // 4b. the tutorial (journal Passe TU3, the operator's sheet TU-1 to TU-12): A closed the arrival's news and the tour opens, six bands at the pad (A goes on), the
-  // real clock, figures, list and menu lit; then the guide from the menu with the pad (Start, the D-pad to « Guide », A): twelve chapters, the ten days drawn
+  // real clock, figures, list and menu lit; then the guide from the menu with the pad (Start, the D-pad to « Guide », A): thirteen chapters (journal Passe ECO2), the ten days drawn
   // from the game, the scene here as a live picture; X replays the tour, B leaves it
   const band1 = await until(() => document.querySelector('.tu-band .tu-step')?.textContent ?? null, 10000, 'the tour');
   check(band1 === 'Tour · 1 of 6', `the tour opens after the arrival's news: ${band1}`);
@@ -149,7 +149,7 @@ try {
   for (let k = 0; k < gi; k++) await press(13);
   await press(BTN.A);
   const g = await until(() => (document.querySelector('.tu-guide') ? { n: document.querySelectorAll('.tu-guide .pm-glist .pm-btn').length, days: document.querySelectorAll('.tu-days div').length } : null), 5000, 'the guide');
-  check(g?.n === 12 && g?.days === 10, `the guide: ${g?.n} chapters, the tournament's ${g?.days} days drawn from the game`);
+  check(g?.n === 13 && g?.days === 10, `the guide: ${g?.n} chapters, the tournament's ${g?.days} days drawn from the game`);
   await press(13); await press(13);
   const pic = await until(() => document.querySelector('.tu-guide .tu-fig img')?.getAttribute('src')?.slice(0, 23) ?? null, 5000, 'the scene\'s picture');
   check(pic === 'data:image/webp;base64,', `« Walking and talking » shows the scene here, taken as the guide opened: ${pic}`);

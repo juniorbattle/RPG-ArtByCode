@@ -20,6 +20,7 @@ import { opponentOf } from './pool';
 import { PEOPLE, placeOf } from '../narrative/people';
 import type { PlaceId } from '../simulation/state';
 import { FEST } from '../simulation/v2festival';
+import { jobAt } from '../simulation/v2work';
 
 /** The TournamentLab's library (TOURNAMENT_MASTER_CONTRACT § 13, journal Passe L2; the CLI is tools/tournament-lab.mjs): play whole games
  *  headless with a player policy, the player's duels fought by the bot in the arena's full simulation; find the forgotten participants;
@@ -80,7 +81,51 @@ export const POLICIES: Record<string, Policy> = {
  *  journal Passe EVL7): a friend's warning taken as a sign of its chain, Rhosk's plan told to Hale as soon as it is known. Lot L6 (FE-9, journal Passe EVL11): the
  *  festival's good turns on day 9 */
   curious: { name: 'curious', skill: 0.6, choose: (st) => (isV2(st) ? curiousV2(st) : POLICIES.diligent.choose(st)) },
+  /** the planner (the operator's ECO-8 « Un joueur « planificateur » de plus, les trois autres inchangés », journal Passe ECO2): the player the DB7 curve
+   *  supposes, who works and buys its gear (the blade, the forge, the mail, the wrap, the forge, the ring, the forge, then a whetstone before each bout),
+   *  repairs a cold forge, trains twice and drills the Thrust and the heavy attack, and takes the town's jobs (src/simulation/v2work.ts) when nothing else
+   *  holds; a version 2 game only (today's game plays the diligent) */
+  planner: { name: 'planner', skill: 0.6, choose: (st) => (isV2(st) ? plannerV2(st) : POLICIES.diligent.choose(st)) },
 };
+
+/** the planner's purchases, in the order of the DB7 curve's gear (journal Passes DB9, ECO1) */
+const PLAN: ReadonlyArray<readonly [PlaceId, Action]> = [
+  ['district', { type: 'shopBuy', shop: 'mara', item: 'imported-blade' }],
+  ['district', { type: 'upgradeWeapon' }],
+  ['forecourt', { type: 'shopBuy', shop: 'armourer', item: 'mail-shirt' }],
+  ['district', { type: 'shopBuy', shop: 'mara', item: 'docker-wrap' }],
+  ['district', { type: 'upgradeWeapon' }],
+  ['forecourt', { type: 'shopBuy', shop: 'armourer', item: 'iron-ring' }],
+  ['district', { type: 'upgradeWeapon' }],
+];
+/** how far the planner's purchases went: each one is read in the state (the weapon, its tier, the armour, the accessories) */
+function planStep(st: GameState): number {
+  const g = st.v2?.gear, tier = g?.tier ?? 0, blade = g?.weapon === 'imported-blade', acc: Array<string | null> = g?.acc ?? [];
+  const done = [blade, blade && tier >= 1, g?.armour === 'mail-shirt', acc.includes('docker-wrap'), blade && tier >= 2, acc.includes('iron-ring'), blade && tier >= 3];
+  const i = done.indexOf(false);
+  return i < 0 ? PLAN.length : i;
+}
+function plannerV2(st: GameState): Action {
+  const bout = st.slot === 'afternoon' && !!matchSheetFor(st), hurt = st.player.injury > 0;
+  const there = (place: PlaceId): GameState => (st.place === place ? st : { ...st, place });
+  // (a way the parade fills is no way: the move must hold too)
+  const at = (place: PlaceId, a: Action): Action | null => (!has(there(place), a) ? null : st.place === place ? a : has(st, { type: 'move', to: place }) ? { type: 'move', to: place } as Action : null);
+  const first = (...xs: Array<() => Action | null>): Action | null => { for (const f of xs) { const a = f(); if (a) return a; } return null; };
+  const job = (): Action | null => { for (const p of ['district', 'training', 'forecourt', 'lanterns'] as PlaceId[]) { const j = jobAt(p); if (j) { const a = at(p, { type: 'work', job: j }); if (a) return a; } } return null; };
+  if (st.slot === 'evening') return first(job, () => (hurt && has(st, { type: 'rest' }) ? { type: 'rest' } : null)) ?? fallback(st, 0.6);
+  if (bout) return fallback(st, 0.6);
+  if (hurt) { const h = at('forecourt', { type: 'heal' }); if (h) return h; if (has(st, { type: 'rest' })) return { type: 'rest' }; }
+  const step = planStep(st), boutToday = st.tournament.matches.some((m) => m.day === st.day && (m.a === PLAYER_ID || m.b === PLAYER_ID));
+  const buy = (): Action | null => {
+    if (step >= PLAN.length) return boutToday && st.slot === 'morning' ? at('district', { type: 'shopBuy', shop: 'mara', item: 'whetstone' }) : null;
+    const [place, a] = PLAN[step];
+    if (a.type === 'upgradeWeapon' && st.services.forge === 'sabotaged') return at('district', { type: 'repair' });
+    return at(place, a);
+  };
+  const train = (): Action | null => (st.player.training < 2 ? at('training', labSession(st)) : null);
+  const drill = (): Action | null => first(() => at('training', { type: 'drillSkill', skill: 't1' }), () => at('training', { type: 'drillSkill', skill: 'heavy' }));
+  return first(buy, train, drill, job) ?? fallback(st, 0.6);
+}
 
 /** the same diligence in a version 2 game (journal Passe VP1: today's policy only waited there, its practice sand moved to the training
  *  ground): the healer when hurt (the forecourt, else rest), the watch paid at dusk, Hilde's look at the gear on the morning of a bout once a
@@ -256,7 +301,7 @@ export interface LabReport {
    *  per game (lot L2a): thefts, caught, found at dawn, searched, settled at Hale's, bargains put and won, passers-by's pieces, challenges and wins, the
    *  marks left in Hale's ledger at the end, the pool's points lost to the registrar; the Lanterns' parade of day 9 (lot L6): who opened it (games), the player's good
    *  turns and lanterns per game, the games where the player walked behind a rival */
-  v2?: { bouts: number; madeCut: number; finalist: number; champion: number; ranks: number[]; town: Record<string, number>; fest: { leaders: Record<string, number>; deeds: number; lanterns: number; behind: number } };
+  v2?: { bouts: number; madeCut: number; finalist: number; champion: number; ranks: number[]; town: Record<string, number>; fest: { leaders: Record<string, number>; deeds: number; lanterns: number; behind: number }; money: Record<string, number> };
 }
 
 export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 'classic'): LabReport {
@@ -266,6 +311,9 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
   const town: Record<string, number> = { thefts: 0, caught: 0, found: 0, searched: 0, settled: 0, bargains: 0, bargainsWon: 0, barters: 0, challenges: 0, challengesWon: 0, marks: 0, pointsLost: 0 };
   const count = (st: GameState, ...ids: string[]) => st.log.filter((e) => ids.includes(e.id)).length;
   const fest = { leaders: {} as Record<string, number>, deeds: 0, lanterns: 0, behind: 0 };
+  // the money of a version 2 game (journal Passe ECO2): the purse at the end, the jobs and sales, the gear bought (a piece or a forge tier) by the morning of day 6 and of day 10
+  const money = { coins: 0, jobs: 0, sold: 0, gearD6: 0, gearD10: 0 };
+  const gearBought = (e: GameEvent) => (e.id.startsWith('shop:') && e.id !== 'shop:whetstone' && e.id !== 'shop:salve') || e.id === 'upgrade' || e.id === 'bargain:won' || e.id === 'barter:won';
   let wins = 0, inj = 0, rivalInj = 0, elim = 0, upsets = 0, sab = 0, foil = 0, forg = 0;
   for (const seed of seeds) {
     const g = autoplay(seed, policy, undefined, undefined, rules), st = g.state;
@@ -285,6 +333,8 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
       const f = st.v2?.festival;
       if (f?.leader) fest.leaders[f.leader] = (fest.leaders[f.leader] ?? 0) + 1;
       fest.deeds += f?.deeds?.length ?? 0; fest.lanterns += f?.lanterns?.[PLAYER_ID] ?? 0; fest.behind += f?.behind ? 1 : 0;
+      money.coins += st.player.coins; money.jobs += st.log.filter((e) => e.id.startsWith('work:')).length; money.sold += st.log.filter((e) => e.id.startsWith('sell:')).length;
+      money.gearD6 += st.log.filter((e) => e.day < 6 && gearBought(e)).length; money.gearD10 += st.log.filter((e) => e.day < 10 && gearBought(e)).length;
     }
     wins += w; inj += st.log.filter((e) => e.id === 'player-injured').length;
     rivalInj += Object.values(st.competitors).filter((c) => c.healthState !== 'fit').length;
@@ -301,6 +351,6 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
     policy: policy.name, rules, seeds: n, games, eventCounts, forgotten: forg,
     rates: { playerWins: wins / bouts, playerInjured: inj / n, rivalInjured: rivalInj / n, eliminations: elim / n, upsets: upsets / n, sabotaged: sab / n, foiled: foil / n },
     teamTransition: 'outside the slice: phase I (a points pool, 1v1) only; teams are typed (TeamState), never formed',
-    ...(rules === 'v2' ? { v2: { bouts: bouts / n, madeCut: cutIn / n, finalist: finals / n, champion: crowns / n, ranks, town: Object.fromEntries(Object.entries(town).map(([k, v]) => [k, v / n])), fest: { leaders: fest.leaders, deeds: fest.deeds / n, lanterns: fest.lanterns / n, behind: fest.behind } } } : {}),
+    ...(rules === 'v2' ? { v2: { bouts: bouts / n, madeCut: cutIn / n, finalist: finals / n, champion: crowns / n, ranks, town: Object.fromEntries(Object.entries(town).map(([k, v]) => [k, v / n])), fest: { leaders: fest.leaders, deeds: fest.deeds / n, lanterns: fest.lanterns / n, behind: fest.behind }, money: Object.fromEntries(Object.entries(money).map(([k, v]) => [k, v / n])) } } : {}),
   };
 }

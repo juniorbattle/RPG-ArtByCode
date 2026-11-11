@@ -101,6 +101,14 @@ export interface DuelOutcome {
   finisher: string | null;
 }
 
+/** a bout's purse, won or lost: 20 / 5 in today's game and the version 2's pool; in a version 2 game's bracket the purses rise with the tournament (the
+ *  operator's ECO-4 « Bourses qui montent : jour 6 35 / 10, jour 8 45 / 15, finale 80 / 30 », journal Passe ECO2); the champion's 100 apart (v2calendar.ts) */
+export const PURSES: Record<'pool' | 'semi' | 'gate' | 'third' | 'gateFinal' | 'final', readonly [number, number]> = { pool: [20, 5], semi: [35, 10], gate: [35, 10], third: [45, 15], gateFinal: [45, 15], final: [80, 30] };
+export function boutPurse(s: Pick<GameState, 'flags'>, m: Pick<MatchRecord, 'stage'>, won: boolean): number {
+  const p = isV2(s) ? PURSES[(m.stage ?? 'pool') as keyof typeof PURSES] ?? PURSES.pool : PURSES.pool;
+  return won ? p[0] : p[1];
+}
+
 export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void {
   const m = playerMatch(s);
   if (!m) throw new Error('no duel for the player today');
@@ -115,13 +123,13 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
   // the vigour of a version 2 game (the operator's DB7-4 « +12 PV par victoire », journal Passe DB8: src/simulation/v2gear.ts v2Stats)
   if (won && s.v2) s.v2.wins = (s.v2.wins ?? 0) + 1;
   if (won) {
-    P.reputation = clamp(P.reputation + (opp === 'marek' ? 20 : 15)); P.coins += 20;
+    P.reputation = clamp(P.reputation + (opp === 'marek' ? 20 : 15)); P.coins += boutPurse(s, m, true);
     c.reputation = clamp(c.reputation - (close ? 1 : 4));
     rivalry(s, opp, PLAYER_ID, o.playerHp / o.playerMaxHp > 0.7);
     // a version 2 game (lot L4, EV-9 « Chaque rival se souvient »): the rival remembers a beating taken with the player barely touched, the day it came
     if (isV2(s) && o.playerHp / o.playerMaxHp > 0.7) c.knownFacts.push(`humbled-by:${PLAYER_ID}:${m.day}`);
   } else {
-    P.reputation = clamp(P.reputation + (close ? 2 : -5)); P.coins += 5;
+    P.reputation = clamp(P.reputation + (close ? 2 : -5)); P.coins += boutPurse(s, m, false);
     c.reputation = clamp(c.reputation + 5);
     if (!c.knownFacts.includes('beat:player')) c.knownFacts.push('beat:player');
   }
@@ -134,7 +142,8 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
   P.items = P.items.filter((i) => i !== 'whetstone');
   emit({
     kind: 'match', id: won ? 'player-won' : 'player-lost', cause: `match:${matchId(m)}`, visible: true,
-    text: won ? tx('duel.won', { name, close: close ? tx('duel.wonClose') : '', rep: opp === 'marek' ? 20 : 15 })
+    // a version 2 game says its purse (ECO-4, journal Passe ECO2); today's game keeps its line word for word
+    text: won ? (isV2(s) ? tx('v2.duel.won', { name, close: close ? tx('duel.wonClose') : '', rep: opp === 'marek' ? 20 : 15, n: boutPurse(s, m, true) }) : tx('duel.won', { name, close: close ? tx('duel.wonClose') : '', rep: opp === 'marek' ? 20 : 15 }))
       // a defeat in the version 2's bracket says what it costs there (journal Passe VP1), not the pool's rule
       : m.stage ? tx(m.stage === 'semi' ? 'v2.duel.lostSemi' : m.stage === 'gate' ? 'v2.duel.lostGate' : m.stage === 'final' ? 'v2.duel.lostFinal' : 'v2.duel.lostLast', { name, close: close ? tx('v2.duel.lostClose') : '' })
       : tx('duel.lost', { name, close: close ? tx('duel.lostClose') : '' }),

@@ -19,9 +19,11 @@ import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './st
 
 /** what an action takes, one tag per currency (the operator's decision P2, journal Passes UI1 / UI2): its coins (from the simulation, not
  *  the label), its slot; « free » only when it takes neither */
-export function costTag(o: Pick<ActionOption, 'cost' | 'coins' | 'later'>): string {
+export function costTag(o: Pick<ActionOption, 'cost' | 'coins' | 'later' | 'gain'>): string {
   // a slot booked now and spent later (a challenge's) is a slot spent: « free » never (journal Passe EVL1)
-  const tags = [o.coins ? tx(o.coins === 1 ? 'ui.coin' : 'ui.coinsN', { n: o.coins }) : '', o.cost || o.later ? tx('ui.oneSlot') : ''].filter(Boolean);
+  // what it pays, first (a version 2 game's jobs and resale: the operator's ECO-7, journal Passe ECO2)
+  const tags = [o.gain ? tx('ui.gainN', { n: o.gain }) : '', o.coins ? tx(o.coins === 1 ? 'ui.coin' : 'ui.coinsN', { n: o.coins }) : '', o.cost || o.later ? tx('ui.oneSlot') : ''].filter(Boolean);
+  if (o.gain) return tags.map((t, i) => `<span class="cost${i === 0 ? ' gain' : ''}">${t}</span>`).join('');
   return tags.length ? tags.map((t) => `<span class="cost">${t}</span>`).join('') : `<span class="cost free">${tx('ui.free')}</span>`;
 }
 
@@ -138,6 +140,8 @@ export interface WaresHost {
   /** applies an action; false: the page is left (a new slot reloads it) */
   act(a: Action): { ok: boolean; reload?: boolean; events?: Array<{ visible: boolean; text: string; $t?: TextRef }> };
   close(): void;
+  /** a piece out of reach for want of coins was pressed (the tutorial's hint, journal Passe ECO2) */
+  poor?(): void;
 }
 
 /** the page: `who` a keeper, their goods above the bag; null the bag alone */
@@ -164,7 +168,7 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
     const list = card.querySelector('.pm-glist') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement, foot = card.querySelector('.pm-foot') as HTMLElement;
     const close = footBtn('Esc', tx(who ? 'ui.leave' : 'ui.close'), () => host.close()), fit = scrollFade(detail);
     const doIt = (l: Line): void => {
-      if (!l.ok) return;
+      if (!l.ok) { if ((l.price ?? 0) > host.state().player.coins) host.poor?.(); return; }
       const r = host.act(l.action);
       if (!r.ok || r.reload) return;
       // an argument put: back to the goods, on the piece it was for

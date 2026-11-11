@@ -119,7 +119,8 @@ test('the numbers of the decision: seeds 1..50 give Passe V2B1\'s wounds a game,
   // (journal Passe DB9, the fighters' stats recalibrated to six bouts in ten: 0.54 and 1.68 wounds a game before, 60.4 % of the bouts, crowned 8 %, the cut 92 %)
   // (journal Passe DB10, the rivals at the DB7 sheet's strength, the operator's « The DB7 sheet's curve »: 0.56 and 1.4 before, 59.6 % of the bouts, the cut 92 %;
   // the lab's prepared player never drills his skills, so it loses and is knocked down more)
-  assert.equal(+prepared.rates.playerInjured.toFixed(2), 1); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.64);
+  // (journal Passe ECO2, the purses by stage: 1.00 before; a bracket bout's purse buys the mail shirt sooner, one wound fewer in fifty games, its wins unchanged)
+  assert.equal(+prepared.rates.playerInjured.toFixed(2), 0.98); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.64);
   // (lot L4, journal Passe EVL7: 0.592 since Rhosk takes the training sand on the free day before a bracket bout, which the prepared player does not answer: seed 27
   // loses the major match it won; 0.596 before; 0.604 with the duel of journal Passe DB3)
   assert.equal(+prepared.rates.playerWins.toFixed(3), 0.42); assert.equal(prepared.v2.champion, 0); assert.equal(prepared.v2.madeCut, 0.74);
