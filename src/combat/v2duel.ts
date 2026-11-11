@@ -3,7 +3,7 @@ import { skillAction } from './skillbook';
 import { DYN_PROFILES, dynDuelData, type DynProfile, type Mods } from './profiles';
 import { chargeTiers, type ChargeTier } from './charge';
 import { CHARGE_TRIM, atLevel, chargeTime } from './skills';
-import { DB5, POWER, REN_BASE, RIVAL_SHEETS, gaugeFactor, hitFactor, rivalSheet, skillPower, speedFactor, type FighterStats, type Stage } from './stats';
+import { DB5, KIT_VIV, POWER, REN_BASE, RIVAL_SHEETS, gaugeFactor, hitFactor, rivalSheet, skillPower, speedFactor, type FighterStats, type Stage } from './stats';
 import { localize } from '../narrative/text';
 
 /** The duel of the version 2 (lot V1 of briefs/cloud-session-v2-brief.md, journal Passe V1): the rules of the « tour par tour dynamique »
@@ -76,7 +76,11 @@ export const V2_FOES: Record<string, V2Foe> = {
 /** what the player's skills add to the opponent's gauge, and the light attack's own share (3 before), DB-5 « Jauge par les compétences »; the light
  *  attack 0.5 since journal Passe DB9 (2 before): with the guard at −80 % (DB5-2) a player who held the guard through every sequence and only tapped
  *  broke the rivals by his taps and won four rivals in seven; the gauge is the skills' (DB-5), what each blow adds is « à régler » (§ 6) */
-export const V2_SKILL_GAUGE = 2;
+export const V2_SKILL_GAUGE = 3;
+/** the gauge's decay against DB5-4's (its pace for a gauge of 70): the operator's DB11-1 « Compétences ×1,5, se vide deux fois moins vite » (journal
+ *  Passe DB12, after his trial of 2026-11-10: « la barre de break pour nos ennemies est trop lente a monter »): the skills fill it x3 (x2 before,
+ *  V2_SKILL_GAUGE), it empties half as fast; the light attack keeps 0.5 (more and the guarding spammer wins again, journal Passe DB11) */
+export const V2_GAUGE_DECAY = 0.5;
 export const V2_LIGHT_GAUGE = 0.5;
 /** what a guarded blow adds to the guarder's gauge, one rule for both fighters (G3; 1 before): the guard's price, « la garde finit par l'étourdir »
  *  [G1, G2] (journal Passe DB9: a guard held through every blow is no longer free; a skill guarded by a rival breaks its guard sooner) */
@@ -159,7 +163,7 @@ export function v2DuelData(foe: string, o: { seed: number; playerName: string; o
   for (const a of Object.values(d.actions)) if (a.owner === 'ren' && a.id !== 'light') a.resist = +(a.resist * V2_SKILL_GAUGE).toFixed(2);
   d.actions.light = { ...d.actions.light, resist: V2_LIGHT_GAUGE };
   const R = o.ren ?? REN_BASE, S = o.foeSheet ?? rivalSheet(RIVAL_SHEETS[foe] ? foe : 'marek', o.stage ?? 0);
-  applyStats(d, kit, R, S, o.player ?? {}, em, (RIVAL_SHEETS[foe] ?? RIVAL_SHEETS.marek).viv);
+  applyStats(d, kit, R, S, o.player ?? {}, em, KIT_VIV[foe] ?? KIT_VIV.marek);
   // the charge times by Ren's Speed (DB7-1); the gear's own share (gfx.charge) stays for a caller that still gives one
   const charge = Object.fromEntries(kit.loadout.map((id) => [id, +(chargeTime(id, kit.levels[id] ?? 1) * gfx.charge * speedFactor(R.viv)).toFixed(3)]));
   return { data: d, tiers: chargeTiers(kit.loadout, charge, d) };
@@ -170,7 +174,7 @@ export function v2DuelData(foe: string, o: { seed: number; playerName: string; o
  *  rival's tempo by its Speed, the rivals' guard, the guard's reduction, the gauge of 70, a cooldown on each of the player's skills. `pm.hp` an
  *  injury's share of Ren's health, `pm.damage` a share of his blows (1 in a game: the gear is in his stats), `em` a state's shares on the opponent
  *  (its injury, its preparation, the night's tampering). */
-export function applyStats(d: DynData, kit: V2Kit, R: FighterStats, S: FighterStats, pm: Mods, em: Mods, nativeViv = S.viv): void {
+export function applyStats(d: DynData, kit: V2Kit, R: FighterStats, S: FighterStats, pm: Mods, em: Mods, nativeViv = KIT_VIV.marek): void {
   d.fighters.ren = { ...d.fighters.ren, maxHp: Math.max(1, Math.round(R.hp * (pm.hp ?? 1))) };
   d.fighters.marek = { ...d.fighters.marek, maxHp: Math.max(1, Math.round(S.hp * (em.hp ?? 1))) };
   const kr = hitFactor(R.atk, S.def) * (pm.damage ?? 1), kf = hitFactor(S.atk, R.def) * (em.damage ?? 1);
@@ -188,14 +192,14 @@ export function applyStats(d: DynData, kit: V2Kit, R: FighterStats, S: FighterSt
       a.resist = +(a.resist * gaugeFactor(R.end)).toFixed(2);
     }
   }
-  // the rival's tempo by its Speed against the Speed its kit was written at (nativeViv: 1 at every stage today, DB7-6 does not grow it, journal Passe DB8)
+  // the rival's tempo by its Speed against the Speed its kit was written at (nativeViv, KIT_VIV): slower in the pool, its kit's from the bracket (DB11-2)
   const tempo = speedFactor(S.viv, nativeViv);
   if (Math.abs(tempo - 1) > 1e-9) scaleTempo(d, tempo);
   // DB5-2 « 90 %, garde à −80 % »: the rivals guard 90 % of the player's blows in their pauses (their dodge kept), the guard takes 80 % off
   d.ai = { ...d.ai, defense: { guard: DB5.foeGuard, dodge: d.ai.defense?.dodge ?? 0 } };
   d.guard = { ...d.guard, reduce: DB5.guardReduce };
-  // DB5-4: a gauge of 70, emptied by time at the same pace for its size
-  d.resist = { ...d.resist, decay: +(d.resist.decay * DB5.gauge / d.resist.max).toFixed(3), max: DB5.gauge, guard: V2_GUARD_GAUGE };
+  // DB5-4: a gauge of 70, emptied by time at the same pace for its size, half as fast since DB11-1
+  d.resist = { ...d.resist, decay: +(d.resist.decay * DB5.gauge / d.resist.max * V2_GAUGE_DECAY).toFixed(3), max: DB5.gauge, guard: V2_GUARD_GAUGE };
 }
 
 /** a rival's tempo times k: its blows' wind-up and reaction window, a combo's gaps, its pauses */
@@ -219,11 +223,14 @@ export function scaleTempo(d: DynData, k: number): void {
  *  8 %). Measured again with the fighters' stats of journal Passes DB8 / DB9 (each rival's sheet, the formula, the DB5 rules, the guard's and the light
  *  attack's gauge, the rivals' blows at the DB7 sheet's strength, journal Passe DB10): the reference is Ren at the start, 150 health without limit here;
  *  calibration seeds 1..80, held-out 81..120 within 10 % but Vessa's kill (13 %: her dodge makes it skewed); Vessa second to Marek, her quick kit dealing the
- *  most. A rival a beats b in the time b takes the reference to bring down
+ *  most. Measured again with the duel of journal Passe DB13 (the skills x3 to the gauge and its decay halved, the pool's sheets 3 Speed under their kits, the
+ *  rivals' blows x2 with Ren's health): calibration seeds 1..80 at the pool's stage (most of the race's bouts are the pool's; the bracket's rivals fight at
+ *  their kits' tempo, a little quicker), held-out 81..120 within 7 %; every kill shorter (the breaks twice as frequent), every dps higher (the blows x2, the
+ *  tempo x1.25 to x1.6 slower). A rival a beats b in the time b takes the reference to bring down
  *  over a's damage against it: the reference's own damage cancels out of the race. */
 export const V2_RACERS: Record<string, { kill: number; dps: number }> = {
-  tobin: { kill: 92.2, dps: 0.68 }, orla: { kill: 141.4, dps: 1.11 }, cassius: { kill: 124.4, dps: 0.9 }, ilse: { kill: 166.8, dps: 1.0 },
-  rhosk: { kill: 166.6, dps: 0.81 }, vessa: { kill: 145.0, dps: 1.64 }, marek: { kill: 199.0, dps: 1.23 },
+  tobin: { kill: 65.1, dps: 0.83 }, orla: { kill: 140.0, dps: 1.36 }, cassius: { kill: 105.9, dps: 0.95 }, ilse: { kill: 157.6, dps: 1.2 },
+  rhosk: { kill: 154.7, dps: 1.02 }, vessa: { kill: 116.7, dps: 2.13 }, marek: { kill: 180.0, dps: 1.53 },
 };
 /** how sharply the version 2's race decides a match (« proposé »: lower than today's 14, so a rival a third weaker still wins one in ten) */
 export const V2_RACE_SLOPE = 8;

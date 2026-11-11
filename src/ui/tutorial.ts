@@ -11,7 +11,7 @@ import { RUMOUR, STRONGROOM } from '../simulation/v2intel';
 import { argChance, DISCOUNT } from '../simulation/v2barter';
 import { fameTier, type FameTier } from '../simulation/v2react';
 import { INJURY_HP, TRAIN_MAX } from '../simulation/v2gear';
-import { TRAIN_POINT } from '../combat/stats';
+import { REN_BASE, TRAIN_HP, TRAIN_POINT, VIGOUR_HP } from '../combat/stats';
 import { v2DuelData } from '../combat/v2duel';
 import { forgetLessons } from './duelTutorial';
 import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
@@ -152,7 +152,7 @@ export function runTour(s: GameState, steps: TourStep[]): Promise<boolean> {
 
 // ------------------------------------------------------------------------------------------------ the hints (TU-3, TU-8)
 
-export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor';
+export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor' | 'vigour';
 const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> = {
   square: { title: 'tut.hint.square.title', body: 'tut.hint.square.body', chapter: 'places' },
   shop: { title: 'tut.hint.shop.title', body: 'tut.hint.shop.body', chapter: 'shops' },
@@ -165,6 +165,8 @@ const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> =
   guide: { title: 'tut.hint.guide.title', body: 'tut.hint.guide.body', chapter: 'tournament' },
   // a purchase refused for want of coins, the first time (the operator's ECO-7, journal Passe ECO2): where to work
   poor: { title: 'tut.hint.poor.title', body: 'tut.hint.poor.body', chapter: 'money' },
+  // the operator's DB11-5 « Le dire partout » (journal Passe DB13): after the first bout won, how Ren's health grows
+  vigour: { title: 'tut.hint.vigour.title', body: 'tut.hint.vigour.body', chapter: 'prepare' },
 };
 function hintText(s: GameState, id: HintId, who?: string): string {
   const k = HINT[id].body;
@@ -175,6 +177,7 @@ function hintText(s: GameState, id: HintId, who?: string): string {
   if (id === 'eve') return tx(k, { odo: nameOf('odo'), room: STRONGROOM });
   if (id === 'evening') return tx(k, { lio: RUMOUR.lio.coins, stranger: RUMOUR.stranger.coins });
   if (id === 'poor') return tx(k, { pay: WORK.pay, jobs: jobsLine(), mara: nameOf('mara') });
+  if (id === 'vigour') return tx(k, { n: VIGOUR_HP, train: TRAIN_HP });
   return tx(k);
 }
 export const hintChapter = (id: HintId): string => HINT[id].chapter;
@@ -241,7 +244,7 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'law': return tx(c.body, { day: STEAL_FINE.day, night: STEAL_FINE.night, max: LAW.wanted, fee: LAW.fee, hale: nameOf('hale') });
     case 'challenges': return tx(c.body, { names: list(Object.keys(CHALLENGERS).map(nameOf)), coins: STAKE.coins, name: STAKE.name, day: dayOf('semis') });
     case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM });
-    case 'prepare': return tx(c.body, { train: TRAIN_POINT, sessions: TRAIN_MAX, wound: pct(INJURY_HP), anwen: nameOf('anwen') });
+    case 'prepare': return tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, wound: pct(INJURY_HP), anwen: nameOf('anwen') });
     case 'duel': { const D = v2DuelData('marek', { seed: 1, playerName: '', opponentName: '' }).data; return tx(c.body, { gain: D.actions.light?.apGain ?? 1, start: D.ap.start, max: D.ap.max, guard: pct(D.guard.reduce), n: D.ai.riposte?.after ?? 0, stun: D.resist.breakStun, times: D.resist.breakDamage }); }
     case 'renown': return tx(c.body, { hale: nameOf('hale'), parade: Math.max(...daysOfKind('free')) });
     case 'time': return tx(c.body, { slot: tx('ui.oneSlot') });

@@ -65,13 +65,13 @@ export const GEAR: Record<string, GearDef> = {
   'iron-ring': { id: 'iron-ring', slot: 'accessory', price: 24, fx: { end: 2 }, shop: 'armourer' },
   'swift-boots': { id: 'swift-boots', slot: 'accessory', price: 30, fx: { viv: 1 }, shop: 'master' },
   'fervour-charm': { id: 'fervour-charm', slot: 'accessory', price: 16, fx: { effect: 1.3 }, shop: 'trinkets' },
-  'docker-wrap': { id: 'docker-wrap', slot: 'accessory', price: 14, fx: { hp: 9 }, shop: 'mara' },
+  'docker-wrap': { id: 'docker-wrap', slot: 'accessory', price: 14, fx: { hp: 18 }, shop: 'mara' },
   'champion-token': { id: 'champion-token', slot: 'accessory', price: 0, fx: { ap: 1, end: 0.5 } },
   // the passers-by's pieces (lot L2a, the operator's note on EV-6: « items unique ou rentable »), sold by no shop: bought, bargained for or stolen
   // from their owner (src/simulation/v2barter.ts PASSERS); the hauberk is the « rentable » one, better and cheaper than the armourer's mail
-  'river-pearl': { id: 'river-pearl', slot: 'accessory', price: 26, fx: { end: 1.5, hp: 5 } },
+  'river-pearl': { id: 'river-pearl', slot: 'accessory', price: 26, fx: { end: 1.5, hp: 10 } },
   'knight-hauberk': { id: 'knight-hauberk', slot: 'armour', price: 34, fx: { def: 3.5, viv: -0.5 } },
-  'pilgrim-medal': { id: 'pilgrim-medal', slot: 'accessory', price: 18, fx: { hp: 8, effect: 1.15 } },
+  'pilgrim-medal': { id: 'pilgrim-medal', slot: 'accessory', price: 18, fx: { hp: 16, effect: 1.15 } },
   // consumables (used up by the next bout, or at once)
   whetstone: { id: 'whetstone', slot: 'consumable', price: 8, fx: { atk: 0.5 }, shop: 'mara' },
   salve: { id: 'salve', slot: 'consumable', price: 10, fx: {}, shop: 'mara' },

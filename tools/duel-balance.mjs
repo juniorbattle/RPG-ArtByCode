@@ -155,8 +155,8 @@ export const RPG = {
   gear: {
     0: { atk: 0, def: 0, end: 0, hp: 0, viv: 0 },
     1: { atk: 1, def: 1, end: 0, hp: 0, viv: 0 },
-    2: { atk: 4, def: 3, end: 0, hp: 9, viv: -0.5 },
-    3: { atk: 7.5, def: 3, end: 2, hp: 9, viv: -0.5 },
+    2: { atk: 4, def: 3, end: 0, hp: 18, viv: -0.5 },
+    3: { atk: 7.5, def: 3, end: 2, hp: 18, viv: -0.5 },
   },
   stage: {
     3: { atk: 2, def: 2, end: 1, hp: 1.15 }, 4: { atk: 3, def: 3, end: 2, hp: 2.5 }, 5: { atk: 1, def: 3, end: 2, hp: 3 }, 6: { atk: 0, def: 2, end: 2, hp: 2.5 },
@@ -171,7 +171,7 @@ function statsOf(foe, spec) {
   const b = { hp: rpgTok(spec, 'vhp') ?? b0.hp, atk: rpgTok(spec, 'vatk') ?? b0.atk, def: rpgTok(spec, 'vdef') ?? b0.def, end: rpgTok(spec, 'vend') ?? b0.end, viv: b0.viv };
   const gr = ST.STAGE_GROWTH[st] ?? RPG.stage[st];
   // journal Passe DB11: `vivd<n>` the opponent n Speed under its sheet (its tempo x its sheet's Speed / its Speed now, as the game reads it)
-  return { ren, foe: { hp: b.hp * gr.hp, atk: b.atk + gr.atk, def: b.def + gr.def, end: b.end + gr.end, viv: b.viv - (rpgTok(spec, 'vivd') ?? 0) }, fpow: (rpgTok(spec, 'fpow') ?? 100) / 100 };
+  return { ren, foe: { hp: b.hp * gr.hp, atk: b.atk + gr.atk, def: b.def + gr.def, end: b.end + gr.end, viv: b.viv + (gr.viv ?? 0) - (rpgTok(spec, 'vivd') ?? 0) }, fpow: (rpgTok(spec, 'fpow') ?? 100) / 100 };
 }
 
 /** Marek's health in the scene's duel today (journal Passe DB3: 7 680 x 1.5) */

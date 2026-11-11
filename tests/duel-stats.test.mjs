@@ -32,18 +32,22 @@ const duel = (foe = 'orla', o = {}) => V.v2DuelData(foe, { seed: 7, playerName: 
 const WON = { winner: 'player', playerHp: 100, playerMaxHp: 150, opponentHp: 0, opponentMaxHp: 600, finisher: 'tech' };
 
 test('the sheets of the DB7 sheet: Ren at the start, the seven rivals, their growth by stage, the vigour, the powers at equal stats', () => {
-  assert.deepEqual(ST.REN_BASE, { hp: 150, atk: 10, def: 10, end: 10, viv: 10 });
-  assert.equal(ST.VIGOUR_HP, 12); assert.equal(ST.TRAIN_POINT, 1);
-  // DB7-5 « Ces fiches » (hp, Attack, Defence, Endurance), the Speed read from their kits (journal Passe DB8)
+  // DB11-6 « Ren 300, tout ce qui touche à ses PV ×2 et les coups des rivaux ×2 » (journal Passe DB12; 150 and +12 before); DB11-5: a session for health, +20
+  assert.deepEqual(ST.REN_BASE, { hp: 300, atk: 10, def: 10, end: 10, viv: 10 });
+  assert.equal(ST.VIGOUR_HP, 24); assert.equal(ST.TRAIN_POINT, 1); assert.equal(ST.TRAIN_HP, 20);
+  assert.deepEqual(ST.TRAINED_STATS, ['atk', 'def', 'end', 'viv', 'hp']); assert.deepEqual(ST.TRAINED_STATS.map(ST.trainGain), [1, 1, 1, 1, 20]);
+  // DB7-5 « Ces fiches » (hp, Attack, Defence, Endurance); the Speed its kit's (journal Passe DB8) less 3 in the pool (DB11-2 « Vivacité −3 en poule, celle de la fiche ensuite »)
+  assert.deepEqual(ST.KIT_VIV, { vessa: 13, tobin: 9, cassius: 10, orla: 11, ilse: 10, marek: 10, rhosk: 8 }); assert.equal(ST.POOL_SLOW, 3);
   assert.deepEqual(ST.RIVAL_SHEETS, {
-    vessa: { hp: 500, atk: 7, def: 8, end: 7, viv: 13 }, tobin: { hp: 520, atk: 9, def: 8, end: 8, viv: 9 }, cassius: { hp: 560, atk: 11, def: 10, end: 9, viv: 10 },
-    orla: { hp: 600, atk: 12, def: 11, end: 11, viv: 11 }, ilse: { hp: 620, atk: 10, def: 12, end: 11, viv: 10 }, marek: { hp: 650, atk: 13, def: 13, end: 12, viv: 10 },
-    rhosk: { hp: 700, atk: 12, def: 10, end: 13, viv: 8 },
+    vessa: { hp: 500, atk: 7, def: 8, end: 7, viv: 10 }, tobin: { hp: 520, atk: 9, def: 8, end: 8, viv: 6 }, cassius: { hp: 560, atk: 11, def: 10, end: 9, viv: 7 },
+    orla: { hp: 600, atk: 12, def: 11, end: 11, viv: 8 }, ilse: { hp: 620, atk: 10, def: 12, end: 11, viv: 7 }, marek: { hp: 650, atk: 13, def: 13, end: 12, viv: 7 },
+    rhosk: { hp: 700, atk: 12, def: 10, end: 13, viv: 5 },
   });
   for (const r of Object.values(ST.RIVAL_SHEETS)) assert.ok(r.hp >= 500 && r.hp <= 700, 'DB4-4: 500 to 700');
-  // DB7-6: the bracket +3 / +3 / +2 and health x 1.3, the final +1 / +3 / +2 and health x 2.5; the Speed does not grow
-  assert.deepEqual(ST.rivalSheet('marek', 1), { hp: 845, atk: 16, def: 16, end: 14, viv: 10 });
-  assert.deepEqual(ST.rivalSheet('marek', 2), { hp: 1625, atk: 14, def: 16, end: 14, viv: 10 });
+  // DB7-6: the bracket +3 / +3 / +2, the final +1 / +3 / +2; the health x 1.7 and x 3.5 since DB11-7's recalibration on the DB7 sheet's curve (journal Passe DB13;
+  // x 1.3 and x 2.5 before); the Speed given back from the bracket (DB11-2)
+  assert.deepEqual(ST.rivalSheet('marek', 1), { hp: 1105, atk: 16, def: 16, end: 14, viv: 10 });
+  assert.deepEqual(ST.rivalSheet('marek', 2), { hp: 2275, atk: 14, def: 16, end: 14, viv: 10 });
   assert.deepEqual([ST.stageOf(2), ST.stageOf(5), ST.stageOf(6), ST.stageOf(8), ST.stageOf(10, true), ST.stageOf(9)], [0, 0, 1, 1, 2, 1]);
   // the light attack 1 % of a bar of 600 (DB5-5), the Thrust 20 % (DB5-1); a skill by its charge time at level 1, its level's power over it
   assert.deepEqual([ST.POWER.light, ST.POWER.thrust], [6, 120]);
@@ -72,20 +76,27 @@ test('a duel\'s numbers come from both fighters\' stats: health, every blow by t
   const l3 = duel('orla', { ren: R, kit: { loadout: ['t1', 't4', 'd1', 's1'], levels: { t1: 1, t4: 3, d1: 1, s1: 1, heavy: 1 } } });
   assert.equal(l3.data.actions.t4.damage, Math.round(120 * 1.2 * k(R.atk, O.def)));
   // the stage: Marek in the final
-  assert.equal(duel('marek', { stage: 2 }).data.fighters.marek.maxHp, 1625);
+  assert.equal(duel('marek', { stage: 2 }).data.fighters.marek.maxHp, 2275);
   // a state's shares on top: an injury on Ren's health, a rival's preparation on its blows, the night's tampering
   const hurt = duel('orla', { ren: R, player: { hp: 0.8 }, enemy: { hp: 0.9, damage: 1.1 }, gear: { taken: 1.15, gauge: 1, charge: 1, effect: 1 } });
   assert.equal(hurt.data.fighters.ren.maxHp, 144); assert.equal(hurt.data.fighters.marek.maxHp, 540);
   assert.equal(hurt.data.actions.m_heavy.damage, Math.round(ST.POWER.foeHeavy * k(O.atk, R.def) * 1.1 * 1.15));
 });
 
-test('a rival\'s tempo follows its Speed against its sheet\'s: unchanged at every stage today, its wind-up, gaps and pauses scaled when it differs', () => {
-  for (const st of [0, 1, 2]) assert.equal(JSON.stringify(duel('vessa', { stage: st }).data.restByLevel), JSON.stringify(duel('vessa').data.restByLevel));
-  const base = duel('vessa'), fast = duel('vessa', { foeSheet: { ...ST.RIVAL_SHEETS.vessa, viv: 16.25 } });
-  const f = 13 / 16.25, lv = base.data.ai.level;
+test('a rival\'s tempo follows its Speed against its kit\'s (KIT_VIV): slower in the pool (DB11-2), its kit\'s own from the bracket; its wind-up, gaps and pauses scaled when it differs', () => {
+  const kit = (st) => duel('vessa', { stage: st, foeSheet: { ...ST.rivalSheet('vessa', st), viv: ST.KIT_VIV.vessa } });
+  for (const st of [1, 2]) assert.equal(JSON.stringify(duel('vessa', { stage: st }).data.restByLevel), JSON.stringify(kit(st).data.restByLevel), `stage ${st}: the kit's tempo`);
+  assert.deepEqual([0, 1, 2].map((st) => ST.rivalSheet('vessa', st).viv), [10, 13, 13]);
+  for (const [id, v] of Object.entries(ST.KIT_VIV)) assert.equal(ST.RIVAL_SHEETS[id].viv, v - ST.POOL_SLOW, id);
+  // the pool: Vessa at 10 against her kit's 13, every time x 1.3 (her pauses 3.5-6.5 s become 4.55-8.45 s)
+  const base = kit(0), pool = duel('vessa'), lv = base.data.ai.level, p = 13 / 10;
+  assert.deepEqual(pool.data.restByLevel[lv], base.data.restByLevel[lv].map((x) => +(x * p).toFixed(3)));
+  assert.deepEqual(pool.data.restByLevel[lv], [4.55, 8.45]);
+  assert.equal(pool.data.actions.m_slash.impactAt, +(base.data.actions.m_slash.impactAt * p).toFixed(3));
+  assert.deepEqual(pool.data.ai.comboGap, base.data.ai.comboGap.map((x) => +(x * p).toFixed(3)));
+  // a faster one: its times shorter
+  const fast = duel('vessa', { foeSheet: { ...ST.RIVAL_SHEETS.vessa, viv: 16.25 } }), f = 13 / 16.25;
   assert.deepEqual(fast.data.restByLevel[lv], base.data.restByLevel[lv].map((x) => +(x * f).toFixed(3)));
-  assert.equal(fast.data.actions.m_slash.impactAt, +(base.data.actions.m_slash.impactAt * f).toFixed(3));
-  assert.deepEqual(fast.data.ai.comboGap, base.data.ai.comboGap.map((x) => +(x * f).toFixed(3)));
 });
 
 test('the DB5 rules in every version 2 duel: the rivals guard 90 % (their dodge kept), the guard takes 80 % off, a gauge of 70 and its pace, the break 10 s x2, a guarded blow x2 to the guarder\'s gauge, a cooldown on each skill', () => {
@@ -93,7 +104,8 @@ test('the DB5 rules in every version 2 duel: the rivals guard 90 % (their dodge 
     const d = duel(foe).data;
     assert.equal(d.ai.defense.guard, 0.9, foe); assert.equal(d.ai.defense.dodge, V.V2_FOES[foe].defense?.dodge ?? 0, foe);
     assert.equal(d.guard.reduce, 0.8);
-    assert.deepEqual([d.resist.max, d.resist.decay, d.resist.breakStun, d.resist.breakDamage, d.resist.guard], [70, +(D.DYNAMIC_DATA.resist.decay * 0.7).toFixed(3), 10, 2, 2]);
+    // the gauge empties half as fast since DB11-1 « Compétences ×1,5, se vide deux fois moins vite »
+    assert.deepEqual([d.resist.max, d.resist.decay, d.resist.breakStun, d.resist.breakDamage, d.resist.guard], [70, +(D.DYNAMIC_DATA.resist.decay * 0.7 * 0.5).toFixed(3), 10, 2, 2]);
     for (const id of ['heavy', 't1', 't2', 't3', 't4', 'd1', 's1']) assert.equal(d.actions[id].cooldown, +(5 * K.chargeTime(id, 1)).toFixed(3), `${foe} ${id}`);
     assert.equal(d.actions.light.cooldown, undefined, 'the light attack has none');
   }
@@ -132,18 +144,22 @@ test('the cooldown (DB5-3 « 5 × le temps de charge », A3): a skill that left 
 test('Ren\'s stats from his state (DB7-2, DB7-3, DB7-4): the gear in points, the whetstone, the forge\'s tiers, the sessions\' stats for the next bout, the vigour', () => {
   const st = G.makeV2(G.namedState('day1-morning'));
   assert.deepEqual(VG.v2Stats(st), ST.REN_BASE);
-  // each piece's points (briefs/stats-combattants.md § 2.3)
+  // each piece's points (briefs/stats-combattants.md § 2.3; the health x2 since DB11-6)
   const POINTS = {
     'imported-blade': { atk: 2 }, 'duelist-sabre': { atk: 1.5, viv: 1 }, 'padded-jack': { def: 1 }, 'mail-shirt': { def: 3, viv: -0.5 }, 'dock-leathers': { def: 1.5, end: 1 },
-    'knight-hauberk': { def: 3.5, viv: -0.5 }, 'iron-ring': { end: 2 }, 'swift-boots': { viv: 1 }, 'docker-wrap': { hp: 9 }, 'river-pearl': { end: 1.5, hp: 5 },
-    'pilgrim-medal': { hp: 8, effect: 1.15 }, 'champion-token': { ap: 1, end: 0.5 }, 'lucky-ribbon': { ap: 1 }, 'fervour-charm': { effect: 1.3 }, whetstone: { atk: 0.5 },
+    'knight-hauberk': { def: 3.5, viv: -0.5 }, 'iron-ring': { end: 2 }, 'swift-boots': { viv: 1 }, 'docker-wrap': { hp: 18 }, 'river-pearl': { end: 1.5, hp: 10 },
+    'pilgrim-medal': { hp: 16, effect: 1.15 }, 'champion-token': { ap: 1, end: 0.5 }, 'lucky-ribbon': { ap: 1 }, 'fervour-charm': { effect: 1.3 }, whetstone: { atk: 0.5 },
   };
   for (const [id, fx] of Object.entries(POINTS)) assert.deepEqual(GE.GEAR[id].fx, fx, id);
   assert.equal(GE.WEAPON_TIER_ATK, 1);
   const s = structuredClone(st);
   s.v2.gear = { weapon: 'imported-blade', tier: 3, armour: 'dock-leathers', acc: ['iron-ring', 'docker-wrap'], bag: [] };
   s.player.items.push('whetstone'); s.player.training = 2; s.v2.prep = ['viv', 'end']; s.v2.wins = 4;
-  assert.deepEqual(VG.v2Stats(s), { hp: 150 + 48 + 9, atk: 10 + 2 + 3 + 0.5, def: 11.5, end: 10 + 1 + 2 + 1, viv: 11 });
+  assert.deepEqual(VG.v2Stats(s), { hp: 300 + 4 * 24 + 18, atk: 10 + 2 + 3 + 0.5, def: 11.5, end: 10 + 1 + 2 + 1, viv: 11 });
+  // a session given to health (DB11-5): +20 at the next bout; where the health comes from, as the match sheet says it (journal Passe DB13)
+  const h = structuredClone(s); h.v2.prep = ['hp', 'end']; h.player.injury = 1;
+  assert.equal(VG.v2Stats(h).hp, 300 + 96 + 18 + 20);
+  assert.deepEqual(VG.healthParts(h), { base: 300, vigour: 96, gear: 18, train: 20, wound: 434 - Math.round(434 * 0.8), total: Math.round(434 * 0.8) });
   // a session recorded before DB7 counts as Attack (its +5 % damage of before); two at most
   const old = structuredClone(st); old.player.training = 2; delete old.v2.prep;
   assert.equal(VG.v2Stats(old).atk, 12);
@@ -157,19 +173,23 @@ test('Ren\'s stats from his state (DB7-2, DB7-3, DB7-4): the gear in points, the
 test('a training session in a version 2 game: one line per stat, the stat chosen recorded for the next bout and said in the log; emptied by the bout; today\'s game as before', () => {
   let st = G.makeV2(G.namedState('day1-morning')); st.place = 'training';
   const lines = G.actions(st).filter((o) => o.action.type === 'train');
-  assert.deepEqual(lines.map((o) => o.action.stat), ['atk', 'def', 'end', 'viv']);
+  assert.deepEqual(lines.map((o) => o.action.stat), ['atk', 'def', 'end', 'viv', 'hp']);
   assert.equal(lines[3].label, 'Train: Speed (+1 at your next bout)');
+  // DB11-5 « Le dire partout, et une séance « Santé » (+20 PV au prochain combat) »: the health last
+  assert.equal(lines[4].label, 'Train: Health (+20 at your next bout)');
+  const hp = G.advance(st, { type: 'train', stat: 'hp' }); assert.ok(hp.ok, hp.reason);
+  assert.equal(VG.v2Stats(hp.state).hp, 320); assert.ok(hp.state.log.some((e) => e.id === 'train' && /Health \+20 at your next bout/.test(e.text)));
   const r = G.advance(st, { type: 'train', stat: 'viv' }); assert.ok(r.ok, r.reason);
   assert.deepEqual(r.state.v2.prep, ['viv']); assert.equal(VG.v2Stats(r.state).viv, 11);
   assert.ok(r.state.log.some((e) => e.id === 'train' && /Speed \+1 at your next bout/.test(e.text)));
   // sparring with Orla is a session too
   const o = G.actions({ ...r.state, place: 'training' }).filter((x) => x.action.type === 'spar');
-  assert.ok(o.length === 0 || o.map((x) => x.action.stat).join() === 'atk,def,end,viv', JSON.stringify(o.map((x) => x.action)));
+  assert.ok(o.length === 0 || o.map((x) => x.action.stat).join() === 'atk,def,end,viv,hp', JSON.stringify(o.map((x) => x.action)));
   // the bout empties the sessions and their stats; a win is one more bout won (DB7-4)
   const b = G.makeV2(G.namedState('day2-afternoon')); b.player.training = 2; b.v2.prep = ['def', 'end']; b.v2.wins = 1;
   const w = G.advance(b, { type: 'fight', outcome: WON }); assert.ok(w.ok, w.reason);
   assert.deepEqual([w.state.player.training, w.state.v2.prep, w.state.v2.wins], [0, [], 2]);
-  assert.equal(VG.v2Stats(w.state).hp, 150 + 24);
+  assert.equal(VG.v2Stats(w.state).hp, 300 + 2 * 24);
   const l = G.advance(b, { type: 'fight', outcome: { ...WON, winner: 'opponent', playerHp: 0, opponentHp: 300, finisher: 'tech' } });
   assert.equal(l.state.v2.wins, 1, 'a defeat adds no vigour');
   // today's game (v2=0): one line, its words and its rule of before
@@ -186,7 +206,7 @@ test('a challenge won is a bout won (DB7-4); a generic fighter\'s sheet is its r
   // its duel: the sheet's health, its shares not counted twice
   const day7 = G.makeV2(G.namedState('day1-morning')); day7.day = 7; day7.v2.challenge = { who: 'aldric', day: 7, stake: 'coins' };
   const c = M.challengeSheetFor(day7), x = M.v2SheetData(c, undefined, G.v2KitOf(day7), VG.v2Mods(day7));
-  assert.equal(c.stage, 1); assert.equal(x.data.fighters.marek.maxHp, Math.round(620 * 1.3 * 0.9));
+  assert.equal(c.stage, 1); assert.equal(x.data.fighters.marek.maxHp, Math.round(620 * 1.7 * 0.9));
 });
 
 test('the pages read the stats (DB7-7): the gear page Ren\'s five, the skills page each skill\'s power, the match sheet the opponent\'s, in both languages', () => {
@@ -202,8 +222,8 @@ test('the pages read the stats (DB7-7): the gear page Ren\'s five, the skills pa
 });
 
 test('the balance measured (journal Passes DB9 / DB10): the rivals\' blows at the DB7 sheet\'s strength, a spammer who guards every sequence loses to most rivals', () => {
-  // the DB7 sheet's own strength (the operator's « The DB7 sheet's curve », journal Passe DB10)
-  assert.deepEqual([ST.POWER.foeLight, ST.POWER.foeHeavy, ST.POWER.foeSkill], [5.6, 16.8, 25.2]);
+  // the DB7 sheet's own strength (the operator's « The DB7 sheet's curve », journal Passe DB10), x2 with Ren's health since DB11-6
+  assert.deepEqual([ST.POWER.foeLight, ST.POWER.foeHeavy, ST.POWER.foeSkill], [11.2, 33.6, 50.4]);
   assert.deepEqual([V.V2_LIGHT_GAUGE, V.V2_GUARD_GAUGE], [0.5, 2]);
   // the spammer: taps whenever free outside the opponent's sequences, holds the guard through every sequence, dodges the heavy blows 3 times in 5
   let wins = 0;

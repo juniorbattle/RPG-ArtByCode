@@ -2,7 +2,7 @@ import { clamp, type GameState, type V2Gear } from './state';
 import type { ActionDef } from './actions';
 import { isV2 } from './v2';
 import { GEAR, MAX_WEAPON_TIER, SHOPS, TIER_PRICE, WEAPON_TIER_ATK, type GearFx, type ShopId } from './gear';
-import { REN_BASE, TRAIN_POINT, TRAINED_STATS, VIGOUR_HP, type FighterStats, type TrainedStat } from '../combat/stats';
+import { REN_BASE, TRAINED_STATS, VIGOUR_HP, trainGain, type FighterStats, type TrainedStat } from '../combat/stats';
 import { itemText, tx } from '../narrative/text';
 import { allyAp } from '../narrative/v2story';
 import type { Mods } from '../combat/profiles';
@@ -16,7 +16,7 @@ import { PEOPLE } from '../narrative/people';
  *  Mara's shop of today is this system's general store in a version 2 game; the forge's Wyrmsteel temper is the weapon's first tier. Pure. */
 
 /** a level of wound takes this share of the health in a bout; a training session gives TRAIN_POINT to the stat chosen at the next bout (the operator's
- *  DB7-3 « +1 à la stat choisie, pour le prochain combat », journal Passe DB8; +5 % damage before), up to TRAIN_MAX sessions (read by the guide too,
+ *  DB7-3 « +1 à la stat choisie, pour le prochain combat », journal Passe DB8; +5 % damage before), TRAIN_HP to health (DB11-5), up to TRAIN_MAX sessions (read by the guide too,
  *  journal Passe TU3) */
 export const INJURY_HP = 0.2, TRAIN_MAX = 2;
 export const START_GEAR: V2Gear = { weapon: 'training-sword', tier: 0, armour: null, acc: [null, null], bag: [] };
@@ -59,9 +59,19 @@ export function v2Stats(s: GameState): FighterStats {
   st.hp += VIGOUR_HP * (s.v2?.wins ?? 0) + fx.hp;
   st.atk += fx.atk + (s.player.items.includes('whetstone') ? GEAR.whetstone.fx.atk ?? 0 : 0);
   st.def += fx.def; st.end += fx.end; st.viv += fx.viv;
-  for (const k of trainedStats(s)) st[k] += TRAIN_POINT;
+  for (const k of trainedStats(s)) st[k] += trainGain(k);
   for (const k of Object.keys(st) as Array<keyof FighterStats>) st[k] = +st[k].toFixed(2);
   return st;
+}
+
+/** where Ren's health in his next bout comes from (the operator's DB11-5 « Le dire partout », journal Passe DB13: the match sheet says it): his start, his
+ *  vigour (VIGOUR_HP a bout won), his gear, his training sessions given to health, and what a wound takes; `total` is the bout's health (v2Stats × v2Mods) */
+export function healthParts(s: GameState): { base: number; vigour: number; gear: number; train: number; wound: number; total: number } {
+  const st = v2Stats(s), share = 1 - INJURY_HP * s.player.injury, total = Math.max(1, Math.round(st.hp * share));
+  return {
+    base: REN_BASE.hp, vigour: VIGOUR_HP * (s.v2?.wins ?? 0), gear: wornFx(s).hp,
+    train: trainedStats(s).filter((k) => k === 'hp').length * trainGain('hp'), wound: Math.round(st.hp) - total, total,
+  };
 }
 
 /** what a version 2 player's state changes in a duel on top of his stats (v2Stats): the injury's share of his health, the AP of his gear and of a

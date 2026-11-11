@@ -233,15 +233,16 @@ test('the three buttons: the heavy and the skills lose their automatic preparati
   assert.deepEqual(k.data.ai.defense, c.data.ai.defense);
   assert.deepEqual(k.data.ai.skills, c.data.ai.skills);
   // a skill of 1 AP under the three buttons, free under the old scheme; since journal Passe DB8 every blow's damage from the fighters' stats (Ren
-  // 10 against Marek's Defence 13: x 20/23), what it adds to the gauge by Marek's Endurance 12 (x 10/12): tests/duel-stats.test.mjs
+  // 10 against Marek's Defence 13: x 20/23), what it adds to the gauge by Marek's Endurance 12 (x 10/12): tests/duel-stats.test.mjs; the heavy's 8 x2 for its
+  // charge x3 for a skill since DB11-1 (journal Passe DB13; x2 before)
   const kr = (2 * 10) / (10 + 13), ke = 10 / 12;
   assert.equal(c.data.actions.light.damage, Math.round(6 * kr)); assert.equal(c.data.actions.light.resist, +(0.5 * ke).toFixed(2));
-  assert.equal(c.data.actions.heavy.damage, Math.round(120 * (K.chargeTime('heavy', 1) / K.chargeTime('t4', 1)) * kr)); assert.equal(c.data.actions.heavy.resist, +(32 * ke).toFixed(2));
+  assert.equal(c.data.actions.heavy.damage, Math.round(120 * (K.chargeTime('heavy', 1) / K.chargeTime('t4', 1)) * kr)); assert.equal(c.data.actions.heavy.resist, +(48 * ke).toFixed(2));
   assert.equal(c.data.actions.t4.damage, Math.round(120 * kr)); assert.equal(c.data.actions.d1.ward.dur, 9);
   assert.equal(c.data.actions.heavy.apCost, 1); assert.ok(!k.data.actions.heavy.apCost); assert.equal(c.data.actions.heavy.family, 'offensive');
   // the old scheme with the heavy attack among the four: the C2 command, the heavy at level 1 as today, under the duel's weights of journal Passe DB3
   const kh = V.v2DuelData('marek', { seed: 1337, playerName: 'Ren', opponentName: 'Marek', input: 'keys', kit: HK });
-  assert.deepEqual(kh.data.actions.heavy, { ...D.DYNAMIC_DATA.actions.heavy, family: 'offensive', damage: Math.round(120 * (K.chargeTime('heavy', 1) / K.chargeTime('t4', 1)) * kr), resist: +(16 * ke).toFixed(2), cooldown: +(5 * K.chargeTime('heavy', 1)).toFixed(3) });
+  assert.deepEqual(kh.data.actions.heavy, { ...D.DYNAMIC_DATA.actions.heavy, family: 'offensive', damage: Math.round(120 * (K.chargeTime('heavy', 1) / K.chargeTime('t4', 1)) * kr), resist: +(24 * ke).toFixed(2), cooldown: +(5 * K.chargeTime('heavy', 1)).toFixed(3) });
   const q = (s) => new URLSearchParams(s);
   assert.equal(A.v2Input(q('v2=1')), 'charge'); assert.equal(A.v2Input(q('v2=1&input=keys')), 'keys');
   assert.equal(DV.arenaRules(q('scene=arena&v2=1')), 'v2'); assert.equal(DV.arenaRules(q('scene=arena&v2')), 'v2');
@@ -294,8 +295,10 @@ test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a stairca
   };
   const strong = rate('orla', 0.9), weak = rate('orla', 0.2), m6 = rate('marek', 0.6), o6 = rate('orla', 0.6), m2 = rate('marek', 0.2);
   assert.ok(strong.w >= 0.8, `orla at 0.9: ${strong.w}`);
-  assert.ok(weak.w <= 0.35, `orla at 0.2: ${weak.w}`);
-  assert.ok(m2.w <= 0.2, `marek at 0.2: ${m2.w}`);
+  // the pool easier since journal Passe DB13 (the operator's DB11-7: the rivals slower in the pool, the breaks twice as frequent): the weak player wins one in two
+  // against Orla (0.35 at most before), a third against Marek (0.2 before)
+  assert.ok(weak.w <= 0.6, `orla at 0.2: ${weak.w}`);
+  assert.ok(m2.w <= 0.45, `marek at 0.2: ${m2.w}`);
   assert.ok(m6.w < o6.w, `marek at 0.6 (${m6.w}) is harder than orla (${o6.w})`);
   // the pool's bouts with the start kit (journal Passe DB8): about 2 minutes, a losing weak player falling sooner; the operator's « en 2 et 5 min » (A3)
   // is a reference, the bracket's and the final's bouts longer (tools/duel-balance.mjs)
@@ -304,7 +307,8 @@ test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a stairca
 
 test('the harder rivals (journal Passes VP4, V2C2) under V2-2 « Rien ne la coupe » (journal Passe V2C1): whole version 2 games on seeds 1..12, a staircase by the player\'s skill and preparation', () => {
   // the fighters' stats of journal Passes DB8 to DB10: the rivals' blows at the DB7 sheet's strength (the operator's « The DB7 sheet's curve »)
-  assert.deepEqual([ST.POWER.foeLight, ST.POWER.foeHeavy, ST.POWER.foeSkill], [5.6, 16.8, 25.2]);
+  // x2 with Ren's health since the operator's DB11-6 « Ren 300, tout ce qui touche à ses PV ×2 et les coups des rivaux ×2 » (journal Passe DB13)
+  assert.deepEqual([ST.POWER.foeLight, ST.POWER.foeHeavy, ST.POWER.foeSkill], [11.2, 33.6, 50.4]);
   const S = Array.from({ length: 12 }, (_, i) => i + 1);
   const at = (skill) => ({ name: `diligent-${skill}`, skill, choose: (st) => { const a = L.POLICIES.diligent.choose(st); return a.type === 'fight' ? { type: 'fight', outcome: L.botOutcome(st, skill) } : a; } });
   const idle = L.labReport(S, L.POLICIES.idle, 'v2'), prepared = L.labReport(S, L.POLICIES.diligent, 'v2'), expert = L.labReport(S, at(0.9), 'v2');
@@ -312,11 +316,14 @@ test('the harder rivals (journal Passes VP4, V2C2) under V2-2 « Rien ne la coup
   // expert nine in ten and the crown in about two games in three: Passe VP4's staircase, which V2-2 had lifted (85 bouts in 100, journal Passe
   // V2C1), found again by the rivals' harder blows and health (the operator's « Oui, recaler », journal Passe V2C2)
   // since the fighters' stats (journal Passes DB8 / DB9) a player who only fights wins a little at the pool, as the DB7 sheet's weak player (17 %); a fifth at most
-  assert.ok(idle.rates.playerWins <= 0.25, `idle ${idle.rates.playerWins}`);
+  // since journal Passe DB13 the pool is easier (the operator's DB11-7 « La poule plus facile, tableau et finale sur la courbe DB7 »): a player who only fights wins
+  // a third of his bouts (34.9 % on seeds 1..50), mostly the pool's
+  assert.ok(idle.rates.playerWins <= 0.45, `idle ${idle.rates.playerWins}`);
   // since journal Passe DB10 the reference of six bouts in ten is the DB7 sheet's expected player, who drills his skills (the operator's « The DB7 sheet's
   // curve »): the lab's prepared player, who never does, wins about four bouts in ten (42 % on seeds 1..50) and makes the cut three games in four
-  assert.ok(prepared.rates.playerWins >= 0.33 && prepared.rates.playerWins <= 0.55, `prepared ${prepared.rates.playerWins}`);
-  assert.ok(prepared.v2.madeCut >= 0.5 && prepared.v2.champion <= 0.15, `prepared ${JSON.stringify(prepared.v2)}`);
+  // since journal Passe DB13 (the pool easier) he wins a little more than half (55.2 % on seeds 1..50) and always makes the cut
+  assert.ok(prepared.rates.playerWins >= 0.45 && prepared.rates.playerWins <= 0.65, `prepared ${prepared.rates.playerWins}`);
+  assert.ok(prepared.v2.madeCut >= 0.75 && prepared.v2.champion <= 0.15, `prepared ${JSON.stringify(prepared.v2)}`);
   // since the fighters' stats (journal Passes DB8 / DB9) the final is the epic of DB7-6 (PV x 2.5 and stats): the lab's players never drill their skills,
   // and at level 1 Marek is not beaten in the final even at 0.9 (a player at level 3 beats him seven times in ten at 0.6: tools/duel-balance.mjs); the
   // expert still wins most of its bouts and makes the cut (the final rarely, at level 1: journal Passe DB10)

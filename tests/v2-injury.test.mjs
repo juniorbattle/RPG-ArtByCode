@@ -120,10 +120,11 @@ test('the numbers of the decision: seeds 1..50 give Passe V2B1\'s wounds a game,
   // (journal Passe DB10, the rivals at the DB7 sheet's strength, the operator's « The DB7 sheet's curve »: 0.56 and 1.4 before, 59.6 % of the bouts, the cut 92 %;
   // the lab's prepared player never drills his skills, so it loses and is knocked down more)
   // (journal Passe ECO2, the purses by stage: 1.00 before; a bracket bout's purse buys the mail shirt sooner, one wound fewer in fifty games, its wins unchanged)
-  assert.equal(+prepared.rates.playerInjured.toFixed(2), 0.98); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.64);
+  // (journal Passe DB13, the operator's DB11 sheet: the pool easier, the bracket and the final on the DB7 sheet's curve: 0.98 and 1.64 before, 42.0 % of the bouts, the cut 74 %)
+  assert.equal(+prepared.rates.playerInjured.toFixed(2), 1.02); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.34);
   // (lot L4, journal Passe EVL7: 0.592 since Rhosk takes the training sand on the free day before a bracket bout, which the prepared player does not answer: seed 27
   // loses the major match it won; 0.596 before; 0.604 with the duel of journal Passe DB3)
-  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.42); assert.equal(prepared.v2.champion, 0); assert.equal(prepared.v2.madeCut, 0.74);
+  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.552); assert.equal(prepared.v2.champion, 0); assert.equal(prepared.v2.madeCut, 1);
   // less than half as often until journal Passe DB9; at the sheet's strength the lab's prepared player, without his skills' levels, still less often than the idle one
   assert.ok(prepared.rates.playerInjured < idle.rates.playerInjured, 'the prepared player is wounded less often than the idle one');
   assert.ok(prepared.eventCounts['healer-offer'] > 0 && idle.eventCounts['healer-offer'] > 0, 'the healer still writes to the wounded');

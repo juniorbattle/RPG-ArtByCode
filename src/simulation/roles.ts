@@ -16,9 +16,9 @@ import { V2_INTEL_ACTIONS } from './v2intel';
 import { V2_RIVAL_ACTIONS, anwenBusy } from './v2rivals';
 import { V2_FESTIVAL_ACTIONS } from './v2festival';
 import { V2_WORK_ACTIONS } from './v2work';
-import { TRAINED_STATS, TRAIN_POINT, type TrainedStat } from '../combat/stats';
+import { TRAINED_STATS, trainGain, type TrainedStat } from '../combat/stats';
 /** the stats' names (keys written whole: tests/texts.test.mjs) */
-const SPAR_STAT: Record<TrainedStat, TextKey> = { atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv' };
+const SPAR_STAT: Record<TrainedStat, TextKey> = { atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv', hp: 'ui.stat.hp' };
 
 const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS, ...V2_WORK_ACTIONS };
 
@@ -230,7 +230,7 @@ export const ROLE_ACTIONS: T = {
     // Orla trains at the version 2's training ground (lot V5)
     // a version 2 game: a session like the sand's, one line per stat it may raise (the operator's DB7-3, journal Passe DB8)
     list: (st) => (st.place !== placeOf(PEOPLE.orla, isV2(st)) ? [] : isV2(st) ? TRAINED_STATS.map((stat) => ({ type: 'spar' as const, stat })) : [{ type: 'spar' }]),
-    label: (st, a) => (isV2(st) ? tx('v2.spar.stat', { stat: tx(SPAR_STAT[a.stat && (TRAINED_STATS as readonly string[]).includes(a.stat) ? a.stat : 'atk']), n: TRAIN_POINT }) : tx('spar.label')),
+    label: (st, a) => { const k: TrainedStat = a.stat && (TRAINED_STATS as readonly string[]).includes(a.stat) ? a.stat : 'atk'; return isV2(st) ? tx('v2.spar.stat', { stat: tx(SPAR_STAT[k]), n: trainGain(k) }) : tx('spar.label'); },
     cost: () => 1,
     check: (st) => available(st, 'orla') ?? (st.player.training >= 2 ? tx('spar.sharp') : null),
     apply: (s, a, _r, emit) => {

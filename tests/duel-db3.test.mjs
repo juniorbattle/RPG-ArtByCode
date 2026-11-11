@@ -21,9 +21,10 @@ const steps = (c, secs, evs = []) => { for (let i = 0; i < Math.round(secs / c.D
 /** a tap, then the time its light attack takes to end (impact, follow, recovery) */
 const tap = (c, evs = []) => { c.attack(true); c.step(); c.attack(false); evs.push(...c.drain()); const L = c.D.actions.light; return steps(c, L.impactAt + L.follow + L.recover + 0.05, evs); };
 
-test('the numbers of the sheets (journal Passes DB3, DB8, DB9): twice the gauge for the skills, the light attack\'s gauge 0.5, a guarded blow x2 to the guarder\'s gauge, the break 10 s and x2 for both on a gauge of 70, the riposte at 3', () => {
+test('the numbers of the sheets (journal Passes DB3, DB8, DB9, DB13): three times the gauge for the skills (DB11-1), the light attack\'s gauge 0.5, a guarded blow x2 to the guarder\'s gauge, the break 10 s and x2 for both on a gauge of 70, the riposte at 3', () => {
   // the skills x4 of DB-4 are in the fighters' stats since journal Passe DB8 (tests/duel-stats.test.mjs); the break of DB5-4 « 10 s, ×2, jauge de 70 » (A3)
-  assert.equal(V.V2_SKILL_GAUGE, 2); assert.equal(V.V2_LIGHT_GAUGE, 0.5); assert.equal(V.V2_GUARD_GAUGE, 2);
+  // the skills' gauge x3 and its decay halved since the operator's DB11-1 « Compétences ×1,5, se vide deux fois moins vite » (journal Passe DB12; x2 before)
+  assert.equal(V.V2_SKILL_GAUGE, 3); assert.equal(V.V2_GAUGE_DECAY, 0.5); assert.equal(V.V2_LIGHT_GAUGE, 0.5); assert.equal(V.V2_GUARD_GAUGE, 2);
   assert.deepEqual(V.V2_BREAK, { stun: 10, damage: 2, gauge: 70 }); assert.deepEqual(V.V2_RIPOSTE, { after: 3, delay: 0.3 });
   const d = duel().data;
   assert.deepEqual([d.resist.breakStun, d.resist.breakDamage, d.resist.max, d.resist.guard], [10, 2, 70, 2], 'one rule for both fighters (G3)');
@@ -32,8 +33,8 @@ test('the numbers of the sheets (journal Passes DB3, DB8, DB9): twice the gauge 
   assert.deepEqual([d.actions.light.damage, d.actions.light.apGain, d.actions.light.resist], [Math.round(6 * (2 * 10) / (10 + 13)), 1, +(0.5 * 10 / 12).toFixed(2)]);
   // the charge times of CH-1 kept (DB-6)
   assert.deepEqual(duel().tiers.map((t) => t.at), [0, K.chargeTime('d1', 1), K.chargeTime('t1', 1), K.chargeTime('s1', 1), K.chargeTime('t4', 1)]);
-  // Ren 150 at the start, Marek 650 at the pool (DB7-5), the Thrust 120 x 20/23 against him: 16 % of his bar (DB5-1: 20 % at equal stats)
-  assert.equal(d.fighters.ren.maxHp, 150); assert.equal(d.fighters.marek.maxHp, 650);
+  // Ren 300 at the start (DB11-6 « Ren 300 », 150 before), Marek 650 at the pool (DB7-5), the Thrust 120 x 20/23 against him: 16 % of his bar (DB5-1: 20 % at equal stats)
+  assert.equal(d.fighters.ren.maxHp, 300); assert.equal(d.fighters.marek.maxHp, 650);
   assert.equal(d.actions.t4.damage, Math.round(120 * (2 * 10) / (10 + 13)));
   // today's game and C2's duel keep their own: no riposte, the break of C2-9
   assert.equal(D.DYNAMIC_DATA.ai.riposte, undefined); assert.deepEqual([D.DYNAMIC_DATA.resist.breakStun, D.DYNAMIC_DATA.resist.breakDamage], [6, 1.2]);
@@ -86,7 +87,7 @@ test('never in its break (the operator\'s note on DB-2): light attacks on a brok
   assert.ok(after.some((e) => e.type === 'riposte'), 'the third after the stun: the riposte');
 });
 
-test('the break (DB-5, DB5-4): 10 s stunned, every blow it takes doubled, for either fighter; the skills fill the gauge twice as much', () => {
+test('the break (DB-5, DB5-4): 10 s stunned, every blow it takes doubled, for either fighter; the skills fill the gauge three times as much (DB11-1)', () => {
   const c = fresh(), evs = [];
   c.sim.f.marek.resist = c.D.resist.max - 0.05;
   tap(c, evs);
@@ -98,9 +99,11 @@ test('the break (DB-5, DB5-4): 10 s stunned, every blow it takes doubled, for ei
   const p = fresh(); p.sim.f.ren.resist = p.D.resist.max - 1; p.sim.forceSequence(['m_slash']);
   const pe = steps(p, 1.5);
   assert.equal(pe.find((e) => e.type === 'stun' && e.who === 'ren')?.dur, 10);
-  // what a blow adds to the opponent's gauge: a skill twice today's share (x its level), the light attack 0.5, by the target's Endurance (Marek 12: x 10/12)
+  // what a blow adds to the opponent's gauge: a skill three times today's share (x its level; twice before DB11-1), the light attack 0.5, by the target's Endurance (Marek 12: x 10/12)
   const d = duel().data;
-  assert.equal(d.actions.t1.resist, +(D.DYNAMIC_DATA.actions.t1.resist * 2 * 2 * 10 / 12).toFixed(2), 'the Flash cut: x2 for its charge (V2_POWER), x2 the gauge');
+  assert.equal(d.actions.t1.resist, +(D.DYNAMIC_DATA.actions.t1.resist * 2 * 3 * 10 / 12).toFixed(2), 'the Flash cut: x2 for its charge (V2_POWER), x3 the gauge');
+  // the gauge empties half as fast as DB5-4's pace for its size (DB11-1)
+  assert.equal(d.resist.decay, +(D.DYNAMIC_DATA.resist.decay * 70 / 100 * 0.5).toFixed(3));
   assert.equal(d.actions.light.resist, +(0.5 * 10 / 12).toFixed(2));
 });
 
@@ -112,9 +115,10 @@ test('the duel\'s shape (DB-2, DB5, DB7; tools/duel-balance.mjs): about 2 minute
     assert.ok(r.winner, 'a K.O.'); t += r.t; n++;
   }
   // the operator's « en 2 et 5 min » (A3) is a reference (« si un combat dure plus longtemps, c'est que c'est normal »): the pool's start kit about 2 minutes, the
-  // bracket's and the final's bouts longer; the light attack 1 % (DB5-5) leaves the skills about half the damage
+  // bracket's and the final's bouts longer; the light attack 1 % (DB5-5) leaves the skills about half the damage (since DB11, 43 % on these seeds: the
+  // longer pauses of the pool and the breaks twice as frequent, where a light attack hits twice as hard, give the light attack more)
   assert.ok(t / n / 60 >= 1.5 && t / n / 60 <= 3, `average ${(t / n / 60).toFixed(2)} min`);
-  assert.ok(skills / all >= 0.45, `the skills ${Math.round((100 * skills) / all)} % of the damage`);
+  assert.ok(skills / all >= 0.4, `the skills ${Math.round((100 * skills) / all)} % of the damage`);
   // the spammer: taps whenever free between the opponent's sequences, guards every sequence, dodges the heavy blows with its AP
   const d = V.v2DuelData('orla', { seed: 3001, playerName: 'Ren', opponentName: 'orla' }), c = new C.ChargedDuel(d.data, d.tiers), rng = new Rng(7);
   let down = false, lights = 0, max = 0, broken = false;

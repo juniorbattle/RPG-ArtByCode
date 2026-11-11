@@ -4,7 +4,8 @@ import { DYN_TEXTS_EN, DYN_TEXTS_FR_GAME } from '../arena/DynamicHud';
 import { challengeSheetFor, dynSheetData, dynSheetView, matchSheetFor, sheetData, v2SheetData } from '../combat/match';
 import { V2_FOES, FOE_SKILLS } from '../combat/v2duel';
 import { isV2, v2KitOf } from '../simulation/v2';
-import { v2Mods } from '../simulation/v2gear';
+import { healthParts, v2Mods } from '../simulation/v2gear';
+import { VIGOUR_HP } from '../combat/stats';
 import { dynamicRules } from '../tournament/pool';
 import { stageName } from '../tournament/v2calendar';
 import { GENERICS } from '../narrative/generics';
@@ -101,7 +102,9 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     if (!res.ok) { console.error(res.reason); return; }
     writeSave(st);
     const won = r.winner === 'ren', lines = (res.events as Array<{ visible: boolean; text: string; kind: string; $t?: TextRef }>).filter((e) => e.visible && (e.kind === 'match' || e.kind === 'consequence' || (!!challenge && e.kind === 'action'))).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('');
-    await overlay(`<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
+    // the operator's DB11-5 « Le dire partout » (journal Passe DB13): a version 2 bout won (a reprisal adds none) says the vigour it gives and the health of the next bout
+    const vigour = won && v2 && !reprisal ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: healthParts(st).total }))}</p>` : '';
+    await overlay(`<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}${vigour}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
     go(b.params);
   }
 }

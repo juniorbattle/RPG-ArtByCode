@@ -15,7 +15,8 @@ import { skillsPage } from './skills';
 import { cap, itemText, lang, said, shortName, tx, word, type TextRef } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { pendingFinal, stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
-import { itemName, weaponTier } from '../simulation/v2gear';
+import { healthParts, itemName, v2Mods, weaponTier } from '../simulation/v2gear';
+import { VIGOUR_HP } from '../combat/stats';
 import { marksOf } from '../simulation/v2law';
 import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
@@ -361,8 +362,11 @@ export class TownUi {
     if (!news.length) return;
     // P6 (lot V9): back from a bout of the version 2, the result first, large
     const duel = isV2(this.st) ? news.find((e) => e.kind === 'match' && (e.id === 'player-won' || e.id === 'player-lost')) : undefined;
-    if (duel) { this.newsRead = this.card(`<div class="pm-result"><p class="pm-big">${duel.id === 'player-won' ? tx('v2.result.won') : tx('v2.result.lost')}</p>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}</div>`, tx('ui.goOn')); return; }
-    this.newsRead = this.card(`<h2 class="pm-h">${news.length > 1 ? tx('ui.meanwhile') : tx('ui.news')}</h2>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}`, tx('ui.goOn'), true);
+    // the operator's DB11-5 « Le dire partout » (journal Passe DB13): a bout won, the tournament's or a challenge's, says the vigour it gives and the health of the next bout
+    const won = isV2(this.st) && news.some((e) => e.id === 'player-won' || e.id === 'challenge:won');
+    const vigour = won ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: healthParts(this.st).total }))}</p>` : '';
+    if (duel) { this.newsRead = this.card(`<div class="pm-result"><p class="pm-big">${duel.id === 'player-won' ? tx('v2.result.won') : tx('v2.result.lost')}</p>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}${vigour}</div>`, tx('ui.goOn')); return; }
+    this.newsRead = this.card(`<h2 class="pm-h">${news.length > 1 ? tx('ui.meanwhile') : tx('ui.news')}</h2>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}${vigour}`, tx('ui.goOn'), true);
   }
 
   /** `band`: what is read in passing, at the foot of the screen; else a page on the full-screen veil */
@@ -442,9 +446,15 @@ export class TownUi {
     // the opponent's stats at this bout's stage (the operator's DB7-7 « Équipement, fiche de match et compétences », journal Passe DB8)
     const sh = matchSheetFor(s), foe = sh?.sides[1].fighters[0], fs = foe ? foeSheetOf(foe, sh!.stage ?? 0) : null;
     const stats = fs ? tx('v2.sheet.stats', { hp: Math.round(fs.hp * (foe!.mods.hp ?? 1)), atk: +fs.atk.toFixed(1), def: +fs.def.toFixed(1), end: +fs.end.toFixed(1), viv: +fs.viv.toFixed(1) }) : '';
+    // the operator's DB11-5 « Le dire partout » (journal Passe DB13): Ren's stats beside the opponent's, and where his health comes from
+    const me = v2Mods(s).stats, hp = healthParts(s);
+    const you = tx('v2.sheet.you', { hp: hp.total, atk: +me.atk.toFixed(1), def: +me.def.toFixed(1), end: +me.end.toFixed(1), viv: +me.viv.toFixed(1) });
+    const from = [tx('v2.sheet.hp.base', { n: hp.base }), hp.vigour ? tx('v2.sheet.hp.vigour', { n: hp.vigour, per: VIGOUR_HP }) : '', hp.gear ? tx('v2.sheet.hp.gear', { n: hp.gear }) : '',
+      hp.train ? tx('v2.sheet.hp.train', { n: hp.train }) : '', hp.wound ? tx('v2.sheet.hp.wound', { n: hp.wound }) : ''].filter(Boolean).join(', ') + '.';
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
       + (stats ? `<p class="pm-sub pm-fstats">${esc(stats)}</p>` : '')
+      + `<p class="pm-sub pm-fstats">${esc(you)}</p><p class="pm-sub">${esc(from)}</p>`
       + `<p class="pm-sub">${esc(intel)}</p>${heard ? `<p class="pm-sub">${esc(heard)}</p>` : ''}<p class="pm-sub">${esc(gear)}</p>${strap ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.strap'))}</p>` : ''}${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }
 
@@ -533,6 +543,7 @@ export class TownUi {
     if (s.slot === 'evening') this.hint('evening');
     if (s.player.injury > 0) this.hint('hurt');
     if (marksOf(s) > 0) this.hint('mark');
+    if ((s.v2?.wins ?? 0) > 0) this.hint('vigour');
   }
 
   private openJournal(): void { this.page(); this.show(journalPage(this.st, () => this.closeModal())); this.shownPage = 'journal'; }

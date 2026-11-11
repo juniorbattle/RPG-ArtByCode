@@ -62,7 +62,10 @@ test('the guide: thirteen chapters (« Earning coins » since journal Passe ECO2
   assert.match(text.intel, new RegExp(`${INTEL.RUMOUR.lio.coins} coins, right about 67 %`));
   assert.match(text.intel, new RegExp(`for ${INTEL.STRONGROOM} coins`));
   // a session since journal Passe DB8 (the operator's DB7-3 « +1 à la stat choisie, pour le prochain combat »)
-  assert.match(text.prepare, new RegExp(`gives \\+${STATS.TRAIN_POINT} to the stat you choose \\(Attack, Defence, Endurance or Speed\\) at your next bout, up to ${GEAR.TRAIN_MAX} sessions`));
+  // since DB11-5 « Le dire partout, et une séance « Santé » (+20 PV au prochain combat) » (journal Passe DB13), a session may go to health, and the guide
+  // says where Ren's health comes from, the rules' own numbers
+  assert.match(text.prepare, new RegExp(`gives \\+${STATS.TRAIN_POINT} to the stat you choose \\(Attack, Defence, Endurance or Speed\\), or \\+${STATS.TRAIN_HP} health, at your next bout, up to ${GEAR.TRAIN_MAX} sessions`));
+  assert.match(text.prepare, new RegExp(`Your health starts at ${STATS.REN_BASE.hp} and grows by ${STATS.VIGOUR_HP} for good with each bout you win`));
   assert.match(text.prepare, new RegExp(`takes ${Math.round(GEAR.INJURY_HP * 100)} % of your health`));
   assert.match(text.places, /the Arena Forecourt, the Training Ground and the Festival Square/);
 });
@@ -72,16 +75,18 @@ test('the constants the guide reads are the rules\' own (the training, the wound
   const gear = src('src/simulation/v2gear.ts'), town = src('src/simulation/v2town.ts');
   assert.match(gear, /1 - INJURY_HP \* s\.player\.injury/);
   assert.match(gear, /const n = Math\.min\(TRAIN_MAX, s\.player\.training\)/);
-  assert.match(gear, /for \(const k of trainedStats\(s\)\) st\[k\] \+= TRAIN_POINT;/);
+  assert.match(gear, /for \(const k of trainedStats\(s\)\) st\[k\] \+= trainGain\(k\);/);
+  assert.match(src('src/combat/stats.ts'), /export const trainGain = \(k: TrainedStat\): number => \(k === 'hp' \? TRAIN_HP : TRAIN_POINT\);/);
   assert.match(town, /const cap = night \? STEAL_FINE\.night : STEAL_FINE\.day/);
-  assert.deepEqual([GEAR.INJURY_HP, STATS.TRAIN_POINT, GEAR.TRAIN_MAX, TOWN.STEAL_FINE.day, TOWN.STEAL_FINE.night], [0.2, 1, 2, 15, 25]);
+  assert.deepEqual([GEAR.INJURY_HP, STATS.TRAIN_POINT, STATS.TRAIN_HP, STATS.REN_BASE.hp, STATS.VIGOUR_HP, GEAR.TRAIN_MAX, TOWN.STEAL_FINE.day, TOWN.STEAL_FINE.night], [0.2, 1, 20, 300, 24, 2, 15, 25]);
 });
 
 test('the tour\'s six bands and the hints, each with its words and its chapter (TU-2, TU-3, TU-8)', () => {
   assert.equal(TU.TOUR.length, 6);
   assert.deepEqual(TU.TOUR.map((b) => b.at ?? null), [null, 'status', 'figs', 'list', 'menu', null]);
   for (const b of TU.TOUR) { assert.ok(b.title in EN && b.body in EN, b.title); }
-  const ids = ['square', 'shop', 'steal', 'mark', 'eve', 'challenge', 'evening', 'hurt', 'guide'];
+  // 'vigour' since journal Passe DB13 (the operator's DB11-5 « Le dire partout »): after the first bout won, how Ren's health grows
+  const ids = ['square', 'shop', 'steal', 'mark', 'eve', 'challenge', 'evening', 'hurt', 'guide', 'vigour'];
   for (const id of ids) {
     assert.ok(`tut.hint.${id}.title` in EN && `tut.hint.${id}.body` in EN, id);
     assert.ok(TU.CHAPTERS.some((c) => c.id === TU.hintChapter(id)), `${id} opens a chapter`);

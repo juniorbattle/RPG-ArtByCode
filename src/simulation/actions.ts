@@ -19,15 +19,15 @@ import { V2_INTEL_ACTIONS, type V2IntelAction } from './v2intel';
 import { V2_RIVAL_ACTIONS, sandRefusal, type V2RivalAction } from './v2rivals';
 import { V2_FESTIVAL_ACTIONS, paradeBlocks, type V2FestivalAction } from './v2festival';
 import { V2_WORK_ACTIONS, type V2WorkAction } from './v2work';
-import { TRAINED_STATS, TRAIN_POINT, type TrainedStat } from '../combat/stats';
+import { TRAINED_STATS, trainGain, type TrainedStat } from '../combat/stats';
 import type { TextKey } from '../narrative/text';
 
 /** a training session's stat in a version 2 game (the operator's DB7-3 « +1 à la stat choisie, pour le prochain combat », journal Passe DB8): the
  *  one chosen, Attack for an action that names none (a script or a tool of before) */
 export const sessionStat = (a: { stat?: TrainedStat }): TrainedStat => (a.stat && (TRAINED_STATS as readonly string[]).includes(a.stat) ? a.stat : 'atk');
 /** the stats' names and a session's line in its log, by stat (keys written whole: tests/texts.test.mjs) */
-export const STAT_NAME: Record<TrainedStat, TextKey> = { atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv' };
-const TRAIN_LOG: Record<TrainedStat, TextKey> = { atk: 'v2.train.log.atk', def: 'v2.train.log.def', end: 'v2.train.log.end', viv: 'v2.train.log.viv' };
+export const STAT_NAME: Record<TrainedStat, TextKey> = { atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv', hp: 'ui.stat.hp' };
+const TRAIN_LOG: Record<TrainedStat, TextKey> = { atk: 'v2.train.log.atk', def: 'v2.train.log.def', end: 'v2.train.log.end', viv: 'v2.train.log.viv', hp: 'v2.train.log.hp' };
 /** a version 2 session recorded for the next bout (src/simulation/v2gear.ts trainedStats) */
 export function recordSession(s: GameState, stat: TrainedStat): void { if (s.v2) (s.v2.prep ??= []).push(stat); }
 
@@ -98,15 +98,15 @@ const BASE: Table = {
   },
   train: {
     // the version 2 trains at the training ground (lot V5)
-    // a version 2 game: one line per stat a session may raise (DB7-3)
+    // a version 2 game: one line per stat a session may raise (DB7-3), health last (DB11-5)
     list: (st) => (st.place !== trainAt(st) ? [] : isV2(st) ? TRAINED_STATS.map((stat) => ({ type: 'train' as const, stat })) : [{ type: 'train' }]),
-    label: (st, a) => (isV2(st) ? tx('v2.train.stat', { stat: tx(STAT_NAME[sessionStat(a)]), n: TRAIN_POINT }) : tx('train.label')),
+    label: (st, a) => (isV2(st) ? tx('v2.train.stat', { stat: tx(STAT_NAME[sessionStat(a)]), n: trainGain(sessionStat(a)) }) : tx('train.label')),
     cost: () => 1,
     // a version 2 game's sand (lot L4): shut the morning after a brawl at the barracks, or taken by Rhosk (src/simulation/v2rivals.ts)
     check: (st) => (st.place !== trainAt(st) ? (isV2(st) ? tx('v2.train.notHere') : tx('train.notHere')) : st.slot === 'evening' ? tx('train.closed') : sandRefusal(st) ?? (st.player.training >= 2 ? tx('train.sharp') : null)),
     apply: (s, a, _r, emit) => {
       s.player.training++; s.player.reputation = clamp(s.player.reputation + 1);
-      if (isV2(s)) { const k = sessionStat(a); recordSession(s, k); emit({ kind: 'action', id: 'train', cause: 'action:train', text: tx(TRAIN_LOG[k], { n: TRAIN_POINT }), visible: true }); return; }
+      if (isV2(s)) { const k = sessionStat(a); recordSession(s, k); emit({ kind: 'action', id: 'train', cause: 'action:train', text: tx(TRAIN_LOG[k], { n: trainGain(k) }), visible: true }); return; }
       emit({ kind: 'action', id: 'train', cause: 'action:train', text: tx('train.log'), visible: true });
     },
   },
