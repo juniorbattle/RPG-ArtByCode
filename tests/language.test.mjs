@@ -146,3 +146,23 @@ test('a page reading the English log compares it with the English, whatever the 
   }
   assert.ok(drinks > 0, 'a rival seen drinking at least once');
 });
+
+test('the French reread after the operator\'s trial (journal Passe TF1): one name for a thing, the duel\'s and the pad\'s words in French, no gender given to the player', async () => {
+  const { DYN_TEXTS_FR_GAME, CHARGE_TEXTS_FR } = await load('/src/arena/DynamicHud.ts');
+  const { padName } = await load('/src/input/glyphs.ts');
+  const values = Object.values(FR_TEXTS).join('\n');
+  // the match sheet is « la fiche de match » (the operator's word on the DB7 sheet), the quick blow « coup rapide » on every page and in the duel's tier strip
+  assert.ok(!/fiche de combat/.test(values), 'one name for the match sheet');
+  assert.ok(!/[Aa]ttaque légère/.test(values) && CHARGE_TEXTS_FR.tierLight === 'Rapide', 'one name for the quick blow');
+  // the heralds stay heralds; a fighter on the forecourt, never « au parvis »
+  assert.ok(!/héros/i.test(values) && /hérauts/.test(values));
+  assert.ok(!/(^|[\s(«])[Aa]u parvis/.test(values), 'on the forecourt, not « au parvis » (« jusqu’au parvis » is right)');
+  // the duel of a game: a blow taken in guard says so, and the player's title is French
+  assert.equal(DYN_TEXTS_FR_GAME.guarded(12), 'Gardé · 12');
+  assert.equal(DYN_TEXTS_FR_GAME.subRen, 'prétendant');
+  // the pad's buttons named in the page's language (the controls' tooltips, the caps' accessible names), English kept in English
+  assert.equal(padName('ps', 0), 'Cross');
+  inFrench(() => { assert.equal(padName('ps', 0), 'Croix'); assert.equal(padName('xbox', 8), 'Affichage'); assert.equal(padName('xbox', 12), 'Croix directionnelle\u00a0: haut'); assert.equal(padName('xbox', 0), 'A'); });
+  // the townsfolk who say « tu » do not give the player a gender (« celui-là », « l’ami »)
+  for (const k of ['v2.line.folk.noticed', 'v2.hail.noticed1', 'v2.hail.whisper1', 'v2.hail.avoid1', 'v2.line.folk.wary', 'v2.fest.wren']) assert.ok(!/\bcelui\b|celui-là|l’ami\b|\bgars\b/.test(FR_TEXTS[k]), k);
+});

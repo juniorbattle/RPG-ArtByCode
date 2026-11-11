@@ -40,7 +40,9 @@ export const DYN_TEXTS_FR: DynTexts = {
 export const DYN_TEXTS_FR_GAME: DynTexts = {
   ...DYN_TEXTS_FR,
   light: 'Rapide', heavy: 'Puissante', shorts: ['Éclair', 'Fente', 'Tourbillon', 'Estoc'],
-  subtitle: 'Poule des huit · combat officiel', subRen: 'challenger', subMarek: 'adversaire', health: (n) => `Santé de ${n}`,
+  subtitle: 'Poule des huit · combat officiel', subRen: 'prétendant', subMarek: 'adversaire', health: (n) => `Santé de ${n}`,
+  // a blow taken in guard (journal Passe TF1: the prototype's « 12 garde » read as a guard, not as the damage it let through)
+  guarded: (n) => `Gardé · ${n}`,
   restart: 'Un combat officiel ne se recommence pas', rotate: 'Tournez l’appareil : l’arène se joue en paysage', window: 'Fenêtre d’esquive', apLabel: 'Points d’action',
   isDown: (n) => `${n} est à terre`, breakBar: 'Rupture', brokenTag: (s) => `Rompu · ${s} s`, foeBroken: (f) => `${f} rompu — frappez !`, youBroken: 'Résistance rompue',
   breakFloat: 'Rupture !',
@@ -58,7 +60,7 @@ export const DYN_TEXTS_EN: DynTexts = {
 
 /** the version 2's words (lot V1, journal Passe V1): the attack button of the three-button command and its tiers */
 export interface ChargeTexts { attack: string; holdSub: string; tierLight: string; tierHeavy: string; locked: string; cooling: string; secs: (n: number) => string; foeSkill: (name: string) => string }
-export const CHARGE_TEXTS_FR: ChargeTexts = { attack: 'Attaque', holdSub: 'tenir : charge', tierLight: 'Légère', tierHeavy: 'Puissante', locked: 'PA manquants', cooling: 'En recharge', secs: (n) => `${n} s`, foeSkill: (n) => `Compétence : ${n}` };
+export const CHARGE_TEXTS_FR: ChargeTexts = { attack: 'Attaque', holdSub: 'tenir : charge', tierLight: 'Rapide', tierHeavy: 'Puissante', locked: 'PA manquants', cooling: 'En recharge', secs: (n) => `${n} s`, foeSkill: (n) => `Compétence : ${n}` };
 export const CHARGE_TEXTS_EN: ChargeTexts = { attack: 'Attack', holdSub: 'hold: charge', tierLight: 'Quick', tierHeavy: 'Heavy', locked: 'AP missing', cooling: 'Cooling down', secs: (n) => `${n} s`, foeSkill: (n) => `Skill: ${n}` };
 
 /** the tier strip of the charge (the version 2 only): in the dodge window's bar's place above the bar (the bar, when it shows with the full

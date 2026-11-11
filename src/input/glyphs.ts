@@ -1,4 +1,5 @@
 import { BTN, type Btn, type PadFamily } from './pad';
+import { word } from '../narrative/text';
 
 /** The pad's prompts in the interface's keycap (journal Passe MN1; direction A « Voile »: keys in outline, no drop shadow, ivory, ink and one
  *  accent). The cap keeps its one-pixel outline in the current colour; the face buttons go round, the shoulders and the small buttons stay a
@@ -8,8 +9,10 @@ import { BTN, type Btn, type PadFamily } from './pad';
 
 export type GlyphStyle = 'outline' | 'colour' | 'word';
 
-/** the button's name as the pad's maker prints it (the cap's accessible name) */
-export function padName(f: PadFamily, b: Btn): string {
+/** the button's name as the pad's maker prints it (the cap's accessible name and its tooltip), in the page's language (journal Passe TF1: « Croix »,
+ *  « Affichage »...) */
+export function padName(f: PadFamily, b: Btn): string { return word(padNameEn(f, b)); }
+function padNameEn(f: PadFamily, b: Btn): string {
   const face: Record<PadFamily, string[]> = { xbox: ['A', 'B', 'X', 'Y'], ps: ['Cross', 'Circle', 'Square', 'Triangle'], nintendo: ['B', 'A', 'Y', 'X'] };
   if (b <= 3) return face[f][b];
   const n: Record<PadFamily, Record<number, string>> = {

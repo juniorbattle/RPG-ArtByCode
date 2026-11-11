@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2, DB7 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1, TF1) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -91,111 +91,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/78-passes-RG4.md`](journal/78-passes-RG4.md) | RG4 | 09/11 |
 | [`journal/79-passes-RM1-DB5.md`](journal/79-passes-RM1-DB5.md) | RM1, DB5 | 09/11 |
 | [`journal/80-passes-DB6-RM2.md`](journal/80-passes-DB6-RM2.md) | DB6, RM2 | 09/11 |
+| [`journal/81-passes-DB7.md`](journal/81-passes-DB7.md) | DB7 | 09/11 |
 
 ---
-
-## Passe DB7 — Les statistiques des combattants : une proposition mesurée et sa fiche ; la fiche DB6 remplacée ; rien d'appliqué (2026-11-09)
-
-### Demande
-- La direction de l'opérateur après la fiche DB6 (consignée mot pour mot en Passe DB6 : « nous basons les actions d'un combattant par ses stats personnelles […] c'est un rpg notre jeu »), puis, à la question de préparer une proposition de statistiques : « Oui, prépare-la ».
-- Branche `claude/duel-stats`, tirée de `main` `f1610f6`, avancée en avance rapide sur `b1b889b` (Passe RM2, d'une autre séance) avant le commit.
-
-### Le prototype — [OK] hors écran, rien du jeu touché
-- `tools/duel-balance.mjs`, variante `rpg` (la table `RPG`).
-- Quatre stats par combattant : PV, Attaque, Défense, Endurance.
-  - Dégâts d'un coup = puissance × 2·Atq / (Atq + Déf) : ×1 à stats égales, rendements décroissants, jamais zéro.
-  - Jauge × 10 / Endurance.
-- Ren : 150 / 10 / 10 / 10.
-- Les puissances de Ren suivent DB5 : l'attaque simple 6 (1 % d'une barre de 600), l'Estocade 120 (20 %), les autres compétences offensives au prorata de leur temps de charge, `LEVEL_POWER` par-dessus.
-- Les coups des rivaux : 5,6 / 16,8 / 25,2, soit 4 / 11 / 17 % des 150 PV de Ren à stats égales (d'abord 4 / 12 / 18 × `fpow140`).
-- Les jetons :
-
-| Jeton | Ce qu'il règle |
-|---|---|
-| `rs<n>` | l'état d'équipement en points |
-| `lv<n>` | le niveau des compétences |
-| `stage<n>` | la croissance des rivaux (0 poule, 1 tableau, 2 finale, 3 à 11 les essais) |
-| `rhp<N>` | les PV de base de Ren |
-| `vhp`, `vatk`, `vdef`, `vend` | la fiche de l'adversaire, pendant un réglage |
-
-- Le paquet DB5 en jetons : `fguard90+greduce80+cd5+gauge70+stun10`.
-- Mesure : bot 0,2 / 0,5 / 0,9 et marteleur, 10 graines par rival (20 pour Vessa).
-
-### Ce que la mesure a appris
-- **[KO] La finale par les seuls PV adverses.**
-  - Première croissance (finale +3 Atq / +3 Déf / +2 End et PV ×2,5, Ren à 150 PV) : le joueur attendu 21 %, le joueur en retard 0 %.
-  - PV ×4 (avec ou sans coups allégés) : 0 à 19 %, perdue en 3 min.
-  - La durée d'un combat est bornée par la survie de Ren (aucun soin) : gonfler la barre adverse rend la finale perdue, pas longue.
-- **[OK] La vigueur.** Les PV de Ren montent au fil du parcours (150 en poule, 185 au tableau, 220 en finale) : la finale attendue passe à 41-66 % selon la croissance, en 3,5 min. Proposé : +12 PV par victoire, PV seuls (contrat projet § 7).
-- **[KO, corrigé] Vessa.** À 500 / 11 / 9 / 8, elle donnait 0 à 10 % au joueur moyen, alors qu'elle est son premier combat (jour 2) : son kit (enchaînements rapides) pèse autant que sa fiche. À 500 / 7 / 8 / 7 : 60 % (20 graines). Seule la part de son Attaque change.
-- **Le tableau.**
-  - +2 / +2 / +1 et PV ×1,15 : 90 %, trop facile.
-  - +3 / +3 / +2 et PV ×1,3 : 74 à 79 %, retenu.
-  - PV ×1,4 seuls (DB5-6) : 91 %.
-- **La finale, finaliste par finaliste** (joueur attendu, 220 PV) :
-
-| Croissance | Marek | Orla | Ilse | Rhosk |
-|---|---|---|---|---|
-| PV ×3, stats +1 / +3 / +2 | 0 % | 10 % | 30 % | 60 % |
-| **PV ×2,5, stats +1 / +3 / +2 (retenu)** | **20 %** (fort : 100 %, 5,4 min) | **50 %** | **80 %** | **70 %** |
-| PV ×2, stats +1 / +2 / +2 | 70 % | 90 % | 100 % | 90 % |
-| PV ×2,5 seuls, sans stats en plus | 40 % | 100 % | 100 % | 100 % |
-
-  Contre les sept rivaux, avec PV ×2 et stats +1 / +2 / +2 : 87 %.
-- **La courbe proposée** (moyen ; faible / fort entre parenthèses) :
-
-| Étape | Victoires | Durée | Estocade franche / sur une rupture |
-|---|---|---|---|
-| Poule | 64 % (17 / 99) | 2,2 min | 21 % / 43 % |
-| Tableau | 79 % (39 / 97) | 2,4 min | — |
-| Finale | 66 % (26 / 100), Marek 20 % | 3,5 min | — |
-
-  - En avance : 100 % en 1,3 min (poule), 99 % en 1,4 min (tableau), 90 % en 3,0 min (finale).
-  - En retard : 56 % (poule), 20 % (tableau), 11 % (finale ; le joueur fort y met 5,6 min).
-  - Le marteleur : 0 % partout, sauf 17 % en poule tout équipé au niveau 3.
-  - Sans vigueur : tableau 63 %, finale 33 % (Marek 0 %).
-- **L'entraînement aujourd'hui.** +5 % de dégâts par séance, deux au plus, remis à zéro après le combat du joueur (`src/tournament/pool.ts`). La proposition le garde passager : +1 à la stat choisie.
-- Fichiers de mesure hors dépôt ; refaits par `--audit --seeds=1..10 --skills=0.2,0.5,0.9 --variant="rpg+fguard90+greduce80+cd5+gauge70+stun10+rs<n>+lv<n>[+stage<n>][+rhp<N>]"`.
-
-### La proposition — `briefs/stats-combattants.md`
-- Les quatre stats et la formule (DB7-1).
-- L'équipement en points, objet par objet (DB7-2) : la lame +2 Atq, un palier +1, la cotte +3 Déf, l'anneau +2 End, la bande +9 PV... Tout équipé au niveau 5 : ×1,8 en poule au lieu de ×2,3.
-- La séance d'entraînement : +1 à la stat choisie pour le prochain combat (DB7-3).
-- La vigueur (DB7-4).
-- Une fiche par rival, tirée de son style (`src/combat/profiles.ts`), les PV dans les 500-700 de DB4-4 (DB7-5).
-- La croissance (DB7-6) : tableau +3 / +3 / +2 et PV ×1,3 à la place de DB5-6 ; finale +1 / +3 / +2 et PV ×2,5 pour l'épique de DB5-7.
-- Les stats montrées sur la page d'équipement, la fiche de match et les compétences (DB7-7).
-- La courbe, les limites, ce qu'il faudra construire.
-
-### La fiche DB7 — publiée, rien de décidé
-- https://claude.ai/artifact/BYVmCK87bj3qFomkD2knbz (`briefs/fiche-db7.html`).
-  - Sept cartes en trois familles : la règle (DB7-1 à DB7-4), les rivaux (DB7-5, DB7-6), ce qui se voit (DB7-7).
-  - La collection `decisions` relue vide.
-  - Vérifiée dans Chrome sans tête : sept cartes, 21 options, cinq tables, aucune erreur, aucun débordement à 375 px.
-- La fiche DB6 porte maintenant le lien vers DB7 (« elle remplace cette fiche », version 3). Ses choix ne sont pas à remplir.
-- La durée : les mots de l'opérateur (Passe DB6) font de « 2 et 5 min » un repère. La fiche donne les durées mesurées sans les tenir pour une cible ; la décision A3 consignée en Passe DB5 reste écrite telle quelle.
-
-### Validation
-- Rien du jeu ne change sur cette branche (l'outil de mesure, la proposition, les fiches, le journal) : `npm run typecheck` sans erreur ; `npm test` 576 / 576 ; `npm run build` réussi ; `npm run art:validate` 73 manifestes, 123 sources archivées, 23 manifestes de son, 0 erreur.
-- Les passes gardées auraient dépassé 60 Ko : DB4 (branche fusionnée) déplacée à l'octet dans `journal/77-passes-DB4.md`, sa ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les 6 875 octets retirés, le journal reconstruit égale l'original, CRLF partout, chaque passe dans un seul fichier. 53,7 Ko de passes restent.
-
-### Où reprendre
-- Attendre la fiche DB7, puis la consigner.
-- Amender `briefs/combat-system.md` : § 2, § 4 les recharges, § 5 la garde, § 6 la rupture, § 11, § 18, et les stats.
-- Appliquer dans le jeu par défaut DB4, DB5 et DB7 :
-  - les fiches et la formule dans les données du duel et `DynamicSim` ;
-  - l'équipement en points dans `v2Mods` ;
-  - la vigueur dans l'état du joueur ;
-  - la croissance des rivaux par étape du calendrier, et les fiches des génériques ;
-  - les recharges et leur affichage, la garde des rivaux, la rupture 10 s, la jauge de 70 ;
-  - les stats sur les pages, en deux langues.
-- Recaler sur des parties entières (six sur dix) et `V2_RACERS` ; revoir les états nommés et le tutoriel du premier combat.
-- Prouver, fusionner, puis l'essai de l'opérateur. Les « défis particuliers » de DB5-7 restent à définir avec lui.
-
-### Pensée
-- Sans soin, la longueur d'un duel est bornée par la survie du joueur : un combat épique demande que ses PV montent aussi (ou que les coups adverses baissent), pas seulement une barre adverse plus grosse.
-- La fiche d'un rival se règle contre son kit, rival par rival : une formule seule n'en fait pas un premier combat abordable (Vessa).
-- Une moyenne sur sept rivaux cache le combat qui compte : la finale se mesure contre ses finalistes probables (Marek).
 
 ## Passe RM3 — Le remappage des touches construit et fusionné : les actions du jeu au clavier, deux touches chacune, les touches affichées qui suivent (2026-11-09)
 
@@ -523,6 +421,56 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un réglage calé sur un joueur « équipé » suppose une économie qui le laisse s'équiper : la courbe du combat et la courbe des pièces se mesurent ensemble, sur un joueur qui achète ce que la courbe suppose.
 - Un joueur de laboratoire qui paie chaque soir une protection sans signe cache le manque d'argent derrière une dépense : on range chaque pièce par action avant de conclure.
 
+## Passe TF1 — Les textes français repris après l'essai de l'opérateur : les restes d'anglais cherchés partout, la table relue, 75 entrées et trois mots du duel corrigés (2026-11-10)
+
+### Demande
+- L'opérateur, après son essai du 2026-11-10, mot pour mot : « puis tu re-travailleras les textes francais car il manque certaines traductions et enfin certains textes sont pas optimales heros au lieu de herauts par exenple ».
+- Séance lancée par la séance principale, en parallèle de deux autres (l'équilibre du duel, l'économie), dont les fichiers ne sont pas touchés. Branche `claude/textes-fr`, tirée de `main` `df16326`, avancée sur `b8f8481` (Passe ECO1, documents seulement) avant le commit. Serveur DEV `textes-dev` (`:5393`, son propre `cacheDir`, hors dépôt).
+
+### Les restes d'anglais — [OK] presque rien, trouvé et traduit
+- **Les données que le code garde en anglais** (script en Node, hors dépôt) : les noms et titres des personnes, les noms, épithètes et histoires des rivaux et des génériques, les compétences adverses (`FOE_SKILLS`), les noms des actions, chaque phrase et cause des deux catalogues d'événements : toutes ont leur entrée `=<anglais>`. Aucune clé de `en.ts` sans français ; les entrées identiques à l'anglais sont des noms propres ou des mots qui s'écrivent pareil (Journal, Menu, Pause, Guide, Endurance, Charge).
+- **Le jeu joué en français dans un navigateur** (un script de balayage hors dépôt, `lang=fr`, chaque texte visible et chaque `title`, `aria-label`, `placeholder` relevés) : treize états nommés de la version 2 (du premier matin à l'épilogue, le voleur recherché, la sangle, le conte de Vessa, le festival, Cassius démasqué), dans chacun la liste « Ici », le menu, la carte, le journal, le tableau, les compétences, l'équipement, le guide chapitre par chapitre, les quatre parties des réglages et chaque personne présente ; la visite d'une partie neuve ; le duel (la carte d'entrée, 28 moments, la pause, les leçons du premier combat) ; l'écran titre ; Explore ; l'écran de chargement. 1 172 textes distincts dans la ville, 122 dans le duel. Les mots anglais repérés par un détecteur (le vocabulaire de `en.ts` absent de la table française), puis les libellés courts relus à l'œil.
+- **Trouvé** : les noms des boutons de manette (infobulles des contrôles, nom accessible de chaque touche affichée : « Cross », « View », « D-pad up »…) : `padName` (`src/input/glyphs.ts`) passe par `word`, onze entrées neuves (Croix, Rond, Carré, Affichage, Créer, Moins, Accueil, Croix directionnelle : haut, bas, gauche, droite) ; l'anglais inchangé. Dans le duel d'une partie : « challenger » sous le nom de Ren, devenu « prétendant » ; « 12 garde » (un coup reçu en garde, mot du prototype qui se lit comme une garde et non comme des dégâts), devenu « Gardé · 12 » ; le palier « Légère » de la bande de charge, devenu « Rapide » comme le « coup rapide » du tutoriel (`DYN_TEXTS_FR_GAME`, `CHARGE_TEXTS_FR`, `src/arena/DynamicHud.ts`).
+- **« héros » au lieu de « hérauts »** : [?] introuvable dans le jeu. Chaque « heralds » de l'anglais dit « hérauts » (sept lignes, dont le jour 2, Orla, les tambours du Colisée) ; « héros » n'a jamais été dans la table (`git log -S`). Le seul « héros » affiché est le sous-titre de Ren sur la page de l'arène seule (`?scene=arena`, « Ren, le héros »), qui garde les mots du prototype par décision (Passe RG4) ; le duel d'une partie n'en a pas. À demander à l'opérateur où il l'a vu.
+
+### La relecture — [OK] 75 entrées corrigées
+- Trois agents neufs, un tiers de la table chacun, sous un même brief (contresens, termes du tournoi et du Moyen Âge, cohérence d'un écran à l'autre, registre de RG-11, fautes, typographie, tournures lourdes ; mêmes marqueurs et touches ; noms gardés, titres et lieux traduits) : 67 propositions, chacune lue contre l'anglais ; une en double écartée, quatre reformulées, neuf ajoutées par mes soins. Appliquées par un script qui exige l'ancien texte exact.
+- **Corrections de sens notables** :
+  - « Railler Cassius Dree devant la taverne » (dehors) → « en pleine taverne » (devant ses clients) ;
+  - « Laisser tomber la nuit » (abandonner) → « Laisser venir la nuit » ;
+  - le tutoriel du duel : « [K] vous met en garde » (vous avertit) → « [K] lève votre garde » ;
+  - « elle surgit d’une fente » (d'une fissure) → « elle frappe en se fendant » (Vessa, l'escrime) ;
+  - « Appris par la salle de Lio » (la salle aurait appris) → « Appris auprès de » ;
+  - « encaissez les coups du poteau » (le poteau ne frappe pas) → « frappez le poteau » ;
+  - « Hilde jure » (prête serment) → « lâche un juron », et le valet qui posait des questions « sur cette armure » ;
+  - la représaille de Corra : « {items} pour {name} » perdait la restitution → « elle a repris {items} pour {name} » ;
+  - Odo « raye un point de votre score […] le paie au tableau » → « vous retire un point dans la poule […] au classement » (la poule, pas le tableau) ;
+  - « vols pris sur le fait » → « vols surpris » ; « À trois, » (un compte à rebours) → « À trois marques » ;
+  - « tu as fait honneur à ma maison » (« you were good to my house ») → « tu as rendu service à ma maison » ;
+  - le jour 8 nommé « Finales » à côté de « Finale » dans le guide → « Grande affiche », son nom partout ailleurs.
+- **Un nom pour une chose** : « fiche de match » partout (le mot de l'opérateur sur la fiche DB7, carte DB7-7 ; la table disait « fiche de combat ») ; « coup rapide » (la page des compétences disait « Attaque légère », la bande de charge « Légère ») ; « Coup puissant » sur la page d'équipement (à côté de « Charge puissante » et « Attaque puissante » ; « Coup lourd » reste le coup des rivaux) ; « l’estrade » de la halle (deux « scène ») ; « sur le parvis » (trois « au parvis ») ; « devant tout le parvis » (deux « devant le parvis », un lieu) ; « Attaque » parmi Garde, Esquive, Pause dans les contrôles ; « caractéristique » au lieu de « stat » dans le guide.
+- **Noms des compétences adverses** : « Veillée » → « Veillée d’armes » (Ilse, chevalière du Temple), « Résolution du champion » → « Détermination du champion » (le jeu a déjà « Résolution de rendu »), « Épaule des docks » → « Coup d’épaule des docks », « Chute de fer » → « Chute de Fer » (comme la Porte de Fer).
+- **Le genre du joueur, encore à trancher** (Passe RG4) : là où une phrase le fixait sans que l'anglais le fasse, une tournure neutre : « de ne pas être vu » → « qu’on ne vous voie pas » (trois libellés de vol), « personne ne vous a vu » → « personne n’a rien vu », les passants (« celui de la poule », « un de la poule, celui-là », « celui du registre », « recherche celui-là »), « gars du Sud » (Rhosk), « l’ami » (Wren, qui vouvoie, et un passant). Le reste du choix (« Vous êtes le champion »…) attend la décision.
+- **Tournures** : Marek « Je ne suis rien de plus » → « C’est tout ce que je suis » ; Vessa « Une taille chanceuse » → « Un coup de chance » ; « Bonne journée à toi ! » (un au revoir) → « Bien le bonjour ! » ; « Chantez, la place ! » → « Chantez, gens de la place ! » ; « Dites un mot » → « Un mot de vous » ; « Chez les marionnettes » → « Au spectacle de marionnettes » ; « hors course pour le titre » → « hors de la course au titre » ; « {key} reste au jeu ou au navigateur » → « La touche {key} est réservée au jeu ou au navigateur » ; et quelques autres (le journal de la passe dans le commit).
+- **Typographie** : sept lignes (les six ajoutées par la Passe DB9, la forme « |tu » d'une réplique du défilé) avaient une espace ordinaire avant « : » ou dans les guillemets : insécables. Un script vérifie toute la table : plus aucune espace ordinaire avant : ; ? ! », après «, aucune apostrophe droite, aucun guillemet collé.
+- **Laissé** : « Sœur Anwen », « Frère Ambrose » en majuscule au milieu d'une phrase (la table est constante ; l'usage voudrait la minuscule, comme « le sergent Hale ») ; « =Townsfolk » → « les passants », « =passers-by » → « des gens de la ville » (inversés par le sens, la phrase se lit bien) ; les points de la Passe RG4 (« Chevalière du Temple », « un dixième » et « 10 % », les montants nuls, la cause « les combats de la poule »).
+
+### Validation
+- `npm run typecheck` sans erreur ; `npm test` **588 / 588**, dont un test neuf dans `tests/language.test.mjs` (un nom pour la fiche de match et pour le coup rapide, « hérauts » et jamais « héros », jamais « au parvis », les mots du duel, les boutons de manette en français et en anglais, aucun genre donné au joueur par les passants) ; `tests/language.test.mjs` et `tests/texts.test.mjs` verts (mêmes marqueurs et touches) ; `npm run build` ; `npm run art:validate` (73 manifestes, 123 sources, 23 du son, 0 erreur).
+- **`tools/ui-text.mjs` en français** (la liste « Ici » avec les libellés de vol, l'équipement, les compétences, les contrôles, le guide, le tableau au jour 7, Hale au registre, le duel en rupture ; 1920 × 1080, 1280 × 720, 812 × 375) : **24 / 24**, aucun texte sous 16 px (14 au téléphone), aucun caractère hors du sous-ensemble, aucune troncature.
+- **`tools/settings-proof.mjs`** : PASS (65 vérifications, sa section de la langue comprise : la ligne « Français · English », un navigateur français, une partie neuve en français, la pause d’un duel, le jeu d’aujourd’hui en anglais) ; **`tools/remap-proof.mjs`** : PASS (46 vérifications, les noms français des touches).
+- **L'anglais** : `en.ts` n'est pas touché ; `padName` rend l'anglais tel quel en anglais (`word` est l'identité, le test le vérifie) ; seules les tables françaises du duel changent. Le jeu anglais est donc le même par construction ; [?] pas de capture à 0 px contre le `main` figé dans cette passe.
+- Les passes gardées dépassaient 60 Ko avec TF1 (63,0 Ko) : DB7 (branche fusionnée) déplacée à l’octet dans `journal/81-passes-DB7.md`, sa ligne ajoutée à l’index ; preuve par script : le corps de l’archive égale les 8 101 octets retirés, le journal reconstruit égale l’original, CRLF partout, chaque passe dans un seul fichier. 54,9 Ko de passes restent.
+- **[KO → corrigé, dans la méthode]** deux modifications de la table faites pendant que le balayage lisait les pages du serveur DEV ont rechargé ces pages (le module HMR) : une vingtaine d'étapes perdues, rejouées ensuite sans toucher aux fichiers. Le principe était connu (Passe RM3) : rien ne se modifie de ce qu'un serveur sert à une preuve en cours.
+
+### Où reprendre
+- L'essai de l'opérateur en français ; lui demander où il a vu « héros ».
+- Le genre du joueur (Passe RG4) : la décision reste à prendre ; les tournures neutres de cette passe tiennent dans les deux cas.
+
+### Pensée
+- Chercher l'anglais restant se fait en deux temps : les données que le code garde hors de la table (un script les compte toutes), puis le jeu joué en français avec un détecteur de vocabulaire anglais, parce qu'un nom accessible ou un mot du duel vit hors des tables.
+- Un relecteur qui compare chaque ligne à l'anglais trouve les faux amis (« jure », « met en garde », « laisser tomber ») qu'une lecture du seul français laisse passer ; une liste de termes faite d'avance trouve les doublons d'un écran à l'autre (« fiche de combat » / « fiche de match »).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -759,7 +707,7 @@ de la Passe P2 (republiée avec le HUD d'aujourd'hui, Passe AP1). **Fenêtres ba
 marques du sol sous ~600 px de haut, corrigé ; relevés sans décision : en 568 × 320 la barre d'actions dépasse l'écran et le signe touche les têtes ;
 l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres basses ; à 900 × 500 la carte de Marek passe ses PV sur deux lignes.
 
-**6g. Réglages et langue (Passes RG1 à RG4)** — la demande de l'opérateur du 2026-11-09 (menu de réglages : graphismes, son, contrôles ; français ou anglais). Fiche https://claude.ai/artifact/2Lc1cdJfk5dZqWpKydwKj1 (`briefs/fiche-reglages.html`) relue quinze sur quinze à la recommandation (Passe RG2). **Lot 1 fait et fusionné (Passe RG3)** : la page « Réglages » (titre, menu, V, pause du duel), la ligne Qualité et chaque réglage graphique (l'adresse d'abord), le mouvement réduit en réglage du jeu (le système lu nulle part), quatre volumes, les touches affichées et la ligne Clavier QWERTY / AZERTY. **Lot 2 fait et fusionné (Passe RG4)** : le jeu en français ou en anglais, tout ce qu'on atteint depuis l'écran titre, le tutoriel compris ; la simulation en anglais (empreintes et sauvegardes les mêmes), chaque ligne du journal dite dans la langue choisie ; relu à froid. **Ensuite l'essai de l'opérateur en français** (RG-15), avec ces points à trancher : le genre du joueur (le français suppose un joueur masculin, juste pour Ren ; un nom saisi peut demander autre chose), « Chevalière du Temple », « un dixième » contre « 10 % ». Relevés : des phrases montrées avec un montant nul (« your last 0 coins », « 0 pièces d’amende ») ; la cause « the pool's bouts » sur des événements du tableau et de la finale (source anglaise ; la changer change les empreintes) ; l'arène seule (`?scene=arena`) garde les mots français du prototype (`TEXTS_FR`), hors du jeu ; le libellé « coins » / « pièces » de la ligne d'état d'un téléphone à 4,24:1 contre 4,5 (`tools/ui-contrast.mjs`, le `main` figé compris : antérieur). **Le remappage (RG-8, Passes RM1 à RM3)** : l’inventaire, la fiche https://claude.ai/artifact/4P3YLfmeqPEzbtMkPDiZK3 relue dix sur dix à la recommandation (Passe RM2 ; RM-2 répondue dans la conversation), **construit et fusionné (Passe RM3)** : les actions du jeu au clavier, deux touches chacune, l’échange dans un même moment, les touches réservées, chaque clavier ses touches, une touche lue par sa place (la touche 1 d’un AZERTY répond au duel), toutes les touches affichées qui suivent, les noms français des touches (Espace, Entrée, Échap, Maj), une ligne par action dans Contrôles. **Reste l’essai de l’opérateur** (RM-10). Plus tard, sur demande : le remappage de la manette (RM-3 l’a laissée à sa disposition). Outil : la vérification du guide de `tools/default-proof.mjs` (Passe TU3) instable en DEV, `main` compris (Passe RG3 : le guide ouvert sans ses jours ni son image à la première lecture) ; à reprendre dans l'outil (attendre le contenu du chapitre, pas seulement la page).
+**6g. Réglages et langue (Passes RG1 à RG4, TF1)** — la demande de l'opérateur du 2026-11-09 (menu de réglages : graphismes, son, contrôles ; français ou anglais). Fiche https://claude.ai/artifact/2Lc1cdJfk5dZqWpKydwKj1 (`briefs/fiche-reglages.html`) relue quinze sur quinze à la recommandation (Passe RG2). **Lot 1 fait et fusionné (Passe RG3)** : la page « Réglages » (titre, menu, V, pause du duel), la ligne Qualité et chaque réglage graphique (l'adresse d'abord), le mouvement réduit en réglage du jeu (le système lu nulle part), quatre volumes, les touches affichées et la ligne Clavier QWERTY / AZERTY. **Lot 2 fait et fusionné (Passe RG4)** : le jeu en français ou en anglais, tout ce qu'on atteint depuis l'écran titre, le tutoriel compris ; la simulation en anglais (empreintes et sauvegardes les mêmes), chaque ligne du journal dite dans la langue choisie ; relu à froid. **L'essai de l'opérateur en français a eu lieu** (2026-11-10) ; **les textes français repris après lui (Passe TF1)** : les restes d'anglais cherchés partout (les boutons de manette, trois mots du duel), 75 entrées corrigées après une relecture contre l'anglais (sens, termes, un nom pour une chose, tournures neutres pour le joueur) ; [?] « héros » au lieu de « hérauts », l'exemple de l'opérateur, introuvable dans le jeu (seule la page de l'arène seule dit « Ren, le héros ») : lui demander où il l'a vu. Points à trancher : le genre du joueur (le français suppose un joueur masculin, juste pour Ren ; un nom saisi peut demander autre chose), « Chevalière du Temple », « un dixième » contre « 10 % ». Relevés : des phrases montrées avec un montant nul (« your last 0 coins », « 0 pièces d’amende ») ; la cause « the pool's bouts » sur des événements du tableau et de la finale (source anglaise ; la changer change les empreintes) ; l'arène seule (`?scene=arena`) garde les mots français du prototype (`TEXTS_FR`), hors du jeu ; le libellé « coins » / « pièces » de la ligne d'état d'un téléphone à 4,24:1 contre 4,5 (`tools/ui-contrast.mjs`, le `main` figé compris : antérieur). **Le remappage (RG-8, Passes RM1 à RM3)** : l’inventaire, la fiche https://claude.ai/artifact/4P3YLfmeqPEzbtMkPDiZK3 relue dix sur dix à la recommandation (Passe RM2 ; RM-2 répondue dans la conversation), **construit et fusionné (Passe RM3)** : les actions du jeu au clavier, deux touches chacune, l’échange dans un même moment, les touches réservées, chaque clavier ses touches, une touche lue par sa place (la touche 1 d’un AZERTY répond au duel), toutes les touches affichées qui suivent, les noms français des touches (Espace, Entrée, Échap, Maj), une ligne par action dans Contrôles. **Reste l’essai de l’opérateur** (RM-10). Plus tard, sur demande : le remappage de la manette (RM-3 l’a laissée à sa disposition). Outil : la vérification du guide de `tools/default-proof.mjs` (Passe TU3) instable en DEV, `main` compris (Passe RG3 : le guide ouvert sans ses jours ni son image à la première lecture) ; à reprendre dans l'outil (attendre le contenu du chapitre, pas seulement la page).
 
 **7. Outillage, documentation, dette**
 - **Le chemin v2 de `tools/play-day.mjs` instable** (Passe VD1) : ses lectures de la bande et du nouvel état se font sans attendre ; sous charge, une course sur deux échoue, `main` figé compris (l'achat lu avant sa mise à jour, des créneaux décalés, « the training's news after spar: null ») ; l'empreinte, elle, tient (`456b834c7af247e4`). À reprendre dans l'outil : attendre la bande et l'état.
