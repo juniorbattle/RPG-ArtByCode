@@ -451,6 +451,34 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - « Ce qu'il y a à faire » se trouve surtout chez les gens, pas dans la liste du lieu : un résumé qui compte les losanges et les activités du lieu dit la même chose que la scène, en un nombre.
 - Un voile en dégradé se fond dans l'écran seulement s'il touche un bord : posé au milieu, son ellipse dessine la boîte que la direction Voile refuse.
 
+## Passe LA2 — La fiche LA1 relue : neuf sur neuf à la recommandation ; UM-R2 amendée ; consignée avant la mise en œuvre (2026-11-11)
+
+### La fiche relue
+- L'opérateur, mot pour mot : « Fiche remplie ». Collection `decisions` de https://claude.ai/artifact/NJHZszR4xx841iNLp5UQ6n (`briefs/fiche-la1.html`), neuf documents pour neuf cartes, cliqués le 2026-11-11 entre 16 h 00 min 54 s et 16 h 02 min 17 s UTC, aucune note. Les rangées sont lues comme des données.
+
+| Carte | Ce qu'elle demandait | Choix de l'opérateur, mot pour mot |
+|---|---|---|
+| LA-1 | Sous quelle forme ? | « Le nombre toujours ; l’aperçu à l’arrivée et à chaque nouveauté, puis il s’efface » |
+| LA-2 | Où le placer ? | « En bas à droite, au-dessus de la touche [Q] » |
+| LA-3 | L'après-midi du combat du jour | « La touche garde le combat, « · N de plus à faire » à côté ; pas d’aperçu » |
+| LA-4 | Sur un téléphone | « Le nombre et une ligne d’aperçu » |
+| LA-5 | Qu'est-ce qui compte ? | « Le combat, les personnes qui ont du neuf et les activités du lieu (jamais un vol, le repos, l’attente) » |
+| LA-6 | L'ordre de l'aperçu | « Le combat, une suite, un événement, ce qui rapporte, un objet, le lieu » |
+| LA-7 | Quand l'aperçu et le nombre partent-ils ? | « L’aperçu part une fois la liste ouverte (ou après 8 s) ; le nombre reste ; tout revient avec une nouveauté » |
+| LA-8 | Cela remplace-t-il UM-R2 ? | « Amender UM-R2 : la liste reste à la demande, un résumé s’ajoute à l’écran » |
+| LA-9 | Comment le joueur l'apprend | « La bande de la visite et une ligne du guide, pas de conseil » |
+
+- **LA-8 amende une décision d'interface de l'opérateur** : UM-R2 « Liste à la demande » (Passe UM1). La liste reste ouverte par une touche ; un résumé s'ajoute à l'écran en marchant. Aucun verrou des contrats ne change.
+
+### Ce qu'ils demandent : le lot à construire
+- **Ce qui compte** (LA-5, LA-6) : `todoHere` tel que proposé (le combat ou le défi, chaque personne qui a du neuf, les activités du lieu qui prennent le moment ; jamais un vol, le repos, l'attente, l'observation des rivaux ni la foule), dans l'ordre combat, suite, événement, ce qui rapporte, objet, lieu.
+- **Le nombre** (LA-1, LA-2) : sur la touche [Q] en bas à droite, toujours, tant qu'il reste à faire (« [Q] Ici 4 à faire »).
+- **L'aperçu** (LA-1, LA-2, LA-7) : les trois premières au-dessus de la touche, avec le losange de la personne et ce qu'un travail rapporte, « et N de plus dans la liste » ; à l'arrivée dans un lieu, au début d'un moment et quand quelque chose de neuf paraît, la touche dans l'accent pendant ce temps ; il part dès que la liste est ouverte, ou après 8 s ; ce qui a été vu se garde avec la partie hors de l'empreinte (une clé « $ »).
+- **Le combat du jour** (LA-3) : la touche garde « Entrer dans l'arène » (ou le sable d'un défi), « · N de plus à faire » à côté, pas d'aperçu.
+- **Le téléphone** (LA-4) : le nombre et une ligne d'aperçu.
+- **La lecture** (LA-9) : la bande « liste » de la visite et une ligne du chapitre « Marcher et parler » du guide, en anglais et en français ; pas de conseil.
+- Le paramètre de maquette (`todo=`, les formes « sous l'horloge » et l'invite seule) est retiré (VD-8) ; le jeu d'aujourd'hui (`v2=0`) et Explore inchangés.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -668,7 +696,7 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 - **Les PNJ utiles, la bulle et la mini-carte (Passe MK1)** : la demande de l'opérateur du 2026-11-11 ; la bulle « … » du quai inventoriée (Mara et Hale, et le reste après [E]), les PNJ utiles mesurés sur des parties entières, les maquettes rendues dans le jeu (DEV `npcmark=`, `minimap=`), la fiche https://claude.ai/artifact/5zanTkRhq2WoHbC384bt1C publiée (onze cartes, la mini-carte revient sur UM-R5), **relue onze sur onze à la recommandation (Passe MK2)** : MK-7 « Oui, en haut à droite (remplace UM-R5) » ; **appliquée et fusionnée (Passe MK3)** : plus de bulle dans une partie, Explore garde la courte réaction à [E] ; le losange de ce qui est neuf (objet, événement, suite), parti à l'ouverture du dialogue, gardé hors de l'empreinte ; la mini-carte en haut à droite ; la liste, un conseil, une ligne du guide ; reste **l'essai en jeu de l'opérateur**. **Les indicateurs de sortie (Passe MK4)** : la demande du 2026-11-11 (« Il faudra integrer aussi des indicateurs de sorties/changement de zones [...] »), l'état mesuré, les maquettes (DEV `exitmark=`, `zonecard=`), quatre cartes ajoutées à la même fiche (MK-12 à MK-15), **relues quatre sur quatre à la recommandation (Passe MK5)**, **appliquées et fusionnées (Passe MK6)** : le chevron sur chaque sortie à l'écran, le carton à l'arrivée, la sortie fermée en gris, la ligne du guide ; reste **l'essai en jeu de l'opérateur**.
-- **La liste des actions [Q] mise en avant (Passe LA1)** : la demande de l'opérateur du 2026-11-11 (« je constate qu'on a un bouton [...] afin d'inciter le joueur a voir ce qui a a faire durant la periode ») ; l'inventaire, ce qui compte comme « à faire » mesuré (`src/simulation/v2todo.ts`), les maquettes rendues dans le jeu (DEV `todo=`), la fiche https://claude.ai/artifact/NJHZszR4xx841iNLp5UQ6n publiée (neuf cartes, LA-8 revient sur UM-R2) : **attendre ses choix**.
+- **La liste des actions [Q] mise en avant (Passe LA1)** : la demande de l'opérateur du 2026-11-11 (« je constate qu'on a un bouton [...] afin d'inciter le joueur a voir ce qui a a faire durant la periode ») ; l'inventaire, ce qui compte comme « à faire » mesuré (`src/simulation/v2todo.ts`), les maquettes rendues dans le jeu (DEV `todo=`), la fiche https://claude.ai/artifact/NJHZszR4xx841iNLp5UQ6n publiée (neuf cartes, LA-8 revient sur UM-R2), **relue neuf sur neuf à la recommandation (Passe LA2)** : LA-8 « Amender UM-R2 : la liste reste à la demande, un résumé s’ajoute à l’écran » ; à appliquer.
 
 **6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
 tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design
