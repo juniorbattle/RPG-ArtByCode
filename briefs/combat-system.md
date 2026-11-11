@@ -184,6 +184,8 @@ La règle de l'opérateur (AV-5, AV-6, AV-7, AV-8) ; ce que la séance a fixé e
   - « le but est de donner un avantage sans briser le combat ».
 - **Depuis le 09/11/2026 (décision A3 DB5-4 « 10 s, ×2, jauge de 70 », § 19)** : étourdi 10 s, dégâts reçus ×2, une jauge de 70 ; ce qu'un
   coup y ajoute se divise par l'Endurance de la cible (× 10 / End, DB7-1).
+- **Depuis le 10/11/2026 (DB11-1 « Compétences ×1,5, se vide deux fois moins vite », § 20)** : les compétences du joueur y ajoutent leur part ×3,
+  et la jauge se vide deux fois moins vite.
 - **Après l'étourdissement**, la jauge repart de zéro [G5] : « Oui surtout pour l'adversaire c;est une barre de break ».
 - Un coup puissant sur une garde ne brise plus la garde d'un coup [G5]. Le garde brisé d'aujourd'hui (2,4 s, 100 %) disparaît. Sur l'aide, l'opérateur ajoute : « comme cela ne brise pas et rrend direct etourdi on a plus de marge » [G5].
 - **À régler** : la taille de la jauge, ce que chaque coup y ajoute, la vitesse à laquelle elle se vide, le surplus de dégâts (point de
@@ -544,7 +546,7 @@ Les décisions A3 sont citées mot pour mot et datées au journal avant la mise 
 - **Jauge** : ce qu'un coup y ajoute × 10 / Endurance.
 - **Vivacité de Ren** : ses temps de charge × 10 / Vivacité.
 - **Vivacité d'un rival** : ses temps (préparation des coups, intervalles d'un combo, pauses) × sa Vivacité de fiche / sa Vivacité du moment.
-- **Ren au départ** : 150 PV, 10 dans chaque autre stat.
+- **Ren au départ** : 150 PV, 10 dans chaque autre stat. Depuis DB11-6 (§ 20) : 300 PV, les coups des rivaux ×2.
 - **Les puissances de Ren** au niveau 1 : l'attaque simple 6, l'Estocade 120, les autres compétences offensives au prorata de leur temps de charge. Le niveau d'une compétence les multiplie (×1,0 à ×1,4).
 - **Les coups des rivaux** contre Ren à stats égales : simple 4 %, lourd 11 %, compétence 17 % de ses 150 PV.
 - Les nombres sont des points de départ, recalés sur des parties entières (DB4-5).
@@ -563,7 +565,7 @@ Les décisions A3 sont citées mot pour mot et datées au journal avant la mise 
 
 ### 19.4 La vigueur
 
-+12 PV à Ren par combat gagné, du tournoi ou un défi. Seulement des PV : le contrat projet § 7 veut éviter « qu'une unique statistique de niveau rende toutes les autres décisions secondaires ».
++12 PV à Ren par combat gagné, du tournoi ou un défi (+24 depuis DB11-6, § 20). Seulement des PV : le contrat projet § 7 veut éviter « qu'une unique statistique de niveau rende toutes les autres décisions secondaires ».
 
 ### 19.5 Les rivaux
 
@@ -577,7 +579,7 @@ Les décisions A3 sont citées mot pour mot et datées au journal avant la mise 
 | Marek Varn | 650 | 13 | 13 | 12 | 10 |
 | Rhosk | 700 | 12 | 10 | 13 | 8 |
 
-- **La croissance** : au tableau (jours 6 à 8) +3 Atq, +3 Déf, +2 End, PV ×1,3 ; en finale (jour 10) +1 Atq, +3 Déf, +2 End, PV ×2,5. La Vivacité ne grandit pas.
+- **La croissance** : au tableau (jours 6 à 8) +3 Atq, +3 Déf, +2 End, PV ×1,3 ; en finale (jour 10) +1 Atq, +3 Déf, +2 End, PV ×2,5. La Vivacité ne grandit pas. Depuis DB11-2 (§ 20) : en poule, la Vivacité de chaque fiche moins 3, rendue au tableau.
 - **Les combattants génériques** prennent une fiche tirée du rival dont ils empruntent les coups, plus basse.
 - **Leur défense** : dans leurs pauses, ils gardent 90 % des coups du joueur, jamais pendant leur rupture (DB5-2).
 - **La recharge** (DB5-3) : une compétence du joueur qui part ne revient qu’après 5 fois son temps de charge au niveau 1 (l’Estocade 38 s), comptés depuis son départ ; le HUD la montre.
@@ -591,6 +593,20 @@ Les décisions A3 sont citées mot pour mot et datées au journal avant la mise 
   - La raison, mesurée : avec la garde à −80 %, un joueur qui tenait la garde pendant chaque séquence et ne faisait que l'attaque simple battait quatre rivaux sur sept (Tobin, Cassius, Rhosk et Orla dix fois sur dix). Avec ces deux nombres, il ne bat plus que Tobin (sept fois sur dix), Cassius et Rhosk deux fois sur dix ; une compétence gardée par un rival brise sa garde plus tôt, comme le veut « briser la garde ».
 - **La recharge** part du coup lancé ; une compétence repoussée avant de porter (CB-3) la rend avec ses PA.
 - **La Vivacité des rivaux** : lue dans le tempo de leurs kits ; la croissance de DB7-6 ne la touche pas, leur tempo reste celui d'aujourd'hui.
+
+## 20. Les décisions de la fiche DB11, après l'essai du 10/11/2026
+
+Après son essai du 10/11/2026, les mots de l'opérateur, mot pour mot : « Bon il y a du mieux par contre, il y a des zones d'ameliorations : * d'abord la barre de break pour nos ennemies est trop lente a monter elle devrait montrer plus vite sachant qu'ils ont plus de pv, de plus les ennemies attaquent beaucoup trop souvent des le debut du jeu alors qu'ils devraient avoir un plus long temps de pause et vers la fin du jeu peut etree garder le rythme actuelle ou proposer des combos plus long [...] * d'ailleurs je nai pas cerne les moyens d'augementer les points de vie de notre protagoniste, il faudrait aussi rapprocher les points de vie de nos adversaires au debut du jeu ». Les mesures : `briefs/audit-duel-db11.md`. La fiche, page privée https://claude.ai/artifact/F8Jse4sSXcjaRv2qvB7KBb (`briefs/fiche-db11.html`), relue le 11/11/2026 (heure UTC ; le 10/11 au soir chez l'opérateur) : sept sur sept, six à la recommandation, aucune note (journal Passes DB11, DB12). Les décisions A3 sont citées mot pour mot et datées au journal (Passe DB12) avant la mise en œuvre.
+
+| # | Décision | Choix de l'opérateur | Ce qui change |
+|---|---|---|---|
+| DB11-1 | La barre de rupture des rivaux | « Compétences ×1,5, se vide deux fois moins vite » | § 6 : les compétences du joueur ajoutent leur part ×3 à la jauge (×2 depuis DB-5), la jauge se vide deux fois moins vite (des deux nombres « à régler ») ; l'attaque simple garde 0,5 |
+| DB11-2 (A3) | Les pauses en début de tournoi | « Vivacité −3 en poule, celle de la fiche ensuite (décision A3 : change DB7-5 et DB7-6) » | § 19.5 : la Vivacité des fiches de poule baisse de 3 ; au tableau et en finale, la Vivacité de la fiche d'avant (+3) ; le tempo d'un rival suit sa Vivacité (§ 19.2) |
+| DB11-3 | La riposte | « La garder au 3e coup » | rien (§ 5, DB-2) |
+| DB11-4 | La fin du tournoi | « Le rythme d’aujourd’hui en finale » | rien (les combos d'aujourd'hui) |
+| DB11-5 (A3) | Les PV de Ren, les monter et le voir | « Le dire partout, et une séance « Santé » (+20 PV au prochain combat) (décision A3 : change DB7-3) » | § 19.3 : une séance peut choisir la santé, +20 PV au prochain combat ; § 9 : l'écran de victoire, la fiche de match, le guide et un conseil disent les PV de Ren et d'où ils viennent |
+| DB11-6 (A3) | Rapprocher les PV au début | « Ren 300, tout ce qui touche à ses PV ×2 et les coups des rivaux ×2 (décision A3 : change les nombres de DB4-3 et DB7-4) » | § 19.2 : Ren 300 PV ; § 19.3 : les PV de l'équipement ×2 ; § 19.4 : +24 PV par victoire ; les coups des rivaux ×2 (chaque coup enlève la même part de la barre) |
+| DB11-7 | La courbe | « La poule plus facile, tableau et finale sur la courbe DB7 » | la poule telle que le paquet la donne ; le tableau et la finale recalés sur la courbe de la fiche DB7 (journal Passe DB13) |
 
 ---
 
