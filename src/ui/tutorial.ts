@@ -252,7 +252,7 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'renown': return tx(c.body, { hale: nameOf('hale'), parade: Math.max(...daysOfKind('free')) });
     case 'time': return tx(c.body, { slot: tx('ui.oneSlot') });
     // the marks over the heads and the plan in the corner (MK-11), a line after the chapter's text
-    case 'moving': return `${tx(c.body)}\n${tx('tut.ch.moving.marks')}`;
+    case 'moving': return `${tx(c.body)}\n${tx('tut.ch.moving.marks')}\n${tx('tut.ch.moving.todo')}`;
     default: return tx(c.body);
   }
 }

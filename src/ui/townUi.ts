@@ -27,8 +27,7 @@ import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
 import { tabTo } from '../input/pad';
 import { guidePage, hintChapter, hintSeen, markHint, markTold, runTour, showHint, told, TOUR, type HintId } from './tutorial';
 import { settingsPage, type SettingsSection } from './settings';
-import { todoHere } from '../simulation/v2todo';
-import { installTodoCss, todoKey, todoPeek, todoStyle } from './todo';
+import { TodoCue } from './todo';
 import { actsOf, onSettings } from '../settings/settings';
 import type { Act } from '../settings/keys';
 import { bindCap, keyCap } from '../input/caps';
@@ -177,6 +176,8 @@ export class TownUi {
   /** a dialogue, the list, the map, the journal, the board or the menu is open: the scene's keys are ignored */
   get modal(): boolean { return this.shut; }
   set modal(on: boolean) { this.shut = on; if (!on) document.body.classList.remove('pm-talking', 'pm-full'); }
+  /** the things to do here (a version 2 game, journal Passe LA2) */
+  readonly todo: TodoCue | null = null;
   private near: string | null = null;
   /** the prompt as last written (the person near and their mark): rewritten when either changes */
   private nearKey = '';
@@ -190,6 +191,8 @@ export class TownUi {
     const menu = el('button', 'pm-btn', `${keyCap('Esc')}${tx('ui.menu')}`);
     this.hereKey.addEventListener('click', () => this.openHere()); menu.addEventListener('click', () => this.openMenu());
     this.hints.append(this.hereKey, menu);
+    // a version 2 game: the list's key counts what there is to do here, its preview above it (the operator's LA1 sheet, journal Passe LA2)
+    if (isV2(host.state())) this.todo = new TodoCue(this.hereKey);
     document.body.append(...this.veils, this.status, this.figs, this.hints, this.prompt, this.toast);
     window.addEventListener('keydown', (e) => {
       if (e.repeat || (e.target instanceof HTMLInputElement && e.key !== 'Escape')) return;
@@ -205,6 +208,8 @@ export class TownUi {
     // a change of keys shows them at once (the list's cap: the player's key, Q or A at the start)
     onSettings(() => this.render());
     if (this.st.over) void this.showEnd(); else this.showNews();
+    // the preview on arriving, once the news are read (a page with the tutorial: once its welcome is done)
+    if (!host.tutorial) void this.newsRead.then(() => this.todo?.arrive(this.st, this.boutNow()));
   }
 
   /** the end of the slice: the pool after its second round, what the player's choices left in the Cité, what comes next */
@@ -278,35 +283,9 @@ export class TownUi {
     const bout = this.boutNow();
     this.hereKey.className = `pm-btn${bout ? ' primary' : ''}`;
     this.hereKey.innerHTML = `${bindCap('list')}${bout ? (s.v2?.challenge ? this.sandLabel(s) : tx('ui.enterArena')) : tx('ui.here')}`;
-    this.todoMock(s, bout);
+    // the things to do here, counted on the list's key (the operator's LA-1, LA-3, journal Passe LA2: src/ui/todo.ts)
+    this.todo?.render(s, bout ? (s.v2?.challenge ? this.sandLabel(s) : tx('ui.enterArena')) : tx('ui.here'), bout);
     if (this.current?.dataset.here) this.openHere();
-  }
-
-  /** the DEV mock-ups of what there is to do here (journal Passe LA1, `todo=count|peek|new|status`): src/ui/todo.ts */
-  private todoEl: HTMLElement | null = null;
-  private todoMock(s: GameState, bout: boolean): void {
-    const td = isV2(s) ? todoStyle() : null;
-    if (!td) return;
-    installTodoCss();
-    const list = todoHere(s), label = bout ? (s.v2?.challenge ? this.sandLabel(s) : tx('ui.enterArena')) : tx('ui.here');
-    if (td.style !== 'status') this.hereKey.innerHTML = todoKey(label, list.length, bout);
-    if (!this.todoEl) { this.todoEl = el('div', 'pm'); this.todoEl.id = 'pm-todo'; document.body.appendChild(this.todoEl); }
-    const box = this.todoEl;
-    box.style.display = 'none'; box.className = 'pm';
-    if (td.style === 'status') {
-      if (!list.length) return;
-      const lines = todoPeek(s, list, 3, '').replace('<h3></h3>', '');
-      this.status.insertAdjacentHTML('beforeend', `<div class="pm-todo-s"><div class="head"><b>${list.length}</b><span>${esc(tx('ui.todo.title'))}</span>${bindCap('list')}</div>${lines}</div>`);
-      this.veils[0].style.height = '440px';
-      this.veils[0].style.background = 'radial-gradient(120% 100% at 0 0,var(--ds-veil-strong) 0,var(--ds-veil) 56%,transparent 100%)';
-      return;
-    }
-    if (td.style === 'peek' && list.length && !bout) { box.innerHTML = todoPeek(s, list, 3, tx('ui.todo.title')); box.style.display = ''; }
-    if (td.style === 'new' && list.length) {
-      this.hereKey.classList.add('lit');
-      box.innerHTML = todoPeek(s, list, 1, tx('ui.todo.new')); box.classList.add('new'); box.style.display = '';
-      if (!td.hold) setTimeout(() => { box.style.display = 'none'; this.hereKey.classList.remove('lit'); }, 6000);
-    }
   }
 
   /** the sand's door: a challenge, or a reprisal's muscle waiting there (lot L2b) */
@@ -323,6 +302,8 @@ export class TownUi {
     const people = all.filter((o) => o.action.type === 'talk');
     this.closeModal(); this.modal = true; this.prompt.classList.remove('on');
     document.body.classList.add('pm-talking');
+    // what the list holds to do is seen (the operator's LA-7, journal Passe LA2): kept with the game, outside its fingerprint; the preview leaves
+    if (this.todo) { this.todo.opened(s); writeSave(s); }
     const root = el('div', 'pm pm-talk'), card = el('div', 'pm-dlg here'), side = el('div', 'side'), list = el('div', 'opts');
     root.dataset.here = '1';
     root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', tx('ui.here'));
@@ -575,6 +556,7 @@ export class TownUi {
     if (fresh) await this.tour();
     else if (!told()) { this.hint('guide'); markTold(); }
     this.welcomed = true;
+    this.todo?.arrive(this.st, this.boutNow());
     this.momentHints();
   }
 

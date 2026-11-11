@@ -129,6 +129,9 @@ export interface V2State {
   /** what the player has seen of each person's offers, kept as their dialogue opens (the operator's MK-4 / MK-5, journal Passe MK2; src/simulation/v2offers.ts): a « $ »
    *  key, saved with the game and left out of its fingerprint */
   $seen?: Record<string, string[]>;
+  /** what the player has seen of the things to do in the list (Q) (the operator's LA-7, journal Passe LA2; src/simulation/v2todo.ts): a « $ » key, saved with
+   *  the game and left out of its fingerprint */
+  $todo?: string[];
   /** the gear carried (lot V3): the weapon and its tier, the armour, the two accessories, the bag of what is owned and not worn */
   gear?: V2Gear;
   /** the shops' day-long states (lot V4): a bargain or a grudge of the day, closed to the player for the day, a markup until a day */
