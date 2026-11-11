@@ -44,6 +44,19 @@ export function fiveViewFacing(prev: Dir, dx: number, dy: number): Dir {
   if (ang >= edge1) return up ? 'upSide' : 'downSide';
   return up ? 'up' : 'down';
 }
+/** the hero's walking view when the heading chooses it (the line of sight in the town, the operator's decision K9, journal Passe K10; the
+ *  keys against the camera on the squares) rather than the step on screen (journal Passe MD1). Under the framings' low pitch a diagonal
+ *  heading crosses the screen at 70-78 deg from the vertical, where the heading alone gives a three-quarter; the three-quarter runs of
+ *  hero-x2-v4 are drawn on the spot (their planted foot never moves back in the cell), so the hero slid across the screen with feet that
+ *  barely changed. A three-quarter whose step on screen (sx, sy) passes the five-view rule's profile edge is shown in profile, whose cycle
+ *  draws the foot's drift (walkClock keeps it planted); held V5_HOLD deg back once in profile. Front and back stay the heading's (a walk away
+ *  shows the back, K9); a straight walk keeps today's view wherever the heading did not give a three-quarter */
+export function heroWalkFacing(prev: Dir, hx: number, hy: number, sx: number, sy: number): Dir {
+  const d = fiveViewFacing(prev, hx, hy);
+  if (d !== 'downSide' && d !== 'upSide') return d;
+  const ang = THREE.MathUtils.radToDeg(Math.atan2(Math.abs(sx), Math.abs(sy)));
+  return ang > (prev === 'side' ? V5_OUT - V5_HOLD : V5_OUT) ? 'side' : d;
+}
 /** the NPCs' walking views (journal Passe F2; '34' the default since the operator's decision of 2026-10-20, « Applique npcfacing=34 comme
  *  règle par défaut des PNJ. », journal Passe F3; `?npcfacing=screen` = the screen rule of Passe F1, for comparison): the sector edges (deg from the screen
  *  vertical, [enter profile, leave profile]) of an NPC's walking view. 'mirror': a frontLeft sheet's 'down' (drawn turned left) mirrored
@@ -88,6 +101,9 @@ export class ActorSystem {
   /** a day state's walkers at density 1 (DayState's `crowd`: morning 6, midday 12, end of day 9, the operator's decision J7a, journal Passe
    *  D7): round(crowdBase x density) without ?crowd; null = the night's five */
   crowdBase: number | null = null;
+  /** the hero's view by its heading, turned to profile when its step crosses the screen (heroWalkFacing, journal Passe MD1): a version 2
+   *  game's town and « Explore the district » (App, `herolook`); false = the heading's view alone (today's game, the district's addresses) */
+  heroStepView = false;
 
   /** the five-view rule for walking facings (fiveViewFacing, journal Passe V5; the default since the operator's decision of 2026-10-19,
    *  Passes D3 / H10; `?views=3` turns it off), for the sheets that have the two three-quarter facings only: every other sprite keeps the
@@ -263,7 +279,8 @@ export class ActorSystem {
     if (_p0.z > 1 || _p1.z > 1) return false;
     // in pixels (units of half the height): NDC x spans the width
     let dx = (_p1.x - _p0.x) * cam.aspect, dy = _p1.y - _p0.y;
-    if (this.facingRay || (this.facingRayPlayer && a === this.player)) {
+    const sx = dx, sy = dy, ray = this.facingRay || (this.facingRayPlayer && a === this.player);
+    if (ray) {
       // ?facing=ray (journal Passe K9): the heading against the line of sight on the ground - across it (to the camera's right: dx > 0) and
       // along it (away from the camera: dy > 0) - so a walk straight away shows the back wherever the walker stands in the frame, even where
       // the low pitch turns that walk into a slide toward the vanishing point on screen
@@ -272,7 +289,10 @@ export class ActorSystem {
       dx = (vx * tz - vz * tx) / (tl * hl); dy = -(vx * tx + vz * tz) / (tl * hl);
     }
     if (this.views5 && this.threeQuarters(a.spec)) {
-      a.dir = fiveViewFacing(a.dir, dx, dy); a.sideFlip = dx > 0;
+      // the hero's heading picks the view, its step on screen turns a three-quarter crossing the screen into a profile (heroWalkFacing)
+      const d = ray && a === this.player && this.heroStepView ? heroWalkFacing(a.dir, dx, dy, sx, sy) : fiveViewFacing(a.dir, dx, dy);
+      if (d === 'side' && fiveViewFacing(a.dir, dx, dy) !== 'side') dx = sx;   // a profile by its step: mirrored by the step on screen
+      a.dir = d; a.sideFlip = dx > 0;
       a.flip = a.dir === 'side' || a.dir === 'downSide' || a.dir === 'upSide' ? dx > 0 : false;   // profile and three-quarters drawn facing left
       return true;
     }

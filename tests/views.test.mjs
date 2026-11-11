@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { load } from './load.mjs';
 
 globalThis.window ??= { addEventListener() {} };
-const { ActorSystem, fiveViewFacing } = await load('/src/characters/ActorSystem.ts');
+const { ActorSystem, fiveViewFacing, heroWalkFacing } = await load('/src/characters/ActorSystem.ts');
 const THREE = await import('three');
 
 /** a screen step at `deg` from the vertical, upward (away) or downward (toward the camera), rightward */
@@ -105,6 +105,52 @@ test('by default the hero walks by the line of sight, the NPCs by the screen (de
   sys.facingRayPlayer = false; hero.dir = 'down';
   sys.face(hero, fwd, true);
   assert.equal(hero.dir, npc.dir, '?facing=screen: the hero takes the screen rule like the NPCs');
+});
+
+// the hero's diagonal (the operator's request of 2026-11-11, journal Passe MD1): the heading picks the view (K9), a three-quarter whose step
+// crosses the screen beyond the profile's edge (67.5 deg, held to 62.5 once in profile) is shown in profile; front and back stay the heading's
+test('heroWalkFacing: a three-quarter heading whose step crosses the screen turns to profile, front and back stay, the edge held 5 deg', () => {
+  // a diagonal heading (45 deg) whose step crosses the screen at 75 deg (the low pitch): the profile, not the three-quarter
+  assert.equal(heroWalkFacing('up', ...step(45, true), ...step(75, true)), 'side');
+  assert.equal(heroWalkFacing('down', ...step(45, false), ...step(76, false, false)), 'side');
+  // a diagonal heading whose step stays within the three-quarter sector on screen: the three-quarter, as before
+  assert.equal(heroWalkFacing('up', ...step(45, true), ...step(55, true)), 'upSide');
+  assert.equal(heroWalkFacing('down', ...step(40, false), ...step(66, false)), 'downSide');
+  // a walk away (the heading's back) sliding toward the vanishing point keeps its back (K9), a heading across keeps its profile
+  assert.equal(heroWalkFacing('up', ...step(10, true), ...step(80, true)), 'up');
+  assert.equal(heroWalkFacing('side', ...step(85, true), ...step(40, true)), 'side');
+  // the edge: entered beyond 67.5, left below 62.5 (no flicker on a straight slant)
+  assert.equal(heroWalkFacing('upSide', ...step(45, true), ...step(66, true)), 'upSide');
+  assert.equal(heroWalkFacing('upSide', ...step(45, true), ...step(68, true)), 'side');
+  assert.equal(heroWalkFacing('side', ...step(45, true), ...step(64, true)), 'side');
+  assert.equal(heroWalkFacing('side', ...step(45, true), ...step(61, true)), 'upSide');
+});
+
+test('the hero on a diagonal in the town: profile with heroStepView (a version 2 town, Explore), the heading three-quarter without it; the NPCs untouched', () => {
+  const frames = new Map(), specs = new Map([['sheet', { id: 'sheet', detail: 'crowd' }]]);
+  for (const d of ['down', 'up', 'side', 'downSide', 'upSide']) for (const m of ['idle', 'walk']) frames.set(`sheet/${d}/${m}/0`, {});
+  // camera B's pose (yaw -57.5, pitch 8, 26 m) on a hero at the frame's centre
+  const cam = new THREE.PerspectiveCamera(30, 16 / 9, 0.1, 400), yaw = -57.5 * Math.PI / 180, pitch = 8 * Math.PI / 180;
+  cam.position.set(Math.sin(yaw) * Math.cos(pitch) * 26, 1 + Math.sin(pitch) * 26, Math.cos(yaw) * Math.cos(pitch) * 26); cam.lookAt(0, 1, 0);
+  cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+  const sys = new ActorSystem({ specs, counts: new Map(), frames }, cam);
+  const hero = sys.spawn('sheet', 'player', new THREE.Vector3(0, 0, 0)), npc = sys.spawn('sheet', 'crowd', new THREE.Vector3(0, 0, 0));
+  sys.player = hero;
+  const away = new THREE.Vector3(-cam.position.x, 0, -cam.position.z).normalize(), right = new THREE.Vector3(-away.z, 0, away.x);
+  const diag = (f, r) => away.clone().multiplyScalar(f).add(right.clone().multiplyScalar(r)).normalize();
+  assert.equal(sys.heroStepView, false, 'off by default: today game and the district keep the heading view');
+  sys.face(hero, diag(1, 1), true); assert.equal(hero.dir, 'upSide', 'without it: the heading three-quarter back');
+  sys.face(npc, diag(1, 1), true); const npcDir = npc.dir, npcFlip = npc.flip;
+  sys.heroStepView = true;
+  for (const [f, r, want, flip] of [[1, 1, 'side', true], [1, -1, 'side', false], [-1, 1, 'side', true], [-1, -1, 'side', false]]) {
+    hero.dir = 'down'; sys.face(hero, diag(f, r), true);
+    assert.equal(hero.dir, want, `the diagonal ${f},${r} crosses the screen: the profile`);
+    assert.equal(hero.flip, flip, `mirrored by the step on screen (${f},${r})`);
+  }
+  hero.dir = 'down'; sys.face(hero, away, true); assert.equal(hero.dir, 'up', 'straight away: the back, as before');
+  hero.dir = 'down'; sys.face(hero, away.clone().negate(), true); assert.equal(hero.dir, 'down', 'straight toward the camera: the front');
+  hero.dir = 'down'; sys.face(hero, right, true); assert.equal(hero.dir, 'side', 'across: the profile');
+  sys.face(npc, diag(1, 1), true); assert.deepEqual([npc.dir, npc.flip], [npcDir, npcFlip], 'the NPCs keep their rule');
 });
 
 // ?npcfacing= (journal Passe F2): the five townsfolk's 'down' is drawn turned left (no true front on their reference sheet: BakedCast's

@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2, DB7, RM3, DB8, DB9, DB10 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1, TF1, ECO3, DB11, DB13) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2, DB7, RM3, DB8, DB9, DB10, ECO1, TF1 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1, TF1, ECO3, DB11, DB13, MD1) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -95,121 +95,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/82-passes-RM3.md`](journal/82-passes-RM3.md) | RM3 | 09/11 |
 | [`journal/83-passes-DB8.md`](journal/83-passes-DB8.md) | DB8 | 09/11 |
 | [`journal/84-passes-DB9-DB10.md`](journal/84-passes-DB9-DB10.md) | DB9, DB10 | 09/11 |
+| [`journal/85-passes-ECO1-TF1.md`](journal/85-passes-ECO1-TF1.md) | ECO1, TF1 | 10/11 |
 
 ---
-
-## Passe ECO1 — L'argent d'une partie de la version 2 : l'inventaire, la courbe des pièces mesurée et la fiche publiée ; rien d'appliqué (2026-11-10)
-
-### Demande
-- L'opérateur, après son essai du 2026-11-10, mot pour mot : « On doit aussi pouvoir trouver le moyen de gagner de l'argent pour financer notre equipement et preparer nos prochains combats car ils semble dur de gagner de l'argent par moment ».
-- Séance ouverte par une autre séance (brief : inventorier l'économie, mesurer la courbe des pièces au TournamentLab, préparer une fiche chiffrée, attendre les choix ; ne pas toucher aux nombres du duel, qu'une séance parallèle retravaille ; ajouter les textes français sans réécrire les existants). Branche `claude/economie-v2`, tirée de `main` `df16326` (Passe DB10).
-
-### L'inventaire — [OK]
-- **Ce qui rapporte** : 60 pièces au départ (`content.ts`) ; 20 par combat gagné, 5 par combat perdu, de la poule à la finale (`pool.ts` `applyPlayerDuel`, six combats au plus) ; 100 au champion, à la fin (`v2calendar.ts`) ; un défi gagné avec mise, +10 net, une fois par phase (`v2town.ts`, `STAKE`) ; les caisses de Mara le matin au quai, +6 et un créneau (`roles.ts` `restock`, la seule tâche payée) ; la cargaison d'acier, +8 une fois ; le rapport à Hale +15, le saboteur pris +15 (la guilde) ; la Bourse des Lanternes, 30, au seul qui ouvre le défilé du jour 9 (`v2festival.ts`) ; des événements (+10 des parieurs du parvis, −4, −5).
-- **Ce qui coûte** : la lame importée 30, le sabre 61, la forge 10 / 25 / 40 (`TIER_PRICE` ; une arme neuve repart au palier 0), la veste 21, la cotte 46, le haubert 34, l'anneau 28, les bottes 33, la bande 14, le ruban 11 ; la pierre 8 avant chaque combat (consommée), l'onguent 10, les soins 8 ; une compétence 35 à 45 (`skillbook.ts`) ; les rumeurs 3 ou 8, la chambre forte 5, Hilde 5, le guet 15 la nuit, la forge à réparer après un sabotage ; la mise d'un défi 10.
-- **La courbe du combat** (Passe DB10, « The DB7 sheet's curve ») suppose l'équipement 2 au tableau (la lame au palier 1, la cotte, la bande : environ 100 pièces) et l'équipement 3 en finale (les trois paliers, l'anneau, la bande, la cotte, la pierre : environ 200).
-
-### La courbe des pièces mesurée — [OK]
-- Script hors dépôt (le chargeur de `tests/load.mjs`, les politiques du laboratoire, 30 parties v2, graines 1..30) : la bourse chaque matin et chaque pièce gagnée ou dépensée rangée par action.
-
-| Joueur | Bourse le matin j2 / j4 / j6 / j8 / j10 | Gagné en 10 jours | Dépenses principales | Objets portés |
-|---|---|---|---|---|
-| `idle` | 60 / 60 / 76 / 80 / 81 | +21 (combats 27, événements −7) | aucune | 0 |
-| `diligent` | 25 / 8 / 27 / 8 / 5 | +68 (combats 53, événements 15) | le guet 96 (chaque soir, sans signe), la veste 20, Hilde 8 | 1 |
-| `curious` | 0 / 4 / 19 / 12 / 20 | +87 (combats 63, défis 9, événements 11, festival 4) | pièces des passants 44, marchandages 19, amendes de vol 16, guet 14, rumeurs 8 | 2,8 |
-
-- **Aucun joueur du laboratoire n'achète d'arme ni de palier** : le laboratoire ne voit pas l'économie que la courbe du combat suppose.
-- **Un joueur « planificateur »** (script hors dépôt, `plan.mjs` : il se soigne, achète dans l'ordre de la courbe — la lame, la forge, la cotte, la bande, la forge, l'anneau, la forge —, répare la forge quand elle est froide, s'entraîne deux fois, exerce l'Estocade et l'attaque puissante, combat au bot 0,6 ; les travaux et les bourses proposés simulés en ajoutant des pièces à l'état, aucune règle changée), 30 parties :
-
-| Variante | Pièces en plus | Équipement 2 au jour 6 | Équipement 3 au jour 10 | Combats gagnés | Finale atteinte |
-|---|---|---|---|---|---|
-| aujourd'hui | — | 0 % (2,1 objets sur 7) | 0 % (3,7) | 45 % | 3 % |
-| les caisses de Mara seules (+6) | +7 | 0 % | 0 % | 45 % | 7 % |
-| un travail par jour, 8 | +80 | 50 % | 17 % | 48 % | 13 % |
-| **un travail par jour, 10** | **+100** | **97 %** | **50 %** (80 % achetables ce matin-là) | **51 %** | **20 %** |
-| un travail par jour, 15 | +150 | 100 % | 100 % (64 pièces en trop à la fin) | 50 % | 10 % |
-| un travail par lieu et par jour, 10 (11,6 travaux) | +116 | 97 % | 87 % | 51 % | 17 % |
-| bourses par étape seules | +18 | 0 % | 0 % | 45 % | 3 % |
-| **un travail par jour à 10 et bourses par étape** | **+123** | **97 %** | **97 %** | **51 %** | **20 %** |
-
-- [KO de méthode, corrigé] un premier passage du planificateur restait bloqué au deuxième palier : la forge sabotée (il ne paie pas le guet) ; le script répare désormais la forge (30 réparations sur 30 parties). Un sondage qui laissait passer le temps sur un après-midi de combat bouclait sans fin (l'attente y est refusée) : arrêté, non relancé.
-- [?] Le planificateur est un programme à ordre d'achat fixe ; un joueur réel dépense aussi en compétences, pièces des passants et rumeurs. Les victoires (45 → 51 %) et la finale atteinte (1 → 6 sur 30) bougent peu sur 30 parties.
-
-### La fiche ECO1 — publiée, rien de décidé
-- https://claude.ai/artifact/RmLKYWsLnJfp9yRS7dRCTB (`briefs/fiche-eco1.html`, le gabarit des fiches DB), collection `decisions` relue vide après publication.
-- Huit cartes en cinq familles :
-  - **ECO-1** le constat (« C’est bien ça ») ;
-  - **ECO-2** les petits travaux, un par lieu à son moment, chez quelqu'un qu'on connaît (le quai le matin chez Mara, ses caisses ; le terrain d'entraînement le matin chez Maître Corvin, les boucliers de ses élèves ; le parvis l'après-midi chez Hilde, les armures des combattants du jour ; la place de la halle le soir chez Lio, servir dans sa salle), un créneau, l'amitié de l'employeur comme Mara aujourd'hui ; recommandé « Un travail par jour, à son lieu et à son moment » ;
-  - **ECO-3** la paie : recommandé « 10 pièces » ;
-  - **ECO-4** les bourses par étape : recommandé « jour 6 35 / 10, jour 8 45 / 15, finale 80 / 30 », la poule et les 100 du champion inchangés ;
-  - **ECO-5** les paris chez les parieurs du parvis : recommandé « Pas de paris » (une défaite coûterait aussi la mise, au moment où l'argent manque) ;
-  - **ECO-6** la revente : recommandé « Mara rachète à moitié prix ce qui est dans le sac, jamais un objet volé » ;
-  - **ECO-7** la lecture : recommandé l'étiquette « +10 pièces » dans la liste (Q), un chapitre « Gagner des pièces » dans le guide (H), un conseil au premier achat refusé faute de pièces ;
-  - **ECO-8** le laboratoire : recommandé un joueur « planificateur » de plus, les trois autres inchangés (les nombres que les tests épinglent ne bougent pas).
-- Le croisement avec les stats est dit sur la fiche : l'équipement donne des points de stats (DB7-2), un joueur mieux équipé gagne plus, ce qui est le but (le ramener à la courbe sur laquelle le duel a été recalé) ; aucun nombre du duel ne change.
-
-### Validation
-- Rien du jeu ne change sur cette branche (la fiche, le journal, l'archive) : `npm run typecheck` sans erreur ; `npm test` 587 / 587 ; `npm run build` réussi ; `npm run art:validate` 73 manifestes, 123 sources, 23 manifestes de son, 0 erreur.
-- [KO → expliqué] un premier `npm test` donnait 584 tests et un échec (`arena-day` : « Failed to load url /node_modules/three/... ») : le worktree n'avait qu'un `node_modules` de caches, Vite y cherchait `three`. Une jonction vers le `node_modules` du dossier principal (comme en Passe RM3) : 587 / 587.
-- Les passes gardées auraient dépassé 60 Ko : DB6 et RM2 (branches fusionnées) déplacées à l'octet dans `journal/80-passes-DB6-RM2.md`, leur ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les octets retirés, le journal reconstruit égale l'original, CRLF partout, chaque passe dans un seul fichier.
-
-### Où reprendre
-- Attendre la fiche ECO1 ; consigner ses choix mot pour mot.
-- Puis appliquer dans le jeu par défaut : les règles dans la simulation (les travaux, la paie, les bourses, la revente), leurs textes en anglais et en français, la liste (Q), le guide (H) et le conseil, les tests, le laboratoire (le planificateur), les preuves de navigateur (`play-day`, `ui-text`, `ui-contrast`) ; rejouer sur le dernier `main` (les séances du duel et de la relecture du français travaillent en parallèle), fusionner, puis l'essai de l'opérateur.
-
-### Pensée
-- Un réglage calé sur un joueur « équipé » suppose une économie qui le laisse s'équiper : la courbe du combat et la courbe des pièces se mesurent ensemble, sur un joueur qui achète ce que la courbe suppose.
-- Un joueur de laboratoire qui paie chaque soir une protection sans signe cache le manque d'argent derrière une dépense : on range chaque pièce par action avant de conclure.
-
-## Passe TF1 — Les textes français repris après l'essai de l'opérateur : les restes d'anglais cherchés partout, la table relue, 75 entrées et trois mots du duel corrigés (2026-11-10)
-
-### Demande
-- L'opérateur, après son essai du 2026-11-10, mot pour mot : « puis tu re-travailleras les textes francais car il manque certaines traductions et enfin certains textes sont pas optimales heros au lieu de herauts par exenple ».
-- Séance lancée par la séance principale, en parallèle de deux autres (l'équilibre du duel, l'économie), dont les fichiers ne sont pas touchés. Branche `claude/textes-fr`, tirée de `main` `df16326`, avancée sur `b8f8481` (Passe ECO1, documents seulement) avant le commit. Serveur DEV `textes-dev` (`:5393`, son propre `cacheDir`, hors dépôt).
-
-### Les restes d'anglais — [OK] presque rien, trouvé et traduit
-- **Les données que le code garde en anglais** (script en Node, hors dépôt) : les noms et titres des personnes, les noms, épithètes et histoires des rivaux et des génériques, les compétences adverses (`FOE_SKILLS`), les noms des actions, chaque phrase et cause des deux catalogues d'événements : toutes ont leur entrée `=<anglais>`. Aucune clé de `en.ts` sans français ; les entrées identiques à l'anglais sont des noms propres ou des mots qui s'écrivent pareil (Journal, Menu, Pause, Guide, Endurance, Charge).
-- **Le jeu joué en français dans un navigateur** (un script de balayage hors dépôt, `lang=fr`, chaque texte visible et chaque `title`, `aria-label`, `placeholder` relevés) : treize états nommés de la version 2 (du premier matin à l'épilogue, le voleur recherché, la sangle, le conte de Vessa, le festival, Cassius démasqué), dans chacun la liste « Ici », le menu, la carte, le journal, le tableau, les compétences, l'équipement, le guide chapitre par chapitre, les quatre parties des réglages et chaque personne présente ; la visite d'une partie neuve ; le duel (la carte d'entrée, 28 moments, la pause, les leçons du premier combat) ; l'écran titre ; Explore ; l'écran de chargement. 1 172 textes distincts dans la ville, 122 dans le duel. Les mots anglais repérés par un détecteur (le vocabulaire de `en.ts` absent de la table française), puis les libellés courts relus à l'œil.
-- **Trouvé** : les noms des boutons de manette (infobulles des contrôles, nom accessible de chaque touche affichée : « Cross », « View », « D-pad up »…) : `padName` (`src/input/glyphs.ts`) passe par `word`, onze entrées neuves (Croix, Rond, Carré, Affichage, Créer, Moins, Accueil, Croix directionnelle : haut, bas, gauche, droite) ; l'anglais inchangé. Dans le duel d'une partie : « challenger » sous le nom de Ren, devenu « prétendant » ; « 12 garde » (un coup reçu en garde, mot du prototype qui se lit comme une garde et non comme des dégâts), devenu « Gardé · 12 » ; le palier « Légère » de la bande de charge, devenu « Rapide » comme le « coup rapide » du tutoriel (`DYN_TEXTS_FR_GAME`, `CHARGE_TEXTS_FR`, `src/arena/DynamicHud.ts`).
-- **« héros » au lieu de « hérauts »** : [?] introuvable dans le jeu. Chaque « heralds » de l'anglais dit « hérauts » (sept lignes, dont le jour 2, Orla, les tambours du Colisée) ; « héros » n'a jamais été dans la table (`git log -S`). Le seul « héros » affiché est le sous-titre de Ren sur la page de l'arène seule (`?scene=arena`, « Ren, le héros »), qui garde les mots du prototype par décision (Passe RG4) ; le duel d'une partie n'en a pas. À demander à l'opérateur où il l'a vu.
-
-### La relecture — [OK] 75 entrées corrigées
-- Trois agents neufs, un tiers de la table chacun, sous un même brief (contresens, termes du tournoi et du Moyen Âge, cohérence d'un écran à l'autre, registre de RG-11, fautes, typographie, tournures lourdes ; mêmes marqueurs et touches ; noms gardés, titres et lieux traduits) : 67 propositions, chacune lue contre l'anglais ; une en double écartée, quatre reformulées, neuf ajoutées par mes soins. Appliquées par un script qui exige l'ancien texte exact.
-- **Corrections de sens notables** :
-  - « Railler Cassius Dree devant la taverne » (dehors) → « en pleine taverne » (devant ses clients) ;
-  - « Laisser tomber la nuit » (abandonner) → « Laisser venir la nuit » ;
-  - le tutoriel du duel : « [K] vous met en garde » (vous avertit) → « [K] lève votre garde » ;
-  - « elle surgit d’une fente » (d'une fissure) → « elle frappe en se fendant » (Vessa, l'escrime) ;
-  - « Appris par la salle de Lio » (la salle aurait appris) → « Appris auprès de » ;
-  - « encaissez les coups du poteau » (le poteau ne frappe pas) → « frappez le poteau » ;
-  - « Hilde jure » (prête serment) → « lâche un juron », et le valet qui posait des questions « sur cette armure » ;
-  - la représaille de Corra : « {items} pour {name} » perdait la restitution → « elle a repris {items} pour {name} » ;
-  - Odo « raye un point de votre score […] le paie au tableau » → « vous retire un point dans la poule […] au classement » (la poule, pas le tableau) ;
-  - « vols pris sur le fait » → « vols surpris » ; « À trois, » (un compte à rebours) → « À trois marques » ;
-  - « tu as fait honneur à ma maison » (« you were good to my house ») → « tu as rendu service à ma maison » ;
-  - le jour 8 nommé « Finales » à côté de « Finale » dans le guide → « Grande affiche », son nom partout ailleurs.
-- **Un nom pour une chose** : « fiche de match » partout (le mot de l'opérateur sur la fiche DB7, carte DB7-7 ; la table disait « fiche de combat ») ; « coup rapide » (la page des compétences disait « Attaque légère », la bande de charge « Légère ») ; « Coup puissant » sur la page d'équipement (à côté de « Charge puissante » et « Attaque puissante » ; « Coup lourd » reste le coup des rivaux) ; « l’estrade » de la halle (deux « scène ») ; « sur le parvis » (trois « au parvis ») ; « devant tout le parvis » (deux « devant le parvis », un lieu) ; « Attaque » parmi Garde, Esquive, Pause dans les contrôles ; « caractéristique » au lieu de « stat » dans le guide.
-- **Noms des compétences adverses** : « Veillée » → « Veillée d’armes » (Ilse, chevalière du Temple), « Résolution du champion » → « Détermination du champion » (le jeu a déjà « Résolution de rendu »), « Épaule des docks » → « Coup d’épaule des docks », « Chute de fer » → « Chute de Fer » (comme la Porte de Fer).
-- **Le genre du joueur, encore à trancher** (Passe RG4) : là où une phrase le fixait sans que l'anglais le fasse, une tournure neutre : « de ne pas être vu » → « qu’on ne vous voie pas » (trois libellés de vol), « personne ne vous a vu » → « personne n’a rien vu », les passants (« celui de la poule », « un de la poule, celui-là », « celui du registre », « recherche celui-là »), « gars du Sud » (Rhosk), « l’ami » (Wren, qui vouvoie, et un passant). Le reste du choix (« Vous êtes le champion »…) attend la décision.
-- **Tournures** : Marek « Je ne suis rien de plus » → « C’est tout ce que je suis » ; Vessa « Une taille chanceuse » → « Un coup de chance » ; « Bonne journée à toi ! » (un au revoir) → « Bien le bonjour ! » ; « Chantez, la place ! » → « Chantez, gens de la place ! » ; « Dites un mot » → « Un mot de vous » ; « Chez les marionnettes » → « Au spectacle de marionnettes » ; « hors course pour le titre » → « hors de la course au titre » ; « {key} reste au jeu ou au navigateur » → « La touche {key} est réservée au jeu ou au navigateur » ; et quelques autres (le journal de la passe dans le commit).
-- **Typographie** : sept lignes (les six ajoutées par la Passe DB9, la forme « |tu » d'une réplique du défilé) avaient une espace ordinaire avant « : » ou dans les guillemets : insécables. Un script vérifie toute la table : plus aucune espace ordinaire avant : ; ? ! », après «, aucune apostrophe droite, aucun guillemet collé.
-- **Laissé** : « Sœur Anwen », « Frère Ambrose » en majuscule au milieu d'une phrase (la table est constante ; l'usage voudrait la minuscule, comme « le sergent Hale ») ; « =Townsfolk » → « les passants », « =passers-by » → « des gens de la ville » (inversés par le sens, la phrase se lit bien) ; les points de la Passe RG4 (« Chevalière du Temple », « un dixième » et « 10 % », les montants nuls, la cause « les combats de la poule »).
-
-### Validation
-- `npm run typecheck` sans erreur ; `npm test` **588 / 588**, dont un test neuf dans `tests/language.test.mjs` (un nom pour la fiche de match et pour le coup rapide, « hérauts » et jamais « héros », jamais « au parvis », les mots du duel, les boutons de manette en français et en anglais, aucun genre donné au joueur par les passants) ; `tests/language.test.mjs` et `tests/texts.test.mjs` verts (mêmes marqueurs et touches) ; `npm run build` ; `npm run art:validate` (73 manifestes, 123 sources, 23 du son, 0 erreur).
-- **`tools/ui-text.mjs` en français** (la liste « Ici » avec les libellés de vol, l'équipement, les compétences, les contrôles, le guide, le tableau au jour 7, Hale au registre, le duel en rupture ; 1920 × 1080, 1280 × 720, 812 × 375) : **24 / 24**, aucun texte sous 16 px (14 au téléphone), aucun caractère hors du sous-ensemble, aucune troncature.
-- **`tools/settings-proof.mjs`** : PASS (65 vérifications, sa section de la langue comprise : la ligne « Français · English », un navigateur français, une partie neuve en français, la pause d’un duel, le jeu d’aujourd’hui en anglais) ; **`tools/remap-proof.mjs`** : PASS (46 vérifications, les noms français des touches).
-- **L'anglais** : `en.ts` n'est pas touché ; `padName` rend l'anglais tel quel en anglais (`word` est l'identité, le test le vérifie) ; seules les tables françaises du duel changent. Le jeu anglais est donc le même par construction ; [?] pas de capture à 0 px contre le `main` figé dans cette passe.
-- Les passes gardées dépassaient 60 Ko avec TF1 (63,0 Ko) : DB7 (branche fusionnée) déplacée à l’octet dans `journal/81-passes-DB7.md`, sa ligne ajoutée à l’index ; preuve par script : le corps de l’archive égale les 8 101 octets retirés, le journal reconstruit égale l’original, CRLF partout, chaque passe dans un seul fichier. 54,9 Ko de passes restent.
-- **[KO → corrigé, dans la méthode]** deux modifications de la table faites pendant que le balayage lisait les pages du serveur DEV ont rechargé ces pages (le module HMR) : une vingtaine d'étapes perdues, rejouées ensuite sans toucher aux fichiers. Le principe était connu (Passe RM3) : rien ne se modifie de ce qu'un serveur sert à une preuve en cours.
-
-### Où reprendre
-- L'essai de l'opérateur en français ; lui demander où il a vu « héros ».
-- Le genre du joueur (Passe RG4) : la décision reste à prendre ; les tournures neutres de cette passe tiennent dans les deux cas.
-
-### Pensée
-- Chercher l'anglais restant se fait en deux temps : les données que le code garde hors de la table (un script les compte toutes), puis le jeu joué en français avec un détecteur de vocabulaire anglais, parce qu'un nom accessible ou un mot du duel vit hors des tables.
-- Un relecteur qui compare chaque ligne à l'anglais trouve les faux amis (« jure », « met en garde », « laisser tomber ») qu'une lecture du seul français laisse passer ; une liste de termes faite d'avance trouve les doublons d'un écran à l'autre (« fiche de combat » / « fiche de match »).
 
 ## Passe ECO2 — La fiche ECO1 relue : huit sur huit, sept à la recommandation, un travail par lieu et par jour ; consignée avant la mise en œuvre (2026-11-11)
 
@@ -444,6 +332,62 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Rendre une stat lisible coûte peu quand la règle est déjà pure : un découpage (`healthParts`) que la fiche de match et les tests lisent dit d'où vient un nombre sans rien cacher.
 - Une stat qui grandit (la Vivacité) porte un changement de rythme mieux qu'un multiplicateur caché : la fiche de match le montre, et le rival « grandit » au tableau comme ses autres stats.
 
+## Passe MD1 — La marche en diagonale du héros : le trois-quarts « sur place » qui glissait, montré de profil quand le pas traverse l'écran (2026-11-11)
+
+### Demande
+- Demande de l'opérateur du 2026-11-11, mot pour mot : « et enfin regler le default de marche animation en diagonale de notre heros qui sont bloque et donc glisse lorsque nous executons le mouvement ». Relayée par la séance qui coordonne (la version 2 par défaut : la ville avec `herolook=1`, les trois places, « Explore the district »). Branche `claude/marche-diagonale`, worktree `.claude/worktrees/marche-diagonale` tiré de `origin/main` `eab6d50`, serveur `md-dev` (son propre cache de dépendances), `main` figé servi par `md-main`.
+
+### Reproduit et mesuré — [OK]
+- **Nouvel outil `tools/hero-slip.mjs`** : `tools/foot-slip.mjs` ne mesure que le profil, le long de la droite de la caméra ; une diagonale traverse l'écran en biais. L'outil suit chaque mise à jour de la page (la ville `__app` ou une place `__plaza`), tient des touches (ou la marche de la manette, `pad=x,y`) et, à chaque changement d'image de la marche du héros, prend ses pieds sur les rangées du bas de l'image cuite, posés au sol comme le panneau les pose. Le pied le plus proche de celui de l'image précédente (à moins de 1,5 fois l'avance) est le pied posé ; sa dérive au sol, projetée à l'écran, contre l'avance du héros à l'écran : 0 = le pied reste où il est, 1 = il avance avec le corps. Il sépare la part en travers de l'écran de la part en hauteur.
+- **`main` figé, au clavier, à la manette, en marche et en course** (médianes, 1280 × 720) :
+  - ville, cadrages B et D, les quatre diagonales : le héros de **trois-quarts** (`upSide` / `downSide`), le pied glisse de **0,93 à 1,19 fois son avance**, **155 à 198 px/s en travers** ; la manette en diagonale de même (160 px/s) ;
+  - les trois places, les quatre diagonales : trois-quarts, **1,05 à 1,21**, **96 à 128 px/s en travers** ;
+  - en ligne droite, pour comparer : le profil à 0,02 en ville (planté) ; la face et le dos vers 1,1, mais 14 à 25 px/s en travers (ils vont surtout en profondeur).
+- **Les images** (`hero-x2-v4`, script hors dépôt) : la course de profil `walk-side` fait reculer le pied posé de 16 texels par image (6 → 23 → 39 : le tapis que `walkClock` accorde) ; la course de **trois-quarts face `walk-downSide` le garde sur place** (le pied le plus bas entre les colonnes 12 et 24 sur les huit images) et ses jambes changent à peine d'une image à l'autre (une seule pose différente sur huit, vu sur la planche) ; `walk-upSide` bouge un peu plus, sans dérive régulière. C'est le « bloqué » : des jambes presque figées qui glissent avec le corps.
+
+### La cause — [OK]
+- La vue du héros suit son **cap** : la ligne de visée en ville (décision K9 de l'opérateur, Passe K10), les touches contre la caméra sur les places (`fiveViewFacing(ix, -iz)`). Une diagonale au clavier fait 45° de cap : le trois-quarts. Mais sous le tangage faible des cadrages, **le même pas traverse l'écran à 70-79° de la verticale**, presque à l'horizontale. Le trois-quarts, dessiné sur place, glisse alors de toute la largeur de son pas. C'est « le prix » déjà écrit en Passe K9 (« une marche en diagonale montre son trois-quarts pendant que le sprite glisse presque à l'horizontale à l'écran »), que la règle du regard avait accepté.
+- La ville et les places ne diffèrent pas sur ce point (toutes deux par le cap). L'horloge et la vitesse ne sont pas en faute : l'horloge avance (les huit images du cycle passent), mais aucune horloge n'accorde un pied qui ne recule pas dans l'image.
+- Pas d'image manquante : les cinq vues ont leurs huit images de course. Les feuilles ne changent pas.
+
+### Corrigé — [OK]
+- **`heroWalkFacing`** (`src/characters/ActorSystem.ts`) : le cap choisit la vue comme avant ; **un trois-quarts dont le pas à l'écran dépasse le bord du profil de la règle à cinq vues (67,5°) est montré de profil**, tenu 5° en deçà une fois de profil (62,5°), sans papillotement. Le profil dessine la dérive du pied et `walkClock` l'accorde déjà à la vitesse le long de la droite de la caméra. La face et le dos restent ceux du cap (une marche qui s'éloigne montre le dos, K9). Le miroir d'un profil ainsi choisi suit le pas à l'écran.
+- **Ville** : seulement avec `herolook` (une partie de la version 2, posé par `playTown.ts`, et « Explore the district », posé par `main.ts`) : `ActorSystem.heroStepView`. Le jeu d'aujourd'hui (`v2=0`) et les autres adresses du district gardent la vue du cap seule.
+- **Places** (`src/world/PlazaApp.ts`) : la même règle, le pas projeté par la caméra de la place (`screenStep`) ; l'horloge d'un profil ainsi choisi avance à la part du pas le long de la droite de la caméra (celle d'une marche en travers vaut 1), un profil donné par les touches garde l'horloge d'aujourd'hui.
+- Les PNJ ne passent pas par ce chemin.
+
+### Après — [OK]
+- Mêmes mesures sur la branche :
+  - ville B et D, diagonales, clavier, Maj, manette : **profil**, **4 à 40 px/s en travers** (155 à 198 avant), le rapport 0,25 à 0,32 ;
+  - les trois places, diagonales, clavier, Maj, manette : **profil**, **3 à 16 px/s en travers** (96 à 128 avant), 0,21 à 0,40 ;
+  - ce qui reste est la part en hauteur du pas (19 à 47 px/s, la même avant et après) : le panneau n'a pas de profondeur, ni de face, ni de dos, ni de profil ; c'est ce que fait déjà une marche droite vers le haut ou le bas de l'écran (25 à 49 px/s).
+- **Flipbooks avant / après** (hors dépôt ; `tools/flipbook.mjs` sait maintenant filmer une place et la manette, `PAD=`, et écrire chaque image en PNG, `PNG_DIR=`) : la ville en B (« bas + gauche ») et le parvis (« haut + droite ») ; avant, le trois-quarts aux jambes presque figées qui glisse ; après, le profil en course, le pied planté.
+
+### Preuves au pixel — `main` figé contre la branche
+- Méthode : `tools/flipbook.mjs` avec `PNG_DIR` (graine 1842, boucle tenue, pas fixes de 1/60 s), une image entière 1920 × 1080 tous les 20 pas, du pas 20 au pas 200 (9 images par cas), `main` figé (`eab6d50`, `md-main`) puis la branche (`md-dev`) dans le même navigateur ; comparaison au seuil 0 (script hors dépôt sur les RGBA décodés).
+- **Témoin de répétition** : `main` contre un second `main` figé servi sur une autre origine (`md-main2`) ; le même cas deux fois sur la même origine ne vaut pas (le second chargement relit le stockage du premier : toutes les images diffèrent). Le témoin montre des écarts isolés, toujours aux mêmes images : ville B « haut » images 80 et 180, nuit « haut + droite » image 180, parvis « bas » image 160 (une variation de teinte de 5 au plus sur tout l'écran), ville B « droite » images 40 et 120. Ce sont les écarts du banc lui-même.
+- **Lignes droites, à 0 px ou aux seuls écarts du témoin** :
+  - ville (midi, `herolook=1`) : D « droite », D « gauche », D « droite » + Maj, D manette (1, 0), A « droite », B « bas » : **0 px** ; B « haut » (2 images) et B « droite » (1 image) : les images du témoin ;
+  - parvis : « droite », « gauche », « haut », « droite » + Maj, manette (1, 0) : **0 px** ; « bas » : l'image du témoin ;
+  - lices : « droite », « haut », « gauche » : **0 px** ; place de la halle : « droite », « bas », « gauche » : **0 px**.
+- **Une ligne droite change, à dessein** : en B, la touche « gauche » (et la manette (−1, 0)) loin du centre du cadre ; `main` y passe au trois-quarts face (le cap contre la ligne de visée) pendant que le pas reste horizontal à l'écran, la branche garde le profil (5 images sur 9 à partir du pas 100). C'est le même défaut que la diagonale.
+- **Le jeu d'aujourd'hui et le district inchangés** : la nuit sans `herolook`, « bas + gauche » en B **0 px**, « haut + droite » en D l'image 180 du témoin ; une partie `v2=0` (`play=1&new=1&v2=0`), « bas + gauche » : **0 px**. Le code n'y prend pas le nouveau chemin (`heroStepView` faux).
+- **Les PNJ** : ils sont dans chaque image (la foule de midi, les gens des places) et suivent les mêmes pas : aucune différence hors des écarts du témoin et du héros.
+- **Contrôles** (le banc voit le changement) : parvis « haut + droite » et lices « bas + gauche » : 9 images sur 9 diffèrent.
+
+### Tests — [OK]
+- `tests/views.test.mjs` +2 : `heroWalkFacing` (un cap à 45° qui traverse l'écran à 75° : le profil ; à 55° : le trois-quarts ; un dos qui glisse vers le point de fuite reste un dos ; le bord tenu à 67,5 / 62,5) ; dans la ville au cadrage B, les quatre diagonales de profil avec `heroStepView` et leur miroir, le trois-quarts sans lui (le défaut d'`ActorSystem`), droit devant le dos, vers la caméra la face, en travers le profil, le PNJ inchangé. Trois fautes injectées, attrapées : la règle sans effet, le miroir inversé, le bord sans tenue.
+- `npm run typecheck` sans erreur ; `npm test` **596 sur 596** ; `npm run build` réussi ; `npm run art:validate` 73 manifestes, 123 sources, 23 manifestes de son, 0 erreur.
+- Les passes gardées dépassaient 60 Ko avec MD1 : ECO1 et TF1 (branches fusionnées) déplacées d'un bloc, à l'octet, dans `journal/85-passes-ECO1-TF1.md`, leur ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les octets retirés (20 631), chaque section dans un seul fichier, CRLF gardé.
+
+### Reste — [?]
+- **La manette entre deux directions** : un stick à 20-30° de la verticale donne un pas à 56-67° à l'écran ; la vue y reste celle du cap (le dos, la face ou le trois-quarts), dessinée sans dérive : elle glisse encore (77 à 119 px/s en travers en ville B, 39 px/s sur le parvis). Le clavier n'y passe pas (ses diagonales sont à 70-79°). Le remède est dans l'art : des courses de trois-quarts (et de face) dont le pied posé recule dans l'image et dont les jambes alternent ; toute nouvelle image passe par l'opérateur (décision à préparer sur fiche).
+- **Sur les places, la marche droite de profil glisse de 0,17** (la course, accordée, 0,02) : l'horloge de la marche y vaut 1 sans tenir compte de la vitesse que le cycle dessine ; existait avant, non touché (la ligne droite devait rester identique).
+
+### Pensée
+- Une vue « juste » et un cycle « juste » sont deux choses : la règle du regard choisissait la bonne direction du corps, pour un cycle qui ne dessine pas la dérive que le mouvement à l'écran demande. Mesurer le pied à l'écran (et non le long d'un axe) montre tout de suite lequel des deux manque.
+- Un défaut qui « se voit en diagonale » se voit aussi en ligne droite : en B, la touche « gauche » loin du centre du cadre donnait déjà un trois-quarts qui glissait à l'horizontale ; la même règle le corrige.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -530,6 +474,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
     aujourd'hui. Consigne-le. »).
   - Les deux gardes diffèrent déjà (variante 1 pour le second, approuvée le 18/10). Restent les lances.
   - Les cinq citadins : « Cinq par défaut » (Passe D1), appliqué (Passe C2).
+- **La marche en diagonale du héros (Passe MD1)** : corrigée dans la version 2 (un trois-quarts dont le pas traverse l'écran au-delà de 67,5° montré de profil, `heroWalkFacing`) ; restes : la manette entre deux directions (un pas à 56-67° à l'écran garde la vue du cap, dessinée sans dérive, qui glisse encore), dont le remède est dans l'art (des courses de trois-quarts et de face qui font reculer le pied posé et alternent les jambes : décision de l'opérateur, sur fiche) ; la marche droite de profil sur les places glisse de 0,17 (son horloge ne suit pas la vitesse dessinée) ; l'essai en jeu de l'opérateur.
 - **Mouvement** (Passe S2 : cadence réglée sur la vitesse vue à l'écran, pieds plantés pour la foule et les gardes ; Passe V3 : docker
   régularisé, glissement ≈ 0 en B / C / D) : restes des critiques du docker, communs à ses deux cycles : pas d'attaque du talon, botte de
   passage posée sur celle d'appui (image 4), poussée faible ; cycle 3 + 3 sans double appui (hérité du garde) ; en A, l'horloge touche son
@@ -1129,3 +1074,4 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Avant de rendre des touches modifiables, on cherche où le jeu les lit et où il les écrit : une touche affichée est une lettre dans une page, que la manette reconnaît à sa lettre ; une touche retenue par son caractère change avec Maj sur la rangée des chiffres d’un AZERTY (Passe RM1).
 - Sans soin, la longueur d'un duel est bornée par la survie du joueur : un combat épique demande que ses PV montent aussi, pas seulement une barre adverse plus grosse ; une moyenne sur tous les rivaux cache le combat qui compte (la finale contre ses finalistes probables), et la fiche d'un rival se règle contre son kit (Passe DB7).
 - Une règle se mesure aussi contre le joueur parfait d'une seule tactique (tenir la garde et marteler), pas seulement contre le bot ; et le joueur de référence d'un recalage doit jouer toutes les couches de progression que la fiche suppose (Passe DB9).
+- Un pied qui glisse se mesure à l'écran, contre l'avance du personnage à l'écran, et pour chaque vue : une mesure le long d'un seul axe (la droite de la caméra) ne voit ni un trois-quarts dessiné sur place ni la part en profondeur d'un pas ; et un témoin de répétition se fait sur une autre origine, le stockage du navigateur suivant l'origine (Passe MD1).

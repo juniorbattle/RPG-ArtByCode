@@ -24,7 +24,7 @@ import { loadProductionCast, type CastMember } from '../characters/BakedCast';
 import { plazaCastEntries } from '../characters/PlazaCast';
 import { heroEntries } from '../characters/HeroLookCast';
 import { variantOf } from '../characters/Variants';
-import { fiveViewFacing } from '../characters/ActorSystem';
+import { fiveViewFacing, heroWalkFacing } from '../characters/ActorSystem';
 import type { Anim, Dir } from '../characters/SpriteGenerator';
 import type { BuntingTier } from '../simulation/v2react';
 import { buildPlaza, plazaGroundDefines, type PlazaPeriod, steer, walkTo, type PlazaBuild, type PlazaExit, type PlazaKind } from './Plazas';
@@ -383,7 +383,12 @@ export class PlazaApp {
       const dx = (ix * c + iz * s) / n, dz = (-ix * s + iz * c) / n;
       const [nx, nz] = walkTo(this.place, P.pos.x, P.pos.z, P.pos.x + dx * speed * dt, P.pos.z + dz * speed * dt);
       P.pos.x = nx; P.pos.z = nz;
-      P.dir = fiveViewFacing(P.dir, ix, -iz) as Dir; P.flip = ix > 0; P.anim = 'walk' as Anim; P.t += pw ? dt * pw.speed : dt;
+      // the keys (or the stick) against the camera pick the view, the step on screen turns a three-quarter crossing the screen into a profile
+      // (heroWalkFacing, journal Passe MD1); a profile's clock follows its step along the camera's right, where its cycle draws the planted
+      // foot's drift: a profile the keys give keeps today's clock, one the step gives runs at its share along the right
+      const [sx, sy, along] = this.screenStep(dx, dz), byKeys = fiveViewFacing(P.dir, ix, -iz);
+      P.dir = heroWalkFacing(P.dir, ix, -iz, sx, sy); P.flip = ix > 0; P.anim = 'walk' as Anim;
+      P.t += (pw ? dt * pw.speed : dt) * (P.dir === 'side' && byKeys !== 'side' ? along : 1);
     } else if (!this.scripted(P, dt)) { P.anim = 'idle' as Anim; P.t += dt; if (P.dir === 'downSide' || P.dir === 'upSide') P.dir = 'side'; }
     for (const a of this.people) {
       a.t += dt;
@@ -411,6 +416,17 @@ export class PlazaApp {
     if (!a) return Promise.resolve();
     return new Promise((done) => this.walking.set(a, { to, done, speed: who === 'player' ? 2.2 : 1.5 }));
   }
+  /** a unit step (dx, dz) of the hero on screen (x to the right, y up, in units of half the height) and its share along the camera's right */
+  private screenStep(dx: number, dz: number): [number, number, number] {
+    const c = this.camera, p = this.player.pos;
+    c.updateMatrixWorld();
+    this.ndc.set(p.x, p.y, p.z).project(c);
+    const x0 = this.ndc.x, y0 = this.ndc.y;
+    this.ndc.set(p.x + dx * 0.05, p.y, p.z + dz * 0.05).project(c);
+    const m = c.matrixWorldInverse.elements, rl = Math.hypot(m[0], m[8]) || 1;
+    return [(this.ndc.x - x0) * c.aspect, this.ndc.y - y0, Math.abs(dx * m[0] + dz * m[8]) / rl / (Math.hypot(dx, dz) || 1)];
+  }
+
   /** a cutscene's walker this frame, straight to its point then idle facing the camera (false: none walking) */
   private scripted(a: Actor, dt: number): boolean {
     const w = this.walking.get(a);

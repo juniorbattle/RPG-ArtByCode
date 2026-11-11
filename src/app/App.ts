@@ -232,6 +232,10 @@ export class App {
     const facing = this.opts.params.get('facing');
     if (facing === 'ray') this.actors.facingRay = true;
     if (facing === 'screen') this.actors.facingRayPlayer = false;
+    // a version 2 game's town and « Explore the district » (`herolook`, set by playTown.ts and main.ts): a three-quarter whose step crosses
+    // the screen is shown in profile (heroWalkFacing, the operator's request of 2026-11-11, journal Passe MD1); today's game and the district's
+    // other addresses keep the heading's view
+    if (this.opts.params.has('herolook')) this.actors.heroStepView = true;
     // the NPCs' walking views (journal Passes F2 / F3): '34' by default (the operator's decision of 2026-10-20); ?npcfacing=mirror|wide for
     // comparison, ?npcfacing=screen the former screen rule
     const npcFacing = this.opts.params.get('npcfacing');

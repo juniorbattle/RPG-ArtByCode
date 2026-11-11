@@ -268,7 +268,11 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   recoloured with the shader's formula (journal Passe V1); `node tools/art-lab/palette-ramps.mjs` — the palette analysis of Passe V0
 - `node tools/flipbook.mjs <out.html> "<spec prefix>" <from> <to> [every] [WxH] [zoom] "label|url" ...` — the same deterministic run on several
   servers / queries, a crop following one actor, played in sync in one self-contained HTML page (motion review, journal Passe S2); `KEYS=d,shift`
-  holds movement keys (the player's run, Passe H6)
+  holds movement keys (the player's run, Passe H6), `PAD=x,y[,speed[,run]]` the gamepad's walk; a version 2 square's play-mode address works too
+  (its loop held, the actor `player` the hero); `PNG_DIR=<dir>` writes every step's whole frame losslessly for a pixel comparison (journal Passe MD1)
+- `node tools/hero-slip.mjs [--secs=4] [--click=x,y] "label|<query or url>|<keys or pad=x,y,..>" ...` — the hero's planted foot ON SCREEN in every
+  view (journal Passe MD1; the town page or a version 2 square, its own loop running): at each walk frame change, the planted foot's ground drift
+  projected on screen against the hero's own advance there (0 = planted, 1 = it rides along with the body), across and up / down in px/s, per view
 - `node tools/zoom.mjs in.png out.png x y w h [scale]` — nearest-neighbour crop for pixel-level sprite review
 - `node tools/walk.mjs <prefix> "<query>" "w,d" <secs>` — holds keys, logs camera blend steps (and occlusion fades:
   reversals / jumps), writes a contact sheet
@@ -461,7 +465,10 @@ keeps the three views; the default since the operator's decision of 2026-10-19, 
 `facing=ray|screen` (walking views; absent = the hero by the line of sight - the heading's angle to the ground direction from the walker to
 the camera, so a walk away shows his back even where the low pitch of A turns it into a slide toward the vanishing point - and the NPCs by
 their step on screen, journal Passe F1, until they have three-quarter views: the operator's decision K9, journal Passe K10, refined by
-`npcfacing` below; `ray` = everyone by the line of sight, `screen` = everyone by the screen, for comparison, journal Passe K9) ·
+`npcfacing` below; `ray` = everyone by the line of sight, `screen` = everyone by the screen, for comparison, journal Passe K9; in a version 2
+game's town, « Explore the district » (`herolook`) and the squares, a three-quarter the hero's heading gives whose step crosses the screen beyond
+67.5 deg is shown in profile, held to 62.5: the three-quarter runs are drawn on the spot and slid, the operator's request of 2026-11-11, journal
+Passe MD1, `heroWalkFacing`) ·
 `npcfacing=screen|mirror|34|wide` (the NPCs' walking views, journal Passe F2; absent = `34`, the default since the operator's decision of
 2026-10-20, « Applique npcfacing=34 comme règle par défaut des PNJ. », journal Passe F3): the five townsfolk's `down` is drawn turned left (their
 reference sheet has no true front; `frontLeft` in `BakedCast.ts`); `34` turns it toward a rightward step (held within 8 deg of the vertical) and
