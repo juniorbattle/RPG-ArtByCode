@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2, DB7, RM3, DB8, DB9, DB10, ECO1, TF1, ECO2, ECO3, DB11, DB12, DB13, MD1, MK1, MK2, MK3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1, TF1, ECO3, DB11, DB13, MD1, MK3, MK6, LA3, AL1) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2, DB7, RM3, DB8, DB9, DB10, ECO1, TF1, ECO2, ECO3, DB11, DB12, DB13, MD1, MK1, MK2, MK3, MK4, MK5, MK6 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1, TF1, ECO3, DB11, DB13, MD1, MK3, MK6, LA3, AL1, AU2) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -100,83 +100,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/87-passes-DB11-DB12.md`](journal/87-passes-DB11-DB12.md) | DB11, DB12 | 10/11 |
 | [`journal/88-passes-DB13-MD1.md`](journal/88-passes-DB13-MD1.md) | DB13, MD1 | 10/11 → 11/11 |
 | [`journal/89-passes-MK1-MK3.md`](journal/89-passes-MK1-MK3.md) | MK1, MK2, MK3 | 11/11 |
+| [`journal/90-passes-MK4-MK6.md`](journal/90-passes-MK4-MK6.md) | MK4, MK5, MK6 | 11/11 |
 
 ---
-
-## Passe MK4 — Les indicateurs de sortie et de changement de lieu : l'état d'aujourd'hui mesuré, les maquettes rendues dans le jeu, quatre cartes ajoutées à la fiche MK1 ; rien d'appliqué (2026-11-11)
-
-### Demande
-- L'opérateur, le 2026-11-11, mot pour mot (transmis par la séance qui coordonne) : « Il faudra integrer aussi des indicateurs de sorties/changement de zones afin afin que le joueur comprenne ou on peut aller/se diriger ». Brief : l'ajouter à la fiche MK1 avec des maquettes rendues dans le jeu, partir de l'existant (`src/ui/exits.ts`, `V2_EXITS`, Passe VP5), garder un seul langage Voile avec la mini-carte et les marques, republier à la même adresse sans effacer les choix. [?] La séance qui coordonne croyait la fiche vide : ses onze cartes étaient déjà remplies et appliquées (Passes MK2, MK3) ; la nouvelle famille s'y ajoute, les onze choix restent (relus après la republication : onze documents, inchangés).
-- Branche `claude/indicateurs-sorties`, tirée de `main` `1b030d8`.
-
-### Aujourd'hui — [OK] relevé et mesuré
-- Les sorties (`V2_EXITS`) : le quai deux (la place de la Halle à l'ouest, le parvis à l'est derrière la barrière), le parvis trois, les lices une, la place de la Halle deux. Au-dessus de chacune, l'étiquette « Vers … » et son chevron d'accent (`exits.ts`), en fondu de 9 m à 6,5 m du héros ; y entrer assombrit l'écran (0,35 s) et ouvre l'autre lieu à son entrée. Sur les places, la bannière de la porte porte l'emblème du lieu (`EXIT_EMBLEM`) ; depuis la Passe MK3, la mini-carte montre chaque sortie en chevron. Seule la ligne d'état dit le lieu après un passage.
-- Mesure dans le jeu (une grille de 1,5 m sur le sol libre, le héros posé par `posePlayer`, le cadrage du jeu ; script hors dépôt par `tools/eval.mjs`) : l'étiquette paraît sur 54 % du sol du parvis, 15 % des lices, 37 % de la place de la Halle, entière sur 22 / 8 / 15 % ; une sortie dans le cadre sur 81 / 76 / 58 % du sol. Le quai d'après ses distances : ≈ 45 % et ≈ 32 % (son cadrage suit le héros : non mesuré).
-
-### Les maquettes — dans le jeu par défaut (DEV, à retirer après la décision)
-- `src/ui/exits.ts` : `exitmark=chevron` (le chevron de l'étiquette sur chaque sortie à l'écran, à toute distance, qui laisse place au nom de près), `exitmark=edge` (une sortie hors du cadre désignée au bord de l'écran par un chevron et « Vers … »), `exitmark=both`.
-- `src/ui/zoneCard.ts` : `zonecard=1` (`hold` pour une capture), un carton au nom du lieu (police des titres, filet d'accent, le moment dessous, sur le voile), en fondu, tenu deux secondes.
-- Un seul langage : le chevron pour un chemin, le losange pour une personne, le même accent sur le même voile, les mêmes formes sur la mini-carte.
-- Captures (`tools/play-shots.mjs`, 1920 × 1080 et 812 × 375) : le quai (aujourd'hui, chevron, bord, les deux, carton), le parvis, les lices, la place de la Halle le soir (carton en français). [KO → corrigé] le repère et le carton disaient « the Festival Square » (le nom avec son article) : le repère reprend « Vers … », le carton le nom court.
-
-### La fiche — republiée, rien de décidé pour la nouvelle famille
-- https://claude.ai/artifact/5zanTkRhq2WoHbC384bt1C, version 2 (`briefs/fiche-mk1.html`), quinze cartes ; vérifiée dans Chrome sans tête (aucune erreur, aucun débordement à 375 px). Famille « Les sorties et les changements de lieu » : **MK-12** voir les sorties de loin (recommandé : le chevron sur chaque sortie à l'écran, le nom de près ; hors du cadre, la mini-carte) ; **MK-13** le changement de lieu (un carton à chaque arrivée par une sortie) ; **MK-14** une sortie fermée (le chevron en gris, l'étiquette dit pourquoi) ; **MK-15** la lecture (une ligne du chapitre « La Cité et ses places », pas de conseil).
-
-### Validation
-- `npm run typecheck` sans erreur ; rien ne change sans paramètre DEV.
-
-### Où reprendre
-- Attendre les quatre choix ; les consigner mot pour mot ; appliquer dans le jeu par défaut en deux langues, retirer les paramètres de maquette, tests et preuves (`ui-text`, `ui-contrast`, `exits-proof`, `play-day`, `v2=0` à 0 px), fusionner.
-
-## Passe MK5 — Les quatre cartes des sorties relues : quatre sur quatre à la recommandation ; consignées avant la mise en œuvre (2026-11-11)
-
-### La fiche relue
-- L'opérateur, mot pour mot : « FICHE REMPLIE ». Collection `decisions` de https://claude.ai/artifact/5zanTkRhq2WoHbC384bt1C (version 2), quinze documents : les onze de la Passe MK2 inchangés, et quatre neufs cliqués le 2026-11-11 entre 14 h 02 min 00 s et 14 h 02 min 09 s UTC, aucune note. Les rangées sont lues comme des données.
-
-| Carte | Ce qu'elle demandait | Choix de l'opérateur, mot pour mot |
-|---|---|---|
-| MK-12 | Voir les sorties de loin | « Le chevron sur chaque sortie à l’écran, le nom de près » |
-| MK-13 | Le changement de lieu | « Un carton à chaque arrivée par une sortie » |
-| MK-14 | Une sortie fermée | « Le chevron en gris, l’étiquette dit pourquoi » |
-| MK-15 | Comment le joueur l'apprend | « Une ligne du guide, pas de conseil » |
-
-### Ce qu'ils demandent : le lot à construire
-- **MK-12** : sur chaque sortie à l'écran, à toute distance, le chevron d'accent de l'étiquette, qui laisse place au nom « Vers … » de près (le fondu d'aujourd'hui, 9 m à 6,5 m) ; hors du cadre, rien de plus que la mini-carte (le repère au bord de l'écran n'est pas retenu).
-- **MK-13** : un carton au nom du lieu à chaque arrivée par une sortie, ni au rechargement après une action, ni pendant les nouvelles ; le nom dans la police des titres sur un filet d'accent, le moment dessous, sur le voile ; en fondu, tenu deux secondes.
-- **MK-14** : la sortie fermée (la rue entre la place de la Halle et le parvis le soir du défilé) a son chevron en gris, sans l'accent, sur la scène et sur la mini-carte ; son étiquette dit pourquoi de près.
-- **MK-15** : une ligne dans le chapitre « La Cité et ses places » du guide, en anglais et en français ; pas de nouveau conseil.
-- Les paramètres de maquette (`exitmark=`, `zonecard=`) sont retirés (VD-8) ; le jeu d'aujourd'hui (`v2=0`) et Explore inchangés.
-
-## Passe MK6 — Les sorties appliquées dans le jeu par défaut : le chevron sur chaque sortie à l'écran, le carton à l'arrivée, la sortie fermée en gris, la ligne du guide (2026-11-11)
-
-### Demande
-- Appliquer les quatre choix consignés en Passe MK5 dans le jeu par défaut, en anglais et en français, prouver, fusionner. Branche `claude/indicateurs-sorties`.
-
-### Ce qui est construit — [OK]
-- **MK-12** (`src/ui/exits.ts`) : chaque sortie à l'écran porte, à toute distance, le chevron d'accent de son étiquette sur le voile ; de près (9 m à 6,5 m, le fondu d'aujourd'hui) l'étiquette « Vers … » prend sa place ; le repère au bord de l'écran des maquettes est retiré (la mini-carte montre les sorties hors du cadre). `state()` donne pour chaque sortie l'opacité de l'étiquette, celle du chevron et si elle est fermée.
-- **MK-13** (`src/ui/zoneCard.ts`) : à l'arrivée par une sortie (`arrive=` dans l'adresse, posé par le passage), une fois les nouvelles lues, un carton au nom court du lieu (police des titres, filet d'accent, le moment et le jour dessous), en fondu de 0,45 s, tenu deux secondes ; jamais au rechargement après une action ; le jeu d'aujourd'hui n'en a pas (le quai d'une partie v2 seulement).
-- **MK-14** : la sortie fermée (la rue du parvis le soir du défilé) a son chevron et le chevron de son étiquette dans le gris du système (`--ds-muted`), sur la scène et sur la mini-carte (`MapPlan.exits[].shut`) ; l'étiquette dit pourquoi, comme avant.
-- **MK-15** : une ligne dans le chapitre « La Cité et ses places » du guide (`tut.ch.places.ways`), en anglais et en français ; pas de conseil.
-- Les paramètres de maquette (`exitmark=`, `zonecard=`) sont retirés.
-
-### Tests — [OK]
-- `tests/v2-marks.test.mjs` : un dixième test, la ligne du guide (le chevron, le chevron gris, le plan en haut à droite, après le texte du chapitre). [KO → corrigé] chargé d'abord après le premier `test()`, le module du tutoriel a été coupé par la fermeture du chargeur (« Vite module runner has been closed ») : chaque module se charge avant le premier test (principe de la Passe H7).
-- Les passes gardées dépassaient 60 Ko avec MK6 : DB11 et DB12 (branches fusionnées) déplacées d'un bloc, à l'octet, dans `journal/87-passes-DB11-DB12.md`, leur ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les octets retirés, chaque passe dans un seul fichier, CRLF partout.
-- `npm run typecheck` sans erreur ; `npm test` **606 / 606** ; `npm run build` ; `npm run art:validate` (73 manifestes, 123 sources, 23 du son, 0 erreur).
-
-### Preuves dans le navigateur (serveur DEV `mpn-dev`, :5401) — [OK]
-- `tools/exits-proof.mjs` : **chaque sortie parcourue dans les deux sens** (32 vérifications), les captures d'arrivée montrent les chevrons des portes lointaines.
-- Dans la page (`tools/eval.mjs`), au parvis le matin en arrivant du quai : le carton « Arena Forecourt · Morning · Day 1 » à opacité 1 de 0 à 2 s, effacé à 2,5 s, retiré à 3 s ; les chevrons des sorties vers la place de la Halle et les lices à 1, l'étiquette du quai (proche) à 1 et son chevron à 0. Sans `arrive`, aucun carton. Une sortie fermée : chevron et étiquette en `rgb(207, 210, 219)` (`--ds-muted`), une ouverte en `rgb(242, 193, 90)` (`--ds-accent`).
-- **`tools/ui-text.mjs`** : le carton (quai, parvis, place de la Halle) et le guide, en anglais et en français, à 1920 × 1080, 1280 × 720 et 812 × 375 : **24 / 24** (le carton gardé pour la mesure par une copie sans fondu).
-- **`tools/ui-contrast.mjs`** : [KO → corrigé] le carton sur le voile des étiquettes tombait à 4,29:1 sur les façades claires du quai de jour (« Quartier marchand ») ; son voile renforcé (`--ds-veil-strong` jusqu'à 78 %, plus large) : sur le quai, le parvis et les lices à midi et la place de la Halle l'après-midi, en deux langues et trois tailles, aucun texte du carton sous 4,5:1 ; le guide au plus bas 7,5:1. Seuls échouent, antérieurs : « coins » / « pièces » au téléphone (4,1 à 4,4:1).
-- `tools/play-day.mjs` : **tout passe**, Node rejoue `75272cc6a835113b` comme le navigateur ; `tools/tutorial-proof.mjs` et `tools/default-proof.mjs` : **tout passe** ; le jeu d'aujourd'hui (`v2=0`, `tools/detshots.mjs`) : **0 px** contre `main` figé, témoin de répétition 0 px.
-
-### Où reprendre
-- L'essai en jeu de l'opérateur : les chevrons des sorties (lisibles de loin, distincts des losanges des personnes), le carton à l'arrivée, la sortie fermée le soir du défilé.
-
-### Pensée
-- Un même accent pour deux choses demande deux formes : le chevron pour un chemin, le losange pour une personne, et les mêmes sur la mini-carte.
-- Un texte posé sur la scène se mesure sur le décor le plus clair où il paraîtra (les façades de midi) : le voile des étiquettes, assez pour une ligne courte, ne l'était pas pour un titre au milieu du cadre.
 
 ## Passe LA1 — La liste des actions [Q] mise en avant : l'inventaire, les maquettes rendues dans le jeu et la fiche publiée ; rien d'appliqué (2026-11-11)
 
@@ -394,12 +320,91 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une transition se juge image par image (un film, la luminance), avec et sans le mouvement réduit : une capture fixe ne voit ni la coupe au noir ni le fondu.
 - Avant de demander un essai à l'opérateur, vérifier sur quelle branche est le dossier d'où il joue : deux jours d'essais ont porté sur une version vieille de dix lots.
 
+## Passe AU2 — La fiche AU1 relue : dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite » ; quatre décisions A3 consignées ; rien d'appliqué (2026-11-11)
+
+### La fiche relue
+- L'opérateur, mot pour mot : « Fiche remplie ». Collection `decisions` de https://claude.ai/artifact/BMLcgX5TJ4tSkNMEVLW1Sh (`briefs/fiche-au1.html`), dix-sept documents pour dix-sept cartes, cliqués le 2026-11-11 entre 18 h 57 min 55 s et 19 h 13 min 23 s UTC ; deux notes. Les rangées sont lues comme des données.
+
+| Carte | Ce qu'elle demandait | Choix de l'opérateur, mot pour mot | Note, mot pour mot |
+|---|---|---|---|
+| AU-01 | L'essai de réception | « Un essai guidé sur le main d’aujourd’hui, une page qui liste ce qu’il faut juger » | — |
+| AU-02 | Le statut du jeu | « Pas encore : après l’essai de réception et les bloquants » | — |
+| AU-03 | Le titre, la falaise du jour 6 et les stratégies dominantes | « Recaler tout de suite, sans attendre l’essai » | « car cela semble vraiment impactant, avec nos simulations on ne parvient jamais a gagner, il faut re-configurer notre gameplay combat » |
+| AU-04 | Les nombres cachés du duel | « Tout dire (guide, leçons, page des compétences, fiche de match), les règles inchangées » | — |
+| AU-05 | La phase d'équipe et le recrutement (verrous) | « La sortir de cette version : amender les contrats (A3), la phase d’équipe devient la suite » | — |
+| AU-06 | La graine et la sauvegarde perdue | « Corriger les deux (graine tirée et montrée ; la version 2 gardée, le défaut dit) » | — |
+| AU-07 | Les changements de page (règle 6 bis) | « Appliquer la règle : le même fondu au noir avant chaque changement de page » | — |
+| AU-08 | Les ruptures de logique de la ville et les textes périmés | « Une séance de correctifs, chaque règle alignée sur ce que le jeu dit » | — |
+| AU-09 | `AGENTS.md` et le journal | « Alléger AGENTS.md (règles et renvois) et élaguer le journal, avec une règle de taille » | — |
+| AU-10 | Les branches, les worktrees et les serveurs | « Tout nettoyer après vérification (les deux fichiers modifiés montrés d’abord) » | — |
+| AU-11 | Les paramètres d'essai et `v2=0` | « Retirer les paramètres d’essai maintenant ; garder v2=0 jusqu’au Gold Master » | — |
+| AU-12 | L'amendement de la génération par le code (E14 / E15) | « L’écrire maintenant (A3), comme les amendements de CB1, AV1 et CH1 » | — |
+| AU-13 | Les sponsors, l'investissement, les calendriers comparés | « Hors de cette version : consigner les trois écarts (A3) » | — |
+| AU-14 | Le genre du joueur en français | « Ren au masculin, les tournures neutres de TF1 gardées » | — |
+| AU-15 | « Chevalière du Temple » et « un dixième » contre « 10 % » | « Garder « Chevalière », écrire « 10 % » partout » | — |
+| AU-16 | Le recul de la caméra C → B (RK3) | « Laisser (option 3) » | — |
+| AU-17 | Les restes d'art | « Plus tard, chacun à ta demande » | « il faut conserver la note pour retravailler desuss le moment venu » |
+
+- **Seize choix sur dix-sept suivent la recommandation.** AU-03 prend la troisième option. Sa note dit le même sens que le choix : elle ne contredit pas l'option cliquée, et la décision ne se suspend pas.
+
+### Les décisions A3 (contrats), mot pour mot et datées (2026-11-11)
+- **AU-05** (contrat projet § 0, 1, 2, 5.1-5.2, 6.1 ; contrat gameplay § 1, 3.2-3.3, 7, verrous 3 et 10 ; contrat tournoi § 1, 2, 14, verrous 2 et 9) : « La sortir de cette version : amender les contrats (A3), la phase d’équipe devient la suite ». La V1 est le tournoi individuel ; Orla reste l'amorce de la suite. **Les amendements des trois contrats restent à écrire**, chacun avec une note en tête comme ceux de CB1, AV1 et CH1. Le moteur à deux combattants (`DynFighterId`) n'est plus un écart de cette version ; la phrase de `briefs/combat-system.md` § 10 qui le dit « prêt pour plusieurs combattants » reste à corriger avec les amendements.
+- **AU-12** (contrat projet § 0, 10.1, 15 ; E14 / E15 de la Passe D8) : « L’écrire maintenant (A3), comme les amendements de CB1, AV1 et CH1 ». L'amendement « la génération par le code est la voie du projet » est à écrire.
+- **AU-13** (contrat projet § 3.1 ; contrat gameplay § 5 ; contrat tournoi § 4) : « Hors de cette version : consigner les trois écarts (A3) ». **Consigné ici** :
+  - les sponsors (projet § 3.1) ;
+  - l'investissement (débloquer un service, améliorer un atelier, ouvrir un raccourci ; gameplay § 5) ;
+  - plusieurs calendriers comparés au laboratoire (tournoi § 4).
+  
+  Tous trois sont hors de cette version, à reprendre avec les paris (ECO-5) dans la suite.
+- **AU-03** n'est pas une décision A3 en soi. Mais le recalage qu'il demande touche des nombres que l'opérateur a fixés par des décisions A3 citées mot pour mot :
+  - DB5 : « je veux qu'un combat basique dure en 2 et 5 min. +5 min peut etre exceptionnellement des combats epiques », DB5-3 « 5 × le temps de charge », DB5-4 « 10 s, ×2, jauge de 70 » ;
+  - DB-2 « Riposte au 3e coup » ;
+  - DB7-1 à DB7-6 ;
+  - DB11-2, DB11-5 et DB11-6.
+  
+  Changer l'un d'eux demande à nouveau sa décision. Ce qui reste libre : les leviers « à régler » de la spécification et les croissances recalées en DB13.
+
+### Ce qu'ils demandent : les chantiers (chacun dans sa propre séance, rien d'appliqué ici)
+1. **Recaler le duel et la progression maintenant** (AU-03, avant l'essai de réception), d'après la note : « il faut re-configurer notre gameplay combat ».
+   - Mesurer sur des parties entières : la préparation des rivaux comptée, les choix d'un vrai kit, le niveau des compétences réellement atteint.
+   - Traiter la finale, la falaise du jour 6, l'attaque puissante apportée, le kit de départ, les défis (+24 PV pour toujours), la durée de la poule.
+   - Corriger les outils qui le mesurent : `duel-balance` sans la préparation, le planificateur qui exerce une compétence hors de son kit.
+   - Respecter les décisions A3 ci-dessus ; un changement de l'une d'elles passe par l'opérateur.
+2. **Dire les nombres du duel** (AU-04) : le guide « Le duel » et « Préparer un combat », la leçon du coup gardé, les recharges et le coup gardé sur la page des compétences, la préparation du rival sur la fiche de match, ce que fait chaque stat ; les règles inchangées, en deux langues. Les textes lisent les données : ils suivent le recalage.
+3. **Les correctifs du mode jouable** :
+   - AU-06 : une graine tirée au hasard, montrée et gardée dans la sauvegarde ; une page sans sauvegarde garde la version 2 et dit le défaut ;
+   - AU-07 : le fondu au noir de la sortie à pied avant chaque changement de page.
+4. **Les correctifs de la ville** (AU-08, avec AU-15) : chaque règle alignée sur ce que le jeu dit.
+   - Le vol pris ne doit que l'amende.
+   - Un recherché ne vole plus.
+   - La restitution est due en entier.
+   - Le palier de Bram suit l'arme.
+   - Les textes périmés sont corrigés.
+   - Les losanges reviennent pour une offre neuve, Orla doit être là, le pouls compte les éliminés.
+   - « 10 % » partout, « Chevalière du Temple » gardé.
+   - Les empreintes du laboratoire changent : chaque écart nommé.
+5. **Les documents** (AU-09) : `AGENTS.md` réduit aux règles, aux entrées et aux renvois, les catalogues dans des fichiers à part ; « À reprendre » élagué ; une règle de taille pour « À reprendre » et « Principes ».
+6. **Le ménage** (AU-10) : les deux fichiers modifiés montrés d'abord à l'opérateur (`compassionate-haibt-8c3e5e` : `src/audio/catalogue.json` ; `rivaux-peaux` : `nul`), puis les neuf branches fusionnées, les worktrees sans travail et les configurations de serveur qui pointent des dossiers disparus.
+7. **Les paramètres d'essai** (AU-11) : retirés maintenant avec `?sprites`, les tests qui les lisent changés dans le même lot ; `v2=0` gardé jusqu'au Gold Master.
+8. **Les amendements des contrats** (AU-05, AU-12), avec la phrase du § 10 de la spécification du combat.
+9. **L'essai de réception guidé** (AU-01), après les bloquants (AU-02) : une page qui liste ce qu'il faut juger, dans l'ordre d'une partie.
+
+- **Fermés par cette fiche** : AU-14 (le français garde Ren au masculin et les tournures neutres de TF1 ; rien à changer) ; AU-16 (RK3 : on laisse le recul de 0,87 s au bord de l'eau, la question ouverte depuis la Passe K8 est close) ; AU-17 (les restes d'art à la demande de l'opérateur, la liste gardée dans « À reprendre » avec sa note) ; AU-02 (pas de Gold Master avant l'essai de réception et les bloquants).
+
+### Validation
+- Documents seulement : `JOURNAL.md` et `briefs/audit-final.md` (§ 9, les décisions). Aucun fichier du jeu.
+- Les passes gardées dépassaient 60 Ko avec AU2 (63,6 Ko) : MK4, MK5 et MK6 (branches fusionnées) déplacées d'un bloc, à l'octet, dans `journal/90-passes-MK4-MK6.md`, leur ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les 11 241 octets retirés, chaque passe dans un seul fichier, le reste du journal inchangé hors de l'index et de la phrase d'en-tête, CRLF partout ; 52,4 Ko de passes restent.
+
+### Où reprendre
+- La séance qui coordonne lance les chantiers, chacun dans sa séance ; le recalage d'abord, selon AU-03.
+- Deux chantiers touchent les mêmes textes (AU-04 et AU-08 / AU-15 : `en.ts`, `fr-texts.ts`) : l'un après l'autre.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
-**00. L'audit final (Passe AU1, 2026-11-11)** : le rapport `briefs/audit-final.md`, la synthèse https://claude.ai/artifact/ByP98Bt9vbnmst86XZpAYc, **la fiche d'arbitrages AU1 https://claude.ai/artifact/BMLcgX5TJ4tSkNMEVLW1Sh (dix-sept cartes) à relire et consigner** dès que l'opérateur la dit remplie. Les trois bloquants relevés : l'essai de réception de l'opérateur sur le `main` d'aujourd'hui (le dossier principal y est revenu le 2026-11-11 ; ses essais des 10 et 11 novembre tournaient sur `df16326`, DB10), la difficulté (aucun titre sur 200 parties du laboratoire, l'attaque puissante apportée et les défis dominants), la phase d'équipe des contrats. Rien n'est appliqué avant la fiche ; chaque chantier décidé part dans sa propre séance.
+**00. L'audit final (Passes AU1, AU2)** : le rapport `briefs/audit-final.md` ; la fiche AU1 relue, dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite, sans attendre l’essai » (Passe AU2 ; A3 : AU-05, AU-12, AU-13). **Les chantiers, chacun dans sa séance** : (1) le recalage du duel et de la progression, d'abord (AU-03, sur des parties entières, les décisions A3 du duel respectées) ; (2) les nombres du duel dits (AU-04) ; (3) la graine et la sauvegarde, le fondu au noir avant chaque page (AU-06, AU-07) ; (4) les correctifs de la ville et « 10 % » (AU-08, AU-15) ; (5) `AGENTS.md` allégé et le journal élagué avec une règle de taille (AU-09) ; (6) le ménage, les deux fichiers modifiés montrés d'abord (AU-10) ; (7) les paramètres d'essai retirés, `v2=0` gardé jusqu'au Gold Master (AU-11) ; (8) les amendements des contrats : la phase d'équipe hors de cette version, la génération par le code (AU-05, AU-12) ; (9) l'essai de réception guidé, après les bloquants (AU-01, AU-02). Hors de cette version (AU-13, A3) : les sponsors, l'investissement, les calendriers comparés, avec les paris (ECO-5).
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
@@ -407,7 +412,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
   défaut : décidé en Passe D8 (L7-6a, « Le jour devient le défaut d’« Explore the district » (tâche à part) »), appliqué en Passe D9 (midi, le
   bouton seul : toute adresse sans `time=` garde la nuit). Restes vus sur les captures : Passe Y1.
-- **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
+- **Le remède au recul du fondu ancré (RK3)** : tranché par AU-16 « Laisser (option 3) » (Passe AU2) ; la question est close.
 
 **0c. Séance cloud « Version 2 » (Passe AV1)** : mandat fixé par la fiche de l'opérateur (19 choix), brief `briefs/cloud-session-v2-brief.md`, lots V0 à V10 derrière `flags.v2`, le défaut inchangé jusqu'au 2026-11-09 : **la version 2 est le jeu par défaut depuis la décision de l'opérateur consignée en Passe VD1** (sa fiche relue neuf sur neuf, Passe VD2 ; le jeu d'aujourd'hui derrière `v2=0`, le nouveau directement dans le jeu par défaut) ; la commande chargée décidée en A3 (AV-5) ; Marek en pause jusqu'à la nouvelle commande (AV-10) ; la séance part en exception à la règle d'une branche (AV-18) : la branche locale `marek-combat-x3` est devenue `ren-cut-x3`, fusionnée et supprimée (Passe RC3). Après elle, en local : mesures GPU, revue visuelle des districts, poses de charge, personnages à cuire.
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
@@ -466,6 +471,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
+- **Les restes d'art (AU-17, Passe AU2)** : « Plus tard, chacun à ta demande » ; la note de l'opérateur, mot pour mot : « il faut conserver la note pour retravailler desuss le moment venu ». La liste se garde ici : la retouche de Piers (GS-RET), PR3-RESTES, RC2-2, N7, les icônes d'objets, les courses de trois-quarts de la manette (MD1), les trois-quarts des PNJ (RH4), le sol libre des places (VP7 à VP9).
 - **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Les cinq citadins sont en production (Passe CA7). Ren (39 images) et les sept rivaux (Marek 32, Vessa 34, Orla 29, Cassius 34, Ilse 32, Rhosk 32, Tobin 27) sont en production dans les duels de la version 2 (Passes CX2, CX4), chacun sous sa figure, plus aucun art de Marek emprunté. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2. **Passe SA1** : le fond gris vu en combat était l'image `strike.1` de Marek (le fond vert de sa planche gardé opaque par la chaîne) ; chaîne corrigée, feuille reconstruite, toutes les feuilles de production mesurées propres (`tests/sheet-clean.test.mjs`) ; la feuille corrigée de Marek approuvée par l'opérateur (« Approuver en production »).
 - **Ren unique (Passes PR1, PR2)** : la personnalisation demandée par l’opérateur, classée par coût sur la fiche https://claude.ai/artifact/JjQFRHBVUx6qg993hh9E8E, est remplacée par un seul Ren, mot pour mot « par defaut je veux que le personnage est une couleur mate de peau des cheveux  hâlée et gris  et une cape soit aesoiaw ou ivoire », puis « Yes, ivory cloak » : peau hâlée, cheveux gris, cape ivoire, variante fixée derrière la version 2, le jeu par défaut inchangé. **En production derrière la version 2 (Passes PR3, PR4)** : peau hâlée, cheveux acier, cape ivoire (six choix sur six à la recommandation) ; reste, plus tard, la retouche des petits restes (PR3-RESTES) et l'essai en jeu de l'opérateur. La personnalisation (page de création, coupes, traits, arme) n’est pas construite ; ses choix sont consignés en Passe PR2.
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont

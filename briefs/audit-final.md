@@ -734,6 +734,34 @@ Ses retours de ces deux jours (« Bon il y a du mieux » sur le duel, le frança
 
 ---
 
+## 9. Les décisions de l'opérateur (Passe AU2, 2026-11-11)
+
+La fiche relue : dix-sept choix sur dix-sept, seize à la recommandation. Les choix sont cités mot pour mot ; les décisions A3 sont marquées.
+
+| Carte | Choix, mot pour mot | Note |
+|---|---|---|
+| AU-01 | « Un essai guidé sur le main d’aujourd’hui, une page qui liste ce qu’il faut juger » | — |
+| AU-02 | « Pas encore : après l’essai de réception et les bloquants » | — |
+| AU-03 | « Recaler tout de suite, sans attendre l’essai » | « car cela semble vraiment impactant, avec nos simulations on ne parvient jamais a gagner, il faut re-configurer notre gameplay combat » |
+| AU-04 | « Tout dire (guide, leçons, page des compétences, fiche de match), les règles inchangées » | — |
+| AU-05 (A3) | « La sortir de cette version : amender les contrats (A3), la phase d’équipe devient la suite » | — |
+| AU-06 | « Corriger les deux (graine tirée et montrée ; la version 2 gardée, le défaut dit) » | — |
+| AU-07 | « Appliquer la règle : le même fondu au noir avant chaque changement de page » | — |
+| AU-08 | « Une séance de correctifs, chaque règle alignée sur ce que le jeu dit » | — |
+| AU-09 | « Alléger AGENTS.md (règles et renvois) et élaguer le journal, avec une règle de taille » | — |
+| AU-10 | « Tout nettoyer après vérification (les deux fichiers modifiés montrés d’abord) » | — |
+| AU-11 | « Retirer les paramètres d’essai maintenant ; garder v2=0 jusqu’au Gold Master » | — |
+| AU-12 (A3) | « L’écrire maintenant (A3), comme les amendements de CB1, AV1 et CH1 » | — |
+| AU-13 (A3) | « Hors de cette version : consigner les trois écarts (A3) » | — |
+| AU-14 | « Ren au masculin, les tournures neutres de TF1 gardées » | — |
+| AU-15 | « Garder « Chevalière », écrire « 10 % » partout » | — |
+| AU-16 | « Laisser (option 3) » | — |
+| AU-17 | « Plus tard, chacun à ta demande » | « il faut conserver la note pour retravailler desuss le moment venu » |
+
+Les chantiers qu'ils demandent sont détaillés dans le journal (Passe AU2). Chacun part dans sa propre séance, le recalage du duel d'abord (AU-03). Ce recalage respecte les décisions A3 déjà prises sur le duel : DB5, DB5-3, DB5-4, DB-2, DB7-1 à DB7-6, DB11-2, DB11-5, DB11-6.
+
+---
+
 ## Annexe — les commandes
 
 ```
