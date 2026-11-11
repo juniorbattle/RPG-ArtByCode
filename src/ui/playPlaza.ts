@@ -17,7 +17,7 @@ import { progressOn } from './loading';
 import { preloadPortraits } from './portraits';
 import { ExitMarkers } from './exits';
 import { paradeBlocks } from '../simulation/v2festival';
-import { tx } from '../narrative/text';
+import { cap, shortName, tx, word } from '../narrative/text';
 import { ANNOUNCED } from '../audio/plan';
 import { parseWeather } from '../atmosphere/Weather';
 import { keepPlace, tutorialOn } from './tutorial';
@@ -75,7 +75,10 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   // (lot L6, FE-7: the evening of the Lanterns' parade the street between the festival square and the forecourt is full: its tag says so, and walking into it
   // goes nowhere; the quay stays open)
   const shut = (to: typeof st.place) => paradeBlocks(st, to);
-  const from = st.place, ways = new ExitMarkers(app.place.exits.map((e) => ({ to: e.to, anchor: e.anchor, shut: shut(e.to) ? tx('v2.fest.shutTag', { place: placeName(e.to, true) }) : null })));
+  // the sheet's mock-ups of the ways out (journal Passe MK4, DEV: `exitmark=chevron|edge|both`, `zonecard=1|hold`)
+  const exitMark = import.meta.env.DEV ? (b.params.get('exitmark') as 'chevron' | 'edge' | 'both' | null) : null;
+  if (import.meta.env.DEV && b.params.get('zonecard')) void import('./zoneCard').then((m) => m.showZoneCard(shortName(placeName(st.place, true)), `${cap(word(st.slot))} · ${tx('ui.clockDay', { day: st.day })}`, b.params.get('zonecard') === 'hold'));
+  const from = st.place, ways = new ExitMarkers(app.place.exits.map((e) => ({ to: e.to, anchor: e.anchor, shut: shut(e.to) ? tx('v2.fest.shutTag', { place: placeName(e.to, true) }) : null })), 9, exitMark);
   (window as any).__exits = ways;
   const leave = (to: typeof from) => { const r = (window as any).__game.act({ type: 'move', to }); if (r.ok) go(b.params, { arrive: from }); else location.reload(); };
   // the gamepad (the operator's sheet of journal Passe MN2): its walk, its pages' shoulders, the sound it may wake; loaded on demand, it does

@@ -1,10 +1,10 @@
 import { App } from '../app/App';
-import { isV2, lookOf, townQuery, type Action, type GameState } from '../simulation';
+import { isV2, lookOf, placeName, townQuery, type Action, type GameState } from '../simulation';
 import { keepSeen, markSeen, seenBefore } from './news';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 import { esc, overlay } from './style';
-import { tx } from '../narrative/text';
+import { cap, shortName, tx, word } from '../narrative/text';
 import { fontsReady, installDesign } from './design/system';
 import { progressOn } from './loading';
 import { preloadPortraits } from './portraits';
@@ -99,7 +99,10 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   // Arena Forecourt; walked into with a key held, the move saved and the square's page opened at its way in from the quay
   const END: Record<string, [number, number, number]> = { west: [WALK.x0 - 0.1, 2.6, 0.4], east: [WALK.x1 + 0.3, 2.6, 0] };
   const ways = isV2(st) ? V2_EXITS.district.map((e) => ({ ...e, anchor: END[e.side] })) : [];
-  const markers = ways.length ? new ExitMarkers(ways.map((w) => ({ to: w.to, anchor: w.anchor }))) : null;
+  // the sheet's mock-ups of the ways out (journal Passe MK4, DEV: `exitmark=chevron|edge|both`, `zonecard=1|hold`)
+  const exitMark = import.meta.env.DEV ? (b.params.get('exitmark') as 'chevron' | 'edge' | 'both' | null) : null;
+  if (import.meta.env.DEV && b.params.get('zonecard')) void import('./zoneCard').then((m) => m.showZoneCard(shortName(placeName(st.place, true)), `${cap(word(st.slot))} · ${tx('ui.clockDay', { day: st.day })}`, b.params.get('zonecard') === 'hold'));
+  const markers = ways.length ? new ExitMarkers(ways.map((w) => ({ to: w.to, anchor: w.anchor })), 9, exitMark) : null;
   if (markers) (window as any).__exits = markers;
   // a version 2 game plays with a gamepad too (the operator's sheet of journal Passe MN2): its walk, its pages' shoulders, the sound it may wake;
   // loaded on demand, it does nothing until a pad is used; today's game reads none

@@ -1,4 +1,4 @@
-<title>Marques et mini-carte</title>
+<title>Marques, carte et sorties</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
@@ -118,8 +118,9 @@ dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center;
 <div class="wrap">
   <header class="top">
     <span class="eyebrow">Cité du Tournoi · le jeu par défaut · Passe MK1 · 11 novembre 2026</span>
-    <h1>Les PNJ utiles, la bulle et la mini-carte</h1>
+    <h1>Les PNJ utiles, la bulle, la mini-carte et les sorties</h1>
     <p class="lede">Tu as écrit : « actuellement la commercante est seule a avoir son icon dialogue et cela ressemble a une defaut de conception, je pense il faudra l’enlever ou adapter. car il va falloir pourvoir mettre en avant de maniere subtile les pnjs avec lesquels l’interaction peut etre utile car ils ont un objet ou un evenement a proposer, peut etre meme integrer aussi une mini map sur le coin ». Voici d’où vient la bulle, qui a vraiment quelque chose à proposer au fil d’une partie, et des maquettes rendues dans le jeu par défaut pour la marque et pour la mini-carte.</p>
+    <p class="lede">Puis : « Il faudra integrer aussi des indicateurs de sorties/changement de zones afin afin que le joueur comprenne ou on peut aller/se diriger ». Tes onze premiers choix sont appliqués dans le jeu (Passe MK3) ; la dernière famille, « Les sorties et les changements de lieu », attend les tiens.</p>
     <p class="lede">Les maquettes sont derrière un paramètre de développement (npcmark=, minimap=), retiré après tes choix ; rien n’est appliqué avant. Les nombres viennent de parties entières du laboratoire. La mini-carte revient sur une décision d’interface (UM-R5) : elle est marquée sur sa carte. Clique ton choix ; une note est facultative ; je relis tes choix directement.</p>
   </header>
 
@@ -134,7 +135,8 @@ dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center;
 
   <section class="after">
     <h2>Une fois la fiche remplie</h2>
-    <p>Dis-le dans la conversation. Je consigne tes choix mot pour mot au journal (la mini-carte, qui remplace UM-R5, citée telle quelle), puis j’applique dans le jeu par défaut : le sort de la bulle, la marque et ses sortes, son déclencheur, la mini-carte, les textes en anglais et en français, le conseil et le guide. Ensuite les tests, les preuves dans le navigateur (le quai et les trois places, de jour et de nuit, au téléphone), la taille et le contraste des textes, le jeu d’aujourd’hui (v2=0) au pixel près, la fusion. Puis ton essai en jeu.</p>
+    <p>Pour la dernière famille : dis-le dans la conversation, je consigne tes choix au journal, puis j’applique les sorties dans le jeu par défaut (le chevron, le carton, la sortie fermée, la ligne du guide, en anglais et en français), avec tests et preuves, et je fusionne.</p>
+    <p>Pour les onze premières : je consigne tes choix mot pour mot au journal (la mini-carte, qui remplace UM-R5, citée telle quelle), puis j’applique dans le jeu par défaut : le sort de la bulle, la marque et ses sortes, son déclencheur, la mini-carte, les textes en anglais et en français, le conseil et le guide. Ensuite les tests, les preuves dans le navigateur (le quai et les trois places, de jour et de nuit, au téléphone), la taille et le contraste des textes, le jeu d’aujourd’hui (v2=0) au pixel près, la fusion. Puis ton essai en jeu.</p>
     <p>Ce qui reste incertain, dit sans détour : le classement des offres en trois sortes est le mien (chaque action du jeu rangée une fois, dans une seule table, pour se corriger en une ligne) ; les nombres du déclencheur viennent de bots qui ne parlent pas à tout le monde ; la lisibilité de la marque en mouvement et dans la foule de midi se juge en jeu.</p>
     <p class="src">Sources : journal Passe MK1 ; <code>src/simulation/v2marks.ts</code>, <code>src/ui/npcMarks.ts</code>, <code>src/ui/minimap.ts</code> (maquettes) ; captures : <code>node tools/play-shots.mjs</code> sur les états nommés <code>v2-day1-morning</code>, <code>v2-forecourt-morning</code>, <code>v2-training-morning</code>, <code>v2-square-night</code>, <code>v2-wanted-night</code> avec <code>npcmark=losange|mot|sol</code> et <code>minimap=tr|bl</code>.</p>
   </section>
@@ -228,6 +230,36 @@ const GROUPS = [
       rec: 'La marque aussi dans la liste (Q) à côté du nom ; un conseil la première fois qu’une marque paraît (« Une marque au-dessus d’une tête : cette personne a du nouveau ») ; une ligne dans le chapitre du guide « Marcher et parler » (la légende des trois formes). En anglais et en français.',
       opts: ['La liste, un conseil et une ligne du guide', 'Le conseil seulement', 'Rien de plus : la marque se comprend seule'], recIdx: 0,
       src: 'src/ui/tutorial.ts (HINTS, chapitres) ; src/ui/townUi.ts (la liste Q)' },
+  ]},
+  { id: 'sorties', title: 'Les sorties et les changements de lieu', sub: 'Ajoutée le 11 novembre après ta seconde demande, mot pour mot : « Il faudra integrer aussi des indicateurs de sorties/changement de zones afin afin que le joueur comprenne ou on peut aller/se diriger ». (Les onze cartes ci-dessus sont déjà appliquées dans le jeu, Passe MK3.) Aujourd’hui : chaque lieu a ses sorties (le quai : la place de la Halle à l’ouest, le parvis à l’est derrière la barrière des gardes ; le parvis : trois ; les lices : une ; la place de la Halle : deux). Au-dessus de chacune, l’étiquette « Vers … » et son petit chevron d’accent paraissent à 9 m du héros et sont entières à 6,5 m ; y entrer assombrit l’écran et ouvre l’autre lieu à son entrée (Passe VP5). Sur les places, la bannière de la porte porte l’emblème du lieu où elle mène ; depuis la Passe MK3, la mini-carte montre chaque sortie par un chevron d’accent. Les maquettes (DEV, exitmark=, zonecard=) gardent un seul langage : le chevron pour un chemin, le losange pour une personne, le même accent sur le même voile, les mêmes formes sur la mini-carte.', fam: 'var(--astre)', items: [
+    { id: 'MK-12', tag: 'de loin', title: 'Voir les sorties de loin',
+      ctx: 'Mesuré sur une grille du sol (un point tous les 1,5 m, le héros posé, le cadrage du jeu) : l’étiquette commence à paraître sur une part du sol seulement, entière sur moins encore ; une sortie est souvent dans le cadre sans rien qui la signale.',
+      table: { head: ['Lieu', 'Sorties', 'L’étiquette paraît (9 m)', 'Entière (6,5 m)', 'Une sortie dans le cadre', 'Toutes dans le cadre'], rows: [
+        ['Quai', '2', '≈ 45 %', '≈ 32 %', 'non mesuré (le cadrage suit le héros)', '—'],
+        ['Parvis', '3', '54 %', '22 %', '81 %', '8 %'],
+        ['Lices', '1', '15 %', '8 %', '76 %', '76 %'],
+        ['Place de la Halle', '2', '37 %', '15 %', '58 %', '41 %']],
+        foot: 'Le quai calculé d’après ses distances (40 m de long, une sortie à chaque bout) ; les places mesurées dans le jeu. Hors du cadre, seule la mini-carte montre aujourd’hui où sont les sorties.' },
+      shots: [['img/sorties-auj.webp', 'Aujourd’hui, au milieu du quai : aucune sortie signalée (la mini-carte seule)'], ['img/sorties-chevron.webp', 'Le chevron sur chaque sortie à l’écran (recommandé) : ici la porte du parvis, au bout du quai'], ['img/sorties-chevron-z.webp', 'Le chevron de la porte du parvis, de près'], ['img/sorties-bord.webp', 'Un repère au bord de l’écran pour une sortie hors du cadre, avec son nom'], ['img/sorties-bord-z.webp', 'Le repère vers la place de la Halle, au bord gauche'], ['img/sorties-deux.webp', 'Les deux ensemble'], ['img/sorties-parvis-auj.webp', 'Le parvis aujourd’hui'], ['img/sorties-parvis.webp', 'Le parvis, chevrons et repères'], ['img/sorties-lices.webp', 'Les lices : le chevron sur le passage vers le parvis'], ['img/sorties-halle.webp', 'La place de la Halle le soir : le chevron de la rue du parvis, l’étiquette du quai de près'], ['img/sorties-tel-quai.webp', 'Téléphone, le quai'], ['img/sorties-tel-halle.webp', 'Téléphone, la Halle']],
+      rec: 'Le chevron de l’étiquette sur chaque sortie à l’écran, à toute distance, qui laisse place au nom « Vers … » de près (comme aujourd’hui) : on voit d’un coup d’œil par où l’on peut partir, avec la forme déjà apprise sur l’étiquette et sur la mini-carte. Hors du cadre, la mini-carte suffit : un repère au bord de l’écran ajoute un texte permanent sur la scène.',
+      opts: ['Le chevron sur chaque sortie à l’écran, le nom de près', 'Le chevron, et un repère au bord de l’écran pour une sortie hors du cadre', 'Un repère au bord de l’écran seulement', 'Garder aujourd’hui (l’étiquette de près et la mini-carte)'], recIdx: 0,
+      src: 'src/ui/exits.ts (ExitMarkers, maquette : exitmark=chevron|edge|both) ; src/simulation/v2places.ts (V2_EXITS) ; src/world/Plazas.ts (exits, EXIT_EMBLEM) ; journal Passe VP5' },
+    { id: 'MK-13', tag: 'arrivée', title: 'Le changement de lieu',
+      ctx: 'Aujourd’hui, passer une sortie assombrit l’écran (0,35 s), l’écran de chargement montre le nom du lieu, puis le héros paraît à l’entrée par laquelle il arrive ; seule la ligne d’état, en haut à gauche, dit où l’on est. Proposé : un carton au nom du lieu, dans le système (le nom dans la police des titres sur un filet d’accent, le moment dessous, sur le voile, sans boîte), qui paraît en fondu, tient deux secondes et s’efface (ta règle des cartons à fondus courts).',
+      shots: [['img/carton-quai.webp', 'Le carton en arrivant sur le quai, le matin'], ['img/carton-halle.webp', 'Le carton en arrivant sur la place de la Halle le soir (en français)'], ['img/carton-tel.webp', 'Téléphone']],
+      rec: 'Un carton au nom du lieu à chaque arrivée par une sortie (pas au rechargement après une action, ni pendant les nouvelles) : le changement de lieu se lit comme un passage, et le joueur apprend le nom des lieux que la carte et les étiquettes emploient.',
+      opts: ['Un carton à chaque arrivée par une sortie', 'Un carton à la première arrivée dans chaque lieu seulement', 'Rien de plus (la ligne d’état suffit)'], recIdx: 0,
+      src: 'src/ui/zoneCard.ts (maquette : zonecard=1) ; src/ui/exits.ts (le fondu) ; src/ui/loading.ts' },
+    { id: 'MK-14', tag: 'fermée', title: 'Une sortie fermée',
+      ctx: 'Une seule sortie se ferme dans une partie : la rue entre la place de la Halle et le parvis, le soir du défilé des Lanternes (jour 9, FE-7) ; son étiquette dit alors « La rue vers … est pleine », et y entrer ne mène nulle part.',
+      rec: 'Le chevron de cette sortie en gris, sans l’accent (l’accent dit « on peut y aller »), et l’étiquette qui dit pourquoi de près, comme aujourd’hui ; sur la mini-carte aussi, en gris.',
+      opts: ['Le chevron en gris, l’étiquette dit pourquoi', 'Pas de chevron sur une sortie fermée'], recIdx: 0,
+      src: 'src/simulation/v2festival.ts (paradeBlocks) ; src/ui/playPlaza.ts (v2.fest.shutTag)' },
+    { id: 'MK-15', tag: 'lecture', title: 'Comment le joueur l’apprend',
+      ctx: 'Le guide (H) a un chapitre « La Cité et ses places » ; la visite d’une partie neuve montre la ligne d’état, les chiffres, la liste et le menu ; le conseil des marques (MK-11) parle déjà de la mini-carte.',
+      rec: 'Une ligne dans le chapitre « La Cité et ses places » (le chevron montre par où partir, la mini-carte les sorties hors de l’écran) ; pas de nouveau conseil : le chevron se comprend en marchant vers lui.',
+      opts: ['Une ligne du guide, pas de conseil', 'Une ligne du guide et un conseil à la première sortie', 'Rien de plus'], recIdx: 0,
+      src: 'src/ui/tutorial.ts (chapitre places)' },
   ]},
 ];
 const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));

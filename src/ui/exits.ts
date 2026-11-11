@@ -14,6 +14,11 @@ const CSS = `
 .pm-exit{position:fixed;z-index:25;left:0;top:0;pointer-events:none;padding:6px 34px;white-space:nowrap;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:var(--ds-grad-spot);opacity:0;transition:opacity .25s}
 .pm-exit::after{content:'';position:absolute;left:50%;bottom:-8px;margin-left:-6px;border:6px solid transparent;border-top-color:var(--ds-accent)}
 body.pm-full .pm-exit,body.pm-talking .pm-exit{visibility:hidden}
+.pm-exfar{position:fixed;z-index:24;left:0;top:0;pointer-events:none;width:34px;height:28px;display:grid;place-items:center;background:var(--ds-grad-spot);opacity:0;transition:opacity .3s}
+.pm-exfar::before{content:'';border:6px solid transparent;border-top-color:var(--ds-accent);margin-top:8px}
+.pm-exedge{position:fixed;z-index:24;left:0;top:0;pointer-events:none;display:flex;align-items:center;gap:8px;padding:4px 22px;white-space:nowrap;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:var(--ds-grad-spot);opacity:0;transition:opacity .3s}
+.pm-exedge i{display:block;width:0;height:0;border:6px solid transparent;border-left-color:var(--ds-accent);border-right:0;transform-origin:3px 6px}
+body.pm-full .pm-exfar,body.pm-talking .pm-exfar,body.pm-full .pm-exedge,body.pm-talking .pm-exedge{visibility:hidden}
 .pm-fade{position:fixed;inset:0;z-index:60;background:var(--ds-ink);opacity:0;transition:opacity .35s ease-in;pointer-events:none}
 `;
 
@@ -22,7 +27,11 @@ export class ExitMarkers {
   private leaving = false;
   private readonly v = new THREE.Vector3();
 
-  constructor(private readonly ways: WayOut[], near = 9) {
+  /** the sheet's mock-ups (journal Passe MK4, DEV `exitmark=`): `chevron`, the tag's accent chevron over each way on screen beyond the tag's reach; `edge`, a
+   *  way off screen pointed at from the screen's edge with its place's name; `both` */
+  private far: HTMLElement[] = [];
+  private edge: HTMLElement[] = [];
+  constructor(private readonly ways: WayOut[], near = 9, private readonly farStyle: 'chevron' | 'edge' | 'both' | null = null) {
     this.near = near;
     if (!document.getElementById('pm-exit-css')) { const st = document.createElement('style'); st.id = 'pm-exit-css'; st.textContent = CSS; document.head.appendChild(st); }
     this.tags = ways.map((w) => {
@@ -30,6 +39,8 @@ export class ExitMarkers {
       t.dataset.to = w.to; document.body.appendChild(t);
       return t;
     });
+    if (farStyle === 'chevron' || farStyle === 'both') this.far = ways.map(() => { const e = el('div', 'pm-exfar'); document.body.appendChild(e); return e; });
+    if (farStyle === 'edge' || farStyle === 'both') this.edge = ways.map((w) => { const e = el('div', 'pm pm-exedge', `<i></i><span>${w.shut ?? tx('v2.exit.to', { place: placeName(w.to, true) })}</span>`); document.body.appendChild(e); return e; });
   }
   private readonly near: number;
 
@@ -44,7 +55,22 @@ export class ExitMarkers {
       // a tag stays whole on screen, however narrow (the audit of journal Passe UM1: it left a phone's screen)
       const half = Math.min(W / 2, (t.offsetWidth || 140) / 2), x = THREE.MathUtils.clamp((this.v.x + 1) / 2 * W, half, W - half), y = THREE.MathUtils.clamp((1 - this.v.y) / 2 * H, 40, H - 60);
       t.style.transform = `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px) translate(-50%, -100%)`;
-      t.style.opacity = on && !this.leaving ? String(THREE.MathUtils.clamp((this.near - d) / 2.5, 0, 1)) : '0';
+      const tagOp = on && !this.leaving ? THREE.MathUtils.clamp((this.near - d) / 2.5, 0, 1) : 0;
+      t.style.opacity = String(tagOp);
+      // the mock-ups: the chevron where the tag is not read yet; the screen's edge pointing at a way off screen
+      const f = this.far[i];
+      if (f) { f.style.transform = `translate(${((this.v.x + 1) / 2 * W).toFixed(0)}px, ${((1 - this.v.y) / 2 * H).toFixed(0)}px) translate(-50%, -100%)`; f.style.opacity = on && !this.leaving ? String(1 - tagOp) : '0'; }
+      const g = this.edge[i];
+      if (g) {
+        let nx = this.v.x, ny = this.v.y;
+        if (this.v.z > 1) { nx = -nx; ny = -ny; }
+        const k = 1 / Math.max(Math.abs(nx) / 0.9, Math.abs(ny) / 0.8, 1e-6);
+        const ex = (nx * k + 1) / 2 * W, ey = (1 - ny * k) / 2 * H, ang = Math.atan2(-ny, nx);
+        (g.firstElementChild as HTMLElement).style.transform = `rotate(${ang.toFixed(3)}rad)`;
+        g.style.flexDirection = nx < 0 ? 'row' : 'row-reverse';
+        g.style.transform = `translate(${ex.toFixed(0)}px, ${ey.toFixed(0)}px) translate(-50%, -50%)`;
+        g.style.opacity = !on && !this.leaving ? '1' : '0';
+      }
     });
     if (taken && !this.leaving) {
       this.leaving = true;
