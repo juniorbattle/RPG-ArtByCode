@@ -17,6 +17,7 @@ import { watchPost } from '../simulation/v2watch';
 import { hailOf } from '../simulation/v2react';
 import { Hails, type HailWalker } from './hails';
 import { keepPlace, tutorialOn } from './tutorial';
+import { showZoneCard } from './zoneCard';
 import { PeopleLayer } from './peopleLayer';
 
 /** The city in the play mode (journal Passes L3 / L4): the frozen Merchant District as it is, its day state, forge, crowd and weather taken
@@ -99,10 +100,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   // Arena Forecourt; walked into with a key held, the move saved and the square's page opened at its way in from the quay
   const END: Record<string, [number, number, number]> = { west: [WALK.x0 - 0.1, 2.6, 0.4], east: [WALK.x1 + 0.3, 2.6, 0] };
   const ways = isV2(st) ? V2_EXITS.district.map((e) => ({ ...e, anchor: END[e.side] })) : [];
-  // the sheet's mock-ups of the ways out (journal Passe MK4, DEV: `exitmark=chevron|edge|both`, `zonecard=1|hold`)
-  const exitMark = import.meta.env.DEV ? (b.params.get('exitmark') as 'chevron' | 'edge' | 'both' | null) : null;
-  if (import.meta.env.DEV && b.params.get('zonecard')) void import('./zoneCard').then((m) => m.showZoneCard(shortName(placeName(st.place, true)), `${cap(word(st.slot))} · ${tx('ui.clockDay', { day: st.day })}`, b.params.get('zonecard') === 'hold'));
-  const markers = ways.length ? new ExitMarkers(ways.map((w) => ({ to: w.to, anchor: w.anchor })), 9, exitMark) : null;
+  const markers = ways.length ? new ExitMarkers(ways.map((w) => ({ to: w.to, anchor: w.anchor }))) : null;
   if (markers) (window as any).__exits = markers;
   // a version 2 game plays with a gamepad too (the operator's sheet of journal Passe MN2): its walk, its pages' shoulders, the sound it may wake;
   // loaded on demand, it does nothing until a pad is used; today's game reads none
@@ -153,6 +151,8 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();
+  // the place's name on arriving by a way, once the news are read (the operator's MK-13 « Un carton à chaque arrivée par une sortie », journal Passe MK5)
+  if (arrive) void ui.newsRead.then(() => showZoneCard(shortName(placeName(st.place, true)), `${cap(word(st.slot))} · ${tx('ui.clockDay', { day: st.day })}`));
   // the tutorial (journal Passe TU3): a new game's tour, a game begun before's line, the moment's hints; the quay's picture kept for the guide (TU-4)
   if (isV2(st) && tutorialOn(b.params)) { void ui.welcome(b.params.has('new')); setTimeout(() => keepPlace(st.place, () => { app.render(); return b.canvas; }), 1500); }
   if (note) void overlay(`<h2 class="pm-h">${tx('ui.newGame')}</h2><p>${esc(note)}</p>`, [{ id: 'ok', label: tx('ui.continue'), primary: true }]).done;

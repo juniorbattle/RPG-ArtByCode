@@ -21,6 +21,7 @@ import { cap, shortName, tx, word } from '../narrative/text';
 import { ANNOUNCED } from '../audio/plan';
 import { parseWeather } from '../atmosphere/Weather';
 import { keepPlace, tutorialOn } from './tutorial';
+import { showZoneCard } from './zoneCard';
 import { PeopleLayer } from './peopleLayer';
 
 /** The version 2's open places (lot V5, journal Passe V5): the Arena Forecourt, the Training Ground and the Festival Square (in place of
@@ -75,10 +76,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   // (lot L6, FE-7: the evening of the Lanterns' parade the street between the festival square and the forecourt is full: its tag says so, and walking into it
   // goes nowhere; the quay stays open)
   const shut = (to: typeof st.place) => paradeBlocks(st, to);
-  // the sheet's mock-ups of the ways out (journal Passe MK4, DEV: `exitmark=chevron|edge|both`, `zonecard=1|hold`)
-  const exitMark = import.meta.env.DEV ? (b.params.get('exitmark') as 'chevron' | 'edge' | 'both' | null) : null;
-  if (import.meta.env.DEV && b.params.get('zonecard')) void import('./zoneCard').then((m) => m.showZoneCard(shortName(placeName(st.place, true)), `${cap(word(st.slot))} · ${tx('ui.clockDay', { day: st.day })}`, b.params.get('zonecard') === 'hold'));
-  const from = st.place, ways = new ExitMarkers(app.place.exits.map((e) => ({ to: e.to, anchor: e.anchor, shut: shut(e.to) ? tx('v2.fest.shutTag', { place: placeName(e.to, true) }) : null })), 9, exitMark);
+  const from = st.place, ways = new ExitMarkers(app.place.exits.map((e) => ({ to: e.to, anchor: e.anchor, shut: shut(e.to) ? tx('v2.fest.shutTag', { place: placeName(e.to, true) }) : null })));
   (window as any).__exits = ways;
   const leave = (to: typeof from) => { const r = (window as any).__game.act({ type: 'move', to }); if (r.ok) go(b.params, { arrive: from }); else location.reload(); };
   // the gamepad (the operator's sheet of journal Passe MN2): its walk, its pages' shoulders, the sound it may wake; loaded on demand, it does
@@ -93,7 +91,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   // the plan in the top right corner (src/ui/peopleLayer.ts)
   const standing = () => [...app.who].filter(([a, who]) => !a.hidden && PEOPLE[who]).map(([a, who]) => ({ who, pos: a.pos, head: a.height * a.scale }));
   const pl = app.place;
-  const layer = new PeopleLayer(() => st, { walk: [pl.walk, ...pl.lanes], blocks: pl.blockers.map((k) => ({ x: k.x, z: k.z, r: k.r })), edges: [], exits: pl.exits.map((e) => ({ x: e.anchor[0], z: e.anchor[2] })), reach: 15 }, () => ui.markShown());
+  const layer = new PeopleLayer(() => st, { walk: [pl.walk, ...pl.lanes], blocks: pl.blockers.map((k) => ({ x: k.x, z: k.z, r: k.r })), edges: [], exits: pl.exits.map((e) => ({ x: e.anchor[0], z: e.anchor[2], shut: !!shut(e.to) })), reach: 15 }, () => ui.markShown());
   (window as any).__people = layer;
   let last = app.stepped;
   const frame = () => {
@@ -113,6 +111,8 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();
+  // the place's name on arriving by a way, once the news are read (the operator's MK-13 « Un carton à chaque arrivée par une sortie », journal Passe MK5)
+  if (b.params.get('arrive')) void ui.newsRead.then(() => showZoneCard(shortName(placeName(st.place, true)), `${cap(word(st.slot))} · ${tx('ui.clockDay', { day: st.day })}`));
   // a browser driven by a tool keeps today's flow (as the title screen: navigator.webdriver) unless the address asks for the scene (cutscene=1)
   const scenes = b.params.get('cutscene') === '1' || (!navigator.webdriver && b.params.get('cutscene') !== '0');
   if (scene && scenes) {

@@ -11,6 +11,8 @@ const M = await load('/src/simulation/v2marks.ts');
 const O = await load('/src/simulation/v2offers.ts');
 const LAB = await load('/src/tournament/lab.ts');
 const B = await load('/src/ui/bubbles.ts');
+const TUT = await load('/src/ui/tutorial.ts');
+const TXT = await load('/src/narrative/text/index.ts');
 
 const v2 = () => G.makeV2(G.namedState('day1-morning'));
 const at = (st, place, slot, day) => { const s = structuredClone(st); s.place = place; s.slot = slot; if (day) s.day = day; return s; };
@@ -111,4 +113,13 @@ test('Explore\'s bubbles: none at the start, E\'s goes with its timer and gives 
   assert.equal(porter.bubble, null, 'gone with the timer');
   assert.equal(porter.anim, 'idle', 'his pose given back');
   assert.equal(keeper.anim, 'talk', 'the keeper keeps the pose she always had');
+});
+
+// The ways out (the operator's four cards of journal Passe MK5): the guide's line (MK-15) in both languages; the chevrons, the grey shut way and the arrival's card
+// are DOM over the scene, proven in a browser (journal Passe MK6)
+test('the guide\'s « The Cité and its squares » says what a chevron is, grey when shut, and the plan for the ways unseen (MK-15)', () => {
+  const st = v2(), ch = TUT.CHAPTERS.find((c) => c.id === 'places');
+  const en = TUT.chapterText(st, ch);
+  assert.match(en, /chevron/); assert.match(en, /grey chevron/i); assert.match(en, /top right corner/);
+  assert.ok(en.endsWith(TXT.tx('tut.ch.places.ways')), 'a line after the chapter\'s own text');
 });

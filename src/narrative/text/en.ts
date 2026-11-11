@@ -1267,6 +1267,7 @@ export const EN = {
   'tut.ch.places.title': 'The Cité and its squares',
   'tut.ch.places.line': 'The quay, three squares, and the ways between them',
   'tut.ch.places.body': 'Your game starts on the quay of the {quay}. Three squares open from it: the {a}, the {b} and the {c}, each with its own people at their own hours.\nAt the edges of a place, a tag shows a way out: walk into it to go there. The map, [M], takes you anywhere at once. Moving never costs a slot.\nA place\'s picture is kept here when you walk there.',
+  'tut.ch.places.ways': 'A small chevron over a street or a gate shows a way out, from as far as you can see it; near it, its sign says where it leads, and walking through takes you there. A grey chevron is a way shut for now. The plan in the top right corner shows the ways out you cannot see.',
   'tut.ch.shops.title': 'Shops and bargaining',
   'tut.ch.shops.line': 'Prices, and how to talk them down',
   'tut.ch.shops.body': '{mara} on the quay, {hilde} on the forecourt, {corvin} on the training ground and {pip} on the festival square sell their own gear; {bram}\'s forge tempers your weapon. A few passers-by carry a single rare piece. Prices rise in the evening and fall as your reputation grows.\nIn a keeper\'s goods, [Space] bargains for the piece selected: on your name, as a friend of the stall, or for two pieces at once. Each argument shows its chance and what it saves. A bargain lost costs nothing more, but the keeper hears no other argument from you that day.\nThe goods page shows what a piece changes before you buy it.',

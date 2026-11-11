@@ -240,7 +240,8 @@ export const CHAPTERS: Chapter[] = [
 export function chapterText(s: GameState, c: Chapter): string {
   switch (c.id) {
     case 'tournament': return tx(c.body, { days: V2_DAYS, pool: list(daysOfKind('pool', 'cut')), win: POINTS.win, close: POINTS.close, loss: POINTS.loss, cut: dayOf('cut'), semis: dayOf('semis'), major: dayOf('major'), final: dayOf('final'), free: list(daysOfKind('free')) });
-    case 'places': return tx(c.body, { quay: placeShort('district'), a: placeShort('forecourt'), b: placeShort('training'), c: placeShort('lanterns') });
+    // the ways out's chevrons (the operator's MK-15 « Une ligne du guide, pas de conseil », journal Passe MK5), a line after the chapter's text
+    case 'places': return `${tx(c.body, { quay: placeShort('district'), a: placeShort('forecourt'), b: placeShort('training'), c: placeShort('lanterns') })}\n${tx('tut.ch.places.ways')}`;
     case 'shops': return tx(c.body, { mara: nameOf('mara'), hilde: nameOf('hilde'), corvin: nameOf('corvin'), pip: nameOf('pip'), bram: nameOf('bram') });
     case 'money': return tx(c.body, { jobs: jobsLine(), pay: WORK.pay, mara: nameOf('mara'), pool: PURSES.pool[0], poolL: PURSES.pool[1], semi: PURSES.semi[0], semiL: PURSES.semi[1], semiDay: dayOf('semis'), third: PURSES.third[0], thirdL: PURSES.third[1], majorDay: dayOf('major'), final: PURSES.final[0], finalL: PURSES.final[1], champ: CHAMPION_PURSE });
     case 'law': return tx(c.body, { day: STEAL_FINE.day, night: STEAL_FINE.night, max: LAW.wanted, fee: LAW.fee, hale: nameOf('hale') });

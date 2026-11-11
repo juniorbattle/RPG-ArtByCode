@@ -5,7 +5,10 @@ import { el } from './style';
 
 /** The version 2's ways out on screen (journal Passe VP5, the operator's « entrées / sorties comme dans un final fantasy 9 »): over each way
  *  out of the page a tag naming the place it leads to, shown as the hero comes near it; walking through it darkens the screen and goes there
- *  (the page reports the way taken: the square's lane end, the quay's ends). DOM over the canvas, on the design system's veil. */
+ *  (the page reports the way taken: the square's lane end, the quay's ends). DOM over the canvas, on the design system's veil. Every way on screen shows the
+ *  tag's accent chevron from any distance, the tag taking its place near (the operator's MK-12 « Le chevron sur chaque sortie à l’écran, le nom de près »,
+ *  journal Passe MK5); a way shut has it grey (MK-14 « Le chevron en gris, l’étiquette dit pourquoi »). The chevron is the ways' shape, the diamond the people's
+ *  (src/ui/npcMarks.ts), the same on the minimap. */
 
 /** `shut`: why the way is closed now (lot L6, FE-7: the Lanterns' parade fills the street to the forecourt that evening), said on its tag instead of the place */
 export interface WayOut { to: PlaceId; anchor: [number, number, number]; shut?: string | null }
@@ -14,11 +17,10 @@ const CSS = `
 .pm-exit{position:fixed;z-index:25;left:0;top:0;pointer-events:none;padding:6px 34px;white-space:nowrap;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:var(--ds-grad-spot);opacity:0;transition:opacity .25s}
 .pm-exit::after{content:'';position:absolute;left:50%;bottom:-8px;margin-left:-6px;border:6px solid transparent;border-top-color:var(--ds-accent)}
 body.pm-full .pm-exit,body.pm-talking .pm-exit{visibility:hidden}
+.pm-exit.shut::after,.pm-exfar.shut::before{border-top-color:var(--ds-muted)}
 .pm-exfar{position:fixed;z-index:24;left:0;top:0;pointer-events:none;width:34px;height:28px;display:grid;place-items:center;background:var(--ds-grad-spot);opacity:0;transition:opacity .3s}
 .pm-exfar::before{content:'';border:6px solid transparent;border-top-color:var(--ds-accent);margin-top:8px}
-.pm-exedge{position:fixed;z-index:24;left:0;top:0;pointer-events:none;display:flex;align-items:center;gap:8px;padding:4px 22px;white-space:nowrap;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:var(--ds-grad-spot);opacity:0;transition:opacity .3s}
-.pm-exedge i{display:block;width:0;height:0;border:6px solid transparent;border-left-color:var(--ds-accent);border-right:0;transform-origin:3px 6px}
-body.pm-full .pm-exfar,body.pm-talking .pm-exfar,body.pm-full .pm-exedge,body.pm-talking .pm-exedge{visibility:hidden}
+body.pm-full .pm-exfar,body.pm-talking .pm-exfar{visibility:hidden}
 .pm-fade{position:fixed;inset:0;z-index:60;background:var(--ds-ink);opacity:0;transition:opacity .35s ease-in;pointer-events:none}
 `;
 
@@ -27,20 +29,17 @@ export class ExitMarkers {
   private leaving = false;
   private readonly v = new THREE.Vector3();
 
-  /** the sheet's mock-ups (journal Passe MK4, DEV `exitmark=`): `chevron`, the tag's accent chevron over each way on screen beyond the tag's reach; `edge`, a
-   *  way off screen pointed at from the screen's edge with its place's name; `both` */
-  private far: HTMLElement[] = [];
-  private edge: HTMLElement[] = [];
-  constructor(private readonly ways: WayOut[], near = 9, private readonly farStyle: 'chevron' | 'edge' | 'both' | null = null) {
+  /** each way's chevron, shown where its tag is not read yet (MK-12) */
+  private far: HTMLElement[];
+  constructor(private readonly ways: WayOut[], near = 9) {
     this.near = near;
     if (!document.getElementById('pm-exit-css')) { const st = document.createElement('style'); st.id = 'pm-exit-css'; st.textContent = CSS; document.head.appendChild(st); }
     this.tags = ways.map((w) => {
       const t = el('div', 'pm pm-exit', w.shut ?? tx('v2.exit.to', { place: placeName(w.to, true) }));
-      t.dataset.to = w.to; document.body.appendChild(t);
+      t.dataset.to = w.to; if (w.shut) t.classList.add('shut'); document.body.appendChild(t);
       return t;
     });
-    if (farStyle === 'chevron' || farStyle === 'both') this.far = ways.map(() => { const e = el('div', 'pm-exfar'); document.body.appendChild(e); return e; });
-    if (farStyle === 'edge' || farStyle === 'both') this.edge = ways.map((w) => { const e = el('div', 'pm pm-exedge', `<i></i><span>${w.shut ?? tx('v2.exit.to', { place: placeName(w.to, true) })}</span>`); document.body.appendChild(e); return e; });
+    this.far = ways.map((w) => { const e = el('div', `pm-exfar${w.shut ? ' shut' : ''}`); e.dataset.to = w.to; e.setAttribute('aria-hidden', 'true'); document.body.appendChild(e); return e; });
   }
   private readonly near: number;
 
@@ -57,20 +56,10 @@ export class ExitMarkers {
       t.style.transform = `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px) translate(-50%, -100%)`;
       const tagOp = on && !this.leaving ? THREE.MathUtils.clamp((this.near - d) / 2.5, 0, 1) : 0;
       t.style.opacity = String(tagOp);
-      // the mock-ups: the chevron where the tag is not read yet; the screen's edge pointing at a way off screen
+      // the chevron where the tag is not read yet, at the way's sign (MK-12)
       const f = this.far[i];
-      if (f) { f.style.transform = `translate(${((this.v.x + 1) / 2 * W).toFixed(0)}px, ${((1 - this.v.y) / 2 * H).toFixed(0)}px) translate(-50%, -100%)`; f.style.opacity = on && !this.leaving ? String(1 - tagOp) : '0'; }
-      const g = this.edge[i];
-      if (g) {
-        let nx = this.v.x, ny = this.v.y;
-        if (this.v.z > 1) { nx = -nx; ny = -ny; }
-        const k = 1 / Math.max(Math.abs(nx) / 0.9, Math.abs(ny) / 0.8, 1e-6);
-        const ex = (nx * k + 1) / 2 * W, ey = (1 - ny * k) / 2 * H, ang = Math.atan2(-ny, nx);
-        (g.firstElementChild as HTMLElement).style.transform = `rotate(${ang.toFixed(3)}rad)`;
-        g.style.flexDirection = nx < 0 ? 'row' : 'row-reverse';
-        g.style.transform = `translate(${ex.toFixed(0)}px, ${ey.toFixed(0)}px) translate(-50%, -50%)`;
-        g.style.opacity = !on && !this.leaving ? '1' : '0';
-      }
+      f.style.transform = `translate(${((this.v.x + 1) / 2 * W).toFixed(0)}px, ${((1 - this.v.y) / 2 * H).toFixed(0)}px) translate(-50%, -100%)`;
+      f.style.opacity = on && !this.leaving ? String(1 - tagOp) : '0';
     });
     if (taken && !this.leaving) {
       this.leaving = true;
@@ -81,5 +70,5 @@ export class ExitMarkers {
   }
 
   /** the ways' tags, for the proofs: where each stands and how visible */
-  state(): Array<{ to: string; opacity: number }> { return this.tags.map((t) => ({ to: t.dataset.to ?? '', opacity: +(t.style.opacity || 0) })); }
+  state(): Array<{ to: string; opacity: number; chevron: number; shut: boolean }> { return this.tags.map((t, i) => ({ to: t.dataset.to ?? '', opacity: +(t.style.opacity || 0), chevron: +(this.far[i].style.opacity || 0), shut: t.classList.contains('shut') })); }
 }

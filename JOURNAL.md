@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2, DB7, RM3, DB8, DB9, DB10, ECO1, TF1, ECO2, ECO3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1, TF1, ECO3, DB11, DB13, MD1, MK3) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2, DB7, RM3, DB8, DB9, DB10, ECO1, TF1, ECO2, ECO3, DB11, DB12 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1, TF1, ECO3, DB11, DB13, MD1, MK3, MK6) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -97,88 +97,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/84-passes-DB9-DB10.md`](journal/84-passes-DB9-DB10.md) | DB9, DB10 | 09/11 |
 | [`journal/85-passes-ECO1-TF1.md`](journal/85-passes-ECO1-TF1.md) | ECO1, TF1 | 10/11 |
 | [`journal/86-passes-ECO2-ECO3.md`](journal/86-passes-ECO2-ECO3.md) | ECO2, ECO3 | 11/11 |
+| [`journal/87-passes-DB11-DB12.md`](journal/87-passes-DB11-DB12.md) | DB11, DB12 | 10/11 |
 
 ---
-
-## Passe DB11 — Le duel après l'essai du 10 novembre : la mesure, le paquet proposé et sa fiche ; rien d'appliqué (2026-11-10)
-
-### Demande
-- L'opérateur, après son essai du 2026-11-10, mot pour mot (transmis par la séance qui a ouvert celle-ci) : « Bon il y a du mieux par contre, il y a des zones d'ameliorations : * d'abord la barre de break pour nos ennemies est trop lente a monter elle devrait montrer plus vite sachant qu'ils ont plus de pv, de plus les ennemies attaquent beaucoup trop souvent des le debut du jeu alors qu'ils devraient avoir un plus long temps de pause et vers la fin du jeu peut etree garder le rythme actuelle ou proposer des combos plus long [...] * d'ailleurs je nai pas cerne les moyens d'augementer les points de vie de notre protagoniste, il faudrait aussi rapprocher les points de vie de nos adversaires au debut du jeu ».
-- Quatre points : la jauge de rupture des rivaux, leur rythme en début de tournoi (et la fin), la façon de monter les PV de Ren, l'écart de PV au début. Ne pas toucher aux prix ni aux revenus (séance de l'économie en parallèle) ; les textes nouveaux avec leur français.
-- Branche `claude/duel-equilibre`, worktree `.claude/worktrees/duel-equilibre` (le dossier principal restait sur `claude/duel-calibration`, déjà fusionnée, et d'autres séances le partagent), tirée de `main` `df16326`, avancée en avance rapide sur `b8f8481` (Passe ECO1, d'une autre séance) avant le commit ; `node_modules` en jonction vers celui du dossier principal.
-
-### Ce que fait le jeu aujourd'hui — mesuré [OK]
-- **La jauge** : 70, se vide de 1,26 par seconde ; une attaque simple y ajoute 0,4 à 0,7 (le double gardée), moins qu'elle ne redescend ; deux Coups éclairs gardés à 17 s d'écart ne brisent pas Orla (44 − 21 + 44 = 67) ; seule l'Estocade gardée brise d'un coup. Le bot : 1,1 rupture par minute en poule, la première vers 33 s.
-- **Le rythme** : 7,8 séquences adverses par minute en poule (bot moyen), **dont 56 % lancées par la riposte au 3e coup simple** ; 89 % pour le marteleur. Vessa (niveau 4, pauses 3,5-6,5 s, la plus rapide) est le premier combat du joueur. Rival par rival en poule (bot moyen) : Vessa 25 %, Orla 40 %, Cassius 80 % : le premier combat est le plus dur de la poule.
-- **Les PV** : Ren 150 contre 500 à 700 ; la vigueur (+12 par victoire) n'est dite nulle part (ni la victoire, ni la fiche de match, ni le guide) ; seule la page d'équipement montre les PV.
-
-### L'outil — `tools/duel-balance.mjs`
-- La politique `gspam` (le marteleur qui tient la garde, celui du test de la Passe DB9), jouée une fois et non par adresse ; les jetons `clen<n>` (combos plus longs), `tempo<k>`, `decay<k>`, `sgk<k>`, `vivd<n>` (l'adversaire n de Vivacité sous sa fiche, lu comme le jeu lit le tempo) ; les relevés : séquences adverses par minute, part lancée par la riposte, temps libre entre deux séquences, ruptures par minute, PV de Ren restants ; `--audit` les imprime.
-- Mesure : bot 0,2 / 0,5 / 0,9 et marteleur, sept rivaux, 20 graines (10 pour les premiers essais), le joueur attendu de la fiche DB7 à chaque étape. Fichiers hors dépôt ; refaits par `--audit --seeds=1..20 --policies=bot,gspam --variant=...`.
-
-### Ce que la mesure a appris
-- **[KO] L'attaque simple pour remplir la jauge** : ×3, le marteleur gagne 51 % de ses combats en poule (76 % avec les rivaux allégés) ; la jauge d'aujourd'hui avec le reste du paquet, 23 %. La charge doit rester ce qui casse la garde.
-- **[OK] Les compétences ×1,5 et une jauge qui se vide deux fois moins vite** : 2,0 ruptures par minute, le marteleur à 9 %. Une jauge de 50 fait presque pareil (1,9 ; 4 %).
-- **[?] Les pauses seules** : ×1,6 en poule, les séquences par minute ne baissent que de 7,8 à 6,9, la riposte en lance alors 72 %. Le tempo par la Vivacité (−3 en poule) fait autant que des pauses ×1,6, par une stat visible sur la fiche de match.
-- **[KO] Reculer la riposte** : au 5e coup, le marteleur 43 % ; au 4e en poule avec le paquet, 19 %.
-- **[KO pour le marteleur] Baisser les PV des rivaux en poule** : ×0,7, 29 % ; ×0,8, 19 %. Monter Ren et doubler les coups des rivaux ne change rien à l'équilibre (vérifié : 71 / 92 / 99 % à 150 comme à 300).
-- **Le paquet recommandé** (Vivacité −3 en poule, compétences ×1,5 à la jauge et déclin ×0,5, combos +1 en finale, Ren ×2 et coups ×2, PV des rivaux ×1,6 au tableau) : poule 71 / 92 / 99 % (aujourd'hui 29 / 59 / 89), 2,1 min, 5,5 séquences par minute, marteleur 9 % ; tableau 59 / 84 / 94 % (51 / 74 / 92) ; finale 39 / 69 / 87 % (30 / 70 / 94), 2,9 min. Rival par rival en poule : Vessa 70 %, Orla 95 %, Cassius 100 %.
-- **Le croisement avec l'économie** : la Passe ECO1 (fusionnée pendant cette passe) a mesuré que la courbe du combat suppose un équipement qu'aucun joueur n'atteint aujourd'hui. Avec l'équipement 1 au tableau et en finale, le paquet donne 46 / 73 / 89 % et 25 / 44 / 75 % (aujourd'hui 41 / 67 / 94 et 20 / 34 / 84). Le calage du tableau et de la finale attendra les choix des deux fiches.
-- Le détail : `briefs/audit-duel-db11.md`.
-
-### La fiche DB11 — publiée, rien de décidé
-- https://claude.ai/artifact/F8Jse4sSXcjaRv2qvB7KBb (`briefs/fiche-db11.html`, le gabarit des fiches DB), collection `decisions` relue vide ; vérifiée dans Chrome sans tête : sept cartes, 21 options, quatre tables, aucune erreur, aucun débordement à 375 px. Version 2 : la note sur l'équipement et la fiche ECO1 ajoutée à la carte du calage.
-- Sept cartes en quatre familles :
-  - **DB11-1** la jauge : recommandé « Compétences ×1,5, se vide deux fois moins vite » (une jauge de 50 serait une décision A3, elle remplace DB5-4) ;
-  - **DB11-2** les pauses : recommandé « Vivacité −3 en poule, celle de la fiche ensuite » (décision A3 : change DB7-5 et DB7-6) ;
-  - **DB11-3** la riposte : recommandé « La garder au 3e coup » (la reculer serait une décision A3 sur DB-2) ;
-  - **DB11-4** la finale : recommandé « Des combos d’un coup plus long en finale » ;
-  - **DB11-5** les PV de Ren : recommandé « Le dire partout, et une séance « Santé » (+20 PV au prochain combat) » (décision A3 : change DB7-3) ; le dire partout : l'écran de victoire, la fiche de match, le guide, un conseil à la première victoire ;
-  - **DB11-6** l'écart : recommandé « Ren 300, tout ce qui touche à ses PV ×2 et les coups des rivaux ×2 » (décision A3 : les nombres de DB4-3 et DB7-4) ;
-  - **DB11-7** la courbe : recommandé « La poule plus facile, tableau et finale sur la courbe DB7 » (la référence de la Passe DB10 gardée au tableau et en finale).
-
-### Validation
-- Rien du jeu ne change sur cette branche (l'outil de mesure, l'audit, la fiche, le journal) : `npm run typecheck` sans erreur ; `npm test` 587 / 587 ; `npm run build` réussi ; `npm run art:validate` 73 manifestes, 123 sources, 23 manifestes de son, 0 erreur. Rejouée sur le dernier `main` (`bdd40c4` : les Passes TF1, les textes français, et ECO2 / ECO3, l'économie, d'autres séances ; ECO3 archivait aussi RM3) dans `claude/duel-equilibre-3`, sans réécrire `claude/duel-equilibre` ni `claude/duel-equilibre-2` déjà poussées : mes fichiers repris tels quels, le journal recomposé par script, l'archive de RM3 de `main` gardée (son corps égal à l'octet à celui que cette passe avait archivé). Les passes gardées dépassaient alors 60 Ko (63,5 Ko) : DB8 (branche fusionnée) déplacée à l'octet dans `journal/83-passes-DB8.md`, sa ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les 4 760 octets retirés, le journal reconstruit égale l'original, CRLF partout, DB8 dans un seul fichier ; 58,7 Ko de passes restent.
-
-### Où reprendre
-- Attendre la fiche DB11 ; consigner mot pour mot, les décisions A3 datées avant la mise en œuvre ; amender `briefs/combat-system.md` (§ 19).
-- Puis appliquer dans le jeu par défaut ce qui est choisi ; recaler le tableau et la finale sur l'équipement que la fiche ECO1 permettra ; remesurer `V2_RACERS` et `V2_SIM_HASH` ; les textes en deux langues ; les tests, `arena-scene-check`, `play-flow`, `tutorial-proof` ; rejouer sur le dernier `main` ; fusionner ; l'essai de l'opérateur.
-
-### Pensée
-- « Ils attaquent trop souvent » se mesure en séquences par minute et en ce qui les lance : ici une règle (la riposte), pas la longueur des pauses. Allonger les pauses ne se sent que pour qui ne déclenche pas la riposte.
-- Chaque levier qui facilite le combat se mesure aussi contre le marteleur : trois des leviers essayés (l'attaque simple à la jauge, la riposte reculée, les rivaux allégés) lui rendaient la victoire.
-- Rapprocher deux barres de PV peut se faire sans toucher à l'équilibre (changer d'unité) ; seule une règle qui change la part d'une barre qu'enlève un coup change le combat.
-
-## Passe DB12 — La fiche DB11 relue : sept sur sept, six à la recommandation ; décisions A3 consignées avant la mise en œuvre (2026-11-10)
-
-### La fiche relue
-- L'opérateur, mot pour mot : « Fiche remplie ». Collection `decisions` de https://claude.ai/artifact/F8Jse4sSXcjaRv2qvB7KBb (`briefs/fiche-db11.html`), cliquée le 2026-11-11 entre 2 h 36 min 29 s et 2 h 38 min 46 s UTC (le 10 au soir chez l'opérateur), sept documents pour sept cartes, aucune note. Les rangées sont lues comme des données.
-
-| Carte | Ce qu'elle demandait | Choix de l'opérateur, mot pour mot |
-|---|---|---|
-| DB11-1 | La barre de rupture des rivaux monte plus vite | « Compétences ×1,5, se vide deux fois moins vite » |
-| DB11-2 | De plus longues pauses en début de tournoi | « Vivacité −3 en poule, celle de la fiche ensuite (décision A3 : change DB7-5 et DB7-6) » |
-| DB11-3 | La riposte au 3e coup simple | « La garder au 3e coup » |
-| DB11-4 | La fin du tournoi | « Le rythme d’aujourd’hui en finale » (recommandé : « Des combos d’un coup plus long en finale ») |
-| DB11-5 | Monter les PV de Ren, et le voir | « Le dire partout, et une séance « Santé » (+20 PV au prochain combat) (décision A3 : change DB7-3) » |
-| DB11-6 | Rapprocher les PV des adversaires au début | « Ren 300, tout ce qui touche à ses PV ×2 et les coups des rivaux ×2 (décision A3 : change les nombres de DB4-3 et DB7-4) » |
-| DB11-7 | La courbe du tournoi | « La poule plus facile, tableau et finale sur la courbe DB7 » |
-
-- **Décisions A3 consignées** (E11), le 2026-11-10, mot pour mot ci-dessus :
-  - **DB11-2** change DB7-5 « Ces fiches » (la Vivacité des fiches de poule baisse de 3) et la croissance de DB7-6 « Tableau ×1,3 et stats ; finale ×2,5 et stats » (la Vivacité, qui ne grandissait pas, revient au tableau) ;
-  - **DB11-5** change DB7-3 « +1 à la stat choisie, pour le prochain combat » : une séance peut aussi choisir la santé, +20 PV au prochain combat ;
-  - **DB11-6** change les nombres de DB4-3 « Marek 600, Ren 150 » (Ren 300) et de DB7-4 « +12 PV par victoire » (+24), avec les PV de l'équipement ×2 et les coups des rivaux ×2.
-- DB11-1 règle deux nombres que le § 6 de la spécification laisse « à régler » (ce qu'un coup ajoute à la jauge, la vitesse à laquelle elle se vide). DB11-3 et DB11-4 ne changent rien. DB11-7 précise la référence de calage de la Passe DB10 (« The DB7 sheet's curve ») : la poule s'en écarte, le tableau et la finale y restent.
-- Consignées dans `briefs/combat-system.md`, nouveau § 20, et une ligne aux § 6, 19.2, 19.4, 19.5.
-
-### Ce que DB11-4 change au paquet
-- La finale garde le rythme d'aujourd'hui. Avec la jauge de DB11-1, elle devient plus facile (mesuré à l'échelle ×5/3 : 54 / 83 / 94 % au lieu de 30 / 70 / 94 %). DB11-7 la veut sur la courbe DB7 (26 / 66 / 100 %) : elle se recale par la croissance de la finale (ses PV, l'épique de DB5-7), comme le tableau.
-
-### L'équipement du calage
-- La fiche ECO1 est relue de son côté (Passe ECO2 sur `claude/economie-lot`, pas encore sur `main`) : ECO-2 « Un travail par lieu et par jour (jusqu’à trois par jour) » et les bourses par étape, que le planificateur de la Passe ECO1 mesurait à 97 % pour l'équipement 2 au jour 6 et 87 à 97 % pour l'équipement 3 au jour 10. Le calage du tableau et de la finale se fait donc sur le joueur attendu de la fiche DB7 (équipement 2 au tableau, 3 en finale), la référence de la Passe DB10.
-
-### Où reprendre
-- La mise en œuvre sur `claude/duel-equilibre-2`, dans le jeu par défaut : la jauge, la Vivacité de poule, Ren ×2, la séance « Santé », ce que le jeu dit des PV (victoire, fiche de match, guide, un conseil) en anglais et en français ; le recalage du tableau et de la finale ; `V2_RACERS`, `V2_SIM_HASH` ; les tests et les preuves ; la fusion ; l'essai de l'opérateur.
 
 ## Passe DB13 — La fiche DB11 appliquée dans le jeu par défaut : la jauge plus vive, la Vivacité de poule, Ren ×2, la séance « Santé », les PV dits, le recalage (2026-11-10)
 
@@ -464,6 +385,37 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - **MK-15** : une ligne dans le chapitre « La Cité et ses places » du guide, en anglais et en français ; pas de nouveau conseil.
 - Les paramètres de maquette (`exitmark=`, `zonecard=`) sont retirés (VD-8) ; le jeu d'aujourd'hui (`v2=0`) et Explore inchangés.
 
+## Passe MK6 — Les sorties appliquées dans le jeu par défaut : le chevron sur chaque sortie à l'écran, le carton à l'arrivée, la sortie fermée en gris, la ligne du guide (2026-11-11)
+
+### Demande
+- Appliquer les quatre choix consignés en Passe MK5 dans le jeu par défaut, en anglais et en français, prouver, fusionner. Branche `claude/indicateurs-sorties`.
+
+### Ce qui est construit — [OK]
+- **MK-12** (`src/ui/exits.ts`) : chaque sortie à l'écran porte, à toute distance, le chevron d'accent de son étiquette sur le voile ; de près (9 m à 6,5 m, le fondu d'aujourd'hui) l'étiquette « Vers … » prend sa place ; le repère au bord de l'écran des maquettes est retiré (la mini-carte montre les sorties hors du cadre). `state()` donne pour chaque sortie l'opacité de l'étiquette, celle du chevron et si elle est fermée.
+- **MK-13** (`src/ui/zoneCard.ts`) : à l'arrivée par une sortie (`arrive=` dans l'adresse, posé par le passage), une fois les nouvelles lues, un carton au nom court du lieu (police des titres, filet d'accent, le moment et le jour dessous), en fondu de 0,45 s, tenu deux secondes ; jamais au rechargement après une action ; le jeu d'aujourd'hui n'en a pas (le quai d'une partie v2 seulement).
+- **MK-14** : la sortie fermée (la rue du parvis le soir du défilé) a son chevron et le chevron de son étiquette dans le gris du système (`--ds-muted`), sur la scène et sur la mini-carte (`MapPlan.exits[].shut`) ; l'étiquette dit pourquoi, comme avant.
+- **MK-15** : une ligne dans le chapitre « La Cité et ses places » du guide (`tut.ch.places.ways`), en anglais et en français ; pas de conseil.
+- Les paramètres de maquette (`exitmark=`, `zonecard=`) sont retirés.
+
+### Tests — [OK]
+- `tests/v2-marks.test.mjs` : un dixième test, la ligne du guide (le chevron, le chevron gris, le plan en haut à droite, après le texte du chapitre). [KO → corrigé] chargé d'abord après le premier `test()`, le module du tutoriel a été coupé par la fermeture du chargeur (« Vite module runner has been closed ») : chaque module se charge avant le premier test (principe de la Passe H7).
+- Les passes gardées dépassaient 60 Ko avec MK6 : DB11 et DB12 (branches fusionnées) déplacées d'un bloc, à l'octet, dans `journal/87-passes-DB11-DB12.md`, leur ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les octets retirés, chaque passe dans un seul fichier, CRLF partout.
+- `npm run typecheck` sans erreur ; `npm test` **606 / 606** ; `npm run build` ; `npm run art:validate` (73 manifestes, 123 sources, 23 du son, 0 erreur).
+
+### Preuves dans le navigateur (serveur DEV `mpn-dev`, :5401) — [OK]
+- `tools/exits-proof.mjs` : **chaque sortie parcourue dans les deux sens** (32 vérifications), les captures d'arrivée montrent les chevrons des portes lointaines.
+- Dans la page (`tools/eval.mjs`), au parvis le matin en arrivant du quai : le carton « Arena Forecourt · Morning · Day 1 » à opacité 1 de 0 à 2 s, effacé à 2,5 s, retiré à 3 s ; les chevrons des sorties vers la place de la Halle et les lices à 1, l'étiquette du quai (proche) à 1 et son chevron à 0. Sans `arrive`, aucun carton. Une sortie fermée : chevron et étiquette en `rgb(207, 210, 219)` (`--ds-muted`), une ouverte en `rgb(242, 193, 90)` (`--ds-accent`).
+- **`tools/ui-text.mjs`** : le carton (quai, parvis, place de la Halle) et le guide, en anglais et en français, à 1920 × 1080, 1280 × 720 et 812 × 375 : **24 / 24** (le carton gardé pour la mesure par une copie sans fondu).
+- **`tools/ui-contrast.mjs`** : [KO → corrigé] le carton sur le voile des étiquettes tombait à 4,29:1 sur les façades claires du quai de jour (« Quartier marchand ») ; son voile renforcé (`--ds-veil-strong` jusqu'à 78 %, plus large) : sur le quai, le parvis et les lices à midi et la place de la Halle l'après-midi, en deux langues et trois tailles, aucun texte du carton sous 4,5:1 ; le guide au plus bas 7,5:1. Seuls échouent, antérieurs : « coins » / « pièces » au téléphone (4,1 à 4,4:1).
+- `tools/play-day.mjs` : **tout passe**, Node rejoue `75272cc6a835113b` comme le navigateur ; `tools/tutorial-proof.mjs` et `tools/default-proof.mjs` : **tout passe** ; le jeu d'aujourd'hui (`v2=0`, `tools/detshots.mjs`) : **0 px** contre `main` figé, témoin de répétition 0 px.
+
+### Où reprendre
+- L'essai en jeu de l'opérateur : les chevrons des sorties (lisibles de loin, distincts des losanges des personnes), le carton à l'arrivée, la sortie fermée le soir du défilé.
+
+### Pensée
+- Un même accent pour deux choses demande deux formes : le chevron pour un chemin, le losange pour une personne, et les mêmes sur la mini-carte.
+- Un texte posé sur la scène se mesure sur le décor le plus clair où il paraîtra (les façades de midi) : le voile des étiquettes, assez pour une ligne courte, ne l'était pas pour un titre au milieu du cadre.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -680,7 +632,7 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
 **6f. Son (Passes SN1 à SN22)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours** : la fiche des couches est relue (Passe SN14). Les morceaux tiennent, la règle F est appliquée aux trois combats (la mélodie à 0,45 pendant la séquence adverse, la tension à 0,35 au repos, chaque changement sur une mesure), et la double demande est corrigée. **S3 est clos** (Passes SN13 à SN17) : la règle F des couches ; les sons du groupe pour chaque recette du duel et sa lecture ; la foule en code à la place du grondement ; les baisses gardées ; tout est en production dans la version 2 (S3E-PROD « Confirmé : en production dans la version 2 »). **S2 dans la version 2** (Passes SN18 / SN19, fiche relue 14 / 14) : les quatre lieux gardent leur ambiance de S0, 3 dB plus en retrait avec leur écho (la musique 7 à 8 dB au-dessus, cible 6 à 9) ; la pluie et le tonnerre après chaque éclair, sans rafales ; la neige et le vent muets ; l’interface jouée par le groupe (famille `interface`, 45 Ko), le refus sur une action refusée ; les pas calculés ; la pluie, le tonnerre et les pas calculés dans la page ; le murmure non cuit. **S2 est clos** (Passe SN20) : « Bien dans le jeu », « Confirmé : en production dans la version 2 » (écrit dans le manifeste de l’interface). **S5 est clos et le son reçu** (Passes SN21 / SN22, fiche relue 9 / 9) : tout le son mesuré page après page ; la foule de l’arène creusée à 500 Hz (S5-FOULE), le refus d’une action 6 dB plus fort hors du duel (S5-REFUS), le relevé de la reprise corrigé (S5-PAGES) ; le reste gardé ; S5-RECEPTION « Reçu, avec les réglages choisis sur cette fiche » : le plan d’audit est clos, le son reste derrière la version 2 (SA-16), devenue le jeu par défaut le 2026-11-09 : l'écran titre joue « titre » et Explore la musique de la ville (Passes VD1 / VD2) ; toute suite est une demande à part. L’ancienne branche `claude/gifted-lewin-77d4c2` est supprimée, sur l’accord de l’opérateur (« Oui, la supprimer », Passe SN21). **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 tranchée : « Pas de compositeur : la musique du groupe reste » (Passe SN22).
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
-- **Les PNJ utiles, la bulle et la mini-carte (Passe MK1)** : la demande de l'opérateur du 2026-11-11 ; la bulle « … » du quai inventoriée (Mara et Hale, et le reste après [E]), les PNJ utiles mesurés sur des parties entières, les maquettes rendues dans le jeu (DEV `npcmark=`, `minimap=`), la fiche https://claude.ai/artifact/5zanTkRhq2WoHbC384bt1C publiée (onze cartes, la mini-carte revient sur UM-R5), **relue onze sur onze à la recommandation (Passe MK2)** : MK-7 « Oui, en haut à droite (remplace UM-R5) » ; **appliquée et fusionnée (Passe MK3)** : plus de bulle dans une partie, Explore garde la courte réaction à [E] ; le losange de ce qui est neuf (objet, événement, suite), parti à l'ouverture du dialogue, gardé hors de l'empreinte ; la mini-carte en haut à droite ; la liste, un conseil, une ligne du guide ; reste **l'essai en jeu de l'opérateur**. **Les indicateurs de sortie (Passe MK4)** : la demande du 2026-11-11 (« Il faudra integrer aussi des indicateurs de sorties/changement de zones [...] »), l'état mesuré, les maquettes (DEV `exitmark=`, `zonecard=`), quatre cartes ajoutées à la même fiche (MK-12 à MK-15), **relues quatre sur quatre à la recommandation (Passe MK5)** ; à appliquer et fusionner.
+- **Les PNJ utiles, la bulle et la mini-carte (Passe MK1)** : la demande de l'opérateur du 2026-11-11 ; la bulle « … » du quai inventoriée (Mara et Hale, et le reste après [E]), les PNJ utiles mesurés sur des parties entières, les maquettes rendues dans le jeu (DEV `npcmark=`, `minimap=`), la fiche https://claude.ai/artifact/5zanTkRhq2WoHbC384bt1C publiée (onze cartes, la mini-carte revient sur UM-R5), **relue onze sur onze à la recommandation (Passe MK2)** : MK-7 « Oui, en haut à droite (remplace UM-R5) » ; **appliquée et fusionnée (Passe MK3)** : plus de bulle dans une partie, Explore garde la courte réaction à [E] ; le losange de ce qui est neuf (objet, événement, suite), parti à l'ouverture du dialogue, gardé hors de l'empreinte ; la mini-carte en haut à droite ; la liste, un conseil, une ligne du guide ; reste **l'essai en jeu de l'opérateur**. **Les indicateurs de sortie (Passe MK4)** : la demande du 2026-11-11 (« Il faudra integrer aussi des indicateurs de sorties/changement de zones [...] »), l'état mesuré, les maquettes (DEV `exitmark=`, `zonecard=`), quatre cartes ajoutées à la même fiche (MK-12 à MK-15), **relues quatre sur quatre à la recommandation (Passe MK5)**, **appliquées et fusionnées (Passe MK6)** : le chevron sur chaque sortie à l'écran, le carton à l'arrivée, la sortie fermée en gris, la ligne du guide ; reste **l'essai en jeu de l'opérateur**.
 
 **6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
 tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design

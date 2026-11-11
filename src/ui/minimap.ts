@@ -15,8 +15,8 @@ export interface MapPlan {
   blocks: Array<PlanRect | { x: number; z: number; r: number }>;
   /** the lines the place's edges draw (a frontage, a quay's edge): pairs of points */
   edges: Array<[number, number, number, number]>;
-  /** the ways out (their sign's point) */
-  exits: Array<{ x: number; z: number }>;
+  /** the ways out (their sign's point); a way shut now drawn grey (MK-14) */
+  exits: Array<{ x: number; z: number; shut?: boolean }>;
   /** the plan's reach around the hero (m, half the side) */
   reach: number;
 }
@@ -59,8 +59,8 @@ export class MiniMap {
     const fl = Math.hypot(this.f.x, this.f.z) || 1, fx = this.f.x / fl, fz = this.f.z / fl;
     // world -> plan: right of the camera to the right, ahead of it up
     const P = (x: number, z: number): [number, number] => { const dx = x - hero.x, dz = z - hero.z; return [R + (-dx * fz + dz * fx) * sc, R - (dx * fx + dz * fz) * sc]; };
-    const cs = (this.tone ??= ((g) => [g.getPropertyValue('--ds-ivory').trim() || '#efe9dc', g.getPropertyValue('--ds-accent').trim() || '#e9b45a'])(getComputedStyle(this.canvas)));
-    const ivory = cs[0], accent = cs[1];
+    const cs = (this.tone ??= ((g) => [g.getPropertyValue('--ds-ivory').trim() || '#efe9dc', g.getPropertyValue('--ds-accent').trim() || '#e9b45a', g.getPropertyValue('--ds-muted').trim() || '#9aa0aa'])(getComputedStyle(this.canvas)));
+    const ivory = cs[0], accent = cs[1], muted = cs[2];
     c.clearRect(0, 0, S, S);
     c.save();
     // the plan fades at its edge (no frame): a radial mask over everything drawn
@@ -87,7 +87,7 @@ export class MiniMap {
       if (d > lim) { x = R + (dx / d) * lim; y = R + (dy / d) * lim; }
       const a = Math.atan2(dy, dx), s = 4.5 * px;
       c.beginPath(); c.moveTo(x + Math.cos(a) * s, y + Math.sin(a) * s); c.lineTo(x + Math.cos(a + 2.4) * s, y + Math.sin(a + 2.4) * s); c.lineTo(x + Math.cos(a - 2.4) * s, y + Math.sin(a - 2.4) * s); c.closePath();
-      c.fillStyle = accent; c.fill();
+      c.fillStyle = e.shut ? muted : accent; c.fill();
     }
     // the people: a faint dot each, the marked ones the mark's diamond in the accent
     for (const p of people) {
