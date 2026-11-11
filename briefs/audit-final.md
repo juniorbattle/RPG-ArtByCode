@@ -758,7 +758,15 @@ La fiche relue : dix-sept choix sur dix-sept, seize à la recommandation. Les ch
 | AU-16 | « Laisser (option 3) » | — |
 | AU-17 | « Plus tard, chacun à ta demande » | « il faut conserver la note pour retravailler desuss le moment venu » |
 
-Les chantiers qu'ils demandent sont détaillés dans le journal (Passe AU2). Chacun part dans sa propre séance, le recalage du duel d'abord (AU-03). Ce recalage respecte les décisions A3 déjà prises sur le duel : DB5, DB5-3, DB5-4, DB-2, DB7-1 à DB7-6, DB11-2, DB11-5, DB11-6.
+Les chantiers qu'ils demandent sont détaillés dans le journal (Passe AU2) ; chacun part dans sa propre séance.
+
+**La direction de l'opérateur sur le combat** (Passe AU3, mot pour mot) : « je pense que nous devons partir du principe que les duels seront des combats auto par ordinateur ou nous les joueurs nous allons surtout nous focus sur la preparation du combat ( equipement, skills, etc...) donc on doit bien adapter le systeme de combat avec des valeur coherente pour une simulation optimale puis par la suite on vera si on effectue un systeme semi-auto... le vrai changement sera d'integrer un zone de charge/attente avant d'agir peut etre que voir comment adapter cela avec AP bref il faut bien penser a ce la », puis « sinon les autres chantiers semblent bon mais comme je dis tout ce qu'il est lie au combat devra etre repenser donc ».
+
+Ce qui en découle :
+- Le chantier n° 1 devient une refonte du combat autour de duels joués par l'ordinateur, conçue comme l'atelier CB1.
+- Les nombres du duel dits (AU-04) attendent cette refonte.
+- Le § 6.1 du contrat projet (les trois commandes) sera amendé par une décision A3 avant la construction.
+- Les décisions A3 déjà prises sur le duel (DB5, DB5-3, DB5-4, DB-2, DB7-1 à DB7-6, DB11-2, DB11-5, DB11-6) se relisent dans l'atelier avec l'opérateur.
 
 ---
 

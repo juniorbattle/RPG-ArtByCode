@@ -399,12 +399,54 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - La séance qui coordonne lance les chantiers, chacun dans sa séance ; le recalage d'abord, selon AU-03.
 - Deux chantiers touchent les mêmes textes (AU-04 et AU-08 / AU-15 : `en.ts`, `fr-texts.ts`) : l'un après l'autre.
 
+## Passe AU3 — La direction de l'opérateur sur le combat après la fiche AU1 : des duels automatiques, le joueur prépare ; consignée, rien d'appliqué (2026-11-11)
+
+### Ce que l'opérateur a dit
+- En réponse au chantier n° 1 de la Passe AU2 (« Le recalage du duel et de la progression, d’abord (AU-03), mesuré sur des parties entières »), le 2026-11-11, mot pour mot : « je pense que nous devons partir du principe que les duels seront des combats auto par ordinateur ou nous les joueurs nous allons surtout nous focus sur la preparation du combat ( equipement, skills, etc...) donc on doit bien adapter le systeme de combat avec des valeur coherente pour une simulation optimale puis par la suite on vera si on effectue un systeme semi-auto... le vrai changement sera d'integrer un zone de charge/attente avant d'agir peut etre que voir comment adapter cela avec AP bref il faut bien penser a ce la ».
+- Puis, mot pour mot : « sinon les autres chantiers semblent bon mais comme je dis tout ce qu'il est lie au combat devra etre repenser donc ».
+
+### Ce que cela change dans les chantiers de la Passe AU2
+- **Le chantier n° 1 n'est plus un recalage** : c'est une refonte du combat autour de duels joués par l'ordinateur.
+  - Le joueur prépare : l'équipement, les compétences, le kit, les séances, la santé, l'information.
+  - Le combat a des valeurs cohérentes pour une simulation ; un mode semi-automatique est à voir plus tard.
+  - Le changement principal nommé par l'opérateur : une zone de charge et d'attente avant d'agir, à accorder avec les points d'action.
+  - Il se conçoit comme l'atelier CB1 : les règles de l'opérateur recueillies par questions, une spécification, des mesures en simulation, une fiche ; puis la construction.
+- **Le chantier n° 2 (AU-04, dire les nombres du duel) attend cette refonte** : les nombres et ce que le joueur en lit changeront.
+- **« Tout ce qui est lié au combat » est à repenser avec elle.** L'audit en relève les parties suivantes, à reprendre avec la refonte et non à côté :
+  - la commande à trois touches et sa charge (`src/combat/charge.ts`, `v2duel.ts`), le bot (`src/combat/bot.ts`), la course hors écran (`profiles.ts`) ;
+  - le HUD du duel (`DynamicHud.ts`), la fiche de match, la page des compétences, le guide « Le duel » et « Préparer un combat » ;
+  - le tutoriel du premier duel (TU4), les touches du duel au remappage (RM3) et à la manette (MN2) ;
+  - les couches musicales qui suivent les séquences du joueur (règle F, SN14), les effets par action (FX) ;
+  - les outils `duel-balance`, `arena-scene-check`, `attack-spam-proof`, la politique des bots du laboratoire ;
+  - parmi les paramètres d'essai d'AU-11, ceux du duel (`input=keys`, `dyn=`, `fx=off`, `combat=dynamic`).
+- **Les autres chantiers restent comme listés** (« sinon les autres chantiers semblent bon ») : la graine et la sauvegarde, le fondu au noir avant chaque page, les correctifs de la ville et « 10 % », les documents, le ménage, les paramètres d'essai hors du duel, les amendements des contrats, puis l'essai de réception guidé.
+
+### Ce que la refonte touche dans les contrats — à décider avec l'opérateur, rien de changé ici
+- **Contrat projet § 6.1**, amendé trois fois (CB-8, AV-5, CH1) : « le joueur agit par trois commandes, la garde, l'esquive et l'attaque, l'attaque chargée en la tenant… ». Un duel joué par l'ordinateur change ce paragraphe. Son amendement sera une décision A3, citée mot pour mot, avant la construction (comme CB-8), et il s'écrira avec ceux d'AU-05 et d'AU-12.
+- **Contrat projet § 6.1, second alinéa** : « La première priorité de production est de rendre le duel lisible, tactique, rapide à comprendre, suffisamment profond pour valoriser la préparation et spectaculaire sans perdre la lecture des décisions ». Il est compatible avec la direction de l'opérateur (« valoriser la préparation »), à relire avec elle.
+- **Contrat gameplay**, verrou 2 « Le 1v1 est la première expérience de combat à réussir » : inchangé. **Contrat tournoi § 6** : les matchs non vus « doivent provenir du même modèle de stats/règles que les combats visibles ». Une observation pour l'atelier, pas une décision : un duel automatique peut être la même simulation que les combats hors écran, alors qu'aujourd'hui la course et le duel se calibrent à part.
+- **Ce que l'audit apporte à l'atelier** (`briefs/audit-final.md` § 2.3) :
+  - le bot du laboratoire joue déjà le duel seul, sur la même simulation que l'arène (empreinte égale sur 105 duels sur 105) ;
+  - le choix des quatre compétences décide déjà plus que l'adresse : l'attaque puissante apportée gagne 93 à 98 % des finales, le kit de départ est le plus faible ;
+  - la préparation des rivaux (×1,00 à ×1,25), l'équipement en points et la vigueur des défis pèsent tous sur l'issue ;
+  - aucun titre n'est gagné en 200 parties.
+
+### Validation
+- Documents seulement : `JOURNAL.md` et `briefs/audit-final.md` (§ 9). Aucun fichier du jeu.
+
+### Où reprendre
+- La séance qui coordonne lance l'atelier de refonte du combat, en premier, dans sa séance, et les autres chantiers sans le combat.
+- La séance de l'atelier relit l'atelier CB1 (`briefs/combat-system.md`, journal Passe CB1), les §§ 18 à 20 de la spécification et le § 2.3 de l'audit. Elle recueille d'abord les règles de l'opérateur : la zone de charge et d'attente, les points d'action, ce que le joueur prépare, ce qu'il voit pendant le duel, le semi-automatique plus tard.
+
+### Pensée
+- Quand l'audit montre que le choix des compétences décide plus que la main, et que l'opérateur veut que le joueur prépare plutôt qu'il joue, la refonte part de ce que la simulation sait déjà faire seule, le bot du laboratoire ; elle n'invente pas une boucle de plus.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
-**00. L'audit final (Passes AU1, AU2)** : le rapport `briefs/audit-final.md` ; la fiche AU1 relue, dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite, sans attendre l’essai » (Passe AU2 ; A3 : AU-05, AU-12, AU-13). **Les chantiers, chacun dans sa séance** : (1) le recalage du duel et de la progression, d'abord (AU-03, sur des parties entières, les décisions A3 du duel respectées) ; (2) les nombres du duel dits (AU-04) ; (3) la graine et la sauvegarde, le fondu au noir avant chaque page (AU-06, AU-07) ; (4) les correctifs de la ville et « 10 % » (AU-08, AU-15) ; (5) `AGENTS.md` allégé et le journal élagué avec une règle de taille (AU-09) ; (6) le ménage, les deux fichiers modifiés montrés d'abord (AU-10) ; (7) les paramètres d'essai retirés, `v2=0` gardé jusqu'au Gold Master (AU-11) ; (8) les amendements des contrats : la phase d'équipe hors de cette version, la génération par le code (AU-05, AU-12) ; (9) l'essai de réception guidé, après les bloquants (AU-01, AU-02). Hors de cette version (AU-13, A3) : les sponsors, l'investissement, les calendriers comparés, avec les paris (ECO-5).
+**00. L'audit final (Passes AU1, AU2)** : le rapport `briefs/audit-final.md` ; la fiche AU1 relue, dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite, sans attendre l’essai » (Passe AU2 ; A3 : AU-05, AU-12, AU-13). **Les chantiers, chacun dans sa séance** : (1) **la refonte du combat, d'abord** (AU-03, devenu par la direction de l'opérateur de la Passe AU3 : des duels joués par l'ordinateur, le joueur prépare, une zone de charge et d'attente avec les PA, un atelier comme CB1, l'amendement du § 6.1 du contrat projet en A3 avant la construction ; tout ce qui touche au combat repensé avec elle) ; (2) les nombres du duel dits (AU-04), en attente de la refonte ; (3) la graine et la sauvegarde, le fondu au noir avant chaque page (AU-06, AU-07) ; (4) les correctifs de la ville et « 10 % » (AU-08, AU-15) ; (5) `AGENTS.md` allégé et le journal élagué avec une règle de taille (AU-09) ; (6) le ménage, les deux fichiers modifiés montrés d'abord (AU-10) ; (7) les paramètres d'essai retirés, `v2=0` gardé jusqu'au Gold Master (AU-11) ; (8) les amendements des contrats : la phase d'équipe hors de cette version, la génération par le code (AU-05, AU-12) ; (9) l'essai de réception guidé, après les bloquants (AU-01, AU-02). Hors de cette version (AU-13, A3) : les sponsors, l'investissement, les calendriers comparés, avec les paris (ECO-5).
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
