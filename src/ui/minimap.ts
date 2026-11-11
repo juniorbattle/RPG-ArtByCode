@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import type { MarkKind } from '../simulation/v2marks';
+import type { MarkKind } from '../simulation/v2offers';
 import { PHONE_QUERY } from './design/tokens';
 
-/** A small plan of the place in a corner of the screen (the operator's request of 2026-11-11, journal Passe MK1: « peut etre meme integrer aussi une mini map sur le
- *  coin »; the interface had been decided without one, UM-R5). Drawn in the design system's manner (direction A « Voile »): no frame, the plan in one-pixel
- *  ivory lines fading at its edge on the spot veil, the one accent for what can be acted on (the people marked, the ways out); the hero in ivory. Turned with the
- *  camera (what is ahead on screen is up on the plan), centred on the hero. A 2D canvas redrawn a few times a second. `corner`: the sheet's mock-ups (DEV). */
+/** A small plan of the place in a corner of the screen (the operator's request of 2026-11-11, journal Passes MK1 / MK2: « peut etre meme integrer aussi une mini map sur le
+ *  coin »; MK-7 replaces UM-R5). Drawn in the design system's manner (direction A « Voile »): no frame, the plan in one-pixel
+ *  ivory lines fading at its edge on a veil, the one accent for what can be acted on (the people marked, the ways out); the hero in ivory. Turned with the
+ *  camera (what is ahead on screen is up on the plan), centred on the hero (MK-8). A 2D canvas redrawn one frame in three. */
 
 export interface PlanRect { x0: number; x1: number; z0: number; z1: number }
 export interface MapPlan {
@@ -21,11 +21,10 @@ export interface MapPlan {
   reach: number;
 }
 export interface MapPerson { x: number; z: number; kind: MarkKind | null }
-export type MapCorner = 'tr' | 'bl';
-
-const CSS = (corner: MapCorner) => `
-#pm-map{position:fixed;z-index:21;pointer-events:none;width:168px;height:168px;${corner === 'tr' ? 'right:28px;top:104px' : 'left:28px;bottom:28px'};background:radial-gradient(closest-side,var(--ds-veil) 52%,transparent 100%);transition:opacity .3s}
-@media ${PHONE_QUERY}{#pm-map{width:104px;height:104px;${corner === 'tr' ? 'right:10px;top:62px' : 'left:10px;bottom:56px'}}}
+/** MK-7 « Oui, en haut à droite (remplace UM-R5) »: under the figures; MK-9 « 104 px dans le même coin »: on a phone */
+const CSS = `
+#pm-map{position:fixed;z-index:21;pointer-events:none;width:168px;height:168px;right:28px;top:104px;background:radial-gradient(closest-side,var(--ds-veil) 52%,transparent 100%);transition:opacity .3s}
+@media ${PHONE_QUERY}{#pm-map{width:104px;height:104px;right:10px;top:62px}}
 body.pm-full #pm-map,body.pm-talking #pm-map{visibility:hidden}
 `;
 
@@ -40,8 +39,8 @@ export class MiniMap {
   private tone: string[] | null = null;
   draws = 0;
 
-  constructor(private readonly plan: MapPlan, corner: MapCorner = 'tr') {
-    if (!document.getElementById('pm-map-css')) { const st = document.createElement('style'); st.id = 'pm-map-css'; st.textContent = CSS(corner); document.head.appendChild(st); }
+  constructor(private readonly plan: MapPlan) {
+    if (!document.getElementById('pm-map-css')) { const st = document.createElement('style'); st.id = 'pm-map-css'; st.textContent = CSS; document.head.appendChild(st); }
     this.canvas.id = 'pm-map'; this.canvas.setAttribute('aria-hidden', 'true');
     document.body.appendChild(this.canvas);
     this.ctx = this.canvas.getContext('2d')!;
@@ -96,7 +95,9 @@ export class MiniMap {
       if (!p.kind) { c.beginPath(); c.arc(x, y, 1.5 * px, 0, Math.PI * 2); c.fillStyle = hexA(ivory, 0.45); c.fill(); continue; }
       const s = 4 * px;
       c.beginPath(); c.moveTo(x, y - s); c.lineTo(x + s, y); c.lineTo(x, y + s); c.lineTo(x - s, y); c.closePath();
-      if (p.kind === 'item') { c.strokeStyle = accent; c.stroke(); } else { c.fillStyle = accent; c.fill(); if (p.kind === 'follow') { c.strokeStyle = accent; c.beginPath(); c.arc(x, y, s + 2.5 * px, 0, Math.PI * 2); c.stroke(); } }
+      // the scene's three forms (MK-3): hollow, filled, hollow round a filled one
+      if (p.kind === 'event') { c.fillStyle = accent; c.fill(); } else { c.strokeStyle = accent; c.stroke(); }
+      if (p.kind === 'follow') { const r = s * 0.42; c.beginPath(); c.moveTo(x, y - r); c.lineTo(x + r, y); c.lineTo(x, y + r); c.lineTo(x - r, y); c.closePath(); c.fillStyle = accent; c.fill(); }
     }
     // the hero, in ivory, at the centre
     c.beginPath(); c.arc(R, R, 3.2 * px, 0, Math.PI * 2); c.fillStyle = ivory; c.fill();

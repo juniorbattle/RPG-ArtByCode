@@ -118,6 +118,8 @@ function startTown({ panelClosed = false, behindTitle }: { panelClosed?: boolean
       const loop = () => { hud.update(); if ((tick++ % 12) === 0) panel.update(); requestAnimationFrame(loop); };
       loop();
     };
+    // the town behind the title and Explore: no « … » bubble for good, E's short one goes with its timer (the operator's MK-1, journal Passe MK2)
+    if (behindTitle) void import('./ui/bubbles').then((m) => { const tick = m.quietBubbles(app.actors); const f = () => { tick(); requestAnimationFrame(f); }; f(); });
     if (behindTitle) behindTitle(hud); else hud();
     app.start();
     let n = 0;

@@ -18,6 +18,8 @@ import { pendingFinal, stageName, v2EndLine, v2Ranking } from '../tournament/v2c
 import { healthParts, itemName, v2Mods, weaponTier } from '../simulation/v2gear';
 import { VIGOUR_HP } from '../combat/stats';
 import { marksOf } from '../simulation/v2law';
+import { peopleMarks } from '../simulation/v2marks';
+import { MARK_WORD, installMarkCss, markGlyph } from './npcMarks';
 import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { foeSheetOf, matchSheetFor } from '../combat/match';
@@ -174,6 +176,8 @@ export class TownUi {
   get modal(): boolean { return this.shut; }
   set modal(on: boolean) { this.shut = on; if (!on) document.body.classList.remove('pm-talking', 'pm-full'); }
   private near: string | null = null;
+  /** the prompt as last written (the person near and their mark): rewritten when either changes */
+  private nearKey = '';
 
   constructor(private host: UiHost, private seenSeq: number) {
     injectStyle();
@@ -230,10 +234,13 @@ export class TownUi {
   /** per frame: who stands next to the player (the prompt) */
   update(): void {
     const n = this.host.nearby?.() ?? null;
-    if (n !== this.near) {
-      this.near = n;
+    // a version 2 game: the person's mark said in words near them (the operator's MK-3 « la sorte dite dans l’invite de près », journal Passe MK2)
+    const mk = n ? peopleMarks(this.st).get(n) ?? null : null, key = `${n}|${mk}`;
+    if (key !== this.nearKey) {
+      this.near = n; this.nearKey = key;
       const p = n ? PEOPLE[n] : null;
-      this.prompt.innerHTML = p ? `${bindCap('talk')}${tx('ui.talkTo', { name: esc(p.name), title: esc(titleOf(p, isV2(this.st))) })}` : '';
+      const talk = p ? tx('ui.talkTo', { name: esc(p.name), title: esc(titleOf(p, isV2(this.st))) }) : '';
+      this.prompt.innerHTML = p ? `${bindCap('talk')}${mk ? tx('ui.talkToMark', { talk, kind: tx(MARK_WORD[mk]) }) : talk}` : '';
       this.prompt.classList.toggle('on', !!p && !this.modal);
     }
   }
@@ -305,7 +312,10 @@ export class TownUi {
     if (here.length) {
       list.appendChild(el('p', 'pm-sub', tx('ui.peopleHere')));
       for (const o of here) {
-        const who = (o.action as { who: string }).who, b = el('button', 'pm-btn', `<span>${esc(PEOPLE[who].name)}<span class="why">${o.ok ? esc(PEOPLE[who].title) : esc(o.reason ?? '')}</span></span>`);
+        // the person's mark beside their name (the operator's MK-11 « La liste, un conseil et une ligne du guide », journal Passe MK2)
+        const who = (o.action as { who: string }).who, mk = o.ok ? peopleMarks(s).get(who) : undefined;
+        if (mk) installMarkCss();
+        const b = el('button', 'pm-btn', `<span>${mk ? `<span class="pm-mk" data-kind="${mk}" role="img" aria-label="${esc(tx(MARK_WORD[mk]))}">${markGlyph(mk)}</span>` : ''}${esc(PEOPLE[who].name)}<span class="why">${o.ok ? esc(PEOPLE[who].title) : esc(o.reason ?? '')}</span></span>`);
         b.disabled = !o.ok; b.addEventListener('click', () => this.openPerson(who)); list.appendChild(b);
       }
     }
@@ -512,6 +522,8 @@ export class TownUi {
   private hintsQ: Promise<void> = Promise.resolve();
   /** the page's welcome is done: a mark or a wound shows its hint from then on (never over the news or the tour) */
   private welcomed = false;
+  /** a person's mark shows on the scene for the first time (the operator's MK-11, journal Passe MK2): its hint, once the page's welcome is done */
+  markShown(): boolean { if (!this.welcomed || this.modal) return false; this.hint('npcMark'); return true; }
   hint(id: HintId, who?: string): void {
     if (!this.host.tutorial || !isV2(this.st) || hintSeen(id)) return;
     markHint(id);

@@ -65,6 +65,11 @@ try {
   }
   check(steps.filter((x) => x.endsWith('(lit)')).length === 4, `the clock, figures, list and menu lit: ${steps.join(' | ')}`);
   check(await page.evaluate(() => !document.querySelector('.tu-band') && !document.querySelector('.tu-spot') && !document.body.classList.contains('tu-on')), 'Enter on the last band: the tour ends, nothing left');
+  // the people marked on the quay (Mara, her stall and her crates): the marks' hint once the tour is done (the operator's MK-11, journal Passe MK3), then away
+  const mk = await until(page, () => { const h = document.querySelector('.tu-hint .pm-h')?.textContent; return h ? { h, body: document.querySelector('.tu-hint .pm-body').textContent, marks: (window.__people?.marks.state() ?? []).map((m) => `${m.who}:${m.kind}`) } : null; }, 5000, 'the marks\' hint');
+  check(mk?.h === 'Someone has something new' && /diamond/.test(mk.body), `the marks' hint after the tour: ${mk?.h}`);
+  check(!!mk?.marks.includes('mara:item'), `Mara marked on the first morning: ${mk?.marks.join(', ')}`);
+  await key(page, 'Enter');
 
   // 2. the guide on H
   await key(page, 'h');

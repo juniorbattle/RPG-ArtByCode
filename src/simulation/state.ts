@@ -126,6 +126,9 @@ export interface V2State {
   prep?: string[];
   /** the bouts won, the tournament's and the challenges' (DB7-4 « +12 PV par victoire »: Ren's vigour, src/simulation/v2gear.ts v2Stats) */
   wins?: number;
+  /** what the player has seen of each person's offers, kept as their dialogue opens (the operator's MK-4 / MK-5, journal Passe MK2; src/simulation/v2offers.ts): a « $ »
+   *  key, saved with the game and left out of its fingerprint */
+  $seen?: Record<string, string[]>;
   /** the gear carried (lot V3): the weapon and its tier, the armour, the two accessories, the bag of what is owned and not worn */
   gear?: V2Gear;
   /** the shops' day-long states (lot V4): a bargain or a grudge of the day, closed to the player for the day, a markup until a day */

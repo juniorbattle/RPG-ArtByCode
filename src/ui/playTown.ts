@@ -17,9 +17,7 @@ import { watchPost } from '../simulation/v2watch';
 import { hailOf } from '../simulation/v2react';
 import { Hails, type HailWalker } from './hails';
 import { keepPlace, tutorialOn } from './tutorial';
-import { marksOf, type MarkKind } from '../simulation/v2marks';
-import { NpcMarks, type MarkStyle } from './npcMarks';
-import { MiniMap, type MapCorner } from './minimap';
+import { PeopleLayer } from './peopleLayer';
 
 /** The city in the play mode (journal Passes L3 / L4): the frozen Merchant District as it is, its day state, forge, crowd and weather taken
  *  from the game state (choice P4: game layers only, no geometry, framing, cast or look change), and the play mode's interface over it.
@@ -92,9 +90,11 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   markSeen(st);
   (window as any).__ui = ui;
   (window as any).__game.subscribe(() => ui.render());
-  // E / Space next to someone opens their dialogue (the district's bubble stays: its « ... » is the town's own)
-  const interact = app.actors.interact.bind(app.actors);
-  app.actors.interact = () => { interact(); ui.interact(); };
+  // E / Space next to someone opens their dialogue; a version 2 game has no « ... » bubble (the operator's MK-1 « La retirer du jeu par défaut », journal Passe
+  // MK2): neither the stall keeper's and the barrier guard's, nor the one the district's actors gave whoever was talked to (it was never taken back); today's
+  // game keeps them
+  if (isV2(st)) { for (const a of app.actors.actors) a.bubble = null; app.actors.interact = () => ui.interact(); }
+  else { const interact = app.actors.interact.bind(app.actors); app.actors.interact = () => { interact(); ui.interact(); }; }
   // a version 2 game's ways out (journal Passe VP5): the quay's west end to the Festival Square, its east end past the guards' barrier to the
   // Arena Forecourt; walked into with a key held, the move saved and the square's page opened at its way in from the quay
   const END: Record<string, [number, number, number]> = { west: [WALK.x0 - 0.1, 2.6, 0.4], east: [WALK.x1 + 0.3, 2.6, 0] };
@@ -119,29 +119,22 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   const walkers = (): HailWalker[] => app.actors.actors.filter((a) => a.role === 'crowd' && !a.hidden).map((a, k) => ({
     key: k, pos: a.pos, height: a.height, stop: (secs) => { const b = a.behaviour; if (b) b.wait = Math.max(b.wait ?? 0, secs); }, face: (dx, dz) => app.actors.face(a, new THREE.Vector3(dx, 0, dz)),
   }));
-  // the people worth talking to and the plan of the place (journal Passe MK1, the sheet's mock-ups: DEV `npcmark=`, `minimap=`)
-  const markStyle = import.meta.env.DEV && isV2(st) ? (b.params.get('npcmark') as MarkStyle | null) : null;
-  const mapCorner = import.meta.env.DEV && isV2(st) ? (b.params.get('minimap') as MapCorner | null) : null;
-  const marks = markStyle ? new NpcMarks(markStyle) : null;
-  let kinds = new Map<string, MarkKind>();
-  const reMark = () => { kinds = new Map(marksOf(st).map((m) => [m.who, m.kind])); if (marks) marks.marks = kinds; };
-  if (marks || mapCorner) { reMark(); (window as any).__game.subscribe(reMark); }
-  if (marks) { (window as any).__marks = marks; for (const a of app.actors.actors) a.bubble = null; }
-  const people = () => app.actors.actors.filter((a) => !a.hidden && a !== app.actors.player && PERSON_OF[a.base ?? a.spec]).map((a) => ({ a, who: PERSON_OF[a.base ?? a.spec] }));
+  // a version 2 game's people worth talking to and the plan of the quay (the operator's MK1 sheet, journal Passe MK2): a diamond over the head of whoever has
+  // something new, the plan in the top right corner (src/ui/peopleLayer.ts); today's game has neither (MK-10)
+  const people = () => app.actors.actors.filter((a) => !a.hidden && a !== app.actors.player && PERSON_OF[a.base ?? a.spec]).map((a) => ({ who: PERSON_OF[a.base ?? a.spec], pos: a.pos, head: a.height * app.sprites.charScale }));
   const dist = app.district;
-  const map = mapCorner && dist ? new MiniMap({
+  const layer = isV2(st) && dist ? new PeopleLayer(() => st, {
     walk: [WALK],
     blocks: dist.colliders.filter((c) => (c.kind === 'rect' ? c.x1 - c.x0 > 0.9 && c.z1 > WALK.z0 - 0.5 : c.r > 0.25)).map((c) => (c.kind === 'rect' ? { x0: c.x0, x1: c.x1, z0: c.z0, z1: c.z1 } : { x: c.x, z: c.z, r: c.r })),
     edges: [[WALK.x0 - 8, WALK.z0, WALK.x1 + 8, WALK.z0]],
     exits: ways.map((w) => ({ x: w.anchor[0], z: w.anchor[2] })), reach: 13,
-  }, mapCorner) : null;
-  if (map) (window as any).__map = map;
+  }, () => ui.markShown()) : null;
+  if (layer) (window as any).__people = layer;
   let last = app.simTime;
   const frame = () => {
     if (ui.modal) { app.actors.keys.clear(); app.actors.pad = null; }
     ui.update(); markers?.update(app.rig.camera, app.actors.player.pos, taken(), leave);
-    if (marks) marks.update(app.rig.camera, app.actors.player.pos, people().map(({ a, who }) => ({ who, pos: a.pos, head: a.height * app.sprites.charScale })), ui.modal);
-    if (map) map.update(app.rig.camera, app.actors.player.pos, people().map(({ a, who }) => ({ x: a.pos.x, z: a.pos.z, kind: kinds.get(who) ?? null })), ui.modal);
+    layer?.update(app.rig.camera, app.actors.player.pos, people(), ui.modal);
     if (hails) { const dt = app.simTime - last; last = app.simTime; hails.update(dt, app.rig.camera, app.actors.player.pos, walkers(), ui.modal); }
     requestAnimationFrame(frame);
   };

@@ -152,7 +152,7 @@ export function runTour(s: GameState, steps: TourStep[]): Promise<boolean> {
 
 // ------------------------------------------------------------------------------------------------ the hints (TU-3, TU-8)
 
-export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor' | 'vigour';
+export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor' | 'vigour' | 'npcMark';
 const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> = {
   square: { title: 'tut.hint.square.title', body: 'tut.hint.square.body', chapter: 'places' },
   shop: { title: 'tut.hint.shop.title', body: 'tut.hint.shop.body', chapter: 'shops' },
@@ -167,6 +167,8 @@ const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> =
   poor: { title: 'tut.hint.poor.title', body: 'tut.hint.poor.body', chapter: 'money' },
   // the operator's DB11-5 « Le dire partout » (journal Passe DB13): after the first bout won, how Ren's health grows
   vigour: { title: 'tut.hint.vigour.title', body: 'tut.hint.vigour.body', chapter: 'prepare' },
+  // the first person marked on the scene (the operator's MK-11 « La liste, un conseil et une ligne du guide », journal Passe MK2): the diamond's three forms
+  npcMark: { title: 'tut.hint.npcMark.title', body: 'tut.hint.npcMark.body', chapter: 'moving' },
 };
 function hintText(s: GameState, id: HintId, who?: string): string {
   const k = HINT[id].body;
@@ -248,6 +250,8 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'duel': { const D = v2DuelData('marek', { seed: 1, playerName: '', opponentName: '' }).data; return tx(c.body, { gain: D.actions.light?.apGain ?? 1, start: D.ap.start, max: D.ap.max, guard: pct(D.guard.reduce), n: D.ai.riposte?.after ?? 0, stun: D.resist.breakStun, times: D.resist.breakDamage }); }
     case 'renown': return tx(c.body, { hale: nameOf('hale'), parade: Math.max(...daysOfKind('free')) });
     case 'time': return tx(c.body, { slot: tx('ui.oneSlot') });
+    // the marks over the heads and the plan in the corner (MK-11), a line after the chapter's text
+    case 'moving': return `${tx(c.body)}\n${tx('tut.ch.moving.marks')}`;
     default: return tx(c.body);
   }
 }

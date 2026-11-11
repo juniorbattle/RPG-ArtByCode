@@ -5,6 +5,7 @@ import { PEOPLE, titleOf } from '../narrative/people';
 import { talkableHere } from './v2watch';
 import { ROLE_ACTIONS, available, type RoleAction } from './roles';
 import { onTalk } from '../narrative/dialogue';
+import { seeOffers } from './v2offers';
 import { applyPlayerDuel, playerMatch, opponentOf, type DuelOutcome } from '../tournament/pool';
 import { RIVALS } from '../narrative/roster';
 import { tx } from '../narrative/text';
@@ -87,6 +88,9 @@ const BASE: Table = {
       const k = `met:${a.who}`;
       if (!s.flags[k]) { s.flags[k] = true; emit({ kind: 'action', id: 'meet', cause: 'action:talk', text: tx('talk.meet', { name: PEOPLE[a.who].name, title: titleOf(PEOPLE[a.who], isV2(s)) }), visible: true }); }
       onTalk(s, a.who, emit);
+      // a version 2 game keeps what the person offers now as seen (MK-5 « Elle part à l’ouverture du dialogue, revient avec une nouveauté », journal Passe MK2):
+      // outside the fingerprint (src/simulation/v2offers.ts)
+      if (isV2(s)) seeOffers(s, a.who, (Object.values(ACTIONS) as ActionDef[]).flatMap((d) => d.list(s)) as never);
     },
   },
   rest: {
