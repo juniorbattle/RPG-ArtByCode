@@ -1,0 +1,230 @@
+<title>Audit de clôture</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column; a verdict band, then systems as a ruled ledger, the gaps table, the priority list; the game's own Voile palette (ink, ivory, gold). */
+:root {
+  --bg: #f2f1ee;
+  --surface: #ffffff;
+  --fg: #1b1f2a;
+  --muted: #5a6070;
+  --line: #d8d6d0;
+  --accent: #8a6416;
+  --accent-soft: #f3e8cf;
+  --ok: #2f6b3f;
+  --ok-soft: #e2efe5;
+  --warn: #9a5a00;
+  --warn-soft: #fbecd3;
+  --gap: #a3361f;
+  --gap-soft: #f8e1dc;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12141a; --surface: #1b1e26; --fg: #ebeae6; --muted: #a6abb7; --line: #313642;
+    --accent: #e2bd5f; --accent-soft: #2d2716; --ok: #7cc48e; --ok-soft: #1b2a20; --warn: #f0b45a; --warn-soft: #2f2414;
+    --gap: #f08a72; --gap-soft: #331d19; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12141a; --surface: #1b1e26; --fg: #ebeae6; --muted: #a6abb7; --line: #313642;
+  --accent: #e2bd5f; --accent-soft: #2d2716; --ok: #7cc48e; --ok-soft: #1b2a20; --warn: #f0b45a; --warn-soft: #2f2414;
+  --gap: #f08a72; --gap-soft: #331d19; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 72px;
+}
+.wrap { max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+header { padding-top: 40px; display: flex; flex-direction: column; gap: 12px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(32px, 6vw, 46px); line-height: 1.08; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-weight: 400; font-size: 26px; margin: 0; text-wrap: balance; }
+h3 { margin: 0; font-size: 17px; }
+p { margin: 0; max-width: 70ch; }
+.lede { color: var(--muted); }
+.quote { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; font-style: italic; color: var(--fg); }
+section { display: flex; flex-direction: column; gap: 14px; }
+.sec-head { display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.sec-head p { color: var(--muted); font-size: 15px; }
+.verdict { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
+.verdict ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.fact { border-top: 2px solid var(--line); padding-top: 8px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fact b { font-family: var(--font-display); font-weight: 400; font-size: 26px; font-variant-numeric: tabular-nums; }
+.fact span { color: var(--muted); font-size: 14px; }
+.fact.bad { border-top-color: var(--gap); }
+.fact.good { border-top-color: var(--ok); }
+.tbl { overflow-x: auto; min-width: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font-size: 13px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
+tbody tr:last-child td { border-bottom: none; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { display: inline-block; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 1px 10px; white-space: nowrap; }
+.chip.ok { color: var(--ok); background: var(--ok-soft); }
+.chip.warn { color: var(--warn); background: var(--warn-soft); }
+.chip.gap { color: var(--gap); background: var(--gap-soft); }
+.chip.muted { color: var(--muted); border: 1px solid var(--line); }
+.prio { display: flex; flex-direction: column; gap: 10px; }
+.prio-group { display: flex; flex-direction: column; gap: 8px; }
+.prio-group h3 { display: flex; align-items: center; gap: 10px; }
+.item { display: grid; grid-template-columns: 52px 1fr auto; gap: 4px 12px; align-items: baseline; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+.item .id { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+.item .what { min-width: 0; }
+.item .what small { display: block; color: var(--muted); font-size: 14px; }
+.item .eff { font-size: 13px; color: var(--muted); white-space: nowrap; text-align: right; }
+.stripe-gap { border-left: 4px solid var(--gap); }
+.stripe-warn { border-left: 4px solid var(--warn); }
+.stripe-muted { border-left: 4px solid var(--line); }
+ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.cta { background: var(--accent-soft); border-radius: 8px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+.cta a { color: var(--accent); font-weight: 700; }
+code { font-family: var(--font-mono); font-size: 13px; }
+.foot { font-size: 14px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 560px) { .item { grid-template-columns: 1fr; } .item .eff { text-align: left; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Cité du Tournoi · Passe AU1 · 11 novembre 2026 · <code>main</code> 59e284a</span>
+    <h1>Audit de clôture du gameplay et de la structure</h1>
+    <p class="quote">« Bon on semble etre sur la fin du projet globale, bien sure il y aura des ajustements mais nous sommes sur la fin d'un projet pret. donc je vais que tu me fasses un audit complet du gameplay et structure globale du projet pour conclure et valider le tout »</p>
+    <p class="lede">Un audit en lecture et en mesure seulement : aucune règle, aucun nombre, aucun contenu du jeu n'a changé, aucun écart n'est résolu. Le rapport complet, chaque point avec sa preuve, est <code>briefs/audit-final.md</code> ; les décisions sont sur la fiche d'arbitrages AU1.</p>
+  </header>
+
+  <section aria-labelledby="h-verdict">
+    <div class="sec-head"><h2 id="h-verdict">Le verdict</h2></div>
+    <div class="verdict">
+      <p><b>Le socle est solide.</b> Les tests, la CI, les manifestes, les preuves dans le navigateur et le budget GPU tiennent. La simulation rejoue à l'empreinte près dix jours joués dans le navigateur. Tout ce que tu as demandé depuis le 9 novembre est dans le jeu par défaut.</p>
+      <p><b>Trois choses le séparent d'un jeu « prêt » :</b></p>
+      <ol>
+        <li><b>Tu n'as joué aucun des lots livrés depuis le 9 novembre au soir.</b> Le dossier principal était resté sur <code>df16326</code> (DB10) jusqu'à ce matin : l'argent, le duel recalé, les textes français repris, les marques, la mini-carte, les sorties et la liste [Q] n'ont pas été essayés.</li>
+        <li><b>La campagne ne se gagne pas.</b> Aucune des 200 parties du laboratoire ne couronne le joueur, et la demi-finale du jour 6 est une falaise. À l'inverse, apporter l'attaque puissante (que le jeu ne montre pas) gagne presque tout, et les défis donnent +24 PV pour toujours.</li>
+        <li><b>La phase d'équipe et le recrutement</b>, l'écart le plus large aux contrats, sont consignés depuis la Passe V6 et n'ont jamais été tranchés. Seul un amendement A3 de ta part peut les sortir de cette version.</li>
+      </ol>
+      <p>À côté, des défauts que le joueur rencontrera : chaque nouvelle partie est la même graine, un stockage bloqué fait perdre la partie, les pages coupent au noir au lieu de fondre, plusieurs règles de la ville se contredisent et des nombres décisifs du duel ne sont dits nulle part.</p>
+    </div>
+    <div class="facts" role="list">
+      <div class="fact good" role="listitem"><b>619 / 619</b><span>tests, en 2 min ; CI verte</span></div>
+      <div class="fact good" role="listitem"><b>457 / 457</b><span>vérifications des preuves de navigateur et pages de texte</span></div>
+      <div class="fact bad" role="listitem"><b>0 / 200</b><span>titres gagnés au laboratoire (4 politiques × 50 graines)</span></div>
+      <div class="fact bad" role="listitem"><b>181 Ko</b><span><code>AGENTS.md</code>, lu par chaque séance (15 Ko le 15/10)</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-sys">
+    <div class="sec-head"><h2 id="h-sys">Verdict par système</h2><p>Mesuré sur 200 parties du laboratoire, deux parties de dix jours dans le navigateur, les preuves existantes et trois relectures du code.</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th scope="col">Système</th><th scope="col">Verdict</th><th scope="col">Ce qui le décide</th></tr></thead>
+      <tbody>
+        <tr><td>La journée et ses créneaux</td><td><span class="chip ok">solide</span></td><td>trois créneaux, navigation gratuite, combat d'après-midi protégé</td></tr>
+        <tr><td>Le tournoi et le calendrier</td><td><span class="chip warn">à reprendre</span></td><td>la poule ne trie pas (62 % qualifiés sans rien préparer), falaise au jour 6, titre hors d'atteinte ; « éliminé » jamais écrit</td></tr>
+        <tr><td>Le duel</td><td><span class="chip warn">à reprendre</span></td><td>rythme et rupture conformes, marteleurs battus ; deux stratégies dominantes ; 37 à 57 % des combats de poule sous 2 min</td></tr>
+        <tr><td>La progression de Ren</td><td><span class="chip warn">à reprendre</span></td><td>PV et stats lisibles ; le niveau 3 des compétences, que la courbe suppose, n'est atteint par personne</td></tr>
+        <tr><td>L'économie et les travaux</td><td><span class="chip ok">solide</span></td><td>l'équipement de la courbe est atteint à temps par le planificateur (40 / 40)</td></tr>
+        <tr><td>Les boutiques et le marchandage</td><td><span class="chip warn">à reprendre</span></td><td>les paliers de Bram sont perdus en changeant d'arme ; trois textes périmés</td></tr>
+        <tr><td>Les vols et les marques</td><td><span class="chip warn">à reprendre</span></td><td>trois ruptures de logique : le vol pris facturé, le vol d'un recherché, la bourse vide</td></tr>
+        <tr><td>Les défis</td><td><span class="chip warn">à reprendre</span></td><td>environ 95 % gagnés au jour 1 et +24 PV pour toujours : la meilleure action d'un créneau</td></tr>
+        <tr><td>L'information, le sabotage, les rivaux</td><td><span class="chip ok">solide</span></td><td>lisible, deux chaînes avec signes et réponses, aucune rupture trouvée</td></tr>
+        <tr><td>Les scènes et le festival</td><td><span class="chip ok">solide</span></td><td>le défilé lisible ; le « jour après jour » des textes vaut un seul travail</td></tr>
+        <tr><td>Marques, mini-carte, sorties, liste [Q]</td><td><span class="chip ok">solide</span></td><td>les losanges ne reviennent pas pour une offre renouvelée</td></tr>
+        <tr><td>Tutoriel, langues, manette, réglages, remappage</td><td><span class="chip ok">solide</span></td><td>toutes les preuves passent ; « pièces » au téléphone à 4,3:1 (connu)</td></tr>
+        <tr><td>Les transitions d'écran</td><td><span class="chip gap">écart</span></td><td>coupe au noir en une image, sauf la sortie à pied (ta règle 6 bis)</td></tr>
+        <tr><td>La sauvegarde et la graine</td><td><span class="chip warn">à reprendre</span></td><td>chaque nouvelle partie part de la graine 1842 ; un stockage bloqué renvoie dans le jeu d'aujourd'hui</td></tr>
+        <tr><td>Le son</td><td><span class="chip ok">solide</span></td><td>reçu (S5) ; Safari à essayer</td></tr>
+        <tr><td>Le code et les tests</td><td><span class="chip ok">solide</span></td><td>couches pures sans Three.js ; 13 exports morts ; aucun test ne garde la campagne de bout en bout</td></tr>
+        <tr><td>La performance (budget E24)</td><td><span class="chip warn">à la limite</span></td><td id="perf-line">les places et le duel sous la nuit B en 1080p et en 1440p (−0,3 à −2,6 ms) ; le quai v2 en plan B la nuit à égalité en 1080p (+0,03 ms), juste au-dessus en 1440p (+0,33 ms, +2 % ; FV5 avait accepté l'égalité à +0,14 ms)</td></tr>
+        <tr><td>Les documents</td><td><span class="chip warn">à reprendre</span></td><td><code>AGENTS.md</code> 181 Ko ; « À reprendre » et « Principes » du journal 130 Ko</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="h-gaps">
+    <div class="sec-head"><h2 id="h-gaps">Les écarts aux contrats</h2><p>Les verrous et les exigences qui ne sont pas faits. « Non consigné » : relevé ici pour la première fois. Aucun n'est résolu par l'audit.</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th scope="col">Contrat</th><th scope="col">Exigence</th><th scope="col">État</th><th scope="col">Au journal</th></tr></thead>
+      <tbody>
+        <tr><td>Projet § 1, 2, 5 · Gameplay § 3, 7, verrou 10 · Tournoi § 2, verrou 2</td><td>Recrutement progressif, phase d'équipe</td><td><span class="chip gap">écart</span></td><td>consigné (V6)</td></tr>
+        <tr><td>Projet § 0, 10.1, 15</td><td>Blender et glTF ; pas de génération de la ville au démarrage</td><td><span class="chip gap">écart</span></td><td>consigné (E14 / E15) ; l'amendement n'est pas écrit</td></tr>
+        <tr><td>Projet § 6.1</td><td>Moteur de combat prêt pour plusieurs combattants</td><td><span class="chip gap">écart</span></td><td><b>non consigné</b> : deux combattants fixes, la spécification dit le contraire</td></tr>
+        <tr><td>Projet § 3.1</td><td>Le tournoi influence les paris et les <b>sponsors</b></td><td><span class="chip warn">partiel</span></td><td>paris consignés (ECO-5) ; <b>sponsors non consignés</b></td></tr>
+        <tr><td>Projet § 4</td><td>Une campagne « rejouable »</td><td><span class="chip warn">partiel</span></td><td><b>non consigné</b> : la graine 1842 à chaque partie</td></tr>
+        <tr><td>Projet § 5.3 · Tournoi § 9, 13</td><td>Concurrents éliminés, pouls des concurrents actifs, taux d'élimination</td><td><span class="chip warn">partiel</span></td><td><b>non consigné</b> : « éliminé » jamais écrit en v2, le pouls reste à 8</td></tr>
+        <tr><td>Gameplay § 5</td><td>La préparation par l'investissement (service, atelier, raccourci)</td><td><span class="chip warn">partiel</span></td><td>relevé « absent » en EV1, jamais tranché</td></tr>
+        <tr><td>Gameplay § 11</td><td>Pas de campagne mathématiquement perdue</td><td><span class="chip warn">partiel</span></td><td><b>non consigné</b> : le titre jamais gagné au laboratoire</td></tr>
+        <tr><td>Tournoi § 4</td><td>Simuler plusieurs calendriers pour comparer</td><td><span class="chip gap">écart</span></td><td><b>non consigné</b></td></tr>
+        <tr><td>Ta règle 6 bis (03/11)</td><td>Pas de coupe entre deux écrans : un fondu au noir partagé</td><td><span class="chip warn">partiel</span></td><td><b>non consigné</b> : la levée fond, l'entrée coupe</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="h-prio">
+    <div class="sec-head"><h2 id="h-prio">Ce qu'il reste, par priorité</h2><p>Une séance ≈ une passe du journal (construire, tester, prouver, fusionner). Les cartes renvoient à la fiche d'arbitrages.</p></div>
+    <div class="prio">
+      <div class="prio-group">
+        <h3><span class="chip gap">Bloquant</span> un « prêt » ne se déclare pas sans eux</h3>
+        <div class="item stripe-gap"><span class="id">B1</span><span class="what">Ton essai de réception sur le <code>main</code> d'aujourd'hui<small>aucun lot d'ECO2 à AL1 n'a été joué par toi</small></span><span class="eff">½ séance + 2-3 h de jeu · AU-01</span></div>
+        <div class="item stripe-gap"><span class="id">B2</span><span class="what">La difficulté : le titre hors d'atteinte, la falaise du jour 6, l'attaque puissante et les défis dominants<small>le calibrage omet la préparation des rivaux (×1,21 à ×1,25) et suppose des compétences au niveau 3</small></span><span class="eff">mesure + fiche + recalage · AU-03</span></div>
+        <div class="item stripe-gap"><span class="id">B3</span><span class="what">La phase d'équipe et le recrutement<small>un amendement A3, ou un chantier de plusieurs semaines</small></span><span class="eff">½ séance ou des semaines · AU-05</span></div>
+      </div>
+      <div class="prio-group">
+        <h3><span class="chip warn">Important</span> des défauts que le joueur rencontrera</h3>
+        <div class="item stripe-warn"><span class="id">I1-I2</span><span class="what">La graine 1842 à chaque partie ; le stockage bloqué qui renvoie au jeu d'aujourd'hui</span><span class="eff">¾ séance · AU-06</span></div>
+        <div class="item stripe-warn"><span class="id">I3</span><span class="what">Les changements de page qui coupent au noir</span><span class="eff">½ séance · AU-07</span></div>
+        <div class="item stripe-warn"><span class="id">I4</span><span class="what">Les nombres cachés du duel : garde du rival à 90 %, coup gardé ×2, recharges, préparation du rival, ce que fait chaque stat</span><span class="eff">½ à 1 séance · AU-04</span></div>
+        <div class="item stripe-warn"><span class="id">I5-I8</span><span class="what">Les ruptures de logique de la ville et les textes périmés : vols, paliers de Bram, losanges, Orla, le pouls<small>le vol pris facturé ; le vol d'un recherché ; la bourse vide ; « +8 % » ; « every blade » ; « from now on »</small></span><span class="eff">1 séance · AU-08</span></div>
+        <div class="item stripe-warn"><span class="id">I9-I12</span><span class="what"><code>AGENTS.md</code> et le journal ; le ménage des branches et des worktrees ; les paramètres d'essai (VD-8) ; l'amendement E14 / E15</span><span class="eff">2 séances · AU-09 à AU-12</span></div>
+        <div class="item stripe-warn"><span class="id">I13</span><span class="what">Les sponsors, l'investissement, les calendriers comparés</span><span class="eff">à trancher · AU-13</span></div>
+        <div class="item stripe-warn"><span class="id">I14</span><span class="what">3,7 s de chargement à chaque créneau et à chaque lieu en production (65 rechargements par partie)<small>le quartier coûte 1,3 s, le mode jouable ajoute environ 2,2 s : à mesurer avant de décider</small></span><span class="eff">1 séance de mesure</span></div>
+      </div>
+      <div class="prio-group">
+        <h3><span class="chip muted">Finition</span> en passant</h3>
+        <div class="item stripe-muted"><span class="id">F1-F3</span><span class="what">« pièces » au téléphone (4,3:1) ; les chiffres de dégâts flottants (1,4 à 1,7:1) ; une leçon qui couvre la barre d'actions</span><span class="eff">½ séance</span></div>
+        <div class="item stripe-muted"><span class="id">F4-F7</span><span class="what">Phrases à montant nul ; outils fragiles ; 13 exports morts ; un chemin machine au journal ; 193 Mo de captures suivies</span><span class="eff">1 séance</span></div>
+        <div class="item stripe-muted"><span class="id">F8-F10</span><span class="what">Les restes d'art, le recul de la caméra RK3, les fenêtres basses</span><span class="eff">à la demande · AU-16, AU-17</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-trials">
+    <div class="sec-head"><h2 id="h-trials">Tes essais encore ouverts</h2><p>Tous à refaire sur le <code>main</code> d'aujourd'hui, le dossier principal y étant revenu ce matin.</p></div>
+    <ul class="plain">
+      <li><b>Le duel recalé</b> (DB13) · <b>l'argent</b> (ECO3) · <b>le français repris</b> (TF1 ; où as-tu vu « héros » pour « hérauts » ?)</li>
+      <li><b>Le remappage</b> (RM-10) · <b>la manette</b> (MN-11) · <b>Safari</b> sur un appareil Apple (SC-SAFARI)</li>
+      <li><b>Les marques et la mini-carte</b> (MK3) · <b>les sorties</b> (MK6, AL1) · <b>la liste [Q]</b> (LA3) · <b>la marche en diagonale</b> (MD1)</li>
+      <li><b>Le tutoriel</b> (TU3, TU4) · <b>les réglages</b> (RG3) · <b>la charge</b> (CH-5) · <b>les effets du duel</b> (FX5) · <b>les gradins</b> (PU1) · <b>l'arène de jour</b> (AD1)</li>
+      <li><b>Les places et les fanions</b> (VP9, FT-6) · <b>la ville qui vit</b> (L2 à L6) · <b>Ren</b> (PR4) · <b>les fenêtres basses</b> (AF1)</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-dec">
+    <div class="sec-head"><h2 id="h-dec">Les décisions qui t'attendent</h2></div>
+    <div class="cta">
+      <p>Dix-sept cartes sur la fiche d'arbitrages AU1 :</p>
+      <ul class="plain">
+        <li>la réception et le statut du jeu (le Gold Master est ta décision) ;</li>
+        <li>la difficulté et les nombres cachés du duel ;</li>
+        <li>la phase d'équipe ;</li>
+        <li>la graine et la sauvegarde ; les transitions ; les ruptures de la ville ;</li>
+        <li>les documents, le ménage, les paramètres d'essai et l'amendement E14 / E15 ;</li>
+        <li>les sponsors et l'investissement ;</li>
+        <li>le genre du joueur et deux points de texte ;</li>
+        <li>le recul de la caméra ; les restes d'art.</li>
+      </ul>
+      <p>Chaque carte a une option recommandée et sa raison ; rien n'est appliqué avant tes choix, et chaque chantier décidé partira dans sa propre séance.</p>
+      <p><a id="fiche-link" href="https://claude.ai/artifact/BMLcgX5TJ4tSkNMEVLW1Sh">Ouvrir la fiche d'arbitrages AU1</a></p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p>Sources : <code>briefs/audit-final.md</code> (le rapport, chaque mesure avec sa commande), journal Passe AU1.</p>
+    <p>Les mesures : <code>tools/tournament-lab.mjs</code>, <code>tools/duel-balance.mjs</code>, les preuves <code>default-proof</code>, <code>tutorial-proof</code>, <code>play-day</code>, <code>play-flow</code>, <code>pad-proof</code>, <code>settings-proof</code>, <code>remap-proof</code>, <code>exits-proof</code>, <code>ui-text</code>, <code>ui-contrast</code>, <code>perf</code>, <code>startup</code>, et des scripts hors dépôt (dix jours dans le navigateur, film des transitions, sauvegarde absente).</p>
+  </footer>
+</div>

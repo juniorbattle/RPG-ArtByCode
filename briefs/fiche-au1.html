@@ -1,0 +1,391 @@
+<title>Arbitrages de clôture</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · audit de clôture · Passe AU1 · 11 novembre 2026</span>
+    <h1>Pour conclure : les décisions de l’audit final</h1>
+    <p class="lede">Tu as écrit : « Bon on semble etre sur la fin du projet globale, bien sure il y aura des ajustements mais nous sommes sur la fin d'un projet pret. donc je vais que tu me fasses un audit complet du gameplay et structure globale du projet pour conclure et valider le tout ».</p>
+    <p class="lede">L’audit est en lecture et en mesure seulement : rien du jeu n’a changé. Il a joué 200 parties de dix jours au laboratoire et deux parties entières dans le navigateur. Il a rejoué toutes les preuves existantes, mesuré le GPU et relu le code système par système. Le rapport complet est <code>briefs/audit-final.md</code>, et <a href="https://claude.ai/artifact/ByP98Bt9vbnmst86XZpAYc">la page de synthèse</a> le résume. Les cartes ci-dessous rassemblent tout ce qui reste à décider pour conclure.</p>
+    <p class="lede">Clique ton choix ; une note est facultative ; je relis tes choix directement et je consigne mot pour mot. Rien n’est appliqué ici : chaque chantier décidé partira dans sa propre séance.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix et je les consigne mot pour mot au journal, dans une passe à part. Les choix qui touchent un verrou des contrats (AU-05, AU-12, AU-13) sont cités comme décisions A3.</p>
+    <p>Je n’applique rien moi-même. Chaque chantier décidé devient une tâche de sa propre séance, dans l’ordre que tu choisis : d’abord l’essai de réception, puis la difficulté, puis les correctifs.</p>
+    <p>Ce qui reste incertain, dit sans détour. Les politiques du laboratoire sont des bots d’adresse 0,6 : qu’une personne trouve l’attaque puissante ou gagne la finale, cela se juge en jeu. Les efforts sont des estimations.</p>
+    <p class="src">Sources : <code>briefs/audit-final.md</code> ; journal Passe AU1 ; mesures : <code>tools/tournament-lab.mjs</code> (graines 1 à 50, quatre politiques), <code>tools/duel-balance.mjs</code>, les preuves de navigateur du dépôt, <code>tools/perf.mjs</code>, et des scripts hors dépôt recopiés dans les notes partagées de la séance.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Apostrophes : l’apostrophe typographique ’ ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+const GROUPS = [
+  { id: 'reception', title: 'La réception', sub: 'Le dossier principal du dépôt (celui de npm run dev et de http://127.0.0.1:5173/) est resté sur df16326 (Passe DB10) du 9 novembre au soir jusqu’à ce matin. Tes essais du 10 et du 11 ont donc tourné sans l’argent, le duel recalé, les textes français repris, la marche en diagonale, les marques, la mini-carte, les sorties, la liste [Q] et la Passe AL1.', fam: 'var(--voile)', items: [
+    { id: 'AU-01', tag: 'essai', title: 'L’essai de réception',
+      ctx: 'Une vingtaine d’essais sont ouverts, parmi eux le duel recalé (DB13), l’argent (ECO3), le français repris (TF1), le remappage, la manette, les marques, les sorties, la liste [Q], le tutoriel, les réglages, Safari et les places. Aucun n’a été fait sur le main d’aujourd’hui.',
+      rec: 'Un seul essai guidé sur le main d’aujourd’hui : une page qui dit quoi jouer et quoi juger, dans l’ordre d’une partie (jour 1, premier combat, argent, sorties, liste, duel du jour 6, finale par un état nommé), avec une case par point. Tes retours arrivent ensemble, et les chantiers partent ensuite avec eux.',
+      opts: ['Un essai guidé sur le main d’aujourd’hui, une page qui liste ce qu’il faut juger', 'Essayer lot par lot, chacun dans sa séance', 'Pas d’essai : passer aux chantiers'], recIdx: 0,
+      src: 'rapport § 7 ; journal « À reprendre » ; Passe AL1 (le dossier resté sur df16326)' },
+    { id: 'AU-02', tag: 'statut', title: 'Le statut du jeu',
+      ctx: 'Le statut est le tien : RJ3 « Pas encore » et L7-6b « Pas encore (RJ3 inchangé) ». L’audit relève trois bloquants : ton essai de réception, la difficulté (aucun titre gagné en 200 parties) et la phase d’équipe des contrats.',
+      rec: 'Pas encore Gold Master : après l’essai de réception, la difficulté recalée et la décision sur la phase d’équipe. Un Gold Master déclaré avant ton essai figerait des lots que tu n’as pas joués.',
+      opts: ['Pas encore : après l’essai de réception et les bloquants', 'Gold Master après l’essai de réception, les bloquants en suite', 'Gold Master maintenant'], recIdx: 0,
+      src: 'AGENTS.md « Status » ; journal Passes Z4 (RJ3), D8 (L7-6b) ; rapport § 1 et § 6' },
+  ]},
+  { id: 'jeu', title: 'Le jeu', sub: 'Mesuré sur 200 parties du laboratoire (graines 1 à 50 ; les politiques idle, diligent, curious, planner, des bots d’adresse 0,6 au duel sauf idle à 0,3) et sur un banc de duels dont la copie du bot donne la même empreinte que le jeu, 105 duels sur 105.', fam: 'var(--cendre)', items: [
+    { id: 'AU-03', tag: 'difficulté', title: 'Le titre, la falaise du jour 6 et les stratégies dominantes',
+      ctx: 'Aucune des 200 parties ne couronne le joueur. La poule est presque gagnée d’avance (100 % aux jours 4 et 5), puis la demi-finale tombe à 4 % pour le planificateur. Trois causes, chacune mesurée seule : le calibrage de DB13 ne compte pas la préparation des rivaux (leurs coups ×1,21 en demi-finale, ×1,25 en finale), aucun joueur n’atteint le niveau 3 des compétences que la courbe suppose, et le planificateur se bat avec la sangle coupée. À l’inverse, apporter l’attaque puissante (1 PA, recharge 8,5 s, plus courte qu’une rupture de 10 s ; gardée, elle rompt chaque rival de poule d’un coup) gagne 99 à 100 % en poule et 93 à 98 % en finale. Les défis (environ 95 % gagnés au jour 1) donnent +24 PV pour toujours. Un tiers à la moitié des combats de poule durent moins de 2 min.',
+      table: { head: ['Politique', 'Poule j2 / j4 / j5', 'Demi-finale', 'Finale', 'Titre'], rows: [
+        ['planificateur', '68 / 100 / 100 %', '4 %', '0 sur 2', '0 %'], ['curieux', '76 / 100 / 100 %', '25 %', '0 sur 12', '0 %'], ['diligent', '66 / 100 / 100 %', '4 %', '0 sur 2', '0 %'],
+        ['planificateur + tous les défis + Orla', '—', '—', '1 sur 11', '1 sur 40'], ['plan « attaque puissante » (banc, bot 0,5)', '100 %', '95-99 %', '93-98 %', '—']],
+        foot: 'Le joueur attendu de la courbe DB7 (niveau 3, tout équipé, sans la préparation des rivaux) : poule 91 %, tableau 81 %, finale 64 % au bot 0,5 ; la courbe tient sur le papier, pas dans les parties.' },
+      rec: 'Une fiche de recalage du duel et de la progression après ton essai, comme DB11, mesurée cette fois sur des parties entières (la préparation des rivaux comptée, les choix d’un vrai kit) : la finale, la falaise du jour 6, l’attaque puissante apportée, le kit de départ, les défis, la durée de la poule. Je ne propose aucun nombre ici : c’est ta fiche suivante.',
+      opts: ['Une fiche de recalage après ton essai, mesurée sur des parties entières', 'Garder : le titre doit rester rare, l’attaque puissante est une découverte', 'Recaler tout de suite, sans attendre l’essai'], recIdx: 0,
+      src: 'rapport § 2.1 et § 2.3 (duel, progression, courbe, défis) ; src/combat/v2duel.ts:98, :199 ; src/tournament/pool.ts:37 ; tools/duel-balance.mjs' },
+    { id: 'AU-04', tag: 'lisibilité', title: 'Les nombres cachés du duel',
+      ctx: 'Ce qui décide un combat et que le joueur ne lit nulle part. La garde du rival à 90 % dans ses pauses, et ses esquives. Un coup gardé qui remplit deux fois la jauge de celui qui garde (la leçon dit « guarded or not » et conseille de garder). Les recharges (5 × le temps de charge), absentes du guide et de la page des compétences. La page des compétences, qui montre le coup net alors que 62 à 83 % des compétences sont gardées. La préparation du rival (×1,00 à ×1,25 sur ses coups), absente de la fiche de match. La Vivacité d’un rival, relative à son kit. Enfin, ce que font l’Attaque, la Défense, l’Endurance et la Vivacité. La fiche DB7 posait : « Aucun nombre caché ».',
+      rec: 'Tout dire, sans changer une règle : une ligne de chaque chiffre dans le guide « Le duel » et « Préparer un combat », la leçon corrigée, la recharge et le coup gardé sur la page des compétences, la préparation du rival sur la fiche de match. C’est ta préférence constante pour les règles lisibles ; si AU-03 change des nombres, les textes les liront dans les données.',
+      opts: ['Tout dire (guide, leçons, page des compétences, fiche de match), les règles inchangées', 'Seulement corriger la leçon fausse (le coup gardé)', 'Attendre la fiche de recalage (AU-03)'], recIdx: 0,
+      src: 'rapport § 2.3 (duel, 8 points) ; en.ts:752-755, :1372, :1376 ; src/ui/skills.ts:29-35 ; src/ui/townUi.ts:469 ; briefs/stats-combattants.md:128' },
+    { id: 'AU-05', tag: 'équipe', title: 'La phase d’équipe et le recrutement (verrous des contrats)',
+      ctx: 'Les trois contrats veulent un tournoi qui passe du duel à l’équipe, avec un recrutement progressif. Le contrat projet le dit aux § 1, 2 et 5 ; le contrat gameplay aux § 3 et 7, verrou 10 ; le contrat tournoi au § 2, verrou 2. Le jeu reste en duel. Orla est la seule recrue (+1 PA), TeamState est typé et jamais formé, et le moteur de combat a deux combattants fixes, alors que la spécification le dit prêt pour plusieurs. Cet écart est consigné depuis la Passe V6 ; ta décision L6-12 disait « L’essai en jeu, puis la phase d’équipe sur fiche ». Changer un verrou est ta décision A3.',
+      rec: 'La sortir de cette version : amender les trois contrats (décision A3, tes mots cités) pour que la V1 soit le tournoi individuel, Orla restant l’amorce d’une suite où viendra la phase d’équipe. La construire demanderait plusieurs semaines (moteur à plusieurs combattants, roster, formats, recrutement) sur un jeu que tu dis prêt.',
+      opts: ['La sortir de cette version : amender les contrats (A3), la phase d’équipe devient la suite', 'La concevoir sur fiche maintenant, avant de déclarer le jeu prêt', 'Garder l’écart consigné, sans décider'], recIdx: 0,
+      src: 'rapport § 3.1 à 3.3 ; contracts/ ; journal Passes V6, EVL12 (L6-12) ; src/combat/dynamic.ts:22 ; briefs/combat-system.md § 10' },
+    { id: 'AU-06', tag: 'graine', title: 'La graine d’une nouvelle partie et la sauvegarde perdue',
+      ctx: 'L’écran titre ouvre une nouvelle partie sans graine, et le jeu prend alors 1842. Tous les joueurs jouent donc le même tirage ; seules leurs actions font diverger la partie. Le contrat projet veut une campagne « rejouable ». Autre défaut, vérifié dans le navigateur : sans sauvegarde lisible (un stockage bloqué), la première page rechargée ouvre une partie du jeu d’aujourd’hui (v2=0), en anglais, au jour 1, sans le dire.',
+      rec: 'Corriger les deux : une graine tirée au hasard pour chaque nouvelle partie, montrée dans le journal et gardée dans la sauvegarde (1842 reste celle des outils) ; une page sans sauvegarde garde la version 2 et dit que la partie n’a pas pu être gardée.',
+      opts: ['Corriger les deux (graine tirée et montrée ; la version 2 gardée, le défaut dit)', 'Seulement la sauvegarde perdue', 'Garder 1842 pour tous (une partie de référence)'], recIdx: 0,
+      src: 'src/ui/title.ts:134 ; src/ui/play.ts:53-55 ; rapport § 2.2' },
+    { id: 'AU-07', tag: 'transitions', title: 'Les changements de page (ta règle 6 bis)',
+      ctx: 'Ta règle du 3 novembre : pas de coupe entre deux écrans, un rideau noir partagé (fondre au noir, changer sous le noir, lever le noir sur une image prête). Mesuré image par image (screencast) : changer de créneau, de lieu par la carte, quitter le titre pour une nouvelle partie ou entrer dans l’arène passe de la scène (luminance 0,35) au noir (0,03) en une image ; la levée du noir, elle, est un fondu. Seule la sortie à pied fond avant de partir (0,35 s). Le mouvement réduit du système ne change rien, comme voulu.',
+      rec: 'Appliquer ta règle : le même fondu au noir que la sortie à pied avant chaque changement de page (le créneau, la carte, le titre, l’arène et son retour), coupé par le mouvement réduit du jeu seulement si tu le veux (les fondus restent, RG-5).',
+      opts: ['Appliquer la règle : le même fondu au noir avant chaque changement de page', 'Garder la coupe au noir (le chargement est court)'], recIdx: 0,
+      src: 'rapport § 4.4 ; src/ui/play.ts:29-35 (go) ; src/ui/exits.ts (.pm-fade)' },
+    { id: 'AU-08', tag: 'ville', title: 'Les ruptures de logique de la ville et les textes périmés',
+      ctx: 'Trois ruptures dans les vols. Un vol pris sur le fait est facturé à la restitution comme si la pièce avait été prise : 13 pièces pour une pierre jamais emportée, et une copie achetée ensuite est saisie. Un joueur recherché peut encore voler aux étals qui refusent de lui vendre, sans nouvelle marque. Une bourse vide efface le registre pour un créneau, alors qu’une bourse pleine paie tout (86 pièces). Dans les boutiques, les paliers de Bram sont perdus en changeant d’arme, sans le dire, et des textes sont périmés : « +8 % damage » et « +15 % » valent +1 en Attaque, la pénurie touche les armures, la remise de Mara n’est pas « from now on », le « jour après jour » vaut un seul travail, et une défaite ne dit pas sa bourse. Restent les losanges qui ne reviennent pas pour une offre renouvelée, Orla recrutable en son absence, et le pouls « concurrents actifs » bloqué à 8.',
+      rec: 'Une séance de correctifs qui aligne chaque règle sur ce que le jeu dit déjà. Le vol pris ne doit que l’amende (« paying for what you took ») ; un recherché ne peut plus voler ; la restitution est due en entier, le reste payé plus tard ; le palier de Bram suit l’arme qui le porte. Les textes disent les règles, les losanges reviennent pour une offre neuve, Orla doit être là, et le pouls compte les éliminés. Le laboratoire change d’empreinte : je dirai chaque écart.',
+      opts: ['Une séance de correctifs, chaque règle alignée sur ce que le jeu dit', 'Seulement les textes (les règles telles qu’elles sont)', 'Après l’essai de réception'], recIdx: 0,
+      src: 'rapport § 2.3 ; src/simulation/v2town.ts:82-89, :124-131 ; v2law.ts:40, :47-51, :129-133, :195-209 ; v2gear.ts:121, :173 ; en.ts:103, :773 ; v2offers.ts:24-32 ; v2story.ts:79-80 ; pulse.ts:19' },
+  ]},
+  { id: 'structure', title: 'La structure du projet', sub: 'Le code est sain : les couches pures n’atteignent jamais Three.js, aucun TODO ni console.log, 619 tests sur 619, CI verte, 73 manifestes sans erreur, aucun secret dans l’historique. Ce qui pèse, ce sont les documents et les restes des séances.', fam: 'var(--ronce)', items: [
+    { id: 'AU-09', tag: 'documents', title: 'AGENTS.md et le journal',
+      ctx: 'AGENTS.md fait 180 877 octets, environ 45 000 jetons lus par chaque séance. Il faisait 15 Ko le 15 octobre. La moitié tient en deux catalogues : « Commands » (54 Ko) et « Useful URL params » (35 Ko). Plusieurs chiffres y ont vieilli : les tests sont annoncés en « ~2 s », ils prennent 2 min ; le guide est annoncé en « twelve chapters », il en a treize. Dans le journal, « À reprendre » (69 Ko) et « Principes à garder » (61 Ko) grandissent sans règle d’archivage.',
+      rec: 'Alléger : AGENTS.md garde les règles, les entrées et des renvois ; les catalogues (commandes, paramètres, historique des décisions par domaine) partent dans des fichiers à part (tools/README.md, docs/). « À reprendre » est élagué de ce qui est clos, et une règle de taille comme celle des passes s’applique aussi aux deux sections.',
+      opts: ['Alléger AGENTS.md (règles et renvois) et élaguer le journal, avec une règle de taille', 'Alléger AGENTS.md seulement', 'Garder tel quel'], recIdx: 0,
+      src: 'rapport § 5.5 ; AGENTS.md ; JOURNAL.md' },
+    { id: 'AU-10', tag: 'ménage', title: 'Les branches, les worktrees et les serveurs des séances passées',
+      ctx: 'Neuf branches locales claude/* sont toutes fusionnées (aucun commit d’avance). Quinze worktrees sous .claude/worktrees/ pointent tous des commits de main ; deux ont un fichier modifié (un catalogue de son, un fichier « nul »), quatre un node_modules réel. .claude/launch.json compte 61 configurations, dont des dizaines pointent des copies figées de dossiers temporaires.',
+      rec: 'Supprimer, après vérification une par une : les neuf branches fusionnées, les worktrees sans travail (les deux fichiers modifiés montrés d’abord) et les configurations qui pointent des dossiers disparus. Supprimer des branches fusionnées ne perd rien.',
+      opts: ['Tout nettoyer après vérification (les deux fichiers modifiés montrés d’abord)', 'Seulement les branches fusionnées', 'Garder'], recIdx: 0,
+      src: 'rapport § 5.6' },
+    { id: 'AU-11', tag: 'paramètres', title: 'Les paramètres d’essai et le jeu d’aujourd’hui (v2=0)',
+      ctx: 'Une vingtaine de paramètres d’adresse comparent à des décisions déjà prises : camblend, camfollow, views, facing, npcfacing, spriteedge, fx=off, input=keys, cast=generated, dyn, crowd, occstyle, occtest, occbehind, les réglages DEV des places, les valeurs « candidate ». Ta règle VD-8 dit qu’un paramètre d’essai est « retiré après ta décision ». ?sprites est une vue de débogage du premier commit, livrée en production. Le jeu d’aujourd’hui (v2=0) pèse 1,0 à 1,4 k lignes ; 23 fichiers de test et plusieurs outils s’en servent pour comparer.',
+      rec: 'Retirer maintenant les paramètres d’essai des décisions closes et ?sprites (les tests qui les lisent changés dans le même lot), et garder v2=0 jusqu’au Gold Master : c’est la référence de comparaison des preuves (VD-1).',
+      opts: ['Retirer les paramètres d’essai maintenant ; garder v2=0 jusqu’au Gold Master', 'Retirer aussi v2=0 maintenant', 'Tout garder'], recIdx: 0,
+      src: 'rapport § 5.1 ; journal Passe VD2 (VD-1, VD-8)' },
+    { id: 'AU-12', tag: 'contrat', title: 'L’amendement de la génération par le code (E14 / E15)',
+      ctx: 'Ta décision de la Passe D8 : « Amender le contrat : la génération par le code est la voie du projet ». Le contrat projet dit encore Blender comme source d’autorité, glTF, et la génération de la ville au démarrage comme non-objectif. Le texte reste « tel que reçu » jusqu’à la tâche qui l’amende, et cette tâche n’a jamais eu lieu.',
+      rec: 'L’écrire maintenant, avec tes mots (A3) : une note d’amendement en tête du contrat, comme celles de CB1, AV1 et CH1, sur les § 0, 10.1 et 15.',
+      opts: ['L’écrire maintenant (A3), comme les amendements de CB1, AV1 et CH1', 'Plus tard'], recIdx: 0,
+      src: 'journal Passe D8 (E14 / E15) ; contracts/PROJECT_MASTER_CONTRACT.md' },
+    { id: 'AU-13', tag: 'contrats', title: 'Les sponsors, l’investissement, les calendriers comparés',
+      ctx: 'Trois exigences des contrats que le jeu n’a pas. Les sponsors (contrat projet § 3.1) n’ont aucune trace dans le code, les documents ni le journal : l’écart n’a jamais été consigné. L’investissement, c’est-à-dire débloquer un service, améliorer un atelier ou ouvrir un raccourci (gameplay § 5), est absent depuis l’audit EV1 et n’a jamais été tranché. Le laboratoire ne compare pas plusieurs calendriers (tournoi § 4). Les paris sont gardés pour la suite (ECO-5).',
+      rec: 'Hors de cette version : consigner les trois écarts comme décisions A3 (tes mots), à reprendre avec les paris dans la suite. Aucun ne manque au joueur d’aujourd’hui autant que AU-03 ou AU-08.',
+      opts: ['Hors de cette version : consigner les trois écarts (A3)', 'Un lot : l’investissement (un service à débloquer par lieu)', 'Un lot : les sponsors avec les paris'], recIdx: 0,
+      src: 'rapport § 3 ; contracts/PROJECT_MASTER_CONTRACT.md § 3.1 ; GAMEPLAY § 5 ; TOURNAMENT § 4 ; briefs/audit-gameplay-ev1.md § 2' },
+  ]},
+  { id: 'attente', title: 'Tes décisions en attente', sub: 'Des choix qui t’attendent depuis plusieurs passes, regroupés ici pour conclure.', fam: 'var(--astre)', items: [
+    { id: 'AU-14', tag: 'genre', title: 'Le genre du joueur en français',
+      ctx: 'Le français suppose un joueur masculin à quelques endroits (« Vous êtes le champion », « vu »). C’est juste pour Ren, un personnage fixé (ta décision PR1 : sa peau, ses cheveux, sa cape). Mais le joueur saisit le nom qu’il veut. La Passe TF1 a déjà mis des tournures neutres là où l’anglais ne fixait rien.',
+      rec: 'Ren au masculin : le héros a une figure fixée, et le nom saisi ne change pas qui on voit ; les tournures neutres de TF1 restent.',
+      opts: ['Ren au masculin, les tournures neutres de TF1 gardées', 'Des tournures neutres partout', 'Un choix au début de la partie'], recIdx: 0,
+      src: 'journal Passes RG4, TF1 ; src/narrative/text/fr-texts.ts' },
+    { id: 'AU-15', tag: 'textes', title: '« Chevalière du Temple » et « un dixième » contre « 10 % »',
+      ctx: '« Chevalière du Temple » (le titre d’Ilse) évoque aussi la bague ; la présentation d’Ilse le garde. La table dit tantôt « un dixième de remise », tantôt « 10 % ».',
+      rec: 'Garder « Chevalière du Temple » (le féminin attendu de chevalier, que la présentation éclaire), et écrire « 10 % » partout : un nombre se lit d’un coup d’œil, comme tu préfères les règles.',
+      opts: ['Garder « Chevalière », écrire « 10 % » partout', 'Garder les deux tels quels', 'Changer les deux (précise en note)'], recIdx: 0,
+      src: 'journal Passe RG4 ; fr-texts.ts' },
+    { id: 'AU-16', tag: 'caméra', title: 'Le recul de la caméra C → B au bord de l’eau (RK3)',
+      ctx: 'Diagnostic de la Passe K8, en attente depuis le 19 octobre. En sortant du cadrage de la forge par le bord de l’eau, le fondu ancré recentre le joueur : il glisse d’environ 210 px vers la gauche en 0,87 s. Trois options : 1, un fondu « continu à l’écran » (une preuve de visibilité en mouvement à refaire) ; 2, rapprocher la place du joueur entre C et B (cela change un cadrage approuvé) ; 3, laisser.',
+      rec: 'Laisser (option 3) : la glissade dure moins d’une seconde, à un seul endroit du quai, et le quartier est gelé (RJ1) ; l’option 1 rouvrirait la preuve de visibilité pour peu de gain.',
+      opts: ['Laisser (option 3)', 'Option 1 : le fondu continu à l’écran', 'Option 2 : rapprocher la place du joueur'], recIdx: 0,
+      src: 'journal Passe K8 (journal/12) ; « À reprendre » 0 et 4' },
+    { id: 'AU-17', tag: 'art', title: 'Les restes d’art',
+      ctx: 'Plusieurs restes d’art sont ouverts, chacun avec sa décision ou sa demande : la retouche des mains de Piers puis sa peau hâlée (GS-RET), les petits restes du look de Ren (PR3-RESTES), la coupe de Ren (RC2-2), le rôle de trois panneaux (N7) et les icônes d’objets. S’y ajoutent les courses de trois-quarts pour la manette entre deux directions (MD1), les trois-quarts des PNJ (RH4 « Plus tard ») et le sol libre des places (VP7 à VP9).',
+      rec: 'Plus tard, chacun à ta demande, hors de la réception : aucun n’empêche de jouer, et chacun demande des planches et une critique à l’aveugle.',
+      opts: ['Plus tard, chacun à ta demande', 'Une séance de restes d’art avant la réception (précise lesquels)'], recIdx: 0,
+      src: 'journal « À reprendre » 1 ; Passes GS2, PR3, RC2, MD1' },
+  ]},
+];
+
+
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
