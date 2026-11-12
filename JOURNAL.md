@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2, DB7, RM3, DB8, DB9, DB10, ECO1, TF1, ECO2, ECO3, DB11, DB12, DB13, MD1, MK1, MK2, MK3, MK4, MK5, MK6, LA1, LA2, LA3, AL1, AU1, AU2 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1, TF1, ECO3, DB11, DB13, MD1, MK3, MK6, LA3, AL1, AU2, AU4, AC1, AC3) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2, DB7, RM3, DB8, DB9, DB10, ECO1, TF1, ECO2, ECO3, DB11, DB12, DB13, MD1, MK1, MK2, MK3, MK4, MK5, MK6, LA1, LA2, LA3, AL1, AU1, AU2, AU3, AU4, AU5 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1, TF1, ECO3, DB11, DB13, MD1, MK3, MK6, LA3, AL1, AU2, AU4, AC1, AC3, LC1) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -104,149 +104,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/91-passes-LA1-LA2.md`](journal/91-passes-LA1-LA2.md) | LA1, LA2 | 11/11 |
 | [`journal/92-passes-LA3-AL1.md`](journal/92-passes-LA3-AL1.md) | LA3, AL1 | 11/11 |
 | [`journal/93-passes-AU1-AU2.md`](journal/93-passes-AU1-AU2.md) | AU1, AU2 | 11/11 |
+| [`journal/94-passes-AU3-AU5.md`](journal/94-passes-AU3-AU5.md) | AU3, AU4, AU5 | 11/11 |
 
 ---
-
-## Passe AU3 — La direction de l'opérateur sur le combat après la fiche AU1 : des duels automatiques, le joueur prépare ; consignée, rien d'appliqué (2026-11-11)
-
-### Ce que l'opérateur a dit
-- En réponse au chantier n° 1 de la Passe AU2 (« Le recalage du duel et de la progression, d’abord (AU-03), mesuré sur des parties entières »), le 2026-11-11, mot pour mot : « je pense que nous devons partir du principe que les duels seront des combats auto par ordinateur ou nous les joueurs nous allons surtout nous focus sur la preparation du combat ( equipement, skills, etc...) donc on doit bien adapter le systeme de combat avec des valeur coherente pour une simulation optimale puis par la suite on vera si on effectue un systeme semi-auto... le vrai changement sera d'integrer un zone de charge/attente avant d'agir peut etre que voir comment adapter cela avec AP bref il faut bien penser a ce la ».
-- Puis, mot pour mot : « sinon les autres chantiers semblent bon mais comme je dis tout ce qu'il est lie au combat devra etre repenser donc ».
-
-### Ce que cela change dans les chantiers de la Passe AU2
-- **Le chantier n° 1 n'est plus un recalage** : c'est une refonte du combat autour de duels joués par l'ordinateur.
-  - Le joueur prépare : l'équipement, les compétences, le kit, les séances, la santé, l'information.
-  - Le combat a des valeurs cohérentes pour une simulation ; un mode semi-automatique est à voir plus tard.
-  - Le changement principal nommé par l'opérateur : une zone de charge et d'attente avant d'agir, à accorder avec les points d'action.
-  - Il se conçoit comme l'atelier CB1 : les règles de l'opérateur recueillies par questions, une spécification, des mesures en simulation, une fiche ; puis la construction.
-- **Le chantier n° 2 (AU-04, dire les nombres du duel) attend cette refonte** : les nombres et ce que le joueur en lit changeront.
-- **« Tout ce qui est lié au combat » est à repenser avec elle.** L'audit en relève les parties suivantes, à reprendre avec la refonte et non à côté :
-  - la commande à trois touches et sa charge (`src/combat/charge.ts`, `v2duel.ts`), le bot (`src/combat/bot.ts`), la course hors écran (`profiles.ts`) ;
-  - le HUD du duel (`DynamicHud.ts`), la fiche de match, la page des compétences, le guide « Le duel » et « Préparer un combat » ;
-  - le tutoriel du premier duel (TU4), les touches du duel au remappage (RM3) et à la manette (MN2) ;
-  - les couches musicales qui suivent les séquences du joueur (règle F, SN14), les effets par action (FX) ;
-  - les outils `duel-balance`, `arena-scene-check`, `attack-spam-proof`, la politique des bots du laboratoire ;
-  - parmi les paramètres d'essai d'AU-11, ceux du duel (`input=keys`, `dyn=`, `fx=off`, `combat=dynamic`).
-- **Les autres chantiers restent comme listés** (« sinon les autres chantiers semblent bon ») : la graine et la sauvegarde, le fondu au noir avant chaque page, les correctifs de la ville et « 10 % », les documents, le ménage, les paramètres d'essai hors du duel, les amendements des contrats, puis l'essai de réception guidé.
-
-### Ce que la refonte touche dans les contrats — à décider avec l'opérateur, rien de changé ici
-- **Contrat projet § 6.1**, amendé trois fois (CB-8, AV-5, CH1) : « le joueur agit par trois commandes, la garde, l'esquive et l'attaque, l'attaque chargée en la tenant… ». Un duel joué par l'ordinateur change ce paragraphe. Son amendement sera une décision A3, citée mot pour mot, avant la construction (comme CB-8), et il s'écrira avec ceux d'AU-05 et d'AU-12.
-- **Contrat projet § 6.1, second alinéa** : « La première priorité de production est de rendre le duel lisible, tactique, rapide à comprendre, suffisamment profond pour valoriser la préparation et spectaculaire sans perdre la lecture des décisions ». Il est compatible avec la direction de l'opérateur (« valoriser la préparation »), à relire avec elle.
-- **Contrat gameplay**, verrou 2 « Le 1v1 est la première expérience de combat à réussir » : inchangé. **Contrat tournoi § 6** : les matchs non vus « doivent provenir du même modèle de stats/règles que les combats visibles ». Une observation pour l'atelier, pas une décision : un duel automatique peut être la même simulation que les combats hors écran, alors qu'aujourd'hui la course et le duel se calibrent à part.
-- **Ce que l'audit apporte à l'atelier** (`briefs/audit-final.md` § 2.3) :
-  - le bot du laboratoire joue déjà le duel seul, sur la même simulation que l'arène (empreinte égale sur 105 duels sur 105) ;
-  - le choix des quatre compétences décide déjà plus que l'adresse : l'attaque puissante apportée gagne 93 à 98 % des finales, le kit de départ est le plus faible ;
-  - la préparation des rivaux (×1,00 à ×1,25), l'équipement en points et la vigueur des défis pèsent tous sur l'issue ;
-  - aucun titre n'est gagné en 200 parties.
-
-### Validation
-- Documents seulement : `JOURNAL.md` et `briefs/audit-final.md` (§ 9). Aucun fichier du jeu.
-
-### Où reprendre
-- La séance qui coordonne lance l'atelier de refonte du combat, en premier, dans sa séance, et les autres chantiers sans le combat.
-- La séance de l'atelier relit l'atelier CB1 (`briefs/combat-system.md`, journal Passe CB1), les §§ 18 à 20 de la spécification et le § 2.3 de l'audit. Elle recueille d'abord les règles de l'opérateur : la zone de charge et d'attente, les points d'action, ce que le joueur prépare, ce qu'il voit pendant le duel, le semi-automatique plus tard.
-
-### Pensée
-- Quand l'audit montre que le choix des compétences décide plus que la main, et que l'opérateur veut que le joueur prépare plutôt qu'il joue, la refonte part de ce que la simulation sait déjà faire seule, le bot du laboratoire ; elle n'invente pas une boucle de plus.
-
-## Passe AU4 — Une inspiration de l'opérateur pour l'atelier du combat, La Brute : son fonctionnement lu dans le code de son remake ; consignée, rien d'appliqué (2026-11-11)
-
-### Ce que l'opérateur a partagé
-- Le 2026-11-11, après la Passe AU3, mot pour mot : « voici une inspiration interessante : », suivi d'un texte collé qui présente *La Brute*.
-  - C'est un jeu par navigateur de Motion Twin (2008). On y crée un personnage, « une brute », au nom et à l'apparence tirés au hasard.
-  - Ses combats se déroulent tout seuls, selon le hasard et les statistiques (force, agilité, vitesse).
-  - Le jeu sur Flash a fermé en 2020 et revit par des projets de fans : La Brute Legacy (https://la-brute-legacy.com/) ; sa fiche sur SensCritique : https://www.senscritique.com/jeuvideo/la_brute/454570.
-- Ce n'est pas une décision : c'est une inspiration pour l'atelier de refonte du combat (Passe AU3).
-
-### Ce que fait La Brute, vérifié dans le code
-Lu le 2026-11-11 dans le code de son remake en TypeScript, https://github.com/Zenoo/labrute (le jeu : https://brute.eternaltwin.org/), fichiers `server/src/utils/fight/fightMethods.ts`, `getFighters.ts`, `core/src/brute/weapons.ts` et `getLevelUpChoices.ts`. Sa licence n'est pas une licence libre standard (« Other » sur GitHub) : rien n'en est copié, seul le principe est noté.
-- **Une ligne de temps décide qui agit, et quand.**
-  - Chaque combattant porte une valeur d'initiative, qui est un temps. Celui dont la valeur est la plus basse agit (`orderFighters`) ; un combattant étourdi passe après les autres.
-  - Au départ, la vitesse décide qui ouvre : l'initiative vaut (un tirage de 0 à 10, moins la vitesse) / 100.
-  - Après chaque action, le temps du combattant avance du tempo de son arme multiplié par son propre tempo, plus un petit tirage (`increaseInitiative`).
-  - Son tempo vient de sa vitesse : 0,10 + 0,90 × 20 / (10 + 1,5 × vitesse), soit 1,9 à vitesse 0, 0,82 à vitesse 10 et 0,55 à vitesse 20.
-  - Une arme lourde fait attendre longtemps (la hache, tempo 2,3), une arme légère presque pas (0,28). Certaines actions ont leur propre attente ; un filet ou un étourdissement repousse le tour de l'adversaire.
-  - **C'est une zone de charge et d'attente au sens de l'opérateur** : agir coûte du temps avant l'action suivante, et la vitesse et l'arme règlent ce temps.
-- **La préparation fait la différence.**
-  - Chaque arme a son tempo, ses dégâts, sa précision, sa parade, son esquive, son combo, son désarmement et son allonge. S'y ajoutent des compétences et un animal.
-  - À chaque niveau, le joueur choisit entre deux propositions tirées au hasard : une arme, une compétence ou un animal, contre +2 à une stat (ou +1 à deux stats).
-- **Le joueur regarde.** Le combat est calculé en entier sur le serveur, puis rejoué en animation chez le joueur.
-
-### Ce que l'inspiration apporte à l'atelier — des observations, rien de décidé
-- **La simulation du jeu a déjà les pièces d'une ligne de temps.**
-  - Elle a les temps de charge des compétences, leurs recharges (5 × le temps de charge, DB5-3), le rythme de chaque rival par sa Vivacité (DB7-1) et les PA.
-  - L'atelier peut se demander si chaque action devient une attente sur une même ligne de temps, raccourcie par la Vivacité.
-  - Il reste à savoir ce que deviennent les PA : un coût en plus du temps, ou remplacés par lui. C'est la question de l'opérateur en Passe AU3 (« voir comment adapter cela avec AP »), à lui reposer avec des mesures.
-- **Un combat calculé puis montré.** Les duels vus et les combats hors écran deviennent alors le même modèle, ce que demande le contrat tournoi (§ 6). Aujourd'hui, la course hors écran et le duel se calibrent à part (audit § 2.3).
-- **Un choix entre deux propositions à chaque progression.** C'est une préparation lisible, conforme à la préférence de l'opérateur pour des règles simples. Le jeu a déjà ses leviers : l'équipement, les séances, les compétences, les informations. L'atelier dira lesquels se choisissent, et comment.
-- **La durée.** Le duel du jeu dure de 2 à 5 minutes par la décision A3 DB5 (« je veux qu'un combat basique dure en 2 et 5 min. +5 min peut etre exceptionnellement des combats epiques »), prise pour un duel joué. Ce que cette durée devient pour un duel regardé est une question pour l'opérateur dans l'atelier ; seule sa décision peut changer DB5.
-- **Le hasard.** La Brute tire ses armes et ses bonus au hasard ; l'opérateur préfère des règles lisibles, sans points cachés. Ce qui est tiré, et ce qui en est dit au joueur, se décide avec lui.
-- **Le principe, pas le jeu.** La refonte peut reprendre une ligne de temps d'initiative et une préparation par choix, qui sont des mécaniques de genre. Elle ne reprend ni les armes de La Brute, ni ses noms, ses animaux, son art ou ses textes.
-
-### Validation
-- Documents seulement : `JOURNAL.md` et `briefs/audit-final.md` (§ 9). Aucun fichier du jeu.
-- Les passes gardées dépassaient 60 Ko avec AU4 : LA1 et LA2 (branches fusionnées) déplacées d'un bloc, à l'octet, dans `journal/91-passes-LA1-LA2.md`, leur ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les 11 246 octets retirés, chaque passe dans un seul fichier, le reste du journal inchangé hors de l'index, de la phrase d'en-tête et de l'entrée 00, CRLF partout ; 52,0 Ko de passes restent.
-
-### Où reprendre
-- La séance de l'atelier lit cette passe avec la Passe AU3, avant de recueillir les règles de l'opérateur.
-
-### Pensée
-- Quand l'opérateur montre un jeu en exemple, on lit à la source comment il marche avant d'en tirer une règle, et on en garde le principe sans le jeu.
-
-## Passe AU5 — Les réponses de l'opérateur pour la refonte du combat : une ligne de temps avec les PA, la défense et l'esquive par les cinq stats, un semi-automatique, une durée pour profiter du duel, et le vrai problème, le joueur qui perd trop contre les rivaux avancés ; consignées, rien d'appliqué (2026-11-11)
-
-### Ce que l'opérateur a dit (en réponse à la Passe AU4, mot pour mot)
-- Sur la ligne de temps et les PA : « Il faudrait une ligne de temps mais les PA sont essentiels pour l'usage des competences sauf si on a un meilleur choix, et la defense et esquive comment cela sera gere ? on a deja defini 5 stats ».
-- Sur un même modèle pour les duels vus et hors écran : « determinons le plus optimale mais comme j'ai dit un system semi-auto permettrait de determiner quand lancer les competences par exemple ».
-- Sur la durée (DB5) : « il faut determiner un temps de simulation suffisamment bon a profiter du duel ».
-- Sur « le principe, pas le jeu » : « oui on est sur une inspi car on a deja notre idee de base de ce que nous voulons mais il s'avere que ce n'est pas bien structure car le joueur perd trop souvent face au ennemie avance/expert par exemple, ce qui est la problematique ».
-
-### Ce que cela fixe pour l'atelier : une direction, pas encore des nombres
-- Une ligne de temps, et les PA gardés pour les compétences, sauf si l'atelier trouve mieux et le montre à l'opérateur.
-- La défense et l'esquive à définir dans une simulation automatique, avec les cinq stats déjà décidées (DB7-1 à DB7-6, A3).
-- Le modèle le plus juste pour les duels vus et hors écran, à déterminer ; un semi-automatique où le joueur choisit quand lancer ses compétences.
-- Une durée choisie pour qu'on profite d'un duel regardé. DB5 (A3) reste en vigueur jusqu'à une nouvelle décision de l'opérateur.
-- **Le problème à résoudre, nommé par l'opérateur** : le joueur perd trop souvent contre les rivaux avancés et experts. Selon lui, c'est la structure qui est en cause, pas seulement les nombres.
-
-### Ce que l'audit en mesure (`briefs/audit-final.md` § 2.1 et § 2.3)
-- 0 titre en 200 parties. La poule est gagnée à 100 % dès le jour 4, puis la demi-finale du jour 6 tombe à 4 % pour le planificateur (0 sur 37 contre Vessa).
-- Les rivaux grandissent par multiplicateurs à chaque étape : PV ×1,7 au tableau et ×3,5 en finale, +3 / +3 / +2 aux stats. S'y ajoute leur préparation (×1,09 au jour 2, ×1,21 en demi-finale, ×1,25 en finale), que l'outil de calibrage ne compte pas.
-- Ren grandit par petits ajouts fixes : +24 PV par victoire, +1 à une stat par séance, l'équipement en points. La courbe suppose ses compétences au niveau 3, qu'aucune politique n'atteint : toutes restent au niveau 1.
-- Facteurs isolés, au tableau : le niveau 3 sans la préparation des rivaux gagne 82 %, le niveau 1 avec elle 25 %.
-
-### Des propositions pour l'atelier — à mesurer et à montrer à l'opérateur, rien de décidé
-1. **Le temps décide quand, les PA décident quoi.**
-   - Chaque action fait attendre son auteur sur la ligne de temps : son temps de charge, raccourci par la Vivacité (la règle ×10 / Vivacité d'aujourd'hui).
-   - Les PA se gagnent (par l'attaque simple, DB-3) et paient les compétences. Une recharge devient une attente avant de relancer la même compétence.
-2. **La défense et l'esquive en réactions, sans sixième stat.**
-   - Chaque coup reçu peut être gardé ou esquivé, avec une chance calculée et affichée.
-   - La garde viendrait de la Défense : le coup gardé à −80 %, sa part ×2 à la jauge de celui qui garde (règles DB5 et DB9).
-   - L'esquive viendrait de la Vivacité, comparée à celle de l'attaquant.
-   - Les cinq stats gardent leur rôle d'aujourd'hui (PV, dégâts, jauge, attente), et deux d'entre elles en prennent un second, visible.
-   - Autres voies à comparer : la garde et l'esquive en postures choisies sur la ligne de temps, ou données par l'équipement et les compétences seulement.
-3. **Une simulation, trois façons de décider.**
-   - L'IA des rivaux et des combats hors écran.
-   - L'automatique du joueur : l'IA joue Ren selon sa préparation, et peut-être selon une tactique choisie avant le combat.
-   - Le semi-automatique : le joueur lance une compétence quand il le veut, et elle part au prochain tour de Ren.
-   - Ainsi construit, le semi-automatique ne demande pas de refaire le combat, et les combats hors écran deviennent la même simulation (contrat tournoi § 6). C'est déjà la forme du code : `DynamicSim` et son bot, une empreinte égale entre le laboratoire et l'arène (105 duels sur 105).
-4. **La durée comptée en actions.**
-   - Il faut assez d'échanges pour voir la préparation agir (les compétences, une rupture, un retournement), et pas assez pour lasser.
-   - Une hypothèse de départ à mesurer : 20 à 40 actions par duel, de 1,5 à 2,5 s de montré chacune, avec une vitesse ×2 et « passer au résultat ».
-   - Aujourd'hui, dans des parties entières : la poule dure 1,0 à 2,1 min, la demi-finale 1,6 à 2,4, la finale 3,4 à 3,7.
-5. **Partir de la courbe, pas du duel.**
-   - Fixer d'abord, pour chaque étape, le joueur de référence : ce qu'un joueur qui prépare normalement a au jour 6 et au jour 10, avec des niveaux de compétences réellement atteignables.
-   - Fixer les chances visées, par exemple : un joueur préparé gagne nettement en poule et se bat à peu près à égalité en finale ; un joueur qui ne prépare pas perd.
-   - Puis caler les rivaux dessus, leur préparation comprise, mesuré sur des parties entières du laboratoire et non sur des duels isolés.
-   - En automatique, la préparation est le seul levier : l'écart entre préparé et non préparé doit se voir et rester juste. La croissance des rivaux se dit sur la fiche de match.
-
-### Validation
-- Documents seulement : `JOURNAL.md` et `briefs/audit-final.md` (§ 9). Aucun fichier du jeu.
-
-### Où reprendre
-- L'atelier de refonte du combat part de cette passe et des Passes AU3 et AU4. Il recueille d'abord les choix de l'opérateur sur ces cinq propositions, sur une fiche, avec des mesures.
-
-### Pensée
-- Quand le joueur ne joue plus le duel, la difficulté se règle entièrement par la préparation : on calibre sur ce qu'un joueur peut réellement préparer, pas sur un joueur supposé.
 
 ## Passe AC1 — L'atelier de refonte du combat : la spécification du combat joué par l'ordinateur, un prototype à ligne de temps mesuré sur des parties entières, la fiche des règles publiée ; rien du jeu changé (2026-11-11)
 
@@ -511,12 +371,96 @@ Le semi-automatique n'est dans aucun lot ; il est revu après l'essai (AC-10).
 ### Pensée
 - Une note au bord d'un choix est une exigence, pas une réserve : la mesurer tout de suite donne à la construction un point de départ et un critère. Ici, une moyenne flatteuse (59 coups par minute) cachait des rafales et 41 % de silences.
 
+## Passe LC1 — Lot 1 du combat joué par l'ordinateur : la simulation dans `src/combat/`, son IA, les combats hors écran, le rythme, l'équilibre au test de AC-12, la course recalée ; rien à l'écran ; une fiche de quatre cartes (2026-11-12)
+
+### Demande
+- La séance qui coordonne, d'après la Passe AC4 et `briefs/combat-auto.md` (§ 17 d'abord) : construire le lot 1, la simulation pure dans `src/combat/`, testée contre des oracles (la ligne de temps, les enchaînements, les PA, DB5-3, DB5-4, la garde et l'esquive par les stats, la forme du jour, les PV ×2) ; l'automatique qui place ses soutiens avec l'ordre des quatre compétences, l'IA des rivaux ; les combats hors écran par la même simulation (AC-18) ; l'équipement ×2 (AC-11, A3) ; la course (AC-16, A3) recalée sur parties entières aux chances de AC-15 (95 / 85 / 75 / 65 / 50 %), graines de calage et graines tenues à part ; les compétences et les armes équilibrées au test de AC-12 ; le rythme (la note de AC-01, mot pour mot : « mais il faut s'assurer que cela soit rythme, dynamique »), sans cible fixée sans la montrer à l'opérateur. Le duel d'aujourd'hui reste joué à l'écran jusqu'au lot 2.
+- Branche `claude/combat-auto-lot1` (le worktree `determined-visvesvaraya-7ac630`, tiré de `main` `93272c7`). Aucun serveur lancé. Les fichiers de calage de l'atelier (`atelier-combat-level-P3.json`, `-model-P.txt`, `-rhythm.mjs`) lus dans le dossier de notes de la séance de l'atelier.
+
+### Ce qui est construit — [OK]
+- `src/combat/auto.ts` : la simulation (`autoDuel`), pure, à événements, déterministe (une graine ; la forme du jour sur son propre flux) ; ses règles (`AUTO_RULES`) ; son script (`log` : les charges, les coups, les gardes, les esquives, les protections, les soutiens, les ruptures, de quoi montrer le duel au lot 2) ; l'automatique (`playerDecider`) dans l'ordre des compétences du joueur ; l'IA des rivaux (`rivalDecider`).
+- `src/combat/autoData.ts` : les tables du nouveau duel (les compétences de Ren, les armes, les kits des rivaux, leur cadence, la course), la construction des combattants (`autoRen`, `autoFoe`), l'ordre par défaut (`autoDefaultOrder` : les protections, les soutiens, puis les offensives de la plus forte), la course (`AUTO_RACE`, `autoRaceSheet`, `autoPrepPoints`), un combat hors écran (`autoOffscreen`). Les tables du duel d'aujourd'hui (`v2duel.ts`, `profiles.ts`, `skills.ts`, `gear.ts`, `STAGE_GROWTH`) ne sont pas touchées.
+- `src/combat/autoMatch.ts` : le combat du jour ou le défi d'une partie (`autoBoutOf`, `autoOutcome`), les stats de Ren avec l'équipement ×2 (`autoRenStats`, `AUTO_GEAR_K` : chaque point de chaque pièce et de la forge, malus compris, la pierre à aiguiser comprise).
+- Seul le laboratoire le joue : `flags.autoDuel` sur une partie de la version 2 (`autoDuelRules`, `src/tournament/pool.ts`), posé par `autoplay(..., 'auto')` (`src/tournament/lab.ts`) et le TournamentLab `--rules=auto` ; ses combats hors écran (`playOffscreenMatches` : la graine du duel tirée du flux du match, « serré » et « écrasant » lus sur les PV du vainqueur comme pour le combat du joueur, une surprise quand le moins réputé bat de 15 points : « proposé », le lot 2 tranche), le combat du joueur (`botOutcome`) et ses défis (`challengeOutcome`) passent alors par le nouveau duel. La politique `reference` (AC-14 : le planificateur, la vérification de Hilde, l'exercice de son kit) entre dans `POLICIES`.
+- `tools/auto-lab.mjs` : le laboratoire du nouveau duel (`games`, `refs`, `rhythm`, `kits`, `offscreen`, `level`).
+
+### La preuve du portage — [OK]
+- `tests/combat-auto.test.mjs` fait tourner le prototype de l'atelier (`tools/auto-duel/sim.mjs`, `kits.mjs`, modèle complet de la Passe AC3) à côté du port, sur les mêmes combattants et les mêmes graines : les treize compétences à chaque niveau, les trois armes et les sept rivaux construits pareil ; 98 duels (sept kits, les sept rivaux, les trois étapes, des états variés : préparation, blessure, PA de départ, sangle coupée, effet de l'équipement) identiques événement par événement ; 24 combats hors écran identiques. Les entrées atteignent chaque chemin (protections, soutiens, esquives, gardes, ruptures, combos, K.O., victoires des deux côtés), vérifié par le test.
+- Les tables du prototype sont figées dans `tests/auto-prototype.json` et remises le temps de ces trois tests : l'équilibre du lot ne change que des données.
+- Onze fautes injectées une à une (garde ×1,9, seuil de protection, PA par coup, pause de la rupture, dégâts ×2, exposition pendant l'enchaînement, soutien sur un rival rompu, combo des rivaux, durée de Peau de fer, intervalle d'un combo, points de préparation) : onze attrapées.
+- [OK] Le rythme de la Passe AC4 se retrouve sur le port (57 coups par minute, plus long silence 6,4 s, 41 % du temps en silences de plus de 3 s, contre 59, 6,8 s, 41 %).
+
+### Les règles contre leurs oracles — [OK]
+- Dix-sept tests sur des combattants et des vues faits à la main, les oracles écrits d'après les décisions : la formule des dégâts (DB7-1) et les PV ×2 ; la garde par la Défense (35 % à égalité, ×2 contre une compétence vue venir, 90 % au plus, le trait d'un rival ajouté, jamais contre un coup qui perce), le coup gardé −80 % et ×2 à la jauge de celui qui garde ; l'esquive par la Vivacité (12 % à égalité) ; la charge qui expose ; l'enchaînement (ses coups `gap` secondes l'un après l'autre, chacun sa part, chacun gardé ou esquivé seul ; Taille éclair 2, Tourbillon 3, l'épée et la lame 2, le sabre 3, les combos des rivaux) ; les PA (1 au départ, +1 par attaque simple qui touche, gardée comprise, une fois par action, 5 au plus, l'esquivée n'en donne pas) ; DB5-3 ; DB5-4 (la rupture à 70, 10 s, ×2, la charge mise en pause, l'enchaînement coupé, la jauge vide après, la décroissance) ; la forme du jour (±15 %, son propre flux) ; le déterminisme ; l'automatique dans l'ordre du joueur, ses protections et ses soutiens ; l'IA des rivaux ; la course (+10 % par tour, la Vivacité de poule gardée) ; les points de préparation (AC-17) et les combattants génériques ; l'équipement ×2 (AC-11) contre les stats d'aujourd'hui, inchangées ; un combat hors écran rejoué à partir des tirages de la poule ; le jeu inchangé hors du laboratoire.
+- Vingt-cinq fautes injectées contre les seuls tests des règles : vingt-deux attrapées au premier passage ; trois passaient (les valeurs de base de la garde et de l'esquive, que le test se donnait lui-même ; une forme tirée sur le flux principal) : tests renforcés, les trois attrapées.
+
+### Le rythme (la note de AC-01) — [OK] mesuré, aucune cible fixée
+- **D'où viennent les silences** (la référence du jour 4 contre les sept rivaux, 140 duels, modèle du prototype) : de deux charges longues en même temps. Ren charge Rempart (16 % + 11 % du temps silencieux) ou l'Estocade (32 %) pendant que le rival charge un coup puissant, une compétence ou un combo.
+- **Le levier libre : la cadence des rivaux** (`AUTO_CADENCE`, des nombres « proposé » du prototype) : leurs temps de charge et leur puissance du même facteur, leurs dégâts par seconde gardés ; les temps de charge de Ren (CH-1) et les règles décidées ne bougent pas. Sur la seule attaque légère, ×0,5 ne gagne presque rien (40 → 36 %) : les gros coups font les silences.
+- **Mesuré** (la référence du jour 4, tables finales, durée méd. 172 à 177 s) : ×1 54 coups par minute, le plus long silence d'un duel 7,0 s, 44 % du temps en silences de plus de 3 s ; ×0,75 60, 6,1 s, 36 % ; **×0,5 70, 4,8 s, 12 %** (sans aucun événement visible, coups, protections, soutiens et ruptures comptés : 4,0 s et 5 %). Dans des parties entières de la référence (300 combats) : 73 coups par minute, plus long silence 5,2 s, 10,7 % ; à ×1, 55, 6,8 s, 43 %.
+- **Trouvé en route** [KO → corrigé] : à ×0,5 l'automatique ne levait presque plus Rempart (0,9 fois par duel contre 7,2), les gros coups des rivaux devenant trop courts pour qu'une protection monte à temps, et Ren n'était jamais rompu. D'où la protection qui couvre et les coups de bagarreurs qui menacent la jauge (plus bas).
+- Appliqué : ×0,5. Le lot 2 montre ce qui reste (les barres de charge, les annonces) et l'essai de l'opérateur juge : carte LC1-2.
+
+### L'équilibre (AC-12) — [OK] le test tenu au tableau et en finale ; [?] la poule et le catalogue
+- **Le point de départ** (le prototype, cadence ×1) : les deux briseurs (Tourbillon, Fracas : jauge ×2,5) dans les quinze meilleurs kits contre chaque rival, quatre offensives à 94 % en moyenne en finale contre 51 % pour deux ; les protections et les soutiens valent un tiers d'une offensive, et à cadence ×0,5 ils ne partent plus.
+- **La méthode** : le tableau de AC-12 (six préparations, trois armes) à chaque étape, puis le catalogue (les 715 kits de quatre compétences ; un échantillon fixe de 140 kits de deux ou trois offensives dans la recherche) ; une recherche par coordonnées sur une trentaine de nombres de données (effets et durées des protections et soutiens, coûts en PA, facteurs des briseurs, puissances, jauge des gros coups rivaux, enchaînements des armes), graines 1 à 40, vérifiée sur 101 à 160. Le test : contre chaque rival au moins deux préparations à 10 points de la meilleure, aucune à 3 points de la meilleure contre tous ; les armes, chacune la meilleure à 3 points contre trois rivaux au moins.
+- **Les nombres retenus** (`AUTO_SKILLS`, `AUTO_FOES`, `AUTO_WEAPONS`) : les briseurs ×1,5 ; Rempart −60 % des dégâts et jauge ×0,3 pendant 9 s, levé pour couvrir ; Peau de fer −70 % et ×0,15, 11,2 s, levée pour couvrir ; Posture de riposte −95 % pendant 6,5 s, contre les coups vus venir ; Ferveur ×1,8 et ×2 pendant 12 s, 2 PA ; Cri de guerre ×2,3 ; Concentration ×1,5 et jauge ×4 ; l'épaule d'Orla et la fente de Rhosk ×2 à la jauge, la chute de fer de Marek et le grand coup de Tobin ×1,6 ; le sabre 3 × 0,23 (0,42 avant : son +2 en Vivacité le rendait meilleur partout).
+- **Mesuré, rival par rival** (chaque rival ramené au niveau où le kit de départ fait la cible de l'étape contre lui, graines tenues à part) : au tableau et en finale, chaque rival a deux à cinq bonnes réponses et aucun kit ne domine ; **en poule le test bute sur le plafond** : à 85 % pour le kit de départ, les quatre offensives sont à 92-100 % et passent à 3 points du meilleur contre chacun. Le nombre d'offensives ne décide plus : en finale, les kits de deux, trois et quatre offensives font 51, 54 et 52 % en moyenne (51, 83 et 94 % dans le prototype).
+- [?] **Ce qui reste** : la poule sature (les mêmes meilleurs kits contre chaque rival, Peau de fer en tête) ; Rempart est la compétence la plus faible en finale (32 % en moyenne des kits qui l'emportent, contre 56 % pour Taille éclair) ; les armes tiennent sur les graines de calage (trois rivaux ou plus chacune à chaque étape) mais pas toutes sur les graines tenues à part (le sabre ne vaut la lame que contre deux rivaux au tableau, la lame le sabre que contre un en finale). L'équilibre est couplé : un essai ciblé (Peau de fer moins forte, Rempart plus fort) refait de Fracas le kit dominant. Carte LC1-3.
+- [KO → corrigé] Mesuré d'abord à niveau global (tous les rivaux du même facteur), le test tenait avec l'ancienne course et ne tenait plus avec la nouvelle : les cases à ±6 points dépendent des facteurs de chaque rival. Le test se fait désormais rival par rival (`kits --norm=rival`) : il ne dépend plus de la course.
+
+### La course (AC-16, A3 ; AC-15) — [OK] recalée ; [?] la poule plus facile que visée
+- **Le joueur de référence mesuré** (`refs`, graines 1 à 40) : jour 2 300 PV, Atq 17, Déf 11, la lame importée ; jour 4 324 PV, 17 / 17, Taille éclair niveau 2 ; jour 5 384 PV ; tableau 408 PV, 18 / 16 ; finale 432 PV, 22 / 17 / End 14, Taille éclair et Estocade niveau 3. Avec les combats hors écran dans le nouveau duel, les adversaires de la demi-finale varient (Tobin 11, Rhosk 8, Orla 7, Marek 6 sur 40).
+- **Le calage** (`level --t0=95 --targets=65,50 --fitseeds=1..80`) : chaque facteur de poule pour que la référence du jour 2 batte le rival 95 fois sur 100 (duels isolés) ; +10 % par tour (A3) ; le tableau et la finale par bissection sur les parties entières de la référence (graines 1 à 80) pour 65 et 50 %. Résultat : Vessa ×1,036, Tobin ×1,379, Cassius ×1,038, Orla ×0,84, Ilse ×1,026, Marek ×0,855, Rhosk ×0,95 ; **tableau ×1,305, finale ×1,586** (le prototype : ×1,267 et ×1,533).
+- **Graines tenues à part 101 à 160** :
+
+| Politique | Jour 2 | Jour 4 | Jour 5 | Demi | 3e | Finale | Titres | Durées poule / tableau / finale |
+|---|---|---|---|---|---|---|---|---|
+| référence | 98 % | 98 % | 100 % | 68 % | 95 % | 49 % (41) | **33 %** | 143 / 226 / 250 s |
+| planificateur | 98 % | 98 % | 100 % | 43 % | 94 % | 38 % (26) | 17 % | 143 / 221 / 236 s |
+| curieux | 97 % | 97 % | 75 % | 57 % | 74 % | 6 % (31) | 3 % | 182 / 275 / 341 s |
+| diligent | 100 % | 82 % | 25 % | 2 % | 2 % | — | 0 % | 174 / 207 / 276 s |
+| inactif | 73 % | 52 % | 5 % | 0 % | 0 % | — | 0 % | 164 / 145 / — s |
+
+- Un combat de la référence : 24 compétences, 221 coups portés (les deux), 1,61 rupture du rival et 0,14 de Ren, 7,8 retournements. DB5 tenue : 2,4 min en poule, 4,2 en finale (médianes).
+- [?] **La poule est plus facile que les 85 et 75 % visés aux jours 4 et 5**, parce que la référence se renforce plus vite que +10 % par tour entre le jour 2 et le jour 5. Mesuré (graines 1 à 80, puis 101 à 160) : +15 % 95 / 93 / 71 puis 98 / 97 / 75 / 66 / 45 % et 28 % de titres ; +20 % 95 / 88 / 28 ; +25 % 95 / 85 / 9 (Cassius au troisième tour devient un mur) ; monter le niveau commun au lieu de la pente (×1,1, ×1,2) fait perdre la poule et ferme le tableau (4 et 0 % de titres). C'est un conflit entre deux choix de l'opérateur (AC-15 et l'A3 d'AC-16) : non tranché, le code garde +10 %, carte LC1-1.
+
+### Les combats hors écran (AC-18) — [OK]
+- La même simulation, l'IA des deux côtés, 0,16 ms par duel dans Node. Entre rivaux, le moins fort gagne 25 % du temps (7 % dans la course d'aujourd'hui, 32 % dans le prototype à niveau commun). À la finale, Ilse et Marek battent les autres 63 à 100 % ; Orla perd presque tout (0 à 25 %).
+
+### Le jeu inchangé — [OK]
+- Le TournamentLab du jeu par défaut (règles de la version 2) donne le même JSON que `main` `93272c7` (une copie figée) pour le planificateur, le curieux, le diligent et l'inactif sur 30 graines ; contrôle négatif : la même comparaison avec `--rules=auto` diffère. Aucune page, aucun module de l'écran n'importe le nouveau duel ; les tests du jeu d'aujourd'hui passent inchangés.
+
+### Erreurs de méthode — [KO → corrigé]
+- Mes scripts jetables chargeaient l'outil en écrivant `process.argv[2] = 'lib'` : ils écrasaient leur propre premier argument, et l'un découpait `--set` sur chaque `=`. Trois paysages et une évaluation ont tourné sur d'autres réglages que ceux annoncés ; vu parce que deux tableaux se contredisaient (les quatre offensives à 52 d'un côté, 95 de l'autre). Corrigé et tout remesuré ; aucune mesure de cette passe ne vient d'avant la correction.
+- Trois oracles faux au premier jet (la décroissance : un coup de 40 toutes les 10 s finit par rompre, 40 puis 73,7 ; le coup tombé à l'instant exact de la fin de l'étourdi compte ; une charge mise en pause par plusieurs ruptures) : corrigés sur l'arithmétique, pas sur le code.
+- La seconde passe de la recherche d'équilibre, une demi-heure sans gain, arrêtée.
+- La fiche publiée d'abord sous `briefs/fiche-combat-lot1.html`, un nom déjà pris par la fiche de la Passe CX2 : l'ancienne écrasée dans le dossier de travail, vu au `git diff` avant tout commit, restaurée depuis git ; la nouvelle rangée sous `briefs/fiche-combat-auto-lot1.html` (même lien). Regarder la cible avant d'écrire un fichier, même neuf.
+
+### La fiche — publiée, à remplir
+- Page privée https://claude.ai/artifact/WpWZvn9TyYa7dbGnY8t89y (`briefs/fiche-combat-auto-lot1.html`, le gabarit de la skill `fiche-arbitrages`), collection `decisions` relue vide après publication ; rendue dans un Chrome sans tête avant : quatre cartes, onze options, aucune erreur de page, pas de débordement à 375 px.
+- **LC1-1** la montée de la poule (recommandé : +15 % par tour, décision A3 : change AC-16 ; ou garder +10 % ; ou trancher après l'essai) ; **LC1-2** la cadence des rivaux (recommandé : garder ×0,5 et juger à l'essai) ; **LC1-3** l'équilibre au-delà du test (recommandé : reprendre le catalogue entier au lot 2, avant l'essai) ; **LC1-4** ce que le lot 1 a ajouté sans fiche (la protection qui couvre, les coups de bagarreurs, Ferveur à 2 PA, la pierre à aiguiser doublée, les génériques sur la course de leur rival avec ses traits, l'ordre par défaut ; recommandé : bien ainsi).
+
+### Validation
+- Modifiés ou ajoutés : `src/combat/auto.ts`, `autoData.ts`, `autoMatch.ts` (nouveaux) ; `src/tournament/pool.ts` et `lab.ts` (derrière `flags.autoDuel`, et la politique `reference`) ; `tests/combat-auto.test.mjs`, `tests/auto-prototype.json` ; `tools/auto-lab.mjs` (nouveau), `tools/tournament-lab.mjs` (`--rules=auto`) ; `briefs/combat-auto.md` (statut et § 18), `briefs/fiche-combat-auto-lot1.html` ; `AGENTS.md` (statut, la commande, le test) ; ce journal.
+- `npm run typecheck` sans erreur ; `npm run build` ; `npm run art:validate` (73 manifestes, 123 sources, 23 du son, 0 erreur) ; `npm test` **639 / 639** (619 avant, dont les 20 de `tests/combat-auto.test.mjs`). Archivage : les passes gardées auraient dépassé 60 Ko avec LC1 ; AU3, AU4 et AU5 (branches fusionnées) déplacées d'un bloc, à l'octet, dans `journal/94-passes-AU3-AU5.md`, leur ligne ajoutée à l'index et la phrase d'en-tête complétée ; preuve par script : le corps de l'archive égale les 18 102 octets retirés (SHA-256 `1ccf7db1eb4857c2…`), AU3 à AU5 hors de `JOURNAL.md`, AC1 à AC4 inchangées, CRLF seuls ; 59,5 Ko de passes gardées.
+
+### Où reprendre
+- Attendre que l'opérateur dise la fiche remplie ; la relire (`ArtifactData` `list` `decisions`) ; consigner chaque choix mot pour mot ; LC1-1 en décision A3 si l'opérateur change la pente.
+- Le lot 2 (l'arène et la fiche de match, puis l'essai de l'opérateur), dans sa séance : brancher `autoOutcome`, `autoOffscreen` et la course dans le jeu par défaut (retirer `flags.autoDuel`), montrer le script (`log`), les deux fiches, la forme du jour, les points de préparation et les chances ; l'ordre des compétences réglé sur la fiche de match (un champ de la sauvegarde, `autoRen` le lit déjà) ; selon LC1-3, l'équilibre du catalogue avant l'essai.
+
+### Pensée
+- Un port se prouve d'abord sur les données de l'original ; l'équilibre vient ensuite, et ne change que des données : figer les tables de l'original dans le test garde la preuve vraie après.
+- Un test d'équilibre « à niveau égal » se mesure rival par rival : normaliser tous les rivaux d'un seul facteur fait dépendre le test de la course, qui le défait à chaque recalage.
+- Quand deux choix de l'opérateur ne tiennent pas ensemble (une pente décidée, des chances visées), on mesure les deux voies et on les montre, sans en choisir une dans le code.
+- Un levier de rythme se juge aussi à ce qu'il fait aux autres règles : des coups plus courts ont désarmé les protections ; la mesure de leur usage l'a montré avant que l'équilibre ne s'y casse.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
-**00. L'audit final (Passes AU1 à AU5) et l'atelier du combat (Passes AC1 à AC4)** : le rapport `briefs/audit-final.md` ; la fiche AU1 relue, dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite, sans attendre l’essai » (Passe AU2 ; A3 : AU-05, AU-12, AU-13). **Les chantiers, chacun dans sa séance** : (1) **la refonte du combat, d'abord** : **l'atelier est mené (Passe AC1)** : la spécification du combat joué par l'ordinateur en brouillon (`briefs/combat-auto.md` : une ligne de temps, la charge avant d'agir, les PA gardés, la garde et l'esquive par la Défense et la Vivacité, la courbe partie du joueur de référence mesuré), son prototype de mesure (`tools/auto-duel-lab.mjs`), la fiche des règles https://claude.ai/artifact/6ksgfzxv8F3zSHhPhyh4PV (`briefs/fiche-combat-auto.html`, vingt cartes AC-01 à AC-20 sur le modèle complet de la Passe AC3) **relue en Passe AC4 : vingt sur vingt à la recommandation ; A3 : AC-07 (DB-2 retirée), AC-11 (DB7-2, l'équipement ×2), AC-16 (DB7-5, DB7-6, DB11-2 : la course), AC-19 (le § 6.1 du contrat projet, amendé) ; la spécification approuvée (§ 17). À faire : la construction en cinq lots (AC-20 ; § 17.3), chacun dans sa séance, dans le jeu par défaut : (1) la simulation, la course recalée sur AC-15, l'équilibrage au test de AC-12 et le rythme (la note de AC-01 : « mais il faut s'assurer que cela soit rythme, dynamique » ; 41 % du temps en silences de plus de 3 s dans le prototype), rien à l'écran ; (2) l'arène et la fiche de match, puis l'essai de l'opérateur ; (3) le guide et le tutoriel ; (4) le son et les effets ; (5) le retrait de l'ancien duel ; le semi-automatique revu après l'essai (AC-10)** ; (AU-03, devenu par la direction de l'opérateur de la Passe AU3 : des duels joués par l'ordinateur, le joueur prépare, une zone de charge et d'attente avec les PA, un atelier comme CB1, l'inspiration de La Brute lue dans son code (Passe AU4 : une ligne de temps d'initiative, une préparation par choix ; le principe, pas le jeu), les réponses de l'opérateur de la Passe AU5 (une ligne de temps avec les PA, la défense et l'esquive par les cinq stats, un semi-automatique, une durée pour profiter du duel ; le problème à résoudre : le joueur perd trop souvent contre les rivaux avancés), l'amendement du § 6.1 du contrat projet en A3, écrit en Passe AC4 ; tout ce qui touche au combat repensé avec elle) ; (2) les nombres du duel dits (AU-04), en attente de la refonte ; (3) la graine et la sauvegarde, le fondu au noir avant chaque page (AU-06, AU-07) ; (4) les correctifs de la ville et « 10 % » (AU-08, AU-15) ; (5) `AGENTS.md` allégé et le journal élagué avec une règle de taille (AU-09) ; (6) le ménage, les deux fichiers modifiés montrés d'abord (AU-10) ; (7) les paramètres d'essai retirés, `v2=0` gardé jusqu'au Gold Master (AU-11) ; (8) les amendements des contrats : la phase d'équipe hors de cette version, la génération par le code (AU-05, AU-12) ; (9) l'essai de réception guidé, après les bloquants (AU-01, AU-02). Hors de cette version (AU-13, A3) : les sponsors, l'investissement, les calendriers comparés, avec les paris (ECO-5).
+**00. L'audit final (Passes AU1 à AU5) et l'atelier du combat (Passes AC1 à AC4)** : le rapport `briefs/audit-final.md` ; la fiche AU1 relue, dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite, sans attendre l’essai » (Passe AU2 ; A3 : AU-05, AU-12, AU-13). **Les chantiers, chacun dans sa séance** : (1) **la refonte du combat, d'abord** : **l'atelier est mené (Passe AC1)** : la spécification du combat joué par l'ordinateur en brouillon (`briefs/combat-auto.md` : une ligne de temps, la charge avant d'agir, les PA gardés, la garde et l'esquive par la Défense et la Vivacité, la courbe partie du joueur de référence mesuré), son prototype de mesure (`tools/auto-duel-lab.mjs`), la fiche des règles https://claude.ai/artifact/6ksgfzxv8F3zSHhPhyh4PV (`briefs/fiche-combat-auto.html`, vingt cartes AC-01 à AC-20 sur le modèle complet de la Passe AC3) **relue en Passe AC4 : vingt sur vingt à la recommandation ; A3 : AC-07 (DB-2 retirée), AC-11 (DB7-2, l'équipement ×2), AC-16 (DB7-5, DB7-6, DB11-2 : la course), AC-19 (le § 6.1 du contrat projet, amendé) ; la spécification approuvée (§ 17). À faire : la construction en cinq lots (AC-20 ; § 17.3), chacun dans sa séance, dans le jeu par défaut : (1) **la simulation : faite (Passe LC1)** — `src/combat/auto.ts`, `autoData.ts`, `autoMatch.ts`, jouée par le seul laboratoire (`flags.autoDuel`, `--rules=auto`), rien à l'écran ; le rythme (la cadence des rivaux ×0,5 : 12 % du temps en silences de plus de 3 s contre 41 %), l'équilibre (le test de AC-12 tenu au tableau et en finale, rival par rival ; la poule et le catalogue en réserve), la course (la référence 33 % de titres, la poule plus facile que visée à +10 % par tour) ; **la fiche du lot https://claude.ai/artifact/WpWZvn9TyYa7dbGnY8t89y (`briefs/fiche-combat-auto-lot1.html`, LC1-1 à LC1-4) à remplir, relire et consigner** ; (2) l'arène et la fiche de match, puis l'essai de l'opérateur ; (3) le guide et le tutoriel ; (4) le son et les effets ; (5) le retrait de l'ancien duel ; le semi-automatique revu après l'essai (AC-10)** ; (AU-03, devenu par la direction de l'opérateur de la Passe AU3 : des duels joués par l'ordinateur, le joueur prépare, une zone de charge et d'attente avec les PA, un atelier comme CB1, l'inspiration de La Brute lue dans son code (Passe AU4 : une ligne de temps d'initiative, une préparation par choix ; le principe, pas le jeu), les réponses de l'opérateur de la Passe AU5 (une ligne de temps avec les PA, la défense et l'esquive par les cinq stats, un semi-automatique, une durée pour profiter du duel ; le problème à résoudre : le joueur perd trop souvent contre les rivaux avancés), l'amendement du § 6.1 du contrat projet en A3, écrit en Passe AC4 ; tout ce qui touche au combat repensé avec elle) ; (2) les nombres du duel dits (AU-04), en attente de la refonte ; (3) la graine et la sauvegarde, le fondu au noir avant chaque page (AU-06, AU-07) ; (4) les correctifs de la ville et « 10 % » (AU-08, AU-15) ; (5) `AGENTS.md` allégé et le journal élagué avec une règle de taille (AU-09) ; (6) le ménage, les deux fichiers modifiés montrés d'abord (AU-10) ; (7) les paramètres d'essai retirés, `v2=0` gardé jusqu'au Gold Master (AU-11) ; (8) les amendements des contrats : la phase d'équipe hors de cette version, la génération par le code (AU-05, AU-12) ; (9) l'essai de réception guidé, après les bloquants (AU-01, AU-02). Hors de cette version (AU-13, A3) : les sponsors, l'investissement, les calendriers comparés, avec les paris (ECO-5).
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
@@ -1207,3 +1151,4 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Une règle se mesure aussi contre le joueur parfait d'une seule tactique (tenir la garde et marteler), pas seulement contre le bot ; et le joueur de référence d'un recalage doit jouer toutes les couches de progression que la fiche suppose (Passe DB9).
 - Un pied qui glisse se mesure à l'écran, contre l'avance du personnage à l'écran, et pour chaque vue : une mesure le long d'un seul axe (la droite de la caméra) ne voit ni un trois-quarts dessiné sur place ni la part en profondeur d'un pas ; et un témoin de répétition se fait sur une autre origine, le stockage du navigateur suivant l'origine (Passe MD1).
 - Une note au bord d'un choix, sur une fiche, est une exigence et non une réserve : la mesurer tout de suite donne à la construction un point de départ et un critère ; une moyenne flatteuse (59 coups par minute) peut cacher des rafales et 41 % de silences (Passe AC4).
+- Un test d'équilibre « à force égale » se normalise rival par rival : un seul facteur pour tous les rivaux fait dépendre le test de la course, qui le défait à chaque recalage ; et un script jetable qui charge un outil insère son mode dans `process.argv`, il ne l'écrase pas (trois mesures faites sur d'autres réglages que ceux annoncés, Passe LC1).

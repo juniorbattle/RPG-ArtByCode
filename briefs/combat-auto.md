@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -535,6 +535,33 @@ Chaque lot est construit dans sa séance, dans le jeu par défaut (VD-8), et fus
 5. **Le retrait** de l'ancien duel et de ses outils (§ 13).
 
 Le semi-automatique n'est dans aucun lot ; il est revu après l'essai (AC-10).
+
+## 18. Le lot 1 construit (12/11/2026, journal Passe LC1)
+
+Le lot 1 est dans `src/combat/` : `auto.ts` (la simulation, l'automatique dans l'ordre du joueur, l'IA des rivaux), `autoData.ts` (ses tables, la course,
+un combat hors écran), `autoMatch.ts` (le combat d'une partie, l'équipement ×2). Seules les parties du laboratoire le jouent (`flags.autoDuel`, le
+TournamentLab `--rules=auto`) ; le duel d'aujourd'hui reste à l'écran jusqu'au lot 2. Prouvé contre le prototype exécuté à côté (§ 16, les mêmes duels
+événement par événement sur ses tables, `tests/auto-prototype.json`), puis chaque règle contre un oracle (`tests/combat-auto.test.mjs`). Ce que la
+construction a changé aux nombres du § 16, sans toucher aux règles décidées :
+
+- **Le rythme** (§ 17.2) : la cadence des rivaux ×0,5 (leurs temps de charge et leur puissance du même facteur, leurs dégâts par seconde gardés). La
+  référence du jour 4 contre les sept rivaux : 70 coups par minute, le plus long silence d'un duel 4,8 s en médiane, 12 % du temps en silences de plus
+  de 3 s (le prototype : 57, 6,4 s, 41 %), à durée égale ; dans des parties entières, 73 coups par minute et 11 %. Aucune cible n'est fixée : l'essai
+  de l'opérateur juge (fiche LC1-2).
+- **L'automatique** : une protection longue (Rempart, Peau de fer, `cover`) se lève aussi pour couvrir, dès que les PA laissés paient une offensive ;
+  l'ordre par défaut quand le joueur n'en règle pas : les protections, les soutiens, puis les offensives de la plus forte.
+- **L'équilibre** (AC-12) : les briseurs ×1,5 (×2,5 avant) ; Rempart −60 % / jauge ×0,3 pendant 9 s ; Peau de fer −70 % / ×0,15, 11,2 s ; Posture de
+  riposte −95 %, 6,5 s ; Ferveur ×1,8 / ×2, 12 s, 2 PA ; Cri de guerre ×2,3 ; Concentration ×1,5 / ×4 ; les gros coups des bagarreurs remplissent la
+  jauge de Ren (Orla, Rhosk ×2 ; Marek, Tobin ×1,6) ; le sabre 3 × 0,23. Rival par rival, à force égale pour le kit de départ, le test de AC-12 tient au
+  tableau et en finale sur les graines tenues à part ; en poule il bute sur le plafond ; le catalogue entier garde des écarts (Peau de fer en poule,
+  Rempart en finale) : fiche LC1-3.
+- **La course** (AC-16), recalée sur parties entières : les facteurs de poule de 0,84 (Orla) à 1,38 (Tobin), +10 % par tour (A3), ×1,305 au tableau,
+  ×1,586 en finale. Graines tenues à part 101 à 160 : la référence 98 / 98 / 100 / 68 / 49 % du jour 2 à la finale, **33 % de titres** ; le planificateur
+  17 %, le curieux 3 %, le diligent et l'inactif 0 % ; des combats de 143 / 226 / 250 s en médiane (poule, tableau, finale). La poule est plus facile que les
+  85 et 75 % visés aux jours 4 et 5 : à +15 % par tour, 98 / 97 / 75 / 66 / 45 % et 28 % de titres (fiche LC1-1, A3).
+- **Les combats hors écran** : 0,16 ms par duel dans Node ; entre rivaux, le moins fort gagne 25 % du temps.
+
+La fiche du lot : https://claude.ai/artifact/WpWZvn9TyYa7dbGnY8t89y (`briefs/fiche-combat-auto-lot1.html`), quatre cartes, à remplir.
 
 ---
 
