@@ -78,7 +78,8 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     if (wide) wide.innerHTML = `<p class="ttl">${tx('ui.order.title')}</p>${autoOrderView(host.state(), four()).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${tx('v2.skills.ap', { ap: t.ap })} · ${num(t.charge)} s</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
     if (go) go.disabled = chosen.size !== 4;
     const lv = kit.levels[now], st = host.state(), f = skillFigures(st, now, lv), up = nextLevel(st, now), k = SKILL_BOOK[now];
-    const said = !up ? tx('ui.skill.top') : up.by === 'drill' ? tx('ui.skill.drill', { level: up.level }) : tx('ui.skill.challenge', { name: RIVALS[up.teacher!].name });
+    const said = !up ? tx('ui.skill.top') : up.by === 'drill' ? tx('ui.skill.drill', { level: up.level })
+      : up.fromDay ? tx('ui.skill.challengeLate', { name: RIVALS[up.teacher!].name, day: up.fromDay }) : tx('ui.skill.challenge', { name: RIVALS[up.teacher!].name });
     detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))} · ${tx('v2.skills.level', { level: lv })} · ${tx('v2.skills.ap', { ap: f.ap })}</p><p class="ab">${esc(doesWhat(f))}</p>${cmpHtml(f, up ? skillFigures(st, now, up.level) : null, up?.level ?? lv)}<p class="what">${esc(said)}</p>${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}`;
     fit();
     const on = chosen.has(now), movable = on && chosen.size === 4;

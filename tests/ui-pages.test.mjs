@@ -9,6 +9,7 @@ import { load, ROOT } from './load.mjs';
 const G = await load('/src/simulation/index.ts');
 const VG = await load('/src/simulation/v2gear.ts');
 const VS = await load('/src/simulation/v2skills.ts');
+const VT = await load('/src/simulation/v2town.ts');
 const P = await load('/src/simulation/preview.ts');
 const M = await load('/src/combat/match.ts');
 const SB = await load('/src/combat/skillbook.ts');
@@ -63,6 +64,13 @@ test('the next level says what the game allows: drilling to its cap, then the te
   s.v2.kit.levels.t1 = VS.TRAIN_CAP; assert.equal(P.nextLevel(s, 't1'), null, 'no teacher: the cap is the end');
   s.v2.kit.levels.k_cry = VS.TRAIN_CAP; assert.deepEqual(P.nextLevel(s, 'k_cry'), { level: VS.TRAIN_CAP + 1, by: 'challenge', teacher: 'orla' });
   s.v2.kit.levels.k_cry = SK.MAX_LEVEL; assert.equal(P.nextLevel(s, 'k_cry'), null);
+  // a skill only a rival out of the title teaches (LATE_TEACHER): raised by a challenge from the day such a rival can be challenged (journal Passe CO1), as
+  // learnFromChallenge raises it; « no higher level » only at the top
+  for (const [rival, id] of Object.entries(SB.LATE_TEACHER)) {
+    s.v2.kit.levels[id] = VS.TRAIN_CAP;
+    assert.deepEqual(P.nextLevel(s, id), { level: VS.TRAIN_CAP + 1, by: 'challenge', teacher: rival, fromDay: VT.RIVALS_CHALLENGE_DAY }, id);
+    s.v2.kit.levels[id] = SK.MAX_LEVEL; assert.equal(P.nextLevel(s, id), null, `${id} at the top`);
+  }
   // the drill's own refusal at the cap, on the practice sand
   const t = structuredClone(s); t.place = 'training';
   const d = G.actions(t).find((o) => o.action.type === 'drillSkill' && o.action.skill === 't1');

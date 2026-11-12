@@ -257,7 +257,9 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
         + fixed('set.keys.back', key(fixedName('Esc')), cap(fam, BTN.B)) + fixed('set.keys.space', key(fixedName('Space')), cap(fam, BTN.X))
         + fixed('set.keys.tab', '', cap(fam, BTN.LB, BTN.RB)) + fixed('set.keys.scroll', '', cap(fam, BTN.RS))),
       heading(tx('set.keys.duel')),
-      table(own('attack', cap(fam, BTN.X, BTN.RT)) + own('guard', cap(fam, BTN.B, BTN.LT)) + own('dodge', cap(fam, BTN.A)) + own('pause', cap(fam, BTN.START))
+      // the duel played by the computer (journal Passe LC3; LC3-8 « Garder ainsi ; renommer au lot 5 », renamed in Passe CO1 at the operator's « corriger cela
+      // en priorite »): the attack's key gives ×2, the dodge's « Skip », the guard's nothing (its line left out, as the guide's « Keys » chapter leaves it out)
+      table(own('attack', cap(fam, BTN.X, BTN.RT)) + own('dodge', cap(fam, BTN.A)) + own('pause', cap(fam, BTN.START))
         + fixed('set.keys.settings', key(fixedName('Esc')), cap(fam, BTN.Y))),
     );
     // « Default keys »: the shown keyboard's starting keys back (RM-5)

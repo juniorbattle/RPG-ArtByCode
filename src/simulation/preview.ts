@@ -7,7 +7,7 @@ import type { ChargeTier } from '../combat/charge';
 import type { DynActionId } from '../combat/dynamic';
 import { matchSheetFor, playerMods, v2SheetData } from '../combat/match';
 import { DYN_PROFILES, PROFILES, duelData, dynDuelData } from '../combat/profiles';
-import { SKILL_BOOK } from '../combat/skillbook';
+import { LATE_TEACHER, SKILL_BOOK } from '../combat/skillbook';
 import { MAX_LEVEL } from '../combat/skills';
 import { v2DuelData, type V2Duel, type V2Kit } from '../combat/v2duel';
 import { hitFactor, skillPower } from '../combat/stats';
@@ -15,7 +15,8 @@ import { Rng } from '../core/rng';
 import { AUTO_RULES, type AutoFighter } from '../combat/auto';
 import { autoFoe, autoOrderOf, autoRaceSheet, autoRen, autoSkill } from '../combat/autoData';
 import { autoBoutOf } from '../combat/autoMatch';
-import { healthParts, v2Stats } from './v2gear';
+import { v2Stats } from './v2gear';
+import { RIVALS_CHALLENGE_DAY } from './v2town';
 
 /** What a purchase or a change of gear would change (the operator's choice UM7-3 « Lot à part : héros, détail, comparaison », journal Passe UM9): no
  *  rule of its own, so it cannot drift from the game. The numbers are read from the duel's own data, built as a bout builds them; the « after » is the
@@ -35,10 +36,11 @@ const NAMES = { seed: 1, playerName: '', opponentName: '' };
  *  start and the wards' and boosts' length (% of the bare figure); the opponent's own numbers stay out of it */
 export function duelStats(s: GameState): Stats {
   // a version 2 game: the duel played by the computer's Ren (lot 2, journal Passe LC3): his stats (the gear's points doubled, AC-11), his AP at the start, his
-  // effects' length; the health as the sheet counts it (the duel doubles every fighter's, DB5)
+  // effects' length; the health the bout gives him, as the match sheet says it (the duel doubles every fighter's, DB5; the sheet's own figure ×
+  // AUTO_RULES.hpScale, journal Passe CO1: the gear page said 300 under « In a bout » where the match sheet and the duel say 600)
   if (isV2(s)) {
     const m = v2Mods(s), st = v2Stats(s);
-    return { hp: healthParts(s).total, atk: st.atk, def: st.def, end: st.end, viv: st.viv, ap: AUTO_RULES.ap.start + (m.ap ?? 0), effect: m.effect * 100 };
+    return { hp: Math.round(st.hp * (m.hp ?? 1) * AUTO_RULES.hpScale), atk: st.atk, def: st.def, end: st.end, viv: st.viv, ap: AUTO_RULES.ap.start + (m.ap ?? 0), effect: m.effect * 100 };
   }
   const m = playerMods(s), d = s.flags.combat === 'dynamic' ? dynDuelData(DYN_PROFILES.marek, { ...NAMES, player: m }) : duelData(PROFILES.marek, { ...NAMES, player: m });
   return { hp: d.fighters.ren.maxHp, blow: d.actions.heavy.damage };
@@ -108,11 +110,15 @@ export function autoOrderView(s: GameState, ids: string[]): Array<{ id: string; 
   return order.map((id) => { const a = autoSkill(id, k.levels[id] ?? 1); return { id, ap: a.ap ?? 0, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2) }; });
 }
 
-/** the level a skill can still reach and how: drilling up to its cap, then only the fighter who teaches it */
-export function nextLevel(s: GameState, id: string): { level: number; by: 'drill' | 'challenge'; teacher?: string } | null {
-  const lv = levelOf(s, id), teacher = SKILL_BOOK[id]?.teacher;
+/** the level a skill can still reach and how: drilling up to its cap, then only the fighter who teaches it; a skill only a rival out of the title teaches
+ *  (LATE_TEACHER, lot L2b) from the day such a rival can be challenged (journal Passe CO1: the page said « No higher level » for Iron Skin, Feint, Sunder and
+ *  the Piercing Lunge at level 3, though a challenge won from day 6 raises them, src/simulation/v2skills.ts learnFromChallenge) */
+export function nextLevel(s: GameState, id: string): { level: number; by: 'drill' | 'challenge'; teacher?: string; fromDay?: number } | null {
+  const lv = levelOf(s, id), teacher = SKILL_BOOK[id]?.teacher, late = Object.keys(LATE_TEACHER).find((f) => LATE_TEACHER[f] === id);
   if (lv < TRAIN_CAP) return { level: lv + 1, by: 'drill' };
-  return teacher && lv < MAX_LEVEL ? { level: lv + 1, by: 'challenge', teacher } : null;
+  if (lv >= MAX_LEVEL) return null;
+  if (teacher) return { level: lv + 1, by: 'challenge', teacher };
+  return late ? { level: lv + 1, by: 'challenge', teacher: late, fromDay: RIVALS_CHALLENGE_DAY } : null;
 }
 
 export interface StatChange { id: StatId; now: number; after: number; better: boolean }

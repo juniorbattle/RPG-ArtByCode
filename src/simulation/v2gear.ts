@@ -179,7 +179,8 @@ export const V2_GEAR_ACTIONS: { [K in V2GearAction['type']]: ActionDef<Extract<V
   upgradeWeapon: {
     by: 'bram',
     list: (s) => (isV2(s) && s.place === 'district' ? [{ type: 'upgradeWeapon' }] : []),
-    label: (s) => tx('v2.upgrade.label', { item: heldName(gearView(s).weapon), tier: weaponTier(s) + 1, price: TIER_PRICE[Math.min(MAX_WEAPON_TIER - 1, weaponTier(s))] }),
+    // a tier's Attack as the gear's table gives it (journal Passe CO1: « +8 % damage » since DB7-2 made it a point, AC-11 two)
+    label: (s) => tx('v2.upgrade.label', { item: heldName(gearView(s).weapon), tier: weaponTier(s) + 1, price: TIER_PRICE[Math.min(MAX_WEAPON_TIER - 1, weaponTier(s))], atk: WEAPON_TIER_ATK }),
     cost: () => 1,
     coins: (s) => (weaponTier(s) >= MAX_WEAPON_TIER ? 0 : TIER_PRICE[weaponTier(s)]),
     check: (s) => {

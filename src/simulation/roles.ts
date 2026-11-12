@@ -17,6 +17,7 @@ import { V2_RIVAL_ACTIONS, anwenBusy } from './v2rivals';
 import { V2_FESTIVAL_ACTIONS } from './v2festival';
 import { V2_WORK_ACTIONS } from './v2work';
 import { TRAINED_STATS, trainGain, type TrainedStat } from '../combat/stats';
+import { WEAPON_TIER_ATK } from './gear';
 /** the stats' names (keys written whole: tests/texts.test.mjs) */
 const SPAR_STAT: Record<TrainedStat, TextKey> = { atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv', hp: 'ui.stat.hp' };
 
@@ -145,7 +146,9 @@ export const ROLE_ACTIONS: T = {
   temper: {
     by: 'bram',
     list: (st) => (st.place === 'district' && st.quests.cargo === 'delivered' ? [{ type: 'temper' }] : []),
-    label: () => tx('temper.label'),
+    // a version 2 game: the temper is the weapon's first tier (src/simulation/gear.ts), its Attack said as the forge's tiers say it (journal Passe CO1: « +15 %
+    // damage » since DB7-2 a tier's point); today's game keeps its words
+    label: (st) => (isV2(st) ? tx('v2.temper.label', { atk: WEAPON_TIER_ATK }) : tx('temper.label')),
     cost: () => 1,
     coins: () => 10,
     check: (st) => available(st, 'bram') ?? (st.services.forge === 'sabotaged' ? tx('temper.cold') : blade(st) ? tx('temper.haveBlade') : st.player.coins < 10 ? tx('temper.poor') : null),

@@ -43,6 +43,8 @@ export type Stake = keyof typeof STAKE;
 export const phaseOf = (day: number): 1 | 2 => (day <= 5 ? 1 : 2);
 /** a rival's bout today (the pool or the bracket) */
 const fightsToday = (s: GameState, who: string): boolean => s.tournament.matches.some((m) => m.day === s.day && (m.a === who || m.b === who));
+/** the day from which a rival out of the title can be challenged (EV-4); the skills' page says it for the skills only those rivals teach (journal Passe CO1) */
+export const RIVALS_CHALLENGE_DAY = 6;
 /** can this fighter be challenged now (lot L2b, EV-4 « Les trois, puis les éliminés à partir du jour 6 »): the three from the first day, the generic fighters
  *  (the qualifiers' losers), and from day 6 a rival out of the title (one of the cut's four others) on a day without a bout of theirs; null, or why not */
 export function challengeable(s: GameState, who: string): string | null {
@@ -50,13 +52,13 @@ export function challengeable(s: GameState, who: string): string | null {
   if (!p) return tx('v2.challenge.who');
   if (CHALLENGERS[who] || GENERICS[who]) return null;
   const c = s.competitors[who];
-  if (!RIVALS[who] || !c || s.day < 6) return tx('v2.challenge.who');
+  if (!RIVALS[who] || !c || s.day < RIVALS_CHALLENGE_DAY) return tx('v2.challenge.who');
   if (c.phaseStatus !== 'gate') return tx('v2.challenge.crown', { name: p.name });
   return fightsToday(s, who) ? tx('v2.challenge.fights', { name: p.name }) : null;
 }
 /** the fighters a challenge can be offered to at this place: the three, the generic fighters, and from day 6 the rivals in town */
 // (the muscle waiting for a debt offers no sport: lot L2b)
-const candidates = (s: GameState): string[] => Object.values(PEOPLE).filter((p) => placeOf(p, true) === s.place && (CHALLENGERS[p.id] || GENERICS[p.id] || (s.day >= 6 && RIVALS[p.id])) && !(p.id === MUSCLE && s.v2?.reprisal)).map((p) => p.id);
+const candidates = (s: GameState): string[] => Object.values(PEOPLE).filter((p) => placeOf(p, true) === s.place && (CHALLENGERS[p.id] || GENERICS[p.id] || (s.day >= RIVALS_CHALLENGE_DAY && RIVALS[p.id])) && !(p.id === MUSCLE && s.v2?.reprisal)).map((p) => p.id);
 const fighterName = (who: string): string => PEOPLE[who]?.name ?? GENERICS[who]?.name ?? RIVALS[who]?.name ?? who;
 
 /** a stall forced at night (lot L2a, EV-2: « La nuit, les étals fermés se forcent : plus facile, puni plus fort »): a day shop shut at dusk */

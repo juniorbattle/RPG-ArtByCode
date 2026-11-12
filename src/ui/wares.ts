@@ -5,6 +5,7 @@ import { duelStats, preview, STAT_IDS, type Preview, type StatId } from '../simu
 import { itemAbout, itemName, weaponTier } from '../simulation/v2gear';
 import { PASSERS } from '../simulation/v2barter';
 import { isV2 } from '../simulation/v2';
+import { AUTO_WEAPONS } from '../combat/autoData';
 import { PEOPLE, titleOf } from '../narrative/people';
 import { num, said, skillName, tx, type TextKey, type TextRef } from '../narrative/text';
 import { SKILL_BOOK, skillAction } from '../combat/skillbook';
@@ -58,6 +59,12 @@ export const isWare = (o: ActionOption): boolean => WARE_TYPES.includes(o.action
 export const isGoods = (o: ActionOption): boolean => isWare(o) || isArg(o);
 
 /** « a mail shirt » as a line's name */
+/** a piece's words; a weapon's with the blows of the light attack it gives in a version 2 game's duel (AUTO_WEAPONS, AC-02; journal Passe CO1: the page showed
+ *  the Attack and the Speed only, the sabre's three light cuts said by the guide alone) */
+const pieceAbout = (s: GameState, id: string): string => {
+  const w = isV2(s) ? AUTO_WEAPONS[id] : undefined;
+  return w ? `${itemAbout(id)} · ${tx('ui.wares.blows', { n: w.hits.length, pct: Math.round(w.hits[0] * 100) })}` : itemAbout(id);
+};
 // a name without its article, capitalised (« a whetstone » → « Whetstone », « une pierre à aiguiser » → « Pierre à aiguiser »)
 const bare = (name: string): string => { const n = name.replace(/^(?:an? |une? |des |les? |la |l’)/, ''); return n[0].toUpperCase() + n.slice(1); };
 
@@ -72,7 +79,7 @@ function goodsLine(s: GameState, o: ActionOption): Line {
   const a = o.action, done = (!o.ok && DONE.some((k) => tx(k) === o.reason)) || (a.type === 'barter' && s.v2?.passed?.[a.who] !== undefined), base = { key: JSON.stringify(a), action: a, ok: o.ok, reason: o.reason, done, tag: done ? `<span class="cost">${tx('ui.wares.owned')}</span>` : costTag(o) };
   if (a.type === 'shopBuy' || a.type === 'buy') {
     const d = GEAR[a.item];
-    return { ...base, name: bare(itemName(a.item)), sub: tx(SLOT_TEXT[d.slot]), about: itemAbout(a.item), verb: tx('ui.wares.buy', { n: o.coins ?? 0 }), list: d.price, price: o.coins };
+    return { ...base, name: bare(itemName(a.item)), sub: tx(SLOT_TEXT[d.slot]), about: pieceAbout(s, a.item), verb: tx('ui.wares.buy', { n: o.coins ?? 0 }), list: d.price, price: o.coins };
   }
   if (a.type === 'buySkill') {
     const k = SKILL_BOOK[a.skill], act = skillAction(a.skill);
@@ -82,7 +89,7 @@ function goodsLine(s: GameState, o: ActionOption): Line {
   // a passer-by's piece (lot L2a): bought at their price
   if (a.type === 'barter' && !a.arg) {
     const item = PASSERS[a.who].item, d = GEAR[item];
-    return { ...base, name: bare(itemName(item)), sub: tx(SLOT_TEXT[d.slot]), about: itemAbout(item), verb: tx('ui.wares.buy', { n: o.coins ?? 0 }), list: d.price, price: o.coins };
+    return { ...base, name: bare(itemName(item)), sub: tx(SLOT_TEXT[d.slot]), about: pieceAbout(s, item), verb: tx('ui.wares.buy', { n: o.coins ?? 0 }), list: d.price, price: o.coins };
   }
   // an argument (lot L2a): its words and chance, what it costs if it works
   if (a.type === 'bargain' || a.type === 'barter') return { ...base, plain: true, name: o.label.replace(/ \(\d+ %\)$/, ''), sub: o.label.match(/\((\d+ %)\)$/)?.[1] ?? '', about: '', verb: tx('ui.wares.argue'), price: o.coins };
@@ -99,7 +106,7 @@ function bagLines(s: GameState): Line[] {
     const acc = GEAR[id]?.slot === 'accessory' && g.acc[0] && g.acc[1], places: Array<0 | 1 | undefined> = acc ? [0, 1] : [undefined];
     return places.map((slot) => {
       const action = { type: 'equip' as const, item: id, ...(slot === undefined ? {} : { slot }) };
-      return { key: JSON.stringify(action), action, name: bare(itemName(id)), sub: slot === undefined ? tx(SLOT_TEXT[GEAR[id].slot]) : tx('ui.wares.instead', { item: itemName(g.acc[slot]!) }), tag: '', ok: true, about: itemAbout(id), verb: tx('ui.wares.wear') };
+      return { key: JSON.stringify(action), action, name: bare(itemName(id)), sub: slot === undefined ? tx(SLOT_TEXT[GEAR[id].slot]) : tx('ui.wares.instead', { item: itemName(g.acc[slot]!) }), tag: '', ok: true, about: pieceAbout(s, id), verb: tx('ui.wares.wear') };
     });
   });
 }

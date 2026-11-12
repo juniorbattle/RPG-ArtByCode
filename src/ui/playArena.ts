@@ -5,7 +5,7 @@ import { challengeSheetFor, dynSheetData, dynSheetView, matchSheetFor, sheetData
 import { autoOutcome } from '../combat/autoMatch';
 import { AUTO_TEXTS_EN, AUTO_TEXTS_FR } from '../arena/AutoHud';
 import { isV2 } from '../simulation/v2';
-import { healthParts } from '../simulation/v2gear';
+import { duelStats } from '../simulation/preview';
 import { VIGOUR_HP } from '../combat/stats';
 import { dynamicRules } from '../tournament/pool';
 import { stageName } from '../tournament/v2calendar';
@@ -107,7 +107,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     writeSave(st);
     const won = r.winner === 'ren', lines = (res.events as Array<{ visible: boolean; text: string; kind: string; $t?: TextRef }>).filter((e) => e.visible && (e.kind === 'match' || e.kind === 'consequence' || (!!challenge && e.kind === 'action'))).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('');
     // the operator's DB11-5 « Le dire partout » (journal Passe DB13): a version 2 bout won (a reprisal adds none) says the vigour it gives and the health of the next bout
-    const vigour = won && v2 && !reprisal ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: healthParts(st).total }))}</p>` : '';
+    const vigour = won && v2 && !reprisal ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(st).hp ?? 0 }))}</p>` : '';
     await overlay(`<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}${vigour}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
     go(b.params);
   }

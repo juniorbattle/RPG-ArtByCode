@@ -69,7 +69,7 @@ try {
   };
   const controls = async () => {
     await page.evaluate(() => window.__ui.openSettings('controls'));
-    await until(() => document.querySelectorAll('.pm-slot').length === 38, 5000, 'the controls\' slots');
+    await until(() => document.querySelectorAll('.pm-slot').length === 36, 5000, 'the controls\' slots');
   };
   /** a slot given a key from the controls: the slot focused, Enter, the key */
   const give = async (act, col, code, key) => {
@@ -89,7 +89,7 @@ try {
   check(await walked('KeyW', 'w') > 0.3, 'W walks');
   await controls();
   const start = await page.evaluate(() => [...document.querySelectorAll('.pm-slot')].map((x) => x.textContent).join(' '));
-  check(start === 'W Up S Down A Left D Right Shift — E Space Q — M — J — T — K — G — V — H — N — J 1 K B L A Space —', `today's keys in the slots: ${start}`);
+  check(start === 'W Up S Down A Left D Right Shift — E Space Q — M — J — T — K — G — V — H — N — J 1 L A Space —', `today's keys in the slots: ${start}`);
   await page.screenshot({ path: path.join(outDir, '1-controls.png') });
 
   // 2. walk up on I
@@ -186,9 +186,9 @@ try {
   await page.evaluate(() => document.querySelector('.pm-settings .pm-detail .pm-btn').focus());
   await tap('ArrowRight', 'ArrowRight');
   check((await stored())?.keyboard === 'azerty', 'AZERTY chosen');
-  await until(() => document.querySelectorAll('.pm-slot').length === 38, 3000, 'the AZERTY slots');
+  await until(() => document.querySelectorAll('.pm-slot').length === 36, 3000, 'the AZERTY slots');
   const az = await page.evaluate(() => [...document.querySelectorAll('.pm-slot')].map((x) => x.textContent).join(' '));
-  check(az === 'Z Up S Down Q Left D Right Shift — E Space A — M — J — T — K — G — V — H — N — J 1 K B L A Space —', `AZERTY's starting keys, the QWERTY changes left on QWERTY: ${az}`);
+  check(az === 'Z Up S Down Q Left D Right Shift — E Space A — M — J — T — K — G — V — H — N — J 1 L A Space —', `AZERTY's starting keys, the QWERTY changes left on QWERTY: ${az}`);
   await give('map', 0, 'KeyU', 'u');
   await close();
   check(await walked('KeyW', 'z') > 0.3, 'a real AZERTY keyboard\'s Z (at QWERTY\'s W) walks');

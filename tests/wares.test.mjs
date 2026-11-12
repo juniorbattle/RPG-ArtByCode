@@ -11,6 +11,8 @@ const GE = await load('/src/simulation/gear.ts');
 const VG = await load('/src/simulation/v2gear.ts');
 const P = await load('/src/simulation/preview.ts');
 const M = await load('/src/combat/match.ts');
+const AM = await load('/src/combat/autoMatch.ts');
+const AU = await load('/src/combat/auto.ts');
 const W = await load('/src/ui/wares.ts');
 const ROOT = path.resolve(import.meta.dirname, '..');
 
@@ -23,7 +25,8 @@ test('the numbers of a bout are the duel\'s own: health as the arena builds it, 
   for (const gear of [{}, { weapon: 'imported-blade', tier: 2 }, { armour: 'mail-shirt', acc: ['lucky-ribbon', 'docker-wrap'] }, { weapon: 'duelist-sabre', acc: ['swift-boots', 'iron-ring'] }]) for (const injury of [0, 1]) for (const wins of [0, 3]) {
     const s = structuredClone(st); Object.assign(s.v2.gear, gear); s.player.injury = injury; s.v2.wins = wins;
     const m = VG.v2Mods(s), { data: d } = M.v2SheetData(M.matchSheetFor(s), undefined, s.v2.kit, m), n = P.duelStats(s);
-    assert.equal(n.hp, d.fighters.ren.maxHp); assert.equal(n.ap, d.ap.start); assert.equal(n.effect, m.effect * 100);
+    // the health the bout gives (the duel played by the computer doubles it, DB5; the match sheet says the same: journal Passe CO1)
+    assert.equal(n.hp, Math.round(AM.autoBoutOf(s).ren.hp * AU.AUTO_RULES.hpScale)); assert.equal(n.ap, d.ap.start); assert.equal(n.effect, m.effect * 100);
     assert.deepEqual([n.atk, n.def, n.end, n.viv], [m.stats.atk, m.stats.def, m.stats.end, m.stats.viv]);
     // the vigour (DB7-4 « +12 PV par victoire ») and the wound's share of it
     assert.equal(d.fighters.ren.maxHp, Math.round(m.stats.hp * (1 - 0.2 * injury))); assert.equal(m.stats.hp - VG.v2Stats({ ...s, v2: { ...s.v2, wins: 0 } }).hp, 24 * wins);
@@ -58,8 +61,8 @@ test('better and worse follow the number\'s sense: more Defence is better, less 
   assert.equal(r.viv.better, false); assert.equal(r.viv.after, r.viv.now - 1);
   const w = v2(); w.player.coins = 300;
   const b = rows(P.preview(w, { type: 'shopBuy', shop: 'mara', item: 'docker-wrap' }));
-  // Ren 300 at the start (journal Passe DB8; DB11-6 « Ren 300 », journal Passe DB13), the wrap +36 (+18 before AC-11)
-  assert.equal(b.hp.better, true); assert.equal(b.hp.after, 336);
+  // Ren 300 at the start (journal Passe DB8; DB11-6 « Ren 300 », journal Passe DB13), the wrap +36 (+18 before AC-11): 672 in a bout, as the duel doubles it (journal Passe CO1)
+  assert.equal(b.hp.better, true); assert.equal(b.hp.after, 672);
 });
 
 test('what it replaces, and the trap a swap hides: the forge\'s tiers leave with the old weapon', () => {
@@ -87,7 +90,7 @@ test('both accessories on: a third goes to the bag and changes nothing; from the
 test('the whetstone and the salve read as the duel reads them, in a version 2 game and in the default game', () => {
   const st = v2(); st.player.coins = 300; st.player.injury = 1;
   assert.ok(rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'whetstone' })).atk.better);
-  assert.deepEqual([rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.now, rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.after], [240, 300]);
+  assert.deepEqual([rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.now, rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.after], [480, 600], 'a wound: 240 of 300 healed by the salve, doubled in a bout (journal Passe CO1)');
   const d = G.namedState('day1-morning'); d.player.coins = 300; d.player.injury = 1;
   for (const o of G.actions(d).filter((x) => W.isWare(x) && x.ok)) {
     const p = P.preview(d, o.action), next = act(d, o.action);
