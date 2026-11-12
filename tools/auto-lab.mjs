@@ -195,6 +195,26 @@ export function levelFor(stage, target, seeds) {
   return (lo + hi) / 2;
 }
 export const STAGE_TARGET = { 0: 0.85, 1: 0.65, 2: 0.5 };
+/** each rival alone at the level where the start kit wins `target` against it (its own factor on its sheet): AC-12's table then compares the preparations against
+ *  each rival at the same strength for the start kit, whatever the race makes of that rival (journal Passe LC1) */
+export function rivalLevels(stage, target, seeds) {
+  const day = STAGE_DAY[stage], out = {}, R = AD.AUTO_RACE;
+  for (const id of RIVALS) {
+    const keep = R.norm[id]; let lo = 0.3, hi = 3;
+    for (let i = 0; i < 12; i++) { const m = (lo + hi) / 2; R.norm[id] = keep * m; const r = duelsOf({ day, seeds, stage, foes: [id] })[0]; if (r.w / r.n > target) lo = m; else hi = m; }
+    R.norm[id] = keep; out[id] = (lo + hi) / 2;
+  }
+  return out;
+}
+/** AC-12's table with each rival at its own level (rivalLevels) */
+export function kitsTableByRival(stage, seeds, names = Object.keys(KITS), levels = rivalLevels(stage, STAGE_TARGET[stage], seeds)) {
+  const day = STAGE_DAY[stage], T = Object.fromEntries(names.map((k) => [k, {}])), R = AD.AUTO_RACE;
+  for (const id of RIVALS) {
+    const keep = R.norm[id]; R.norm[id] = keep * levels[id];
+    try { for (const k of names) { const K = KITS[k], r = duelsOf({ day, loadout: K.loadout, weapon: K.weapon, seeds, stage, foes: [id] })[0]; T[k][id] = r.w / r.n; } } finally { R.norm[id] = keep; }
+  }
+  return T;
+}
 export function kitsTable(stage, seeds, names = Object.keys(KITS), f = 1) {
   if (f !== 1) return withLevel(stage, f, () => kitsTable(stage, seeds, names, 1));
   const day = STAGE_DAY[stage], T = {};
@@ -212,8 +232,9 @@ export function ac12(T, { band = 0.1, tie = 0.03, kits = Object.keys(KITS).filte
 function kits() {
   const stage = +arg('stage', '2'), seeds = range(arg('seeds', '1..60'));
   if (arg('kits')) for (const kv of arg('kits').split(';')) { const [n, l] = kv.split(':'); KITS[n] = { loadout: l.split('.') }; }
-  const f = arg('norm') === '0' ? 1 : levelFor(stage, STAGE_TARGET[stage], seeds), T = kitsTable(stage, seeds, Object.keys(KITS), f);
-  console.log(`étape ${stage} (la référence du jour ${STAGE_DAY[stage]}), ${seeds.length} graines, les rivaux x${f.toFixed(3)} (le kit de départ à ${Math.round(100 * STAGE_TARGET[stage])} % en moyenne) : ` + RIVALS.join(' / '));
+  const byRival = arg('norm') === 'rival', f = arg('norm') === '0' || byRival ? 1 : levelFor(stage, STAGE_TARGET[stage], seeds);
+  const T = byRival ? kitsTableByRival(stage, seeds, Object.keys(KITS)) : kitsTable(stage, seeds, Object.keys(KITS), f);
+  console.log(`étape ${stage} (la référence du jour ${STAGE_DAY[stage]}), ${seeds.length} graines, ${byRival ? `chaque rival à son niveau (le kit de départ à ${Math.round(100 * STAGE_TARGET[stage])} % contre lui)` : `les rivaux x${f.toFixed(3)} (le kit de départ à ${Math.round(100 * STAGE_TARGET[stage])} % en moyenne)`} : ` + RIVALS.join(' / '));
   for (const [k, v] of Object.entries(T)) console.log(`  ${k.padEnd(11)} ${RIVALS.map((id) => String(Math.round(100 * v[id])).padStart(3)).join(' ')}   moyenne ${Math.round(100 * RIVALS.reduce((n, id) => n + v[id], 0) / RIVALS.length)}`);
   const A = ac12(T); console.log(`  bonnes réponses (à 10 points du meilleur) : ${RIVALS.map((id) => `${id} ${A.good[id].join('+')}`).join(' ; ')}`);
   console.log(`  domine partout (à 3 points du meilleur contre chacun) : ${A.dominates.join(', ') || 'aucun'} ; test ${A.ok ? 'tenu' : 'non tenu'}`);

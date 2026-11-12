@@ -15,7 +15,9 @@ export const AUTO_LIGHT = { charge: 1.2, power: POWER.light, gauge: POWER.light 
 export const AUTO_WEAPONS: Record<string, { hits: readonly number[]; gap: number }> = {
   'training-sword': { hits: [0.55, 0.55], gap: 0.3 },
   'imported-blade': { hits: [0.62, 0.62], gap: 0.32 },
-  'duelist-sabre': { hits: [0.42, 0.42, 0.42], gap: 0.22 },
+  // the sabre's three cuts lighter than the prototype's 0.42 (its +1 Speed, ×2 with the gear, made it the best weapon against every rival): each weapon the best
+  // against three rivals at least at every stage (the test of AC-12, journal Passe LC1)
+  'duelist-sabre': { hits: [0.23, 0.23, 0.23], gap: 0.22 },
 };
 
 /** one of Ren's skills on the timeline, at level 1 (the level raises its power or its effect's length by LEVEL_POWER and shortens its charge: skills.ts) */
@@ -38,22 +40,25 @@ export interface AutoSkillDef {
   /** its charge times by level when they are not the catalogue's */
   charge?: Times;
 }
-const GAUGE_SKILL = 0.25, BREAKER = 2.5;
-/** the thirteen skills (src/combat/skillbook.ts): the heavy attack, today's six, the six of the version 2 */
+const GAUGE_SKILL = 0.25, BREAKER = 1.5;
+/** the thirteen skills (src/combat/skillbook.ts): the heavy attack, today's six, the six of the version 2. Balanced to the test of AC-12 (the operator's « Équilibrer
+ *  avec ce test : chaque adversaire a ses réponses, rien ne domine », journal Passes AC4 / LC1): the prototype's breakers (Tourbillon, Fracas: the gauge ×2.5)
+ *  broke every rival, its wards and boosts were worth a third of an offensive skill; the breakers ×1.5, the wards and the boosts stronger, Ferveur 2 AP, Rempart
+ *  and Peau de fer raised to cover (AutoAction.cover), Posture de riposte against the blows seen coming. The prototype's numbers: tests/auto-prototype.json */
 export const AUTO_SKILLS: Record<string, AutoSkillDef> = {
   heavy: { family: 'offensive', ap: 1 },
   t1: { family: 'offensive', ap: 2, hits: [0.5, 0.5], gap: 0.25 },
   t2: { family: 'offensive', ap: 2, pierce: true },
   t3: { family: 'offensive', ap: 3, gaugeK: BREAKER, hits: [0.36, 0.36, 0.36], gap: 0.25 },
   t4: { family: 'offensive', ap: 4 },
-  d1: { family: 'defensive', ap: 2, ward: { dur: 9, dmg: 0.6, gauge: 0.5 } },
-  s1: { family: 'support', ap: 3, boost: { dur: 12, dmg: 1.25, gauge: 1.5 } },
+  d1: { family: 'defensive', ap: 2, ward: { dur: 9, dmg: 0.4, gauge: 0.3 }, cover: true },
+  s1: { family: 'support', ap: 2, boost: { dur: 12, dmg: 1.8, gauge: 2 } },
   k_sunder: { family: 'offensive', ap: 2, gaugeK: BREAKER },
   k_feint: { family: 'offensive', ap: 1, pierce: true },
-  k_iron: { family: 'defensive', ap: 2, ward: { dur: 11.2, dmg: 0.8, gauge: 0.3 } },
-  k_parry: { family: 'defensive', ap: 1, ward: { dur: 4.8, dmg: 0.35, gauge: 0.6 } },
-  k_cry: { family: 'support', ap: 2, boost: { dur: 7.5, dmg: 1.45, gauge: 1.2 } },
-  k_focus: { family: 'support', ap: 2, boost: { dur: 13, dmg: 1.1, gauge: 2 } },
+  k_iron: { family: 'defensive', ap: 2, ward: { dur: 11.2, dmg: 0.3, gauge: 0.15 }, cover: true },
+  k_parry: { family: 'defensive', ap: 1, ward: { dur: 6.5, dmg: 0.05, gauge: 0.5 } },
+  k_cry: { family: 'support', ap: 2, boost: { dur: 7.5, dmg: 2.3, gauge: 1.5 } },
+  k_focus: { family: 'support', ap: 2, boost: { dur: 13, dmg: 1.5, gauge: 4 } },
 };
 /** DB5-3 « 5 × le temps de charge » (A3): a skill comes back this many times its charge time at level 1 after it leaves */
 export const AUTO_COOLDOWN = 5;
@@ -115,7 +120,8 @@ export function autoRen(stats: FighterStats, kit: AutoKit, o: { weapon?: string 
 
 // --------------------------------------------------------------------------------------------------------------------------------- the rivals
 
-/** a rival's kit on the timeline (C3's, src/combat/v2duel.ts and profiles.ts, as the prototype read them): its light attack's charge by its level of today
+/** a rival's kit on the timeline (C3's, src/combat/v2duel.ts and profiles.ts, as the prototype read them; the brawlers' big blows made breakers in lot 1, Orla's
+ *  shoulder and Rhosk's cleave ×2 to the gauge, Marek's iron fall and Tobin's wild swing ×1.6: a threat to Ren's gauge the wards answer, journal Passe LC1): its light attack's charge by its level of today
  *  (Tobin slow, Vessa quick), its heavy blow 1.6 × that charge, a combo of `n` light blows 1.4 × it, each three quarters of a light blow, `gap` s apart;
  *  its own skills (an offensive one's charge from its wind-up, its power by its charge against 3.5 s; a ward or a boost charged 2.5 s), each at its own
  *  cooldown and weight; its habits (the share of its choices a ready skill takes, its heavy blow's, its combo's among its light blows); its traits (today's
@@ -126,24 +132,25 @@ export interface AutoFoeDef {
   light: number; combo: { n: number; gap: number }; skills: AutoFoeSkill[];
   ai: { chance: number; heavy: number; combo: number }; traits: { dodge: number; guard: number };
 }
-const offS = (id: string, charge: number, cooldown: number, weight = 2): AutoFoeSkill => ({ id, family: 'offensive', charge, cooldown, weight });
+const offS = (id: string, charge: number, cooldown: number, weight = 2, gaugeK = 1): AutoFoeSkill => ({ id, family: 'offensive', charge, cooldown, weight, ...(gaugeK !== 1 ? { gaugeK } : {}) });
 const wardS = (id: string, dur: number, cooldown: number): AutoFoeSkill => ({ id, family: 'defensive', charge: 2.5, cooldown, weight: 1, ward: { dur, dmg: 0.6, gauge: 0.5 } });
 const boostS = (id: string, dur: number, cooldown: number): AutoFoeSkill => ({ id, family: 'support', charge: 2.5, cooldown, weight: 1, boost: { dur, dmg: 1.25, gauge: 1.4 } });
 export const AUTO_FOES: Record<string, AutoFoeDef> = {
   vessa: { light: 1.9, combo: { n: 4, gap: 0.26 }, skills: [offS('m_lunge', 3, 16), boostS('m_tempo', 7, 30), wardS('m_brace', 6, 36)], ai: { chance: 0.3, heavy: 0.25, combo: 0.842 }, traits: { dodge: 0.35, guard: 0.05 } },
-  tobin: { light: 2.8, combo: { n: 3, gap: 0.38 }, skills: [offS('m_wild', 3.9, 20), boostS('m_grit', 6, 36)], ai: { chance: 0.22, heavy: 0.38, combo: 0.563 }, traits: { dodge: 0, guard: 0 } },
+  tobin: { light: 2.8, combo: { n: 3, gap: 0.38 }, skills: [offS('m_wild', 3.9, 20, 2, 1.6), boostS('m_grit', 6, 36)], ai: { chance: 0.22, heavy: 0.38, combo: 0.563 }, traits: { dodge: 0, guard: 0 } },
   cassius: { light: 2.5, combo: { n: 3, gap: 0.36 }, skills: [offS('m_riposte', 3.4, 20), boostS('m_gild', 8, 32), wardS('m_brace', 6, 36)], ai: { chance: 0.3, heavy: 0.46, combo: 0.571 }, traits: { dodge: 0.2, guard: 0.1 } },
-  orla: { light: 2.2, combo: { n: 3, gap: 0.33 }, skills: [offS('m_shoulder', 3.7, 22), wardS('m_brace', 6, 34)], ai: { chance: 0.25, heavy: 0.45, combo: 0.667 }, traits: { dodge: 0, guard: 0.075 } },
+  orla: { light: 2.2, combo: { n: 3, gap: 0.33 }, skills: [offS('m_shoulder', 3.7, 22, 2, 2), wardS('m_brace', 6, 34)], ai: { chance: 0.25, heavy: 0.45, combo: 0.667 }, traits: { dodge: 0, guard: 0.075 } },
   ilse: { light: 2.5, combo: { n: 3, gap: 0.33 }, skills: [offS('m_smite', 3.8, 22), wardS('m_aegis', 7, 34), boostS('m_prayer', 6, 36)], ai: { chance: 0.28, heavy: 0.367, combo: 0.625 }, traits: { dodge: 0, guard: 0.15 } },
-  marek: { light: 2.2, combo: { n: 3, gap: 0.33 }, skills: [offS('m_ironfall', 4.3, 26), wardS('m_bulwark', 7, 34), boostS('m_resolve', 8, 40)], ai: { chance: 0.32, heavy: 0.4, combo: 0.75 }, traits: { dodge: 0, guard: 0.175 } },
-  rhosk: { light: 2.5, combo: { n: 3, gap: 0.38 }, skills: [offS('m_cleave', 4.4, 26), boostS('m_roar', 8, 34), wardS('m_hide', 7, 36)], ai: { chance: 0.28, heavy: 0.54, combo: 0.583 }, traits: { dodge: 0, guard: 0.075 } },
+  marek: { light: 2.2, combo: { n: 3, gap: 0.33 }, skills: [offS('m_ironfall', 4.3, 26, 2, 1.6), wardS('m_bulwark', 7, 34), boostS('m_resolve', 8, 40)], ai: { chance: 0.32, heavy: 0.4, combo: 0.75 }, traits: { dodge: 0, guard: 0.175 } },
+  rhosk: { light: 2.5, combo: { n: 3, gap: 0.38 }, skills: [offS('m_cleave', 4.4, 26, 2, 2), boostS('m_roar', 8, 34), wardS('m_hide', 7, 36)], ai: { chance: 0.28, heavy: 0.54, combo: 0.583 }, traits: { dodge: 0, guard: 0.075 } },
 };
 /** a rival's blows at equal stats (POWER: the DB7 sheet's, ×2 with Ren's health since DB11-6): its light blow, its heavy one, an offensive skill of 3.5 s */
 const FOE_HEAVY_CHARGE = 1.6, FOE_COMBO_CHARGE = 1.4, FOE_COMBO_SHARE = 0.75, FOE_SKILL_REF = 3.5, FOE_GAUGE_LIGHT = 0.1;
 /** the rivals' cadence (the operator's note on AC-01, word for word « mais il faut s'assurer que cela soit rythme, dynamique », journal Passe AC4): a rival's
  *  light attack's and combo's charge × `light`, its heavy blow's and its skills' × `big`, each one's power × the same (its damage and its gauge a second
- *  kept), a skill's cooldown unchanged; 1 = the prototype's */
-export const AUTO_CADENCE = { light: 1, big: 1 };
+ *  kept), a skill's cooldown unchanged; 1 = the prototype's. Halved in lot 1 (journal Passe LC1): the silences over 3 s without a blow from 40 % of a duel to 12 %, its
+ *  length the same */
+export const AUTO_CADENCE = { light: 0.5, big: 0.5 };
 const r2 = (x: number): number => +x.toFixed(2);
 
 /** a rival's actions: its light attack, its combo, its heavy blow and its skills (`skills`, the heavy blow first) */
@@ -178,11 +185,15 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
 /** The race of the rivals (the operator's AC-16 « La course, niveau commun en poule, +10 % par tour (décision A3 : change DB7-5, DB7-6, DB11-2) », journal
  *  Passe AC4): each rival keeps the shape of its sheet (DB7-5's RIVAL_SHEETS), brought to a common level in the pool (`norm`: its health, Attack, Defence and
  *  Endurance × the same factor; its pool Speed kept the whole tournament), then +10 % each round of the pool (`pool`: the rounds of days 2, 4, 5) and a lot at
- *  each stage of the final phase (`stage`: the bracket, the final); its preparation as visible Attack points, +1 per `prepPer` over `prepFrom` (AC-17). */
+ *  each stage of the final phase (`stage`: the bracket, the final); its preparation as visible Attack points, +1 per `prepPer` over `prepFrom` (AC-17).
+ *  Fitted in lot 1 (journal Passe LC1, `node tools/auto-lab.mjs level --t0=95 --targets=65,50 --fitseeds=1..80`) on the balanced duel: each rival's pool factor so
+ *  that the reference player of day 2 beats it 95 times in 100 (isolated duels), the bracket's and the final's on whole games of the reference (seeds 1 to 80) for
+ *  the semi-final's 65 % and the final's 50 % (AC-15); on the held-out seeds 101 to 160 the reference wins 98 / 98 / 100 / 68 / 49 % from day 2 to the final, a
+ *  title in three. The prototype's: 0.83 to 1.33, ×1.267, ×1.533 */
 export const AUTO_RACE = {
-  norm: { vessa: 0.974, tobin: 1.333, cassius: 1.084, orla: 0.877, ilse: 0.987, marek: 0.826, rhosk: 0.948 } as Record<string, number>,
+  norm: { vessa: 1.036, tobin: 1.379, cassius: 1.038, orla: 0.84, ilse: 1.026, marek: 0.855, rhosk: 0.95 } as Record<string, number>,
   pool: [1, 1.1, 1.2] as readonly number[],
-  stage: { 1: 1.267, 2: 1.533 } as Record<1 | 2, number>,
+  stage: { 1: 1.305, 2: 1.586 } as Record<1 | 2, number>,
   prepFrom: 20, prepPer: 25,
 };
 /** a bout's round of the pool by its day: day 2 the first, day 4 the second, day 5 the third (a challenge of the pool by its day) */
