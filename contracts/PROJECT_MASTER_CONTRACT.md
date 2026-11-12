@@ -16,6 +16,10 @@ Amendement du 2026-11-04 (journal, Passe CH1 ; décision A3 de l'opérateur, en 
 l'attaque puissante puis aux compétences » devient « par paliers, de l'attaque légère aux compétences, l'attaque puissante comptée parmi
 elles ». Les deux messages de l'opérateur, mot pour mot : « petite correction : peut etre que nous devrions enlever attaque puissante et nous contenter d'avoir uniquement attaque simple + 4 skills, qu'en penses tu ? », puis « On peut la retirer mais donc on devra aussi revoir le temps de chargement des autres actions qui seront legerement plus courts attaque puissante deviendra une des competences par exemple.. faisons ca aussi dans une sous-session ». Le reste du texte est inchangé ; la note de l'amendement du
 2026-10-26 ci-dessus garde le texte de ce jour-là.
+Amendement du 2026-11-11 (journal, Passe AC4 ; décision A3 de l'opérateur, choix AC-19 « L’amender maintenant avec ce texte, ajusté à mes choix »,
+sur la fiche de l'atelier de refonte du combat, https://claude.ai/artifact/6ksgfzxv8F3zSHhPhyh4PV ; ses vingt choix suivent la recommandation, le texte
+de la carte est donc le texte ajusté) : au § 6.1, la première phrase est remplacée. Texte d'avant : « Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1 : le temps ne s'arrête pas ; le joueur agit par trois commandes, la garde, l'esquive et l'attaque, l'attaque chargée en la tenant, par paliers, de l'attaque légère aux compétences, l'attaque puissante comptée parmi elles, les compétences payées en points d'action et réglées par leur niveau ; l'adversaire a la priorité quand il attaque, et le joueur se défend alors par la garde ou l'esquive (spécification : briefs/combat-system.md). ». Le reste du texte est
+inchangé ; les notes des amendements précédents gardent le texte de leur jour.
 -->
 Cité du Tournoi — PROJECT MASTER CONTRACT
 
@@ -246,7 +250,7 @@ Ils peuvent s’entraîner, acheter, se soigner, espionner, négocier, résoudre
 
 6.1 Forme générale
 
-Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1 : le temps ne s'arrête pas ; le joueur agit par trois commandes, la garde, l'esquive et l'attaque, l'attaque chargée en la tenant, par paliers, de l'attaque légère aux compétences, l'attaque puissante comptée parmi elles, les compétences payées en points d'action et réglées par leur niveau ; l'adversaire a la priorité quand il attaque, et le joueur se défend alors par la garde ou l'esquive (spécification : briefs/combat-system.md).
+Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1, joué par l'ordinateur selon la préparation du joueur : le temps ne s'arrête pas ; chaque combattant choisit une action et la charge sur une ligne de temps, puis elle part, en un coup ou en enchaînement, la Vivacité réglant la charge ; les compétences sont payées en points d'action et réglées par leur niveau ; la garde et l'esquive sont des réactions que donnent la Défense et la Vivacité (spécification : briefs/combat-auto.md).
 
 La première priorité de production est de rendre le duel lisible, tactique, rapide à comprendre, suffisamment profond pour valoriser la préparation et spectaculaire sans perdre la lecture des décisions.
 

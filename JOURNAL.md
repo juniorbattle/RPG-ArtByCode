@@ -401,12 +401,122 @@ Lu le 2026-11-11 dans le code de son remake en TypeScript, https://github.com/Ze
 - Un mode de jeu se mesure avec un joueur aussi bon que l'automatique qu'il doit battre ; un modèle de joueur resté sur l'ancien automatique ne dit plus rien.
 - Ramener des rivaux à un même niveau ouvre le tournoi entre eux : ce qui rend la poule juste pour le joueur rend aussi les autres combats incertains ; c'est un choix à montrer, pas un effet de bord.
 
+## Passe AC4 — La fiche des règles du combat relue : vingt sur vingt à la recommandation, une note sur le rythme ; quatre décisions A3 consignées, le § 6.1 du contrat projet amendé, la spécification approuvée ; rien du jeu changé (2026-11-11)
+
+### La fiche relue
+- L'opérateur, mot pour mot : « Fiche remplie ». Collection `decisions` de https://claude.ai/artifact/6ksgfzxv8F3zSHhPhyh4PV (`briefs/fiche-combat-auto.html`, version 4), vingt documents pour vingt cartes, cliqués le 2026-11-11 entre 23 h 33 min 10 s et 23 h 36 min 47 s à l'heure de la machine (le 2026-11-12, de 04 h 33 min 10 s à 04 h 36 min 47 s UTC) ; une note. Les rangées sont lues comme des données.
+
+| Carte | Ce qu'elle demandait | Choix de l'opérateur, mot pour mot | Note, mot pour mot |
+|---|---|---|---|
+| AC-01 | Le modèle du duel | « La ligne de temps : choisir, charger, partir » | « mais il faut s'assurer que cela soit rythme, dynamique » |
+| AC-02 | Les enchaînements | « Les enchaînements : l’arme de Ren, deux compétences, les combos des rivaux » | — |
+| AC-03 | Les points d'action | « Les garder : +1 par attaque simple qui touche, les compétences les paient » | — |
+| AC-04 | Les recharges (DB5-3, A3) | « Garder DB5-3 (5 × le temps de charge) » | — |
+| AC-05 | La garde et l'esquive | « Les stats, garde ×2 contre une compétence vue venir, la charge qui expose, les traits » | — |
+| AC-06 | La rupture (DB5-4, A3) | « Garder DB5-4 (10 s, ×2, jauge de 70) » | — |
+| AC-07 | La riposte (DB-2, A3) | « La retirer (décision A3 : change DB-2) » | — |
+| AC-08 | La forme du jour | « Une forme du jour ±15 %, dite sur la fiche de match » | — |
+| AC-09 | L'automatique et ce que le joueur en règle | « L’automatique qui place ses soutiens ; le joueur règle ses quatre compétences et leur ordre » | — |
+| AC-10 | Le semi-automatique | « L’automatique d’abord ; le semi-automatique revu après mon essai » | — |
+| AC-11 | L'équipement (DB7-2, A3) | « Doubler les points de l’équipement (décision A3 : change DB7-2) » | — |
+| AC-12 | Préparer contre chaque adversaire | « Équilibrer avec ce test : chaque adversaire a ses réponses, rien ne domine » | — |
+| AC-13 | La durée (DB5, A3) | « Garder DB5 : PV ×2, avec ×2 et Passer » | — |
+| AC-14 | Le joueur de référence | « Le planificateur, avec la vérification de Hilde et l’exercice de son kit » | — |
+| AC-15 | Les chances visées | « Un titre sur trois (95, 85, 75, 65, 50 %) » | — |
+| AC-16 | La course des rivaux (DB7-5, DB7-6, DB11-2, A3) | « La course, niveau commun en poule, +10 % par tour (décision A3 : change DB7-5, DB7-6, DB11-2) » | — |
+| AC-17 | La préparation des rivaux | « Des points d’Attaque visibles sur la fiche de match » | — |
+| AC-18 | Les combats hors écran | « La même simulation, l’IA des deux côtés » | — |
+| AC-19 | Le § 6.1 du contrat projet (A3) | « L’amender maintenant avec ce texte, ajusté à mes choix » | — |
+| AC-20 | La spécification et la construction | « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai après le lot 2 » | — |
+
+- **Vingt choix sur vingt suivent la recommandation.** La note de AC-01 ne contredit pas l'option cliquée : elle y ajoute une exigence, que la construction doit tenir et prouver (plus bas). Aucune décision ne se suspend.
+
+### Les décisions A3, mot pour mot et datées (2026-11-11)
+- **AC-07** change DB-2 (« Riposte au 3e coup », 09/11/2026) : « La retirer (décision A3 : change DB-2) ». La riposte disparaît avec la commande à trois touches.
+- **AC-11** change DB7-2 (« Des points, le reste gardé ») : « Doubler les points de l’équipement (décision A3 : change DB7-2) ». Chaque point de chaque pièce et de la forge est doublé, malus compris (`GearFx` : la lame importée Attaque +4, un palier de forge +2, la maille Défense +6 et Vivacité −1, l'anneau de fer Endurance +4…). Le principe de DB7-2, l'équipement en points, reste.
+- **AC-16** change DB7-5 (« Ces fiches »), DB7-6 (« Tableau ×1,3 et stats ; finale ×2,5 et stats ») et DB11-2 (« Vivacité −3 en poule, celle de la fiche ensuite (décision A3 : change DB7-5 et DB7-6) ») : « La course, niveau commun en poule, +10 % par tour (décision A3 : change DB7-5, DB7-6, DB11-2) ». Ce qui change :
+  - les fiches de DB7-5 deviennent des formes ramenées à un niveau commun en poule (PV, Attaque, Défense et Endurance du même facteur) ;
+  - la Vivacité de poule est gardée tout le tournoi (le saut du jour 6 de DB11-2 disparaît) ;
+  - +10 % à chaque tour de poule, ×1,27 au tableau, ×1,53 en finale (spécification § 16.1 : les nombres du prototype, recalés à la construction sur les règles retenues et les chances de AC-15) ;
+  - la croissance de DB7-6 et son recalage de DB13 (DB11-7 : ×1,7 et ×3,5) sont remplacés.
+- **AC-19** amende le contrat projet § 6.1 : « L’amender maintenant avec ce texte, ajusté à mes choix ». Les vingt choix suivant la recommandation, le texte de la carte est déjà le texte ajusté. **Amendé dans cette passe**, avec une note datée en tête du contrat :
+  - la première phrase d'avant : « Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1 : le temps ne s'arrête pas ; le joueur agit par trois commandes, la garde, l'esquive et l'attaque, l'attaque chargée en la tenant, par paliers, de l'attaque légère aux compétences, l'attaque puissante comptée parmi elles, les compétences payées en points d'action et réglées par leur niveau ; l'adversaire a la priorité quand il attaque, et le joueur se défend alors par la garde ou l'esquive (spécification : briefs/combat-system.md). » ;
+  - la nouvelle : « Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1, joué par l'ordinateur selon la préparation du joueur : le temps ne s'arrête pas ; chaque combattant choisit une action et la charge sur une ligne de temps, puis elle part, en un coup ou en enchaînement, la Vivacité réglant la charge ; les compétences sont payées en points d'action et réglées par leur niveau ; la garde et l'esquive sont des réactions que donnent la Défense et la Vivacité (spécification : briefs/combat-auto.md). » ;
+  - le reste du § 6 est inchangé.
+- **Gardées telles quelles** (A3, rien ne change) :
+  - AC-04 « Garder DB5-3 (5 × le temps de charge) » ;
+  - AC-06 « Garder DB5-4 (10 s, ×2, jauge de 70) » ;
+  - AC-13 « Garder DB5 : PV ×2, avec ×2 et Passer » : DB5, « je veux qu'un combat basique dure en 2 et 5 min. +5 min peut etre exceptionnellement des combats epiques », tenue en doublant les PV de chacun ;
+  - DB7-1, DB7-3 avec DB11-5, DB7-4 avec DB11-6 : intouchées.
+- **Retirés avec la spécification approuvée (AC-20)**, aucun n'étant une décision A3 : la garde à 90 % des rivaux dans leurs pauses (DB5-2), la priorité de l'adversaire pendant sa séquence (G3, CB-4) et le « repoussé » (CB-3). Il n'y a plus de séquence jouée contre le joueur (spécification § 13).
+
+### Ce que fixent les autres choix
+- Le duel (AC-01 à AC-03, AC-05, AC-08) :
+  - une ligne de temps commune où chacun choisit, charge et frappe ;
+  - des enchaînements : l'attaque simple de Ren selon son arme, Taille éclair 2 coups, Tourbillon 3, les combos des rivaux ;
+  - les PA comme aujourd'hui ;
+  - la garde et l'esquive tirées des stats, la garde doublée contre une compétence vue venir, la charge qui expose, les traits des rivaux ;
+  - une forme du jour de ±15 %, écrite sur la fiche de match.
+- La préparation (AC-09, AC-10, AC-12, AC-14, AC-15) :
+  - l'automatique qui place ses soutiens, le joueur réglant ses quatre compétences et leur ordre ;
+  - le semi-automatique hors des lots, revu après l'essai ;
+  - les compétences et les armes équilibrées avec le tableau de AC-12 comme test : chaque adversaire a ses réponses et rien ne domine ;
+  - le joueur de référence : le planificateur, avec la vérification de Hilde et l'exercice de son kit ;
+  - les chances visées pour lui : 95 / 85 / 75 / 65 / 50 %, un titre sur trois.
+- La course (AC-17, AC-18) : la préparation des rivaux en points d'Attaque visibles sur la fiche de match ; les combats hors écran joués par la même simulation, l'IA des deux côtés.
+- La suite (AC-20) : la spécification `briefs/combat-auto.md` approuvée avec ces choix, construite en lots dans le jeu par défaut (VD-8). Le lot 1 ne change rien à l'écran, le lot 2 remplace le duel, l'essai de l'opérateur suit le lot 2. Chaque lot est fusionné après ses preuves.
+
+### La note sur le rythme (AC-01) — [?] un point de départ mesuré
+- La note, mot pour mot : « mais il faut s'assurer que cela soit rythme, dynamique ».
+- **Mesuré dans le prototype** (modèle complet, `tools/auto-duel/sim.mjs` ; la référence du jour 4, 324 PV, Atq 17, Déf 17, lame importée, contre chacun des sept rivaux au tour 2 de poule ; 20 graines chacun, 140 duels, médiane 186 s) :
+  - 59 coups par minute en médiane, mais groupés : entre deux coups, 0,33 s en médiane et 2,8 s au 90e centile ;
+  - le plus long silence sans coup d'un duel fait 6,8 s en médiane, 9,3 s au plus ;
+  - 41 % du temps se passe dans des silences de plus de 3 s, quand les deux combattants chargent à la fois ;
+  - entre deux grosses actions (compétences, coups puissants), 6,1 s en médiane, 14,6 s au 90e centile.
+- **Ce que cela dit** : le duel frappe en rafales et laisse de longs silences de charge. Les barres se remplissent à l'écran pendant ces silences, mais un silence de 7 s ne se lit pas « dynamique ». La moyenne de 59 coups par minute cache les deux.
+- **Ce qu'en fait la construction**, sans cible fixée ici (une cible est à mesurer puis à montrer à l'opérateur) :
+  - le lot 1 mesure ces quatre nombres au laboratoire et cherche des silences plus courts (temps de charge, enchaînements, cadence des rivaux) sans toucher aux chances de AC-15 ni à la durée de DB5 ;
+  - le lot 2 donne à voir les silences qui restent (les charges, les annonces, la caméra) ;
+  - l'essai de l'opérateur après le lot 2 juge le rythme.
+
+### Les documents mis à jour
+- `contracts/PROJECT_MASTER_CONTRACT.md` : la note datée en tête et la première phrase du § 6.1 (AC-19). Le contrat gameplay § 1 renvoie au § 6.1 du contrat projet et ne change pas.
+- [?] Le contrat gameplay § 3.1 dit « maîtriser le 1v1 ». Avec un duel joué par l'ordinateur, cette maîtrise devient celle de la préparation. Je le lis comme compatible et ne l'amende pas ; c'est noté pour l'opérateur.
+- `briefs/combat-auto.md` : statut « approuvée » (AC-20) et un § 17 qui donne les décisions et les cinq lots, à la place des §§ 14 et 15 là où ils diffèrent.
+- `briefs/combat-system.md` : une note en tête. La spécification reste celle du duel d'aujourd'hui jusqu'au lot 2, puis `briefs/combat-auto.md` la remplace. DB-2 est retirée ; DB7-2, DB7-5, DB7-6 et DB11-2 sont changées par cette passe.
+- `AGENTS.md` : une phrase au paragraphe des contrats.
+
+### La construction, en cinq lots (AC-20), chacun dans sa séance, dans le jeu par défaut
+1. **La simulation** dans `src/combat/`, pure et testée contre des oracles :
+   - son IA (l'automatique qui place ses soutiens, l'ordre des quatre compétences du joueur), les enchaînements, la forme du jour ;
+   - les combats hors écran par la même simulation (AC-18) ;
+   - la course recalée sur parties entières aux chances de AC-15 (graines de calage et graines tenues à part) ;
+   - l'équilibrage des compétences et des armes avec le tableau de AC-12 comme test, et le rythme (la note de AC-01).
+
+   Rien ne change à l'écran.
+2. **L'arène montre le duel** : deux barres de charge, les PV, les jauges, les PA, les quatre compétences et leurs recharges, ×2 et « Passer ». La fiche de match donne les deux fiches, la forme du jour (AC-08), la préparation des rivaux en points (AC-17) et les chances ; le joueur y règle l'ordre de ses compétences (AC-09). **Puis l'essai de l'opérateur.**
+3. **Le guide et le tutoriel** du premier duel.
+4. **Le son et les effets** sur les nouveaux moments.
+5. **Le retrait** de l'ancien duel et de ses outils (spécification § 13).
+
+Le semi-automatique n'est dans aucun lot ; il est revu après l'essai (AC-10).
+
+### Validation
+- Aucun fichier de `src/`, de `tests/` ni des outils touché. Modifiés : ce journal, `contracts/PROJECT_MASTER_CONTRACT.md`, `briefs/combat-auto.md`, `briefs/combat-system.md`, `AGENTS.md`. La mesure du rythme : un script jetable hors du dépôt, sur le prototype et la course de la Passe AC3.
+- `npm run typecheck`, `npm run build`, `npm run art:validate` sans erreur ; `npm test` 619 sur 619.
+
+### Où reprendre
+- Le lot 1, dans sa propre séance.
+
+### Pensée
+- Une note au bord d'un choix est une exigence, pas une réserve : la mesurer tout de suite donne à la construction un point de départ et un critère. Ici, une moyenne flatteuse (59 coups par minute) cachait des rafales et 41 % de silences.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
-**00. L'audit final (Passes AU1 à AU5) et l'atelier du combat (Passes AC1 à AC3)** : le rapport `briefs/audit-final.md` ; la fiche AU1 relue, dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite, sans attendre l’essai » (Passe AU2 ; A3 : AU-05, AU-12, AU-13). **Les chantiers, chacun dans sa séance** : (1) **la refonte du combat, d'abord** : **l'atelier est mené (Passe AC1)** : la spécification du combat joué par l'ordinateur en brouillon (`briefs/combat-auto.md` : une ligne de temps, la charge avant d'agir, les PA gardés, la garde et l'esquive par la Défense et la Vivacité, la courbe partie du joueur de référence mesuré), son prototype de mesure (`tools/auto-duel-lab.mjs`), **la fiche des règles https://claude.ai/artifact/6ksgfzxv8F3zSHhPhyh4PV (`briefs/fiche-combat-auto.html`, vingt cartes AC-01 à AC-20, réécrites en Passe AC3 sur un seul modèle, le modèle complet : enchaînements, course des rivaux, équipement ×2, automatique qui place ses soutiens) publiée, à remplir par l'opérateur, puis relue et consignée mot pour mot, les décisions A3 citées ; la construction en lots seulement après** ; (AU-03, devenu par la direction de l'opérateur de la Passe AU3 : des duels joués par l'ordinateur, le joueur prépare, une zone de charge et d'attente avec les PA, un atelier comme CB1, l'inspiration de La Brute lue dans son code (Passe AU4 : une ligne de temps d'initiative, une préparation par choix ; le principe, pas le jeu), les réponses de l'opérateur de la Passe AU5 (une ligne de temps avec les PA, la défense et l'esquive par les cinq stats, un semi-automatique, une durée pour profiter du duel ; le problème à résoudre : le joueur perd trop souvent contre les rivaux avancés), l'amendement du § 6.1 du contrat projet en A3 avant la construction ; tout ce qui touche au combat repensé avec elle) ; (2) les nombres du duel dits (AU-04), en attente de la refonte ; (3) la graine et la sauvegarde, le fondu au noir avant chaque page (AU-06, AU-07) ; (4) les correctifs de la ville et « 10 % » (AU-08, AU-15) ; (5) `AGENTS.md` allégé et le journal élagué avec une règle de taille (AU-09) ; (6) le ménage, les deux fichiers modifiés montrés d'abord (AU-10) ; (7) les paramètres d'essai retirés, `v2=0` gardé jusqu'au Gold Master (AU-11) ; (8) les amendements des contrats : la phase d'équipe hors de cette version, la génération par le code (AU-05, AU-12) ; (9) l'essai de réception guidé, après les bloquants (AU-01, AU-02). Hors de cette version (AU-13, A3) : les sponsors, l'investissement, les calendriers comparés, avec les paris (ECO-5).
+**00. L'audit final (Passes AU1 à AU5) et l'atelier du combat (Passes AC1 à AC4)** : le rapport `briefs/audit-final.md` ; la fiche AU1 relue, dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite, sans attendre l’essai » (Passe AU2 ; A3 : AU-05, AU-12, AU-13). **Les chantiers, chacun dans sa séance** : (1) **la refonte du combat, d'abord** : **l'atelier est mené (Passe AC1)** : la spécification du combat joué par l'ordinateur en brouillon (`briefs/combat-auto.md` : une ligne de temps, la charge avant d'agir, les PA gardés, la garde et l'esquive par la Défense et la Vivacité, la courbe partie du joueur de référence mesuré), son prototype de mesure (`tools/auto-duel-lab.mjs`), la fiche des règles https://claude.ai/artifact/6ksgfzxv8F3zSHhPhyh4PV (`briefs/fiche-combat-auto.html`, vingt cartes AC-01 à AC-20 sur le modèle complet de la Passe AC3) **relue en Passe AC4 : vingt sur vingt à la recommandation ; A3 : AC-07 (DB-2 retirée), AC-11 (DB7-2, l'équipement ×2), AC-16 (DB7-5, DB7-6, DB11-2 : la course), AC-19 (le § 6.1 du contrat projet, amendé) ; la spécification approuvée (§ 17). À faire : la construction en cinq lots (AC-20 ; § 17.3), chacun dans sa séance, dans le jeu par défaut : (1) la simulation, la course recalée sur AC-15, l'équilibrage au test de AC-12 et le rythme (la note de AC-01 : « mais il faut s'assurer que cela soit rythme, dynamique » ; 41 % du temps en silences de plus de 3 s dans le prototype), rien à l'écran ; (2) l'arène et la fiche de match, puis l'essai de l'opérateur ; (3) le guide et le tutoriel ; (4) le son et les effets ; (5) le retrait de l'ancien duel ; le semi-automatique revu après l'essai (AC-10)** ; (AU-03, devenu par la direction de l'opérateur de la Passe AU3 : des duels joués par l'ordinateur, le joueur prépare, une zone de charge et d'attente avec les PA, un atelier comme CB1, l'inspiration de La Brute lue dans son code (Passe AU4 : une ligne de temps d'initiative, une préparation par choix ; le principe, pas le jeu), les réponses de l'opérateur de la Passe AU5 (une ligne de temps avec les PA, la défense et l'esquive par les cinq stats, un semi-automatique, une durée pour profiter du duel ; le problème à résoudre : le joueur perd trop souvent contre les rivaux avancés), l'amendement du § 6.1 du contrat projet en A3, écrit en Passe AC4 ; tout ce qui touche au combat repensé avec elle) ; (2) les nombres du duel dits (AU-04), en attente de la refonte ; (3) la graine et la sauvegarde, le fondu au noir avant chaque page (AU-06, AU-07) ; (4) les correctifs de la ville et « 10 % » (AU-08, AU-15) ; (5) `AGENTS.md` allégé et le journal élagué avec une règle de taille (AU-09) ; (6) le ménage, les deux fichiers modifiés montrés d'abord (AU-10) ; (7) les paramètres d'essai retirés, `v2=0` gardé jusqu'au Gold Master (AU-11) ; (8) les amendements des contrats : la phase d'équipe hors de cette version, la génération par le code (AU-05, AU-12) ; (9) l'essai de réception guidé, après les bloquants (AU-01, AU-02). Hors de cette version (AU-13, A3) : les sponsors, l'investissement, les calendriers comparés, avec les paris (ECO-5).
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
@@ -1096,3 +1206,4 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Sans soin, la longueur d'un duel est bornée par la survie du joueur : un combat épique demande que ses PV montent aussi, pas seulement une barre adverse plus grosse ; une moyenne sur tous les rivaux cache le combat qui compte (la finale contre ses finalistes probables), et la fiche d'un rival se règle contre son kit (Passe DB7).
 - Une règle se mesure aussi contre le joueur parfait d'une seule tactique (tenir la garde et marteler), pas seulement contre le bot ; et le joueur de référence d'un recalage doit jouer toutes les couches de progression que la fiche suppose (Passe DB9).
 - Un pied qui glisse se mesure à l'écran, contre l'avance du personnage à l'écran, et pour chaque vue : une mesure le long d'un seul axe (la droite de la caméra) ne voit ni un trois-quarts dessiné sur place ni la part en profondeur d'un pas ; et un témoin de répétition se fait sur une autre origine, le stockage du navigateur suivant l'origine (Passe MD1).
+- Une note au bord d'un choix, sur une fiche, est une exigence et non une réserve : la mesurer tout de suite donne à la construction un point de départ et un critère ; une moyenne flatteuse (59 coups par minute) peut cacher des rafales et 41 % de silences (Passe AC4).

@@ -1,12 +1,14 @@
-# Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, brouillon du 11/11/2026)
+# Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : brouillon, à trancher par l'opérateur** sur la fiche d'arbitrages de l'atelier (`briefs/fiche-combat-auto.html`, journal Passe AC1).
+**Statut : approuvée par l'opérateur le 11/11/2026** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
+où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
 **Version 3 (journal Passe AC3) : le modèle complet.** Après la direction de l'opérateur (« match de chevaux », la poule au même niveau, les rivaux
 qui grandissent « grandement en phase finale », des enchaînements, une préparation diversifiée), les propositions sont celles du **§ 16** ; elles
 remplacent, là où elles diffèrent, celles des §§ 2 à 11 (écrites pour les Passes AC1 et AC2, dont les mesures restent aux §§ 12.1 à 12.7). La fiche
 (version 4, vingt cartes AC-01 à AC-20, renumérotées) ne parle que du modèle complet.
-Rien n'est construit. Le jeu garde le duel d'aujourd'hui (`briefs/combat-system.md`) jusqu'à ses décisions.
+Rien n'est construit. Le jeu garde le duel d'aujourd'hui (`briefs/combat-system.md`) jusqu'au lot 2 (§ 17.3).
 
 **La demande.** L'opérateur, le 11/11/2026, mot pour mot (journal Passes AU3 et AU5 ; le texte entier en annexe A) :
 - « je pense que nous devons partir du principe que les duels seront des combats auto par ordinateur ou nous les joueurs nous allons surtout nous
@@ -463,6 +465,76 @@ l'automatique d'aujourd'hui, 52 à 88 % avec celui qui place ses soutiens. À la
 les compétences et les armes avec ce tableau comme test (fiche AC-12).
 
 Les combats hors écran : 0,10 ms par combat.
+
+## 17. Les décisions de la fiche (11/11/2026, journal Passe AC4)
+
+La fiche https://claude.ai/artifact/6ksgfzxv8F3zSHhPhyh4PV (`briefs/fiche-combat-auto.html`, version 4), relue le 11/11/2026 : **vingt choix sur vingt
+à la recommandation**, une note. Les choix et la note mot pour mot, et les décisions A3 citées et datées : journal Passe AC4. Ce paragraphe dit ce qui
+s'applique ; là où les §§ 1 à 16 diffèrent, il l'emporte.
+
+| Carte | Le choix, mot pour mot | Ce qui s'applique |
+|---|---|---|
+| AC-01 | « La ligne de temps : choisir, charger, partir » ; note : « mais il faut s'assurer que cela soit rythme, dynamique » | § 1 et § 16.1 ; le rythme, un critère de la construction (§ 17.2) |
+| AC-02 | « Les enchaînements : l’arme de Ren, deux compétences, les combos des rivaux » | § 16.1 |
+| AC-03 | « Les garder : +1 par attaque simple qui touche, les compétences les paient » | § 2 |
+| AC-04 | « Garder DB5-3 (5 × le temps de charge) » | DB5-3 gardée (A3) |
+| AC-05 | « Les stats, garde ×2 contre une compétence vue venir, la charge qui expose, les traits » | § 3 et § 16.1 |
+| AC-06 | « Garder DB5-4 (10 s, ×2, jauge de 70) » | DB5-4 gardée (A3) |
+| AC-07 | « La retirer (décision A3 : change DB-2) » | la riposte retirée (A3) |
+| AC-08 | « Une forme du jour ±15 %, dite sur la fiche de match » | § 10 |
+| AC-09 | « L’automatique qui place ses soutiens ; le joueur règle ses quatre compétences et leur ordre » | § 16.1 |
+| AC-10 | « L’automatique d’abord ; le semi-automatique revu après mon essai » | le semi-automatique hors des lots |
+| AC-11 | « Doubler les points de l’équipement (décision A3 : change DB7-2) » | chaque point ×2, malus compris (A3) |
+| AC-12 | « Équilibrer avec ce test : chaque adversaire a ses réponses, rien ne domine » | le tableau du § 16.2 comme test du lot 1 |
+| AC-13 | « Garder DB5 : PV ×2, avec ×2 et Passer » | DB5 tenue (A3) ; § 8 |
+| AC-14 | « Le planificateur, avec la vérification de Hilde et l’exercice de son kit » | § 9 |
+| AC-15 | « Un titre sur trois (95, 85, 75, 65, 50 %) » | la cible de la course |
+| AC-16 | « La course, niveau commun en poule, +10 % par tour (décision A3 : change DB7-5, DB7-6, DB11-2) » | § 16.1, recalée à la construction (A3) |
+| AC-17 | « Des points d’Attaque visibles sur la fiche de match » | § 16.1 |
+| AC-18 | « La même simulation, l’IA des deux côtés » | § 11 |
+| AC-19 | « L’amender maintenant avec ce texte, ajusté à mes choix » | contrat projet § 6.1 amendé le 11/11/2026 (A3) |
+| AC-20 | « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai après le lot 2 » | cette spécification approuvée ; § 17.3 |
+
+### 17.1 Les décisions A3
+
+- **Changées** : DB-2 (la riposte, retirée, AC-07) ; DB7-2 (les points de l'équipement doublés, AC-11 ; le principe des points gardé) ; DB7-5, DB7-6 et
+  DB11-2 (AC-16 : les fiches des rivaux deviennent des formes ramenées à un niveau commun en poule, la Vivacité de poule gardée tout le tournoi, +10 %
+  par tour de poule, ×1,27 au tableau, ×1,53 en finale ; la croissance de DB13, ×1,7 et ×3,5, remplacée) ; le § 6.1 du contrat projet (AC-19).
+- **Gardées** : DB5 (la durée, tenue par les PV ×2), DB5-3 (la recharge), DB5-4 (la rupture), DB7-1 (les cinq stats et leurs formules), DB7-3 et DB11-5
+  (l'entraînement), DB7-4 et DB11-6 (la vigueur, Ren 300).
+- **Retirés sans être des décisions A3** (§ 13) : la garde à 90 % des rivaux dans leurs pauses (DB5-2), la priorité de l'adversaire pendant sa séquence
+  (G3, CB-4), le « repoussé » (CB-3).
+
+### 17.2 Le rythme (la note de AC-01)
+
+Le prototype (modèle complet, la référence du jour 4 contre les sept rivaux, 140 duels) donne 59 coups par minute, mais groupés :
+- entre deux coups, 0,33 s en médiane et 2,8 s au 90e centile ;
+- le plus long silence d'un duel, 6,8 s en médiane ;
+- 41 % du temps dans des silences de plus de 3 s ;
+- entre deux grosses actions, 6,1 s en médiane et 14,6 s au 90e centile.
+
+La construction en fait un critère. Le lot 1 mesure ces nombres au laboratoire et cherche des silences plus courts sans toucher aux chances (AC-15)
+ni à la durée (DB5). Le lot 2 donne à voir ce qui reste (les charges, les annonces, la caméra). L'essai de l'opérateur juge. Aucune cible n'est fixée
+avant d'avoir été mesurée et montrée à l'opérateur.
+
+### 17.3 Les lots (AC-20 ; à la place du § 15)
+
+Chaque lot est construit dans sa séance, dans le jeu par défaut (VD-8), et fusionné après ses preuves.
+1. **La simulation** dans `src/combat/`, pure et testée contre des oracles :
+   - son IA (l'automatique qui place ses soutiens, l'ordre des quatre compétences), les enchaînements, la forme du jour ;
+   - les combats hors écran par la même simulation ;
+   - la course recalée sur parties entières aux chances de AC-15 (graines de calage et graines tenues à part) ;
+   - les compétences et les armes équilibrées au test de AC-12, et le rythme (§ 17.2).
+
+   Rien ne change à l'écran.
+2. **L'arène montre le duel** : deux barres de charge, les PV, les jauges, les PA, les quatre compétences et leurs recharges, ×2 et « Passer ». La fiche
+   de match donne les deux fiches, la forme du jour, la préparation des rivaux en points et les chances ; le joueur y règle l'ordre de ses compétences.
+   **L'essai de l'opérateur suit ce lot.**
+3. **Le guide et le tutoriel** du premier duel.
+4. **Le son et les effets** sur les nouveaux moments.
+5. **Le retrait** de l'ancien duel et de ses outils (§ 13).
+
+Le semi-automatique n'est dans aucun lot ; il est revu après l'essai (AC-10).
 
 ---
 

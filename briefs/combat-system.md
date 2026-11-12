@@ -3,6 +3,11 @@
 **Statut : approuvée par l'opérateur le 25/10/2026** (fiche de l'atelier, CB-1 « Approuvée » ; les dix autres décisions de la fiche sont
 intégrées au texte et listées au § 16). Étape 0 de `briefs/roadmap-2026-10.md`, écarts E1 / E16 (journal, Passe CB1).
 
+**Remplacée par `briefs/combat-auto.md` (approuvée le 11/11/2026, journal Passe AC4).** L'atelier de refonte du combat (journal Passes AC1 à AC4) a
+donné le duel joué par l'ordinateur. Ce texte reste la spécification du duel d'aujourd'hui jusqu'au lot 2 de la construction, qui le remplace. Les
+décisions A3 qu'il porte et que la fiche AC4 change : DB-2 (la riposte, retirée), DB7-2 (les points de l'équipement, doublés), DB7-5, DB7-6 et DB11-2
+(les fiches des rivaux et leur croissance, remplacées par la course de `briefs/combat-auto.md` § 17).
+
 **Amendement du 26/10/2026 (décision A3 de l'opérateur, choix AV-5 « Oui, amender (A3), l'ancien schéma gardé pour comparer », journal
 Passes AV1 et V1).** La demande de l'opérateur, mot pour mot : « Ah et enfin on aura une dernier optimisation pour le systeme de combat. surtout cote joueur, au lieu d'avoir plusieurs touches d'action on en aura 3 ( garde, esquive, attaque ) sauf que l'attaque sera comme une charge a niveau : donc une simple pression permet de faire une attaque simple, en restant legerement appuye pendant 2-3s, on utilise une attaque lourde, si on reste 5 seconde de plus on debloque une action de competences et ainsi de suite, les competences les plus puissantes nous obligerait a charger pendant peut etre 10s ( ce n'est qu'un exemple ) mais donc peut etre quee nous aurrions des niveau de competences qui determine le puissance et le temps de charge ( exemple de final fantasy 6 avec le personnage Cyan ) ». Avec ses choix AV-6 « Garder les PA en plus de la charge », AV-7
 « Comme Cyan, paliers successifs » et AV-8 « Un niveau par compétence ». Amendés : le § 1 (les trois touches), le § 4 (« pas de charge tenue »
