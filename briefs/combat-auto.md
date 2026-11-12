@@ -145,6 +145,23 @@ courbe, dans cet ordre :
 5. **Mesuré sur graines tenues à part** (§ 12.1) : le joueur de référence gagne 35 à 37 % des titres, l'inactif 0 %, le diligent 3 %, le curieux
    18 %, le planificateur sans ses deux habitudes 13 %.
 
+**La direction de l'opérateur après la première version de la fiche** (11/11/2026, mot pour mot, journal Passe AC2) : « Oui mais donc il faut faire un
+travail concret pour augmenter les chances... deja avec la preparation et l'augmentation des equipements donc des stats cela doit ameliorer les
+chances... donc si il y a probleme on doit donner des equipements plus impactant favorisant les chances au joueur que ce sooit les PV ou les 5 stats puis
+le jeu doit aussi etre suffisamment structure comme un rpg pour mettre en place les bons adversaires aux bons endroits/moments pour que le defi soit
+reelle mais toujours controle ». Deux propositions en sortent (§ 12.7) :
+
+6. **Des équipements qui pèsent** (fiche AC-19) : les points de chaque pièce et de la forge doublés (DB7-2, A3), puis la courbe recalée sur la cible
+   choisie. Mesuré : avec la croissance d'aujourd'hui, même ×6 ne donne aucun titre ; avec la courbe B sans recalage, ×1,5 donne 58 % de titres à la
+   référence, ×2 75 %, ×3 92 % ; recalée sur ×2, la courbe laisse les rivaux grandir davantage (PV ×1,14 au tableau, ×1,65 en finale) pour la même cible,
+   et le joueur qui s'équipe peu perd plus.
+7. **Une marche par combat** (fiche AC-20) : chaque adversaire a la force du moment où le joueur le rencontre (la poule du plus faible au plus fort, puis
+   la demi-finale, puis la finale), chacun garde son style (kit, rythme, forme de stats) et son rang parmi les autres à ±10 points de la marche ; les
+   fiches de DB7-5 (A3) deviennent des formes, la force venant du moment. Mesuré sur parties entières (§ 12.7) : la référence 98 / 92 / 88 / 73 / 77 %
+   du jour 2 à la finale, 55 % de titres ; le diligent 97 / 58 / 67 / 34 % jusqu'à la demi-finale ; l'inactif 90 / 33 / 23 / 8 %. Ranger seulement la
+   poule ne suffit pas (Vessa devient la quatrième, la demi-finale devient facile même pour l'inactif). Dans le prototype la marche ne règle que les
+   PV, ce qui rend les fiches illisibles (Tobin 1 094 PV en poule, Marek 497) : à la construction, elle se répartit sur toutes les stats.
+
 ## 10. La part du hasard
 
 - Sur ~100 actions, les chances de garde et d'esquive se moyennent : le prototype sans autre hasard rend les combats entre rivaux presque joués
@@ -275,6 +292,39 @@ Coût : 0,08 à 0,10 ms par combat dans Node.
 | défensif : Taille éclair, Rempart, Peau de fer, Ferveur | 64 / 34 / 25 % | 62 / 38 / 25 % |
 | Feinte, Taille éclair, Estoc, Ferveur | 98 / 99 / 73 % | 98 / 96 / 78 % |
 
+### 12.7 L'équipement et les marches (Passe AC2 ; parties entières, graines 101 à 160)
+
+L'équipement (`KIT.gearK` : les points de chaque pièce et de la forge multipliés), titres :
+
+| Points de l'équipement | Courbe | Référence | Diligent | Inactif |
+|---|---|---|---|---|
+| ×1 à ×6 | croissance d'aujourd'hui | 0 % (demi-finale 0 %) | 0 % | — |
+| ×1 | B | 37 % | 3 % | 0 % |
+| ×1,5 | B | 58 % | 3 % | 0 % |
+| ×2 | B | 75 % | 5 % | 0 % |
+| ×3 | B | 92 % | 8 % | 0 % |
+| ×2 | C : recalée sur ×2 (puissance ×1,038, tableau PV ×1,142, finale ×1,653) | 25 % | 2 % | 0 % |
+
+Sur la courbe C : le curieux 10 % (18 % sur la courbe B), le planificateur 13 %.
+
+Le niveau des compétences pèse lourd : contre Orla au jour 4 (courbe B), 60 états du planificateur rejoués sur 40 graines chacun : Taille éclair au
+niveau 1, 19 % ; au niveau 2, 56 %. C'est ce qui sépare le duel isolé (au niveau 1) des parties entières (où le planificateur l'exerce parfois avant le
+jour 4). [?] Sur ces 60 états, la graine du jeu donne 50 % de victoires contre 35 % en moyenne sur 40 autres graines : à la limite du hasard sur 60
+parties, non expliqué.
+
+Les marches (`stairs` puis `games --band`) :
+
+| Structure | Référence : j2 / j4 / j5 / demi / finale | Titres réf. | Diligent : j2 / j4 / j5 / demi | Inactif : j2 / j4 / j5 / demi |
+|---|---|---|---|---|
+| fiches et ordre d'aujourd'hui (courbe B) | 100 / 55 / 100 / 68 / 55 % | 37 % | 100 / 12 / 92 / 18 % | 97 / 5 / 43 / 2 % |
+| la poule du plus faible au plus fort, fiches gardées | 100 / 100 / 65 / 95 / 51 % | 48 % | 100 / 100 / 23 / 85 % | 97 / 85 / 5 / 59 % |
+| une marche par combat sans écart (ordre d'aujourd'hui) | 98 / 98 / 83 / 65 / 85 % | 55 % | 97 / 78 / 43 / 25 % | 90 / 58 / 15 / 2 % |
+| **une marche par combat, ±10 points, la poule rangée** | **98 / 92 / 88 / 73 / 77 %** | **55 %** | **97 / 58 / 67 / 34 %** | **90 / 33 / 23 / 8 %** |
+
+Les marches sont calées sur des duels isolés (la référence au niveau 1 des compétences) pour viser 95 / 85 / 75 / 65 / 50 % ; les parties entières tombent
+au-dessus (des compétences montent). En poule, sans les marches, la référence bat Tobin 100 %, Vessa et Cassius 99 %, Ilse 88 %, Rhosk 78 %, Orla 26 %,
+Marek 13 % (duels isolés, niveau 1).
+
 ## 13. Ce que la refonte remplace, garde et retire
 
 - **Remplacés** : la commande à trois touches et sa charge (`src/combat/charge.ts`, `v2duel.ts`), le bot du duel (`bot.ts`), la course hors écran
@@ -297,10 +347,11 @@ Coût : 0,08 à 0,10 ms par combat dans Node.
   duel et, en semi-automatique, choisit quand lancer ses compétences (spécification : briefs/combat-auto.md). » Le second alinéa (« lisible,
   tactique, rapide à comprendre, suffisamment profond pour valoriser la préparation… ») ne change pas.
 - **Contrat tournoi § 6** : tenu mieux qu'aujourd'hui (la même simulation hors écran).
-- **Décisions A3 gardées** : DB5-3 (la recharge), DB5-4 (la rupture), DB7-1 (les cinq stats et les formules), DB7-2 (l'équipement), DB7-3 et DB11-5
-  (l'entraînement), DB7-4 et DB11-6 (la vigueur, Ren 300), DB7-5 (les fiches des rivaux).
+- **Décisions A3 gardées** : DB5-3 (la recharge), DB5-4 (la rupture), DB7-1 (les cinq stats et les formules), DB7-3 et DB11-5 (l'entraînement),
+  DB7-4 et DB11-6 (la vigueur, Ren 300) ; DB7-2 (l'équipement en points) et DB7-5 (les fiches des rivaux) dans leur principe.
 - **Décisions A3 que la refonte demande à changer** (chacune sur la fiche) : DB-2 (la riposte retirée), DB7-6 et DB11-2 (la croissance des rivaux,
-  leur Vivacité de poule gardée tout le tournoi), le § 6.1 ; DB5 (la durée) seulement si l'opérateur veut un autre temps que « 2 et 5 min ».
+  leur Vivacité de poule gardée tout le tournoi), le § 6.1 ; et, depuis la direction de l'opérateur (Passe AC2), DB7-2 (les points de l'équipement doublés, AC-19) et DB7-5 (les fiches
+  devenues des formes, la force venant du moment, AC-20) ; DB5 (la durée) seulement si l'opérateur veut un autre temps que « 2 et 5 min ».
 
 ## 15. L'ordre de construction (après la fiche)
 

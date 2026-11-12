@@ -123,6 +123,7 @@ dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center;
     <p class="lede">Tu as écrit : « je pense que nous devons partir du principe que les duels seront des combats auto par ordinateur ou nous les joueurs nous allons surtout nous focus sur la preparation du combat », puis : « Il faudrait une ligne de temps mais les PA sont essentiels pour l'usage des competences sauf si on a un meilleur choix ». Et le problème : « le joueur perd trop souvent face au ennemie avance/expert ».</p>
     <p class="lede">J’ai écrit une spécification (<code>briefs/combat-auto.md</code>) et un prototype qui la joue (<code>tools/auto-duel/</code>, un outil de mesure, pas le jeu). Je l’ai mesuré sur des parties entières du laboratoire : les dix jours, la ville, les adversaires réellement rencontrés. Les décisions A3 du duel sont respectées : chaque carte dit si elle en garde une ou si elle en change une.</p>
     <p class="lede">Clique ton choix ; une note est facultative. Je relis tes choix et je les consigne mot pour mot. Rien n’est construit avant tes décisions.</p>
+    <p class="lede"><strong>Mise à jour après ta direction</strong> (des équipements qui pèsent, les bons adversaires aux bons moments) : deux cartes nouvelles, AC-19 et AC-20, dans « La courbe » ; AC-13 vise désormais une marche par combat ; la dernière ligne du tableau d’AC-01 est reformulée. Les choix déjà cliqués restent enregistrés.</p>
   </header>
 
   <div class="progress" role="status" aria-live="polite">
@@ -136,7 +137,7 @@ dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center;
 
   <section class="after">
     <h2>Une fois la fiche remplie</h2>
-    <p>Dis-le dans la conversation. Je relis tes choix et je les consigne mot pour mot au journal. Les cartes marquées « A3 » qui changent une de tes décisions (la riposte, la croissance des rivaux, le § 6.1, et la durée ou la rupture si tu les changes) sont citées et datées comme décisions A3 avant toute construction.</p>
+    <p>Dis-le dans la conversation. Je relis tes choix et je les consigne mot pour mot au journal. Les cartes marquées « A3 » qui changent une de tes décisions (la riposte, la croissance des rivaux, les fiches des rivaux par marche, les points de l’équipement, le § 6.1, et la durée ou la rupture si tu les changes) sont citées et datées comme décisions A3 avant toute construction.</p>
     <p>Ensuite seulement, la construction, lot par lot, selon la dernière carte. La courbe sera recalée sur les règles que tu retiens, sur des parties entières, puis vérifiée sur des graines tenues à part.</p>
     <p>Ce qui reste incertain, dit sans détour. Les nombres sont ceux d’un prototype : ils se recalent à la construction. Les joueurs du laboratoire sont des bots : la façon dont une personne lit la ligne de temps en semi-automatique se jugera à ton essai. Les compétences ne sont pas encore équilibrées entre elles (carte AC-10).</p>
     <p class="src">Sources : <code>briefs/combat-auto.md</code> ; journal Passes AU3, AU4, AU5, AC1 ; mesures : <code>node tools/auto-duel-lab.mjs refs | duels | games | fit | variants | offscreen</code> (les commandes exactes au journal, Passe AC1) ; parties entières de <code>src/tournament/lab.ts</code>, graines de calage 1 à 40, graines tenues à part 101 à 160.</p>
@@ -155,7 +156,8 @@ const GROUPS = [
       table: { head: ['', 'Le duel d’aujourd’hui, joué par le bot', 'La ligne de temps (prototype)'], rows: [
         ['Ce que le joueur suit', 'séquences, pauses, priorité de l’adversaire, riposte', 'deux barres de charge et leurs coups'],
         ['Le même modèle pour les combats hors écran', 'non : une course calibrée à part', 'oui, 0,08 ms par combat'],
-        ['Avec la croissance des rivaux d’aujourd’hui', '0 titre sur 200 parties (audit AU1)', '0 titre sur 60 parties (mesuré)']] },
+        ['Avec la croissance des rivaux d’aujourd’hui', 'aucun titre (0 sur 200 parties, audit AU1)', 'aucun titre non plus (0 sur 60 parties)']],
+        foot: 'La dernière ligne ne départage pas les deux modèles : avec la croissance des rivaux d’aujourd’hui, aucun ne donne de titre. C’est la courbe qu’il faut changer (famille « La courbe », AC-12 à AC-15, AC-19 et AC-20).' },
       rec: 'La ligne de temps : lisible d’un coup d’œil, la même pour Ren et ses rivaux, et le même calcul sert aux combats hors écran. Agir tout de suite puis attendre (comme La Brute) ferait perdre ce que la barre annonce : on ne verrait plus venir un gros coup.',
       opts: ['La ligne de temps du prototype : choisir, charger, partir', 'Garder le duel d’aujourd’hui (séquences et pauses), joué par le bot', 'Agir tout de suite, attendre après (comme La Brute)'], recIdx: 0,
       src: 'briefs/combat-auto.md § 1 ; tools/auto-duel/sim.mjs ; journal Passes AU3, AU4, AC1' },
@@ -254,9 +256,9 @@ const GROUPS = [
       opts: ['Garder DB5 : PV ×2, la poule vers 2 min, la finale vers 3 min, avec ×2 et Passer', 'Plus court : PV ×1,5, de 1 min 40 à 2 min 20 (décision A3 : change DB5)', 'Court : PV ×1, autour d’une minute (décision A3 : change DB5)'], recIdx: 0,
       src: 'journal Passes DB5, DB6 (la durée, A3) ; briefs/combat-auto.md § 8' },
   ]},
-  { id: 'courbe', title: 'La courbe', sub: 'Ton problème : « le joueur perd trop souvent face au ennemie avance/expert ». Le prototype le confirme : avec la croissance des rivaux d’aujourd’hui, même la nouvelle façon de combattre donne 0 titre au joueur de référence. La cause est la courbe, pas la façon de combattre. Elle se refait en partant du joueur que l’on peut être, calée sur des parties entières (graines 1 à 40), vérifiée sur d’autres (101 à 160).', fam: 'var(--astre)', items: [
+  { id: 'courbe', title: 'La courbe', sub: 'Ton problème : « le joueur perd trop souvent face au ennemie avance/expert ». Le prototype le confirme : avec la croissance des rivaux d’aujourd’hui, même la nouvelle façon de combattre donne 0 titre au joueur de référence. La cause est la courbe, pas la façon de combattre. Ta direction, après la première version de cette fiche : « il faut faire un travail concret pour augmenter les chances... deja avec la preparation et l’augmentation des equipements donc des stats cela doit ameliorer les chances... donc si il y a probleme on doit donner des equipements plus impactant favorisant les chances au joueur [...] puis le jeu doit aussi etre suffisamment structure comme un rpg pour mettre en place les bons adversaires aux bons endroits/moments pour que le defi soit reelle mais toujours controle ». Les cartes AC-19 et AC-20 y répondent. Tout est calé sur des parties entières (graines 1 à 40) et vérifié sur d’autres (101 à 160).', fam: 'var(--astre)', items: [
     { id: 'AC-12', tag: 'référence', title: 'Le joueur de référence',
-      ctx: 'Jusqu’ici, la courbe supposait le joueur attendu de DB7 : tout l’équipement et ses compétences au niveau 3, qu’aucun joueur du laboratoire n’atteint. Mesuré dans des parties entières, le planificateur du laboratoire arrive en poule à 324 PV, Atq 14, Déf 13 ; au tableau à 390 PV ; en finale à 414 PV, Atq 16,5, Déf 14, End 12 ; ses compétences restent au niveau 1. Il oublie deux choses qu’un joueur qui prépare fait : faire vérifier son équipement par Hilde (il se bat en demi-finale avec la sangle coupée, +15 % de dégâts reçus) et exercer les compétences qu’il emporte.',
+      ctx: 'Jusqu’ici, la courbe supposait le joueur attendu de DB7 : tout l’équipement et ses compétences au niveau 3, qu’aucun joueur du laboratoire n’atteint. Mesuré dans des parties entières, le planificateur du laboratoire arrive en poule à 324 PV, Atq 14, Déf 13 ; au tableau à 390 PV ; en finale à 414 PV, Atq 16,5, Déf 14, End 12 ; ses compétences restent presque toujours au niveau 1, alors que le niveau pèse lourd (contre Orla au jour 4 : 19 % avec Taille éclair au niveau 1, 56 % au niveau 2). Il oublie deux choses qu’un joueur qui prépare fait : faire vérifier son équipement par Hilde (il se bat en demi-finale avec la sangle coupée, +15 % de dégâts reçus) et exercer les compétences qu’il emporte.',
       table: { head: ['Joueur (courbe B, graines 101 à 160)', 'Titres', 'Demi-finale', 'Finale'], rows: [
         ['Référence : le planificateur et ses deux habitudes (proposé)', '35 %', '67 %', '54 %', 'x'],
         ['Planificateur tel quel', '13 %', '42 %', '32 %'],
@@ -266,15 +268,15 @@ const GROUPS = [
       rec: 'Le planificateur avec ses deux habitudes : il est mesuré, pas supposé, et ses deux habitudes sont à la portée de tout joueur (le guide les dira). Elles suffisent à presque tripler ses chances de titre : la préparation compte.',
       opts: ['Le planificateur, avec la vérification de Hilde et l’exercice de son kit', 'Le planificateur tel quel', 'Le joueur attendu de DB7 (niveau 3), comme aujourd’hui'], recIdx: 0,
       src: 'tools/auto-duel-lab.mjs refs et fit ; audit AU1 § 2.3 (la progression de Ren, la courbe)' },
-    { id: 'AC-13', tag: 'chances', title: 'Les chances visées',
-      ctx: 'Pour le joueur de référence, à chaque étape. Le titre demande de gagner la demi-finale du jour 6 puis la finale du jour 10.',
-      table: { head: ['Cible', 'Poule', 'Demi-finale', 'Finale', 'Titre'], rows: [
-        ['Un titre sur trois (proposé ; tenu par la courbe B)', '85 %', '65 %', '50 %', 'mesuré 35 à 37 %', 'x'],
-        ['Un titre sur deux', '90 %', '75 %', '65 %', 'environ 1 sur 2'],
-        ['Un titre sur cinq', '80 %', '55 %', '40 %', 'environ 1 sur 5']],
-        foot: 'Mesuré avec la cible proposée : l’inactif 0 %, le diligent 3 %, le curieux 18 % ; un joueur qui ne prépare pas perd presque toujours au tableau.' },
-      rec: 'Un titre sur trois : le joueur qui prépare bien gagne nettement la poule, se bat à égalité en finale, et le titre reste un exploit ; celui qui ne prépare pas perd au tableau. Le semi-automatique bien joué (AC-08) va au-delà.',
-      opts: ['Un titre sur trois (poule 85, demi-finale 65, finale 50 %)', 'Un titre sur deux (90, 75, 65 %)', 'Un titre sur cinq (80, 55, 40 %)'], recIdx: 0,
+    { id: 'AC-13', tag: 'chances', title: 'Les chances visées, combat par combat',
+      ctx: 'Pour le joueur de référence, une marche par combat : chaque combat un peu plus dur que le précédent, ce qui fait un défi réel mais contrôlé. Le titre demande de gagner la demi-finale du jour 6 puis la finale du jour 10.',
+      table: { head: ['Cible', 'Jour 2', 'Jour 4', 'Jour 5', 'Demi-finale', 'Finale', 'Titre'], rows: [
+        ['Un titre sur trois (proposé)', '95 %', '85 %', '75 %', '65 %', '50 %', 'environ 1 sur 3', 'x'],
+        ['Un titre sur deux', '97 %', '90 %', '85 %', '75 %', '65 %', 'environ 1 sur 2'],
+        ['Un titre sur cinq', '90 %', '80 %', '70 %', '55 %', '40 %', 'environ 1 sur 5']],
+        foot: 'Mesuré avec la courbe B (calée par étape) : la référence 35 à 37 % de titres, l’inactif 0 %, le diligent 3 %, le curieux 18 %. Avec les marches de AC-20 : voir cette carte.' },
+      rec: 'Un titre sur trois : le joueur qui prépare bien gagne nettement les premiers combats, se bat à égalité en finale, et le titre reste un exploit ; celui qui ne prépare pas tombe au tableau. Le semi-automatique bien joué (AC-08) et un équipement plus fort (AC-19) vont au-delà.',
+      opts: ['Un titre sur trois (95, 85, 75, 65, 50 %)', 'Un titre sur deux (97, 90, 85, 75, 65 %)', 'Un titre sur cinq (90, 80, 70, 55, 40 %)'], recIdx: 0,
       src: 'journal Passe AU5 (proposition 5) ; tools/auto-duel-lab.mjs fit' },
     { id: 'AC-14', tag: 'A3 · croissance', title: 'La croissance des rivaux, dite simplement',
       ctx: 'Aujourd’hui (DB7-6 et DB11-2, A3 ; recalée en DB13) : au tableau, PV ×1,7, +3 Atq, +3 Déf, +2 End et la Vivacité rendue (+3) ; en finale, PV ×3,5. Mesuré dans le prototype : la Vivacité rendue au jour 6 fait bondir le rythme des rivaux de 43 % ; pour tenir une cible, il faudrait alors leur retirer des PV au tableau (×0,6), ce qui ne se lit pas.',
@@ -294,6 +296,28 @@ const GROUPS = [
       rec: 'Des points visibles : la fiche de match dit « Orla s’est entraînée : Attaque +3 », comme pour Ren. Une seule règle pour les deux, rien de caché.',
       opts: ['Des points d’Attaque visibles sur la fiche de match', 'Garder le multiplicateur, et le dire sur la fiche', 'La retirer : la croissance par étape suffit'], recIdx: 0,
       src: 'src/tournament/pool.ts (rivalMods) ; audit AU1 § 2.3' },
+    { id: 'AC-19', tag: 'équipement', title: 'Des équipements qui pèsent',
+      ctx: 'Tu as écrit : « si il y a probleme on doit donner des equipements plus impactant favorisant les chances au joueur que ce sooit les PV ou les 5 stats ». Aujourd’hui (DB7-2), une pièce donne quelques points : la lame importée +2 en Attaque, la cotte +3 en Défense, la bande +18 PV, un palier de forge +1. Mesuré : avec la croissance des rivaux d’aujourd’hui, même des points six fois plus forts ne donnent aucun titre (la demi-finale est perdue chaque fois). Avec une courbe structurée, l’équipement pèse fort.',
+      table: { head: ['Points de l’équipement (courbe B, sans recalage)', 'Titres : référence', 'Diligent (peu équipé)', 'Inactif (rien)'], rows: [
+        ['×1, comme aujourd’hui', '37 %', '3 %', '0 %'],
+        ['×1,5', '58 %', '3 %', '0 %'],
+        ['×2', '75 %', '5 %', '0 %'],
+        ['×3', '92 %', '8 %', '0 %'],
+        ['×2, et la courbe recalée pour garder un titre sur trois (proposé)', '25 %', '2 %', '0 %', 'x']],
+        foot: 'Recalée sur l’équipement ×2, la courbe laisse les rivaux grandir davantage : leurs PV ×1,14 au tableau et ×1,65 en finale (×1,02 et ×1,38 sans), et le joueur qui s’équipe peu perd plus (le curieux de 18 à 10 %). Avec la croissance d’aujourd’hui, ×6 donne encore 0 titre.' },
+      rec: 'Doubler les points de chaque pièce et de la forge, puis recaler la courbe sur la cible que tu choisis en AC-13. Chaque achat se voit dans les chances, les rivaux peuvent grandir visiblement d’une étape à l’autre, et la difficulté reste celle que tu as fixée. Si tu veux simplement favoriser le joueur sans recaler, ×1,5 fait passer la référence de 37 à 58 % de titres. C’est une décision A3 : elle change les nombres de DB7-2.',
+      opts: ['Doubler les points de l’équipement, la courbe recalée sur ma cible (décision A3 : change DB7-2)', 'Les points ×1,5, sans recaler : le joueur préparé gagne plus (décision A3)', 'Garder les points d’aujourd’hui'], recIdx: 0,
+      src: 'src/simulation/gear.ts (GEAR, WEAPON_TIER_ATK) ; journal Passe DB8 (DB7-2, A3) ; tools/auto-duel-lab.mjs variants et fit (KIT.gearK)' },
+    { id: 'AC-20', tag: 'A3 · marches', title: 'Les bons adversaires aux bons moments : une marche par combat',
+      ctx: 'Tu as écrit : « le jeu doit aussi etre suffisamment structure comme un rpg pour mettre en place les bons adversaires aux bons endroits/moments pour que le defi soit reelle mais toujours controle ». Aujourd’hui, qui l’on affronte décide presque tout : en poule, le joueur de référence bat Tobin à 100 % mais Orla à 26 % et Marek à 13 % (duels isolés). L’ordre de la poule est fixe (Vessa, Orla, Cassius) : le combat le plus dur tombe au jour 4, et il décide qui l’on retrouve en demi-finale.',
+      table: { head: ['Structure (parties entières, graines 101 à 160)', 'Référence : j2 / j4 / j5 / demi / finale', 'Titres réf.', 'Diligent : j2 / j4 / j5 / demi', 'Inactif : j2 / j4 / j5 / demi'], rows: [
+        ['Aujourd’hui : fiches et ordre fixes (courbe B)', '100 / 55 / 100 / 68 / 55 %', '37 %', '100 / 12 / 92 / 18 %', '97 / 5 / 43 / 2 %'],
+        ['La poule du plus faible au plus fort (Vessa, Cassius, Orla), fiches gardées', '100 / 100 / 65 / 95 / 51 %', '48 %', '100 / 100 / 23 / 85 %', '97 / 85 / 5 / 59 %'],
+        ['Une marche par combat : la force de chaque rival réglée pour le moment où on le rencontre, ±10 points autour de la marche pour garder leur ordre (Tobin le plus facile, Marek le plus dur), la poule du plus faible au plus fort (proposé)', '98 / 92 / 88 / 73 / 77 %', '55 %', '97 / 58 / 67 / 34 %', '90 / 33 / 23 / 8 %', 'x']],
+        foot: 'Ranger seulement la poule ne suffit pas : Vessa devient la quatrième et la demi-finale devient facile même pour qui ne prépare rien (l’inactif 59 %). La troisième ligne vise 95 / 85 / 75 / 65 / 50 % pour la référence, calée sur des duels isolés au niveau 1 des compétences : les parties entières tombent un peu au-dessus (des compétences montent au niveau 2) ; recalée sur parties entières, elle tiendrait la cible de AC-13. Dans le prototype, la marche ne règle que les PV, ce qui donne des fiches illisibles (Tobin 1 094 PV en poule, Marek 497) : à la construction, elle se répartit sur toutes les stats de chacun, sa forme gardée.' },
+      rec: 'Une marche par combat : chaque adversaire a la force du moment où on le rencontre (le jour 2 facile, puis chaque combat un peu plus dur, la finale la plus dure), chacun garde son style (son kit, son rythme, sa forme de stats) et son rang parmi les autres, et la poule va du plus faible au plus fort. Le défi est réel et contrôlé : le joueur qui prépare va loin, celui qui ne prépare pas s’arrête plus tôt, combat après combat. La fiche de match dit la marche. C’est une décision A3 : les fiches de DB7-5 deviennent des formes, la force venant du moment.',
+      opts: ['Une marche par combat, chacun son style et son rang, la poule du plus faible au plus fort (décision A3 : change DB7-5)', 'Seulement ranger la poule du plus faible au plus fort, les fiches gardées', 'Garder les fiches et l’ordre d’aujourd’hui'], recIdx: 0,
+      src: 'src/tournament/v2calendar.ts (V2_ROUNDS) ; src/combat/stats.ts (RIVAL_SHEETS, DB7-5) ; tools/auto-duel-lab.mjs stairs, games --swap, --band' },
   ]},
   { id: 'suite', title: 'Un seul modèle, et la suite', sub: 'Le contrat tournoi et le contrat projet, puis la construction.', fam: 'var(--ronce)', items: [
     { id: 'AC-16', tag: 'hors écran', title: 'Les combats hors écran : la même simulation',

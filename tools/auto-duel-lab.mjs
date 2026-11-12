@@ -27,6 +27,13 @@ const M = await loadGame();
 /** the rivals' growth by stage (src/combat/stats.ts STAGE_GROWTH by default: DB13's x1.7 / x3.5 and their points); `--set=GROWTH.1.hp=...` */
 export const GROWTH = JSON.parse(JSON.stringify(M.stats.STAGE_GROWTH));
 
+/** `--swap=a:b`: the pool's rounds 2 and 3 (days 4 and 5) with rivals a and b exchanged, in this process only (the game's order is V2_ROUNDS:
+ *  Vessa, Orla, Cassius for the player); a measure of the opponents' order, the operator's « les bons adversaires aux bons endroits/moments » */
+if (arg('swap')) {
+  const [a, b] = arg('swap').split(':'), cal = await M.server.ssrLoadModule('/src/tournament/v2calendar.ts');
+  for (const r of cal.V2_ROUNDS.slice(1)) for (const p of r.pairs) for (let i = 0; i < 2; i++) p[i] = p[i] === a ? b : p[i] === b ? a : p[i];
+}
+
 // --set
 for (const kv of (arg('set', '') || '').split(',').filter(Boolean)) {
   const [p, v] = kv.split('='), path = p.split('.');
@@ -37,9 +44,14 @@ for (const kv of (arg('set', '') || '').split(',').filter(Boolean)) {
 }
 
 /** a rival's sheet at a stage under GROWTH */
+/** « une marche par combat » (the operator's note after the sheet, journal Passe AC2: « mettre en place les bons adversaires aux bons endroits/moments
+ *  pour que le defi soit reelle mais toujours controle »): each rival's health at each stage x its own factor, so every rival of a stage stands at that
+ *  stage's target against the reference player; `--band=<file.json>` loads the factors `band` writes */
+export const BAND = { on: false, k: { 0: {}, 1: {}, 2: {} } };
+if (arg('band')) { BAND.k = JSON.parse(fs.readFileSync(arg('band'), 'utf8')); BAND.on = true; }
 function sheetAt(id, stage) {
-  const b = M.stats.RIVAL_SHEETS[id] ?? M.stats.RIVAL_SHEETS.marek, g = GROWTH[stage];
-  return { hp: b.hp * g.hp, atk: b.atk + g.atk, def: b.def + g.def, end: b.end + g.end, viv: b.viv + g.viv };
+  const b = M.stats.RIVAL_SHEETS[id] ?? M.stats.RIVAL_SHEETS.marek, g = GROWTH[stage], k = BAND.on ? BAND.k[stage]?.[id] ?? 1 : 1;
+  return { hp: b.hp * g.hp * k, atk: b.atk + g.atk, def: b.def + g.def, end: b.end + g.end, viv: b.viv + g.viv };
 }
 const decider = (n) => DECIDERS[n] ?? DECIDERS.auto;
 
@@ -53,7 +65,8 @@ function outcomeOf(r) {
 function stateDuel(st, kind, dname) {
   const sh = kind === 'challenge' ? M.match.challengeSheetFor(st) : M.match.matchSheetFor(st);
   const o = sh.sides[1].fighters[0], stage = sh.stage ?? 0, mods = M.gear.v2Mods(st), g = M.generics.GENERICS[o.id];
-  const ren = renFighter(M, mods.stats, M.v2.v2KitOf(st), { hpShare: mods.hp, apStart: mods.ap ?? 0, taken: mods.taken, effect: mods.effect, decider: decider(dname), cooldownK: RULES.cooldownK, lightCharge: RULES.light.charge });
+  const fx = M.gear.wornFx(st), gk = (KIT.gearK ?? 1) - 1, stats = gk ? { ...mods.stats, hp: mods.stats.hp + gk * fx.hp, atk: mods.stats.atk + gk * fx.atk, def: mods.stats.def + gk * fx.def, end: mods.stats.end + gk * fx.end, viv: mods.stats.viv + gk * fx.viv } : mods.stats;
+  const ren = renFighter(M, stats, M.v2.v2KitOf(st), { hpShare: mods.hp, apStart: mods.ap ?? 0, taken: mods.taken, effect: mods.effect, decider: decider(dname), cooldownK: RULES.cooldownK, lightCharge: RULES.light.charge });
   const foe = g ? foeFighter(M, o.id, stage, { sheet: M.stats.borrowedSheet(g.profile, g, stage), profile: g.profile, decider: DECIDERS.rival })
     : foeFighter(M, o.id, stage, { sheet: sheetAt(o.id, stage), mods: o.mods, preparation: st.competitors[o.id]?.preparation, decider: DECIDERS.rival });
   const r = duel(ren, foe, (sh.seed ^ 0x5bd1e995) >>> 0, RULES);
@@ -64,7 +77,7 @@ function stateDuel(st, kind, dname) {
 async function refs() {
   const pols = arg('policies', 'idle,diligent,curious,planner').split(','), seeds = range(arg('seeds', '1..30')), out = {};
   for (const pn of pols) {
-    const P = M.lab.POLICIES[pn], rows = [];
+    const P = policyOf(pn), rows = [];
     const wrap = { name: pn, skill: P.skill, choose: (st) => { const a = P.choose(st); if (a.type === 'fight') { const sh = M.match.matchSheetFor(st), mods = M.gear.v2Mods(st), opp = sh.sides[1].fighters[0].id; rows.push({ day: st.day, stage: sh.stage ?? 0, opp, ren: mods.stats, hpShare: mods.hp, ap: mods.ap, levels: M.v2.v2KitOf(st).levels, loadout: M.v2.v2KitOf(st).loadout, prep: st.competitors[opp]?.preparation, oppMods: sh.sides[1].fighters[0].mods, won: a.outcome.winner === 'player' }); } return a; } };
     for (const s of seeds) M.lab.autoplay(s, wrap, 'Ren', 200, 'v2');
     const byStage = {};
@@ -268,9 +281,32 @@ function variants(spec, pols, seeds) {
   restore();
 }
 
+/** the stairs: each rival's health factor at each stage, found by bisection on isolated duels against the reference player as the whole games meet
+ *  him (`refs`, the reference policy: day 2 300 PV, Atq 14, Déf 11; day 4 324, 14, 14; day 5 366, 13, 13; the bracket 390, 14, 13; the final 414, 16.5,
+ *  14, End 12; skills at level 1); the pool by the day each rival is met by the player (Vessa day 2, Orla day 4, Cassius day 5; with --swap, the order
+ *  given), the others at the pool's middle step; written to `--out` for `--band` */
+function stairs(targets, out) {
+  const ref = { 2: { hp: 300, atk: 14, def: 11, end: 10, viv: 10 }, 4: { hp: 324, atk: 14, def: 14, end: 10, viv: 9.5 }, 5: { hp: 366, atk: 13, def: 13, end: 10, viv: 9.5 }, b: { hp: 390, atk: 14, def: 13, end: 10, viv: 9.5 }, f: { hp: 414, atk: 16.5, def: 14, end: 12, viv: 9.5 } };
+  const pool = arg('swap') ? { vessa: 2, cassius: 4, orla: 5 } : { vessa: 2, orla: 4, cassius: 5 };
+  const step = { 2: targets[0], 4: targets[1], 5: targets[2] };
+  BAND.on = true; BAND.k = { 0: {}, 1: {}, 2: {} };
+  const ids = Object.keys(M.stats.RIVAL_SHEETS), seeds = range('1..60');
+  for (const s of [0, 1, 2]) for (const id of ids) {
+    // `--spread=<points>`: the rivals keep their order of strength around each step (Tobin the easiest ... Marek the hardest), within ± these points
+    const order = ['tobin', 'vessa', 'cassius', 'ilse', 'rhosk', 'orla', 'marek'], sp = +arg('spread', '0') / 100, off = sp * (1 - 2 * order.indexOf(id) / (order.length - 1));
+    const day = s === 0 ? pool[id] ?? 4 : null, r = s === 0 ? ref[day] : s === 1 ? ref.b : ref.f, t = Math.min(0.99, Math.max(0.01, (s === 0 ? step[day] : targets[2 + s]) + (s === 0 && pool[id] ? 0 : off)));
+    let lo = 0.15, hi = 8;
+    for (let i = 0; i < 13; i++) { const m = (lo + hi) / 2; BAND.k[s][id] = m; const D = duelsOf({ ren: r, stage: s, foes: [id], seeds, prep: STAGE_PREP[s] }); if (D.all.w / D.all.n > t) lo = m; else hi = m; }
+    BAND.k[s][id] = +((lo + hi) / 2).toFixed(3);
+  }
+  for (const s of [0, 1, 2]) console.log(`étape ${s} : ` + ids.map((id) => `${id} PV x${BAND.k[s][id]} (${Math.round(sheetAt(id, s).hp)})`).join(' · '));
+  if (out) fs.writeFileSync(out, JSON.stringify(BAND.k, null, 1));
+}
+
 const cmd = process.argv[2];
 try {
-  if (cmd === 'variants') variants(arg('variants', 'R0='), arg('policies', 'reference,idle').split(','), range(arg('seeds', '101..160')));
+  if (cmd === 'stairs') stairs(arg('targets', '95,85,75,65,50').split(',').map((x) => +x / 100), arg('out'));
+  else if (cmd === 'variants') variants(arg('variants', 'R0='), arg('policies', 'reference,idle').split(','), range(arg('seeds', '101..160')));
   else if (cmd === 'fit') fit(arg('targets', '85,65,50').split(',').map((x) => +x / 100), [0, +arg('p1', '1'), +arg('p2', '2')], range(arg('fitseeds', '1..40')), range(arg('seeds', '101..160')), arg('ref', 'reference'));
   else if (cmd === 'calibrate') calibrate(arg('targets', '85,65,50').split(',').map((x) => +x / 100), arg('ref', 'planner'), [0, +arg('p1', '2'), +arg('p2', '3')]);
   else if (cmd === 'refs') await refs();

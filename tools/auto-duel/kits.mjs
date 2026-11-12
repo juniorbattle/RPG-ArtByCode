@@ -34,6 +34,9 @@ export const KIT = {
   prep: 'damage',
   /** a rival's trait kept from today's kit (C3: Vessa dodges 35 %, Cassius 20 %): that share x traits added to its dodge, shown on the match sheet; 0 = none */
   traits: 0,
+  /** the gear's weight (the operator's note after the sheet, journal Passe AC2: « donner des equipements plus impactant »): every stat point and health point the
+   *  worn gear and the forge give, x gearK (1 = today's DB7-2 points) */
+  gearK: 1,
 };
 
 const BREAKERS = new Set(['t3', 'k_sunder']);
