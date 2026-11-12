@@ -37,7 +37,19 @@ export const KIT = {
   /** the gear's weight (the operator's note after the sheet, journal Passe AC2: « donner des equipements plus impactant »): every stat point and health point the
    *  worn gear and the forge give, x gearK (1 = today's DB7-2 points) */
   gearK: 1,
+  /** the enchaînements (the operator's « choregraphies/combos d'attaques ou on enchaine 2-3 coups », journal Passe AC3): 'on' = Ren's light attack chains by his
+   *  weapon, Taille éclair and Tourbillon strike several times, the rivals keep today's combos; 'off' = one blow an action (journal Passe AC1) */
+  combos: 'off',
 };
+
+/** each weapon's enchaînement (« proposé »): the hits of Ren's light attack, each one's share of its power and gauge, the gap between them (s) */
+export const WEAPON_CHAINS = {
+  'training-sword': { hits: [0.55, 0.55], gap: 0.3 },
+  'imported-blade': { hits: [0.62, 0.62], gap: 0.32 },
+  'duelist-sabre': { hits: [0.42, 0.42, 0.42], gap: 0.22 },
+};
+/** the skills that strike several times (« proposé »): Taille éclair two quick cuts, Tourbillon three */
+export const SKILL_HITS = { t1: { hits: [0.5, 0.5], gap: 0.25 }, t3: { hits: [0.36, 0.36, 0.36], gap: 0.25 } };
 
 const BREAKERS = new Set(['t3', 'k_sunder']);
 
@@ -45,12 +57,13 @@ const BREAKERS = new Set(['t3', 'k_sunder']);
 export function renActions(M, kit, o = {}) {
   const { chargeTime, LEVEL_POWER, clampLevel } = M.skills, { skillPower, POWER } = M.stats, K = o.K ?? KIT, ck = o.cooldownK ?? 5, eff = o.effect ?? 1;
   const light = { id: 'light', name: 'Light', kind: 'light', charge: o.lightCharge ?? 1.2, power: K.renLight ?? POWER.light, gauge: (K.renLight ?? 6) * K.gauge.light, ap: 0 };
+  if (K.combos === 'on') Object.assign(light, WEAPON_CHAINS[o.weapon] ?? WEAPON_CHAINS['training-sword']);
   const skills = kit.loadout.map((id) => {
     const lv = clampLevel(kit.levels[id] ?? 1), def = M.book.skillAction(id), p = M.v2duel.V2_POWER[id] ?? {}, k = LEVEL_POWER[lv - 1];
     const a = { id, name: def.name, kind: id === 'heavy' ? 'heavy' : 'skill', family: def.family, charge: chargeTime(id, lv), ap: p.ap ?? def.apCost ?? 0, cooldown: ck * chargeTime(id, 1), heavy: id === 'heavy' };
     if (def.ward) a.ward = { dur: +(def.ward.dur * (p.dur ?? 1) * k * eff).toFixed(2), dmg: def.ward.damage, gauge: def.ward.resist };
     else if (def.boost) a.boost = { dur: +(def.boost.dur * (p.dur ?? 1) * k * eff).toFixed(2), dmg: def.boost.damage, gauge: def.boost.resist };
-    else { a.power = skillPower(id, lv); a.gauge = a.power * K.gauge.skill * (BREAKERS.has(id) ? K.gauge.breaker : 1); a.pierce = !!def.ignoreGuard; }
+    else { a.power = skillPower(id, lv); a.gauge = a.power * K.gauge.skill * (BREAKERS.has(id) ? K.gauge.breaker : 1); a.pierce = !!def.ignoreGuard; if (K.combos === 'on' && SKILL_HITS[id]) Object.assign(a, SKILL_HITS[id]); }
     return a;
   });
   return { light, skills };
@@ -58,6 +71,7 @@ export function renActions(M, kit, o = {}) {
 
 /** Ren as a fighter: his stats (FighterStats), the kit, the extras of a state (AP of the gear and a friend, the night's tampering) */
 export function renFighter(M, stats, kit, o = {}) {
+  // o.weapon: the weapon worn (its enchaînement, KIT.combos)
   return { id: 'ren', name: 'Ren', side: 'ren', hp: stats.hp * (o.hpShare ?? 1), atk: stats.atk, def: stats.def, end: stats.end, viv: stats.viv, tempo: 10, apStart: o.apStart ?? 0, taken: o.taken ?? 1, actions: renActions(M, kit, o), decider: o.decider };
 }
 
@@ -69,6 +83,9 @@ export function foeActions(M, id, o = {}) {
   const light = { id: 'm_light', name: 'Light', kind: 'light', charge: cL, power: P.foeLight * pm, gauge: P.foeLight * pm * K.gauge.light, ap: 0 };
   const heavy = { id: 'm_heavy', name: 'Heavy', kind: 'skill', heavy: true, charge: cL * K.foeHeavyCharge, power: P.foeHeavy * pm, gauge: P.foeHeavy * pm * K.gauge.skill, ap: 0 };
   const skills = [heavy];
+  // today's combos (DYN_PROFILES: comboLen, comboGap): a chain of light blows, each three quarters of a light, its charge 1.4 x the light's
+  const P0 = M.prof.DYN_PROFILES[id], n = P0 ? Math.round((P0.comboLen[0] + P0.comboLen[1]) / 2) : 3;
+  const combo = { id: 'm_combo', name: 'Combo', kind: 'light', charge: +(cL * 1.4).toFixed(2), power: P.foeLight * pm * 0.75 * n, gauge: P.foeLight * pm * 0.75 * n * K.gauge.light, ap: 0, hits: Array(n).fill(1 / n), gap: P0 ? +((P0.comboGap[0] + P0.comboGap[1]) / 2).toFixed(2) : 0.35 };
   for (const s of F.skills.list) {
     const d = M.v2duel.FOE_SKILLS[s.id];
     const a = { id: s.id, name: d.name, kind: 'skill', family: d.family, ap: 0, cooldown: s.cooldown, weight: s.weight };
@@ -80,7 +97,7 @@ export function foeActions(M, id, o = {}) {
   const W = M.prof.DYN_PROFILES[id]?.weights ?? { combo: 0.6, singleLight: 0.2, singleHeavy: 0.2 }, len = M.prof.DYN_PROFILES[id] ? (M.prof.DYN_PROFILES[id].comboLen[0] + M.prof.DYN_PROFILES[id].comboLen[1]) / 2 : 3;
   // its heavy blow's share of its blows today: the single heavies and one blow of each combo
   const heavyShare = (W.singleHeavy + W.combo / len) / (W.combo + W.singleLight + W.singleHeavy);
-  return { actions: { light, skills }, ai: { chance: F.skills.chance, heavy: +heavyShare.toFixed(3) } };
+  return { actions: { light, skills, combo: K.combos === 'on' ? combo : null }, ai: { chance: F.skills.chance, heavy: +heavyShare.toFixed(3), combo: +(W.combo / Math.max(1e-6, W.combo + W.singleLight)).toFixed(3) } };
 }
 
 /** a rival as a fighter at a stage: its sheet (src/combat/stats.ts rivalSheet; `sheet` to give another), its state's mods (an injury's health, its
@@ -90,6 +107,6 @@ export function foeFighter(M, id, stage = 0, o = {}) {
   const prepPts = K.prep === 'stats' && o.preparation != null ? Math.max(0, (o.preparation - 20) / 25) : 0;
   const power = (K.prep === 'damage' ? mods.damage ?? 1 : 1) * (o.power ?? 1);
   const k = foeActions(M, M.stats.RIVAL_SHEETS[id] ? id : (o.profile ?? 'marek'), { K, power });
-  const trait = (M.v2duel.V2_FOES[id]?.defense?.dodge ?? 0) * (K.traits ?? 0);
-  return { id, name: id, side: 'foe', dodgeBonus: trait, hp: S.hp * (mods.hp ?? 1), atk: S.atk + prepPts, def: S.def, end: S.end, viv: S.viv, tempo: M.stats.KIT_VIV[id] ?? M.stats.KIT_VIV[o.profile] ?? 10, apStart: 0, taken: 1, actions: k.actions, ai: k.ai, decider: o.decider };
+  const trait = (M.v2duel.V2_FOES[id]?.defense?.dodge ?? 0) * (K.traits ?? 0), guardTrait = (M.v2duel.V2_FOES[id]?.defense?.guard ?? 0) * 0.5 * (K.traits ?? 0);
+  return { id, name: id, side: 'foe', dodgeBonus: trait, guardBonus: guardTrait, hp: S.hp * (mods.hp ?? 1), atk: S.atk + prepPts, def: S.def, end: S.end, viv: S.viv, tempo: M.stats.KIT_VIV[id] ?? M.stats.KIT_VIV[o.profile] ?? 10, apStart: 0, taken: 1, actions: k.actions, ai: k.ai, decider: o.decider };
 }

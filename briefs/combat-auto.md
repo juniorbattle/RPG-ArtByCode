@@ -1,6 +1,11 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, brouillon du 11/11/2026)
 
 **Statut : brouillon, à trancher par l'opérateur** sur la fiche d'arbitrages de l'atelier (`briefs/fiche-combat-auto.html`, journal Passe AC1).
+
+**Version 3 (journal Passe AC3) : le modèle complet.** Après la direction de l'opérateur (« match de chevaux », la poule au même niveau, les rivaux
+qui grandissent « grandement en phase finale », des enchaînements, une préparation diversifiée), les propositions sont celles du **§ 16** ; elles
+remplacent, là où elles diffèrent, celles des §§ 2 à 11 (écrites pour les Passes AC1 et AC2, dont les mesures restent aux §§ 12.1 à 12.7). La fiche
+(version 4, vingt cartes AC-01 à AC-20, renumérotées) ne parle que du modèle complet.
 Rien n'est construit. Le jeu garde le duel d'aujourd'hui (`briefs/combat-system.md`) jusqu'à ses décisions.
 
 **La demande.** L'opérateur, le 11/11/2026, mot pour mot (journal Passes AU3 et AU5 ; le texte entier en annexe A) :
@@ -344,7 +349,9 @@ Marek 13 % (duels isolés, niveau 1).
   « Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1, joué par l'ordinateur : le temps ne s'arrête pas ; chaque
   combattant choisit une action et la charge sur une ligne de temps, puis elle part, la Vivacité réglant la charge ; les compétences sont payées en
   points d'action et réglées par leur niveau ; la garde et l'esquive sont des réactions que donnent la Défense et la Vivacité ; le joueur prépare le
-  duel et, en semi-automatique, choisit quand lancer ses compétences (spécification : briefs/combat-auto.md). » Le second alinéa (« lisible,
+  duel et, en semi-automatique, choisit quand lancer ses compétences (spécification : briefs/combat-auto.md). » Version 3 (fiche AC-19) : « … joué par
+  l'ordinateur selon la préparation du joueur : … puis elle part, en un coup ou en enchaînement, la Vivacité réglant la charge ; … la garde et l'esquive
+  sont des réactions que donnent la Défense et la Vivacité (spécification : briefs/combat-auto.md). », sans le semi-automatique tant qu'il n'est pas retenu. Le second alinéa (« lisible,
   tactique, rapide à comprendre, suffisamment profond pour valoriser la préparation… ») ne change pas.
 - **Contrat tournoi § 6** : tenu mieux qu'aujourd'hui (la même simulation hors écran).
 - **Décisions A3 gardées** : DB5-3 (la recharge), DB5-4 (la rupture), DB7-1 (les cinq stats et les formules), DB7-3 et DB11-5 (l'entraînement),
@@ -364,6 +371,98 @@ Marek 13 % (duels isolés, niveau 1).
 5. **Le retrait** de l'ancien duel et de ses outils.
 
 Chaque lot se prouve (tests, laboratoire, preuves dans le navigateur) et se fusionne ; l'essai de l'opérateur suit le lot 2 ou le lot 3, selon la fiche.
+
+---
+
+## 16. Le modèle complet (version 3, journal Passe AC3)
+
+**Les mots de l'opérateur** (11/11/2026, mot pour mot, journal Passe AC3) : « cela semble deja plus prometteur car finalement on est similaire a un
+match de chevaux ou nous devons prepaprer nos joker le mieux possible pour maximiser ces chances de victoires et chaque courses il jouerai contre les
+meilleurs au fur et a mesure. dans notre cas on peut faire en sorte que les matchs de poules donnent des adversaires au niveau similaire meme si ils ont
+des stats propres a leur specifite. » ; « les rivaux grsndissent surtout petit a petit en phase de groupe mais grandement en phase finale, ce qui est
+coherent au jeu » ; « mais dans nos actions de combats on peut tres bien dans une simulation avoir des choregraphies/combos d'attaques ou on enchaine 2-3
+coups par exemple bref il faut vraiment que notre simulation de combat soit diversifier et que cela se repercute dans notre preparation avec nos
+equipements accessoires competences> » ; « Met totalement a jour la fiche pour soumettre des infos coherentes ».
+
+### 16.1 Les règles du modèle complet
+
+- **La ligne de temps** (§ 1), inchangée.
+- **Les enchaînements** : une action peut porter plusieurs coups, chacun gardé ou esquivé à part, `gap` secondes l'un après l'autre ; une rupture coupe
+  l'enchaînement de celui qui est rompu. L'attaque simple de Ren dépend de son arme (l'épée d'entraînement 2 coups de 0,55, la lame importée 2 coups
+  de 0,62, le sabre de duelliste 3 coups de 0,42 plus rapides) ; Taille éclair frappe 2 fois, Tourbillon 3 fois ; les rivaux retrouvent leurs combos
+  d'aujourd'hui (`DYN_PROFILES` : 2 à 5 coups, chacun trois quarts d'un coup simple, dans leur part d'aujourd'hui). +1 PA une fois par attaque simple.
+- **La défense** (§ 3) : les stats, la garde ×2 contre une compétence vue venir, la charge qui expose (et son propre enchaînement aussi), les traits des
+  rivaux d'aujourd'hui (`V2_FOES` : l'esquive de Vessa et de Cassius ajoutée à leur chance, la moitié de la garde de Marek, Ilse, Cassius, Orla, Rhosk).
+- **Les PA, les recharges (DB5-3), la rupture (DB5-4)** gardés ; la riposte (DB-2) retirée ; une forme du jour ±15 % dite sur la fiche.
+- **L'automatique qui place ses soutiens** (`autoSmartDecider`) : la défensive quand l'adversaire charge un gros coup qu'elle couvrira, ou quand sa
+  jauge passe les deux tiers ; le soutien seulement quand une compétence offensive peut suivre (ses PA, sa recharge) ou quand l'adversaire est rompu ;
+  sinon la plus forte compétence offensive qu'il peut payer, sinon l'attaque simple. Le joueur règle ses quatre compétences et leur ordre.
+- **L'équipement ×2** : chaque point de chaque pièce et de la forge doublé (DB7-2, A3).
+- **La course** : chaque rival garde la forme de sa fiche (DB7-5), ramenée à un niveau commun en poule (PV, Attaque, Défense, Endurance du même facteur,
+  calé pour que le joueur de référence du jour 2 batte chacun 92 fois sur 100), sa Vivacité de poule gardée tout le tournoi ; puis +10 % à chaque tour
+  de poule, ×1,267 au tableau, ×1,533 en finale ; sa préparation en points d'Attaque visibles (+1 par 25 au-dessus de 20).
+- **La durée** : les PV de chacun ×2 (DB5 tenue).
+- **Le calage** (`level`) : les facteurs de poule sur duels isolés contre la référence du jour 2 (300 PV, Atq 17, Déf 11 : l'équipement ×2), le tableau
+  et la finale sur parties entières de la référence (graines 1 à 80 ; demi-finale 65 %, finale 50 %), vérifiés sur les graines 101 à 160.
+
+| Rival | facteur | poule (tour 1 → 3) | tableau | finale |
+|---|---|---|---|---|
+| Vessa | ×0,974 | 487 PV, Atq 6,8 → 584, 8,2 | 617, 8,6 | 747, 10,5 |
+| Tobin | ×1,333 | 693, 12,0 → 832, 14,4 | 878, 15,2 | 1 063, 18,4 |
+| Cassius | ×1,084 | 607, 11,9 → 728, 14,3 | 769, 15,1 | 931, 18,3 |
+| Orla | ×0,877 | 526, 10,5 → 631, 12,6 | 667, 13,3 | 807, 16,1 |
+| Ilse | ×0,987 | 612, 9,9 → 734, 11,8 | 775, 12,5 | 938, 15,1 |
+| Marek | ×0,826 | 537, 10,7 → 644, 12,9 | 680, 13,6 | 823, 16,5 |
+| Rhosk | ×0,948 | 664, 11,4 → 796, 13,7 | 841, 14,4 | 1 017, 17,4 |
+
+(Les PV avant le ×2 de la durée ; chaque Défense et Endurance du même facteur que l'Attaque.)
+
+### 16.2 Les mesures du modèle complet (parties entières, graines 101 à 160)
+
+Les joueurs :
+
+| Politique | Jour 2 | Jour 4 | Jour 5 | Demi-finale | 3e place | Finale | Titres | Durées poule / tableau / finale |
+|---|---|---|---|---|---|---|---|---|
+| référence | 92 % | 92 % | 65 % | 73 % | 94 % | 51 % (43) | **37 %** | 161 / 190 / 213 s |
+| planificateur | 92 % | 92 % | 65 % | 47 % | 87 % | 21 % (28) | 10 % | 161 / 175 / 231 s |
+| curieux | 87 % | 65 % | 15 % | 12 % | 19 % | 0 sur 5 | 0 % | 189 / 213 / 282 s |
+| diligent | 88 % | 42 % | 2 % | 0 % | 2 % | — | 0 % | 172 / 171 / — s |
+| inactif | 57 % | 13 % | 2 % | 0 % | 0 % | — | 0 % | 153 / 126 / — s |
+
+Un duel de la référence : 19 compétences, 172 coups portés (les deux), 1,52 rupture du rival et 0,29 de Ren, 7,3 retournements.
+
+Les règles (`variants`, une règle changée, avant recalage ; titres référence / inactif) : le modèle 37 / 0 % ; mêmes chances de garde partout 18 ;
+garde toujours sur alerte 48 ; aucune réaction 13 ; la charge n'expose pas 5 (duels de 244 / 287 / 321 s) ; sans PA 43 (4,9 retournements) ; PA par le
+temps 47 ; sans recharge 70 ; rupture 6 s ×1,5 10 ; sans rupture 5 ; sans forme du jour 25 ; sans enchaînements 70 (108 coups, 6,2 retournements) ; sans
+les traits des rivaux 62 ; l'automatique d'aujourd'hui 2 % ; PV ×1 27 % (80 / 93 / 110 s) ; PV ×1,5 33 % (122 / 138 / 157 s) ; l'équipement ×1 0 %
+(poule 56 %), ×1,5 7 %, ×3 72 % ; la croissance d'aujourd'hui 0 % ; la courbe B des Passes AC1-AC2 85 % ; la montée de poule à +5 % 45 % (poule du
+diligent 63 %, de l'inactif 30 %) ; la préparation des rivaux en multiplicateur caché 0 %.
+
+Le semi-automatique construit sur l'automatique qui place ses soutiens (`semiSmartDecider`) : attentif 2 %, distrait 3 % (l'automatique 37 %) ; avec la
+garde toujours sur alerte, 12 et 8 % (l'automatique 48 %). [?] Garder une compétence pour un bon moment coûte plus que le moment ne rapporte dans ce
+modèle ; ce n'est pas un verdict sur le mode, seulement sur ces deux façons de le jouer.
+
+L'écart de rang entre rivaux (`--spread=8`, la poule seule recalée) : la référence 25 % de titres (98 / 85 / 68 / 71 / 37 %), le curieux 0 %,
+l'inactif 82 / 5 / 0 % en poule ; entre rivaux, le moins fort gagne 21,8 % (32,4 % sans écart, 24,8 % sans forme du jour, 7,4 % dans la course
+d'aujourd'hui) ; le même favori que la course dans 82 paires sur 126 (49 sans écart).
+
+La préparation contre chaque rival (duels isolés, la référence de chaque étape, 60 graines) : au tableau, le kit de départ fait 5 à 27 % avec
+l'automatique d'aujourd'hui, 52 à 88 % avec celui qui place ses soutiens. À la finale :
+
+| Préparation | Tobin | Vessa | Cassius | Ilse | Rhosk | Orla | Marek |
+|---|---|---|---|---|---|---|---|
+| kit de départ | 30 | 27 | 25 | 25 | 57 | 42 | 38 |
+| Attaque puissante, Taille éclair, Estoc, Ferveur | 12 | 37 | 13 | 7 | 15 | 18 | 8 |
+| quatre offensives | 98 | 98 | 95 | 95 | 95 | 98 | 95 |
+| Fracas, Taille éclair, Estoc, Rempart | 88 | 88 | 80 | 82 | 92 | 95 | 98 |
+| Feinte, Fente, Estoc, Ferveur | 58 | 50 | 38 | 57 | 67 | 60 | 68 |
+| défensif | 2 | 2 | 2 | 0 | 7 | 3 | 0 |
+| épée d'entraînement / lame importée / sabre | 8 / 30 / 55 | 13 / 27 / 65 | 5 / 25 / 43 | 5 / 25 / 45 | 23 / 57 / 65 | 18 / 42 / 72 | 10 / 38 / 58 |
+
+[KO de l'équilibre, à construire] Le meilleur choix ne change pas d'un rival à l'autre : quatre offensives et le sabre dominent. La construction équilibre
+les compétences et les armes avec ce tableau comme test (fiche AC-12).
+
+Les combats hors écran : 0,10 ms par combat.
 
 ---
 

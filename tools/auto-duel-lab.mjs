@@ -49,11 +49,27 @@ for (const kv of (arg('set', '') || '').split(',').filter(Boolean)) {
  *  stage's target against the reference player; `--band=<file.json>` loads the factors `band` writes */
 export const BAND = { on: false, k: { 0: {}, 1: {}, 2: {} } };
 if (arg('band')) { BAND.k = JSON.parse(fs.readFileSync(arg('band'), 'utf8')); BAND.on = true; }
-function sheetAt(id, stage) {
-  const b = M.stats.RIVAL_SHEETS[id] ?? M.stats.RIVAL_SHEETS.marek, g = GROWTH[stage], k = BAND.on ? BAND.k[stage]?.[id] ?? 1 : 1;
+/** the race (the operator's words, journal Passe AC3: « les matchs de poules donnent des adversaires au niveau similaire meme si ils ont des stats propres a leur
+ *  specifite » ; « les rivaux grandissent surtout petit a petit en phase de groupe mais grandement en phase finale »): each rival's sheet keeps its shape and is
+ *  brought to the pool's common level (`norm`: health, Attack, Defence and Endurance x the same factor; its Speed kept, the pool's), then grows a little each
+ *  round of the pool (`pool`: rounds 1, 2, 3) and a lot at each stage of the final phase (`K`: the bracket, the final); `--level=<file.json>` */
+export const LEVEL = { on: false, norm: {}, pool: [1, 1.04, 1.08], K: { 1: 1.3, 2: 1.8 } };
+if (arg('level')) { Object.assign(LEVEL, JSON.parse(fs.readFileSync(arg('level'), 'utf8'))); LEVEL.on = true; }
+/** a bout's round of the pool by its day (day 2 the first, day 4 the second, day 5 the third; a challenge by its day) */
+export const roundOf = (day) => (day <= 2 ? 0 : day <= 4 ? 1 : 2);
+function sheetAt(id, stage, round = 0) {
+  const b = M.stats.RIVAL_SHEETS[id] ?? M.stats.RIVAL_SHEETS.marek;
+  if (LEVEL.on) { const k = (LEVEL.norm[id] ?? 1) * (stage === 0 ? LEVEL.pool[round] ?? 1 : LEVEL.K[stage]); return { hp: b.hp * k, atk: b.atk * k, def: b.def * k, end: b.end * k, viv: b.viv }; }
+  const g = GROWTH[stage], k = BAND.on ? BAND.k[stage]?.[id] ?? 1 : 1;
   return { hp: b.hp * g.hp * k, atk: b.atk + g.atk, def: b.def + g.def, end: b.end + g.end, viv: b.viv + g.viv };
 }
-const decider = (n) => DECIDERS[n] ?? DECIDERS.auto;
+/** Ren's stats for a bout: the game's (v2Stats), his gear's points x KIT.gearK */
+export function renStats(st) {
+  const mods = M.gear.v2Mods(st), fx = M.gear.wornFx(st), gk = (KIT.gearK ?? 1) - 1;
+  return gk ? { ...mods.stats, hp: mods.stats.hp + gk * fx.hp, atk: mods.stats.atk + gk * fx.atk, def: mods.stats.def + gk * fx.def, end: mods.stats.end + gk * fx.end, viv: mods.stats.viv + gk * fx.viv } : mods.stats;
+}
+/** 'auto' is the automatic of RULES.autoDecider ('auto' today's bot order, 'smart' the one that places its supports, journal Passe AC3) */
+const decider = (n) => DECIDERS[n === 'auto' ? RULES.autoDecider ?? 'auto' : n] ?? DECIDERS.auto;
 
 /** a duel's outcome as the game takes it (DuelOutcome); a duel past maxT decided on the health shares */
 function outcomeOf(r) {
@@ -65,10 +81,10 @@ function outcomeOf(r) {
 function stateDuel(st, kind, dname) {
   const sh = kind === 'challenge' ? M.match.challengeSheetFor(st) : M.match.matchSheetFor(st);
   const o = sh.sides[1].fighters[0], stage = sh.stage ?? 0, mods = M.gear.v2Mods(st), g = M.generics.GENERICS[o.id];
-  const fx = M.gear.wornFx(st), gk = (KIT.gearK ?? 1) - 1, stats = gk ? { ...mods.stats, hp: mods.stats.hp + gk * fx.hp, atk: mods.stats.atk + gk * fx.atk, def: mods.stats.def + gk * fx.def, end: mods.stats.end + gk * fx.end, viv: mods.stats.viv + gk * fx.viv } : mods.stats;
-  const ren = renFighter(M, stats, M.v2.v2KitOf(st), { hpShare: mods.hp, apStart: mods.ap ?? 0, taken: mods.taken, effect: mods.effect, decider: decider(dname), cooldownK: RULES.cooldownK, lightCharge: RULES.light.charge });
+  const stats = renStats(st);
+  const ren = renFighter(M, stats, M.v2.v2KitOf(st), { hpShare: mods.hp, apStart: mods.ap ?? 0, taken: mods.taken, effect: mods.effect, decider: decider(dname), cooldownK: RULES.cooldownK, lightCharge: RULES.light.charge, weapon: st.v2?.gear?.weapon });
   const foe = g ? foeFighter(M, o.id, stage, { sheet: M.stats.borrowedSheet(g.profile, g, stage), profile: g.profile, decider: DECIDERS.rival })
-    : foeFighter(M, o.id, stage, { sheet: sheetAt(o.id, stage), mods: o.mods, preparation: st.competitors[o.id]?.preparation, decider: DECIDERS.rival });
+    : foeFighter(M, o.id, stage, { sheet: sheetAt(o.id, stage, roundOf(st.day)), mods: o.mods, preparation: st.competitors[o.id]?.preparation, decider: DECIDERS.rival });
   const r = duel(ren, foe, (sh.seed ^ 0x5bd1e995) >>> 0, RULES);
   return { r, out: outcomeOf(r), stage, foe: o.id, ren: mods.stats, kit: M.v2.v2KitOf(st), prep: st.competitors[o.id]?.preparation ?? null };
 }
@@ -78,7 +94,7 @@ async function refs() {
   const pols = arg('policies', 'idle,diligent,curious,planner').split(','), seeds = range(arg('seeds', '1..30')), out = {};
   for (const pn of pols) {
     const P = policyOf(pn), rows = [];
-    const wrap = { name: pn, skill: P.skill, choose: (st) => { const a = P.choose(st); if (a.type === 'fight') { const sh = M.match.matchSheetFor(st), mods = M.gear.v2Mods(st), opp = sh.sides[1].fighters[0].id; rows.push({ day: st.day, stage: sh.stage ?? 0, opp, ren: mods.stats, hpShare: mods.hp, ap: mods.ap, levels: M.v2.v2KitOf(st).levels, loadout: M.v2.v2KitOf(st).loadout, prep: st.competitors[opp]?.preparation, oppMods: sh.sides[1].fighters[0].mods, won: a.outcome.winner === 'player' }); } return a; } };
+    const wrap = { name: pn, skill: P.skill, choose: (st) => { const a = P.choose(st); if (a.type === 'fight') { const sh = M.match.matchSheetFor(st), mods = M.gear.v2Mods(st), opp = sh.sides[1].fighters[0].id; rows.push({ day: st.day, stage: sh.stage ?? 0, opp, ren: renStats(st), weapon: st.v2?.gear?.weapon, hpShare: mods.hp, ap: mods.ap, levels: M.v2.v2KitOf(st).levels, loadout: M.v2.v2KitOf(st).loadout, prep: st.competitors[opp]?.preparation, oppMods: sh.sides[1].fighters[0].mods, won: a.outcome.winner === 'player' }); } return a; } };
     for (const s of seeds) M.lab.autoplay(s, wrap, 'Ren', 200, 'v2');
     const byStage = {};
     for (const st of [0, 1, 2]) {
@@ -99,14 +115,14 @@ async function refs() {
 
 // ------------------------------------------------------------------------------------------------------------------------------- duels
 /** isolated duels: a Ren (stats, kit) against each rival of a stage; returns the rows and the totals */
-export function duelsOf({ ren, levels = 1, loadout = ['t1', 't4', 'd1', 's1'], stage = 0, foes = ['vessa', 'tobin', 'cassius', 'orla', 'ilse', 'marek', 'rhosk'], dname = 'auto', seeds = range('1..100'), prep = 20, apStart = 0 }) {
+export function duelsOf({ ren, levels = 1, loadout = ['t1', 't4', 'd1', 's1'], stage = 0, foes = ['vessa', 'tobin', 'cassius', 'orla', 'ilse', 'marek', 'rhosk'], dname = 'auto', seeds = range('1..100'), prep = 20, apStart = 0, round = 0, weapon }) {
   const kit = { loadout, levels: Object.fromEntries([...new Set([...loadout, 'heavy'])].map((id) => [id, levels])) };
   const rows = [], all = { w: 0, n: 0, t: [], acts: [], skills: [], fb: [], rb: [], turns: [], left: [] };
   for (const id of foes) {
     const r0 = { id, w: 0, n: 0, t: [], acts: [], skills: [], fb: [], rb: [], turns: [], left: [] };
     for (const s of seeds) {
-      const A = renFighter(M, ren, kit, { decider: decider(dname), apStart, cooldownK: RULES.cooldownK, lightCharge: RULES.light.charge });
-      const B = foeFighter(M, id, stage, { sheet: sheetAt(id, stage), mods: { damage: 1 + prep / 400 }, preparation: prep, decider: DECIDERS.rival });
+      const A = renFighter(M, ren, kit, { decider: decider(dname), apStart, cooldownK: RULES.cooldownK, lightCharge: RULES.light.charge, weapon });
+      const B = foeFighter(M, id, stage, { sheet: sheetAt(id, stage, round), mods: { damage: 1 + prep / 400 }, preparation: prep, decider: DECIDERS.rival });
       const r = duel(A, B, 7000 + s * 131 + stage, RULES), win = outcomeOf(r).winner === 'player';
       for (const o of [r0, all]) { o.n++; if (win) { o.w++; o.left.push(r.hp[0] / r.maxHp[0]); } o.t.push(r.t); o.acts.push(r.n[0].acts + r.n[1].acts); o.skills.push(r.n[0].skills); o.fb.push(r.n[1].breaks); o.rb.push(r.n[0].breaks); o.turns.push(r.leadChanges); }
     }
@@ -152,7 +168,7 @@ export function gamesOf(pn, seeds, dname = 'auto') {
   const P = policyOf(pn), bouts = [];
   const wrap = { name: pn, skill: P.skill, choose: (st) => {
     const a = P.choose(st);
-    if (a.type === 'fight' || a.type === 'challengeResult') { const d = stateDuel(st, a.type === 'fight' ? 'bout' : 'challenge', dname); const mm = M.gear.v2Mods(st); bouts.push({ kind: a.type, day: st.day, stage: d.stage, foe: d.foe, won: d.out.winner === 'player', t: d.r.t, acts: d.r.n[0].acts + d.r.n[1].acts, taken: mm.taken, hpShare: mm.hp, hp: Math.round(mm.stats.hp * mm.hp), prep: d.prep, skills: d.r.n[0].skills, breaks: d.r.n[1].breaks, renBreaks: d.r.n[0].breaks, turns: d.r.leadChanges }); return { ...a, outcome: d.out }; }
+    if (a.type === 'fight' || a.type === 'challengeResult') { const d = stateDuel(st, a.type === 'fight' ? 'bout' : 'challenge', dname); const mm = M.gear.v2Mods(st); bouts.push({ kind: a.type, day: st.day, stage: d.stage, foe: d.foe, won: d.out.winner === 'player', t: d.r.t, acts: d.r.n[0].acts + d.r.n[1].acts, taken: mm.taken, hpShare: mm.hp, hp: Math.round(mm.stats.hp * mm.hp), prep: d.prep, skills: d.r.n[0].skills, hits: (d.r.n[0].hits ?? 0) + (d.r.n[1].hits ?? 0), breaks: d.r.n[1].breaks, renBreaks: d.r.n[0].breaks, turns: d.r.leadChanges }); return { ...a, outcome: d.out }; }
     return a;
   } };
   let crowns = 0, finals = 0, cut = 0;
@@ -264,18 +280,18 @@ function fit(targets, pts, fitSeeds, heldSeeds, ref = 'reference') {
 
 /** each variant of the sheet's cards on whole games, over the curve given by --set: `label=path=value&path=value;label2=...` (a variant's own sets on top) */
 function variants(spec, pols, seeds) {
-  const snap = () => JSON.stringify({ R: RULES, K: KIT, G: GROWTH }), base = snap();
-  const restore = () => { const o = JSON.parse(base); Object.assign(RULES, o.R); Object.assign(KIT, o.K); for (const k of Object.keys(GROWTH)) GROWTH[k] = o.G[k]; };
-  const apply = (sets) => { for (const kv of sets.split('&').filter(Boolean)) { const [p, v] = kv.split('='), path = p.split('.'); const root = path[0] === 'KIT' ? KIT : path[0] === 'GROWTH' ? GROWTH : RULES, keys = path[0] === 'KIT' || path[0] === 'GROWTH' ? path.slice(1) : path; let o = root; for (const k of keys.slice(0, -1)) o = o[k]; o[keys[keys.length - 1]] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; } };
+  const snap = () => JSON.stringify({ R: RULES, K: KIT, G: GROWTH, L: LEVEL }), base = snap();
+  const restore = () => { const o = JSON.parse(base); Object.assign(RULES, o.R); Object.assign(KIT, o.K); for (const k of Object.keys(GROWTH)) GROWTH[k] = o.G[k]; Object.assign(LEVEL, o.L); };
+  const apply = (sets) => { for (const kv of sets.split('&').filter(Boolean)) { const [p, v] = kv.split('='), path = p.split('.'); const root = path[0] === 'KIT' ? KIT : path[0] === 'GROWTH' ? GROWTH : path[0] === 'LEVEL' ? LEVEL : RULES, keys = ['KIT', 'GROWTH', 'LEVEL'].includes(path[0]) ? path.slice(1) : path; let o = root; for (const k of keys.slice(0, -1)) o = o[k]; o[keys[keys.length - 1]] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; } };
   const rate = (G, keys) => { let w = 0, n = 0; for (const k of keys) { const v = G.stageWins[k]; if (v) { w += v.w; n += v.n; } } return n ? Math.round((100 * w) / n) : NaN; };
-  console.log('variante | politique | titres | poule | demi | finale | durée méd. poule / tableau / finale | compétences de Ren / duel | ruptures adv. / Ren | retournements');
+  console.log('variante | politique | titres | poule | demi | finale | durée méd. poule / tableau / finale | compétences de Ren / duel | coups portés / duel | ruptures adv. / Ren | retournements');
   for (const part of spec.split(';')) {
     const [label, sets = ''] = part.split(/=(.*)/s);
     restore(); apply(sets);
     for (const pn of pols) {
       const dn = pn.includes(':') ? pn.split(':')[1] : 'auto', p = pn.split(':')[0], G = gamesOf(p, seeds, dn), B = G.bouts.filter((b) => b.kind === 'fight');
       const avg = (f) => (B.reduce((n, b) => n + f(b), 0) / B.length).toFixed(2);
-      console.log(`${label} | ${pn} | ${Math.round((100 * G.crowns) / G.n)} % | ${rate(G, ['pool-j2', 'pool-j4', 'pool-j5'])} % | ${rate(G, ['semi'])} % | ${rate(G, ['final'])} % (${G.stageWins.final?.n ?? 0}) | ${[0, 1, 2].map((s) => med(B.filter((b) => b.stage === s).map((b) => b.t)).toFixed(0)).join(' / ')} s | ${med(B.map((b) => b.skills))} | ${avg((b) => b.breaks)} / ${avg((b) => b.renBreaks)} | ${avg((b) => b.turns)}`);
+      console.log(`${label} | ${pn} | ${Math.round((100 * G.crowns) / G.n)} % | ${rate(G, ['pool-j2', 'pool-j4', 'pool-j5'])} % | ${rate(G, ['semi'])} % | ${rate(G, ['final'])} % (${G.stageWins.final?.n ?? 0}) | ${[0, 1, 2].map((s) => med(B.filter((b) => b.stage === s).map((b) => b.t)).toFixed(0)).join(' / ')} s | ${med(B.map((b) => b.skills))} | ${med(B.map((b) => b.hits))} | ${avg((b) => b.breaks)} / ${avg((b) => b.renBreaks)} | ${avg((b) => b.turns)}`);
     }
   }
   restore();
@@ -303,9 +319,37 @@ function stairs(targets, out) {
   if (out) fs.writeFileSync(out, JSON.stringify(BAND.k, null, 1));
 }
 
+/** the race fitted (journal Passe AC3): each rival's pool factor so that the reference of day 2 (its gear x KIT.gearK; `refs`) beats every rival alike (`t0`),
+ *  the pool's rounds +`slope` each, then the bracket's and the final's factors on WHOLE games of the reference (the semi-final's and the final's targets),
+ *  printed on held-out seeds for every policy; written to `--out` for `--level` */
+function levelFit(t0, slope, targets, fitSeeds, heldSeeds, out) {
+  const gk = KIT.gearK ?? 1, ref2 = { hp: 300, atk: 10 + 3 * gk + 1, def: 11, end: 10, viv: 10 };
+  LEVEL.on = true; LEVEL.pool = [1, 1 + slope, 1 + 2 * slope]; LEVEL.norm = {};
+  for (const id of Object.keys(M.stats.RIVAL_SHEETS)) {
+    let lo = 0.3, hi = 4;
+    // `--spread=<points>`: the rivals keep a rank around the common level (Tobin the easiest ... Marek the hardest), within ± these points
+    const order = ['tobin', 'vessa', 'cassius', 'ilse', 'rhosk', 'orla', 'marek'], tt = Math.min(0.99, Math.max(0.01, t0 + (+arg('spread', '0') / 100) * (1 - 2 * order.indexOf(id) / (order.length - 1))));
+    for (let i = 0; i < 13; i++) { const m = (lo + hi) / 2; LEVEL.norm[id] = m; const D = duelsOf({ ren: ref2, stage: 0, round: 0, foes: [id], seeds: range('1..60'), prep: 37, weapon: 'imported-blade' }); if (D.all.w / D.all.n > tt) lo = m; else hi = m; }
+    LEVEL.norm[id] = +((lo + hi) / 2).toFixed(3);
+  }
+  const rate = (G, keys) => { let w = 0, n = 0; for (const k of keys) { const v = G.stageWins[k]; if (v) { w += v.w; n += v.n; } } return n ? w / n : NaN; };
+  const bis = (s, keys, t, lo, hi) => { for (let i = 0; i < 9; i++) { const m = (lo + hi) / 2; LEVEL.K[s] = m; if (rate(gamesOf('reference', fitSeeds), keys) > t) lo = m; else hi = m; } LEVEL.K[s] = +((lo + hi) / 2).toFixed(3); };
+  if (!arg('normsonly')) { bis(1, ['semi'], targets[0], 0.6, 4); bis(2, ['final'], targets[1], 0.6, 6); }
+  const sheet = (id, s, r) => { const x = sheetAt(id, s, r); return `${Math.round(x.hp)} PV ${x.atk.toFixed(1)}/${x.def.toFixed(1)}/${x.end.toFixed(1)}/${x.viv}`; };
+  console.log(`la course : la poule ${JSON.stringify(LEVEL.pool)} ; tableau x${LEVEL.K[1]} ; finale x${LEVEL.K[2]} ; équipement x${gk}`);
+  for (const id of Object.keys(M.stats.RIVAL_SHEETS)) console.log(`  ${id.padEnd(8)} x${LEVEL.norm[id]} : poule ${sheet(id, 0, 0)} → ${sheet(id, 0, 2)} ; tableau ${sheet(id, 1)} ; finale ${sheet(id, 2)}`);
+  if (out) fs.writeFileSync(out, JSON.stringify({ norm: LEVEL.norm, pool: LEVEL.pool, K: LEVEL.K }, null, 1));
+  console.log(`graines tenues à part ${heldSeeds[0]}..${heldSeeds[heldSeeds.length - 1]} :`);
+  for (const pn of ['idle', 'diligent', 'curious', 'planner', 'reference']) {
+    const G = gamesOf(pn, heldSeeds), B = G.bouts.filter((b) => b.kind === 'fight'), r = (keys) => (100 * rate(G, keys)).toFixed(0);
+    console.log(`  ${pn.padEnd(9)} titres ${(100 * G.crowns / G.n).toFixed(0).padStart(3)} %  j2 ${r(['pool-j2'])} j4 ${r(['pool-j4'])} j5 ${r(['pool-j5'])}  demi ${r(['semi'])} %  3e ${r(['third'])} %  finale ${r(['final'])} % (${G.stageWins.final?.n ?? 0})  durées poule / tableau / finale ${[0, 1, 2].map((s) => med(B.filter((b) => b.stage === s).map((b) => b.t)).toFixed(0)).join(' / ')} s`);
+  }
+}
+
 const cmd = process.argv[2];
 try {
-  if (cmd === 'stairs') stairs(arg('targets', '95,85,75,65,50').split(',').map((x) => +x / 100), arg('out'));
+  if (cmd === 'level') levelFit(+arg('t0', '92') / 100, +arg('slope', '0.04'), arg('targets', '65,50').split(',').map((x) => +x / 100), range(arg('fitseeds', '1..40')), range(arg('seeds', '101..160')), arg('out'));
+  else if (cmd === 'stairs') stairs(arg('targets', '95,85,75,65,50').split(',').map((x) => +x / 100), arg('out'));
   else if (cmd === 'variants') variants(arg('variants', 'R0='), arg('policies', 'reference,idle').split(','), range(arg('seeds', '101..160')));
   else if (cmd === 'fit') fit(arg('targets', '85,65,50').split(',').map((x) => +x / 100), [0, +arg('p1', '1'), +arg('p2', '2')], range(arg('fitseeds', '1..40')), range(arg('seeds', '101..160')), arg('ref', 'reference'));
   else if (cmd === 'calibrate') calibrate(arg('targets', '85,65,50').split(',').map((x) => +x / 100), arg('ref', 'planner'), [0, +arg('p1', '2'), +arg('p2', '3')]);

@@ -36,6 +36,11 @@ export const RULES = {
   /** the share of chance (card « La part du hasard »): `form` = each fighter's form of the day, drawn before the bout and shown (its blows x 1 ± form);
    *  `crit` = a blow's chance to be a critical (x critMul, shown on the blow); 0 = the stats alone (the reactions' draws average out over a duel) */
   luck: { form: 0, crit: 0, critMul: 1.5 },
+  /** one offensive skill at a time (« proposé », journal Passe AC3): after an offensive skill leaves, every offensive skill waits this long (s; 0 = none): four
+   *  offensives no longer keep one always ready, so a defensive or a support skill is worth a slot */
+  offGap: 0,
+  /** the automatic the tools play for Ren ('auto' the bot order of today, 'smart' placing its supports: DECIDERS) */
+  autoDecider: 'auto',
   maxT: 1200,
 };
 
@@ -64,7 +69,8 @@ export function duel(A, B, seed, R = RULES, o = {}) {
   const gaugeNow = (f) => { if (f.broken) return R.gauge.max; return Math.max(0, f.g - R.gauge.decay * (t - f.gT)); };
   const settle = (f) => { if (f.broken && t >= f.stunEnd) { f.broken = false; f.g = 0; f.gT = f.stunEnd; } f.g = gaugeNow(f); f.gT = t; if (R.ap.mode === 'time') { while (f.apT + R.ap.every <= t) { f.apT += R.ap.every; f.ap = Math.min(R.ap.max, f.ap + 1); } } };
   const affordable = (f, a) => R.ap.mode === 'none' || (a.ap ?? 0) <= f.ap;
-  const ready = (f, a) => !a.cooldown || !R.cooldownK || (f.cd[a.id] ?? 0) <= t + 1e-9;
+  const offensive = (a) => a.kind !== 'light' && !a.ward && !a.boost;
+  const ready = (f, a) => (!a.cooldown || !R.cooldownK || (f.cd[a.id] ?? 0) <= t + 1e-9) && (!R.offGap || !offensive(a) || f.x.side !== 'ren' || (f.offReady ?? 0) <= t + 1e-9);
   const usable = (f, a) => affordable(f, a) && ready(f, a);
   const view = (f) => ({ t, me: f, foe: other(f), usable: (a) => usable(f, a), gauge: gaugeNow, R, rand, chargeOf: (g, a) => a.charge * speed(g), left: (g) => (g.act ? g.at - t : 0) });
 
@@ -72,6 +78,7 @@ export function duel(A, B, seed, R = RULES, o = {}) {
     settle(f);
     if (R.ap.mode !== 'none' && a.ap) f.ap -= a.ap;
     if (a.cooldown && R.cooldownK) f.cd[a.id] = t + a.cooldown;
+    if (R.offGap && offensive(a) && f.x.side === 'ren') f.offReady = t + R.offGap;
     f.act = a; f.startT = t; f.at = t + a.charge * speed(f); f.n.acts++;
     if (a.kind === 'light') f.n.lights++; else f.n.skills++;
     log?.push({ t: +t.toFixed(2), who: f.x.id, ev: 'charge', act: a.id, at: +f.at.toFixed(2) });
@@ -80,59 +87,79 @@ export function duel(A, B, seed, R = RULES, o = {}) {
     const a = f.x.decider(view(f), f.x);
     start(f, a);
   }
+  /** an action lands: a ward or a boost takes hold; a blow starts its hits (`hits`: each hit's share of the power and of the gauge; one by default;
+   *  an ENCHAÎNEMENT has several, `gap` s apart: the operator's « choregraphies/combos d'attaques ou on enchaine 2-3 coups », journal Passe AC3) */
   function land(f) {
-    const a = f.act, g = other(f); f.act = null;
-    settle(f); settle(g);
-    if (a.ward) { f.ward = { until: t + a.ward.dur, dmg: a.ward.dmg, gauge: a.ward.gauge }; log?.push({ t: +t.toFixed(2), who: f.x.id, ev: 'ward', act: a.id }); return; }
-    if (a.boost) { f.boost = { until: t + a.boost.dur, dmg: a.boost.dmg, gauge: a.boost.gauge }; log?.push({ t: +t.toFixed(2), who: f.x.id, ev: 'boost', act: a.id }); return; }
-    const exposed = R.exposed && g.act && g.act.kind !== 'light';
+    const a = f.act; f.act = null;
+    settle(f); settle(other(f));
+    if (a.ward) { f.ward = { until: t + a.ward.dur, dmg: a.ward.dmg, gauge: a.ward.gauge }; log?.push({ t: +t.toFixed(2), who: f.x.id, ev: 'ward', act: a.id }); return false; }
+    if (a.boost) { f.boost = { until: t + a.boost.dur, dmg: a.boost.dmg, gauge: a.boost.gauge }; log?.push({ t: +t.toFixed(2), who: f.x.id, ev: 'boost', act: a.id }); return false; }
+    f.combo = { a, hits: a.hits ?? [1], i: 0, ap: false };
+    hitOnce(f);
+    if (over || !f.combo) return false;
+    if (f.combo.i < f.combo.hits.length) { f.comboAt = t + (a.gap ?? 0.3); return true; }
+    f.combo = null; return false;
+  }
+  /** one hit of a blow: the defender's reaction (a fighter charging a skill, or striking its own enchaînement, neither guards nor dodges), the
+   *  damage, the AP (once per light action), the gauge; a break pauses the target's charge and ends its enchaînement */
+  function hitOnce(f) {
+    const c = f.combo, a = c.a, share = c.hits[c.i], g = other(f); c.i++;
+    settle(g);
+    const exposed = R.exposed && ((g.act && g.act.kind !== 'light') || !!g.combo);
     let res = 'hit';
     if (!g.broken && !exposed) {
       if (R.defence === 'stats') {
-        if (rand() < R.react.dodge * ratio(g.x.viv, f.x.viv)) res = 'dodged';
-        else if (!a.pierce && rand() < Math.min(0.9, R.react.guard * ratio(g.x.def, f.x.atk) * (a.kind === 'light' ? 1 : R.react.skillGuard ?? 1))) res = 'guarded';
-      } else if (R.defence === 'alert' && a.kind !== 'light' && !a.pierce) res = 'guarded';
+        if (rand() < R.react.dodge * ratio(g.x.viv, f.x.viv) + (g.x.dodgeBonus ?? 0)) res = 'dodged';
+        else if (!a.pierce && rand() < Math.min(0.9, R.react.guard * ratio(g.x.def, f.x.atk) * (a.kind === 'light' ? 1 : R.react.skillGuard ?? 1) + (g.x.guardBonus ?? 0))) res = 'guarded';
+      } else if (R.defence === 'alert') { if (a.kind !== 'light' && !a.pierce) res = 'guarded'; }
+      else if (g.x.dodgeBonus && rand() < g.x.dodgeBonus) res = 'dodged';
     }
-    if (g.x.dodgeBonus && res === 'hit' && !g.broken && !exposed && rand() < g.x.dodgeBonus) res = 'dodged';
     if (res === 'dodged') { g.n.dodged++; if (a.kind !== 'light') f.n.wasted++; log?.push({ t: +t.toFixed(2), who: f.x.id, ev: 'dodged', act: a.id }); return; }
     const wardOn = g.ward && g.ward.until > t, boostOn = f.boost && f.boost.until > t;
     let k = hitFactor(f.x.atk, g.x.def) * (res === 'guarded' ? 1 - R.guardReduce : 1) * (g.x.taken ?? 1) * f.form;
     if (R.luck?.crit && rand() < R.luck.crit) { k *= R.luck.critMul; f.n.crits = (f.n.crits ?? 0) + 1; }
     if (boostOn) k *= f.boost.dmg; if (wardOn) k *= g.ward.dmg; if (g.broken) k *= R.brk.dmg;
-    const dmg = Math.max(1, Math.round(a.power * k));
+    const dmg = Math.max(1, Math.round(a.power * share * k));
     g.hp = Math.max(0, g.hp - dmg); f.n.dmg += dmg; if (g.broken) f.n.dmgBroken += dmg; if (a.kind !== 'light') f.n.skillDmg += dmg;
     if (res === 'guarded') g.n.guarded++; else g.n.hit++;
-    if (a.kind === 'light' && R.ap.mode === 'kept') f.ap = Math.min(R.ap.max, f.ap + R.light.ap);
-    log?.push({ t: +t.toFixed(2), who: f.x.id, ev: res, act: a.id, dmg, hp: g.hp });
+    f.n.hits = (f.n.hits ?? 0) + 1;
+    if (a.kind === 'light' && R.ap.mode === 'kept' && !c.ap) { c.ap = true; f.ap = Math.min(R.ap.max, f.ap + R.light.ap); }
+    log?.push({ t: +t.toFixed(2), who: f.x.id, ev: res, act: a.id, dmg, hp: g.hp, hit: c.i });
     if (g.hp <= 0) { over = true; winner = f.x.id; winIdx = F.indexOf(f); finisher = a.kind === 'light' ? 'light' : a.heavy ? 'heavy' : 'skill'; return; }
     if (!g.broken) {
-      const add = a.gauge * (10 / Math.max(1, g.x.end)) * (res === 'guarded' ? R.gauge.guardMul : 1) * (boostOn ? f.boost.gauge : 1) * (wardOn ? g.ward.gauge : 1);
+      const add = a.gauge * share * (10 / Math.max(1, g.x.end)) * (res === 'guarded' ? R.gauge.guardMul : 1) * (boostOn ? f.boost.gauge : 1) * (wardOn ? g.ward.gauge : 1);
       g.g = Math.min(R.gauge.max, gaugeNow(g) + add); g.gT = t;
       if (g.g >= R.gauge.max) {
         g.broken = true; g.stunEnd = t + R.brk.stun; g.n.breaks++;
-        // the break pauses the charge in progress (nothing cuts it, V2-2): it lands the stun's length later
+        // the break pauses the charge in progress (nothing cuts it, V2-2): it lands the stun's length later; it ends an enchaînement under way
         if (g.act) g.at += R.brk.stun;
+        if (g.combo) { g.combo = null; g.pending = true; g.at = g.stunEnd; }
         log?.push({ t: +t.toFixed(2), who: g.x.id, ev: 'break' });
       }
     }
   }
+  const after = (f) => { if (f.broken) { f.pending = true; f.at = f.stunEnd; } else choose(f); };
+  const leadNow = () => { const ld = Math.sign(F[0].hp / F[0].maxHp - F[1].hp / F[1].maxHp); if (ld && lastLead && ld !== lastLead) leadChanges++; if (ld) lastLead = ld; };
 
   // the initiative
-  for (const f of F) { t = 0; f.at = rand() * R.start; f.pending = true; }
+  for (const f of F) { t = 0; f.at = rand() * R.start; f.pending = true; f.combo = null; }
   while (!over) {
-    // the next event: a charge that lands, or a fighter free to choose (after its initiative or a stun with no charge)
+    // the next event: a charge that lands, an enchaînement's next hit, or a fighter free to choose (after its initiative or a stun)
     let next = null, nt = Infinity;
-    for (const f of F) { const ft = f.pending ? Math.max(f.at, f.broken ? f.stunEnd : 0) : f.at; if (ft < nt - 1e-12) { nt = ft; next = f; } }
+    for (const f of F) { const ft = f.combo ? f.comboAt : f.pending ? Math.max(f.at, f.broken ? f.stunEnd : 0) : f.at; if (ft < nt - 1e-12) { nt = ft; next = f; } }
     t = nt;
     if (t > R.maxT) break;
+    if (next.combo) {
+      hitOnce(next); if (over) break; leadNow();
+      if (next.combo && next.combo.i < next.combo.hits.length) { next.comboAt = t + (next.combo.a.gap ?? 0.3); continue; }
+      if (next.combo) { next.combo = null; after(next); }
+      continue;
+    }
     if (next.pending) { next.pending = false; settle(next); choose(next); continue; }
-    land(next);
+    const inCombo = land(next);
     if (over) break;
-    // the lead (a turn of the duel: who has the larger share of health)
-    const ld = Math.sign(F[0].hp / F[0].maxHp - F[1].hp / F[1].maxHp);
-    if (ld && lastLead && ld !== lastLead) leadChanges++; if (ld) lastLead = ld;
-    // a stunned fighter chooses its next action when the stun ends (its action landed before the break)
-    if (next.broken) { next.pending = true; next.at = next.stunEnd; } else choose(next);
+    leadNow();
+    if (!inCombo) after(next);
   }
   const [a, b] = F;
   return { winner, winIdx, finisher, t: +t.toFixed(2), hp: [a.hp, b.hp], maxHp: [a.maxHp, b.maxHp], n: [a.n, b.n], leadChanges, log };
@@ -151,6 +178,38 @@ export function autoDecider(v, x) {
   if (a) return a;
   const off = S.filter((s) => !s.ward && !s.boost && ok(s)).sort((p, q) => q.power - p.power);
   return off[0] ?? x.actions.light;
+}
+
+/** the automatic that places its supports (journal Passe AC3): the ward when the opponent charges a heavy blow or a skill it would land during the ward, or
+ *  when its own gauge passes two thirds; the boost only when an offensive skill can follow it at once (its AP and its cooldown) or the opponent is broken;
+ *  otherwise the strongest offensive skill it can pay, else the light attack */
+export function autoSmartDecider(v, x) {
+  const { me, foe } = v, S = x.actions.skills, ok = (a) => v.usable(a), g = v.gauge(me);
+  const foeLeft = foe.act ? foe.at - v.t : 0, foeBig = foe.act && foe.act.kind !== 'light';
+  const off = S.filter((s) => !s.ward && !s.boost && ok(s)).sort((p, q) => q.power - p.power);
+  const ward = S.find((s) => s.ward && ok(s) && !(me.ward && me.ward.until > v.t));
+  if (ward && ((foeBig && foeLeft > v.chargeOf(me, ward)) || g >= (2 / 3) * v.R.gauge.max)) return ward;
+  const boost = S.find((s) => s.boost && ok(s) && !(me.boost && me.boost.until > v.t));
+  if (boost && (foe.broken || off.some((o) => v.R.ap.mode === 'none' || me.ap >= (o.ap ?? 0) + (boost.ap ?? 0)))) return boost;
+  return off[0] ?? x.actions.light;
+}
+
+/** the semi-automatic on top of the automatic that places its supports (journal Passe AC3): the supports as autoSmartDecider; the player chooses only WHEN an
+ *  offensive skill leaves. Attentive (careless = false): as soon as a window shows (the opponent broken for most of the charge, or charging a heavy blow or a
+ *  skill long enough: exposed), else held while the lights gather AP, and cast anyway once the AP are full. Careless: an offensive skill a third of the times one
+ *  is ready, without looking */
+export function semiSmartDecider(v, x, careless = false) {
+  const { me, foe } = v, S = x.actions.skills, ok = (a) => v.usable(a), g = v.gauge(me);
+  const foeLeft = foe.act ? foe.at - v.t : 0, foeBig = foe.act && foe.act.kind !== 'light', stunLeft = foe.broken ? foe.stunEnd - v.t : 0;
+  const off = S.filter((s) => !s.ward && !s.boost && ok(s)).sort((p, q) => q.power - p.power);
+  const ward = S.find((s) => s.ward && ok(s) && !(me.ward && me.ward.until > v.t));
+  if (ward && ((foeBig && foeLeft > v.chargeOf(me, ward)) || g >= (2 / 3) * v.R.gauge.max)) return ward;
+  const boost = S.find((s) => s.boost && ok(s) && !(me.boost && me.boost.until > v.t));
+  if (boost && (foe.broken || off.some((o) => v.R.ap.mode === 'none' || me.ap >= (o.ap ?? 0) + (boost.ap ?? 0)))) return boost;
+  if (!off.length) return x.actions.light;
+  if (careless) return v.rand() < 0.33 ? off[Math.floor(v.rand() * off.length)] : x.actions.light;
+  for (const o of off) if (stunLeft >= 0.8 * v.chargeOf(me, o) || (foeBig && foeLeft >= v.chargeOf(me, o))) return o;
+  return v.R.ap.mode === 'none' || me.ap >= v.R.ap.max ? off[0] : x.actions.light;
 }
 
 /** the semi-automatic, played by a player who reads the timeline (« semi » since journal Passe AC1's second measure): the defensive and the
@@ -209,7 +268,9 @@ export function rivalDecider(v, x) {
   }
   const heavy = S.find((s) => s.heavy && ok(s));
   if (heavy && v.rand() < (x.ai?.heavy ?? 0.25)) return heavy;
+  // today's combos: a chain of light blows by its share of them (KIT.combos 'on')
+  if (x.actions.combo && v.rand() < (x.ai?.combo ?? 0)) return x.actions.combo;
   return x.actions.light;
 }
 
-export const DECIDERS = { auto: autoDecider, semi: semiGoodDecider, wait: semiWaitDecider, careless: semiCarelessDecider, rival: rivalDecider };
+export const DECIDERS = { auto: autoDecider, smart: autoSmartDecider, semi2: (v, x) => semiSmartDecider(v, x), careless2: (v, x) => semiSmartDecider(v, x, true), semi: semiGoodDecider, wait: semiWaitDecider, careless: semiCarelessDecider, rival: rivalDecider };
