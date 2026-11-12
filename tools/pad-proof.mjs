@@ -211,7 +211,12 @@ try {
     const four = () => page.evaluate(() => document.querySelector('.pm-skills .pm-purse b')?.textContent);
     const n0 = await four(); await press(B.X); const n1 = await four(); await press(B.X); const n2 = await four();
     const sheetCaps = await caps(page, '.pm-skills .pm-foot kbd');
-    check(n0 === '4' && n1 === '3' && n2 === '4' && sheetCaps.map((c) => c.label).join() === 'X,A,B', `the match sheet: X leaves a skill out and brings it back (${n0} ${n1} ${n2}), its foot X, A, B`);
+    check(n0 === '4' && n1 === '3' && n2 === '4' && sheetCaps.map((c) => c.label).join() === 'X,D-pad left,D-pad right,A,B', `the match sheet: X leaves a skill out and brings it back (${n0} ${n1} ${n2}), its foot X, the D-pad's left and right (the order, lot 2), A, B (${sheetCaps.map((c) => `${c.key}:${c.label}`).join(' ')})`);
+    // the order of the four (AC-09) at the D-pad: the skill selected one place later, else one earlier (journal Passe LC4)
+    const order = () => page.evaluate(() => [...document.querySelectorAll('.pm-ladder2 dt')].map((x) => x.textContent).join(', '));
+    const o0 = await order(); await press(B.RIGHT); let o1 = await order();
+    if (o1 === o0) { await press(B.LEFT); o1 = await order(); }
+    check(o1 !== o0, `the D-pad moves the selected skill in the order: ${o0} → ${o1}`);
     await page.screenshot({ path: path.join(outDir, '2-sheet.png') });
     await press(B.A);
     acts.push(...await page.evaluate(() => window.__acts ?? []));
@@ -235,7 +240,7 @@ try {
     await page.screenshot({ path: path.join(outDir, '2-pause.png') });
     await press(B.START);
     const resumed = await page.evaluate(() => window.__arena.paused);
-    check(pause.paused && pause.cap === 'Menu' && pause.words.join() === 'to resume' && pause.set === 'Y' && !resumed, `Start pauses, under the pad's button (${pause.words}; the settings under ${pause.set}), and resumes`);
+    check(pause.paused && pause.cap === 'Menu' && pause.words.join() === 'to resume' && pause.set === 'Y' && !resumed, `Start pauses, under the pad's button (${pause.words}; the settings under ${pause.set}), and resumes (${JSON.stringify({ paused: pause.paused, cap: pause.cap, resumed })})`);
     // a blow taken by Ren in the script: the pad rumbles
     await page.waitForFunction(() => (window.__rumbles ?? []).length > 0, { timeout: 60000 }).catch(() => {});
     const rumbles = await page.evaluate(() => window.__rumbles ?? []);

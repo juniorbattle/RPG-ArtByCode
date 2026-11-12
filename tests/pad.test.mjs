@@ -236,7 +236,8 @@ test('the wiring: loaded on demand by the version 2\'s pages and the title scree
   // « Skip » on the duel's own buttons)
   assert.ok(/const duelKeys = !!\(this\.charge \|\| this\.auto\);/.test(src('src/arena/ArenaApp.ts')) && /if \(duelKeys\) void import\('\.\.\/input\/PadInput'\)/.test(src('src/arena/ArenaApp.ts')), 'the arena: the version 2\'s duels only');
   const poll = src('src/arena/ArenaApp.ts').match(/private pollPad\(\): void \{([\s\S]*?)\n  \}/)[1];
-  assert.ok(/if \(this\.charge\) return;/.test(poll) && /navigator\.getGamepads/.test(poll) && /pads && pads\[0\]/.test(poll), 'pollPad kept for the other arenas');
+  // pollPad leaves both duels of the version 2 to the shared layer (journal Passe LC4: read by both, a press came twice; the pause never held)
+  assert.ok(/if \(this\.charge \|\| this\.auto\) return;/.test(poll) && /navigator\.getGamepads/.test(poll) && /pads && pads\[0\]/.test(poll), 'pollPad kept for the other arenas');
   // the review's glyphs on the DEV server only
   assert.ok(/import\.meta\.env\.DEV && params\.has\('padglyph'\)/.test(src('src/main.ts')));
   // the pad's walk is read only when no movement key asks for one

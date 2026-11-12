@@ -140,9 +140,13 @@ test('the engine\'s rules: nothing without a gesture on this tab, the page\'s ha
   assert.match(e, /if \(this\.begun \|\| this\.ctx\?\.state !== 'running'\) return;/, 'a scene starts only on a running context');
   assert.match(e, /addEventListener\('pagehide'/); assert.match(e, /\.setValueAtTime|setTargetAtTime/);
   assert.match(h, /__soundLeave = \(\) => s\.leave\(\)/); assert.match(h, /querySelector\('\.pm-fade'\)/);
-  // `go`: without the handle (today's game, the title) the page goes at once
-  assert.match(p, /const wait: number = \(window as any\)\.__soundLeave\?\.\(\) \?\? 0;/);
-  assert.match(p, /if \(wait > 0\) setTimeout\(\(\) => location\.assign\(playUrl\(params, extra\)\), wait\); else location\.assign\(playUrl\(params, extra\)\);/);
+  // `go`: the black curtain first (AU-07, journal Passe LC4: src/ui/curtain.ts), the sound going down meanwhile; without the handle (today's game, the title)
+  // the page goes once the curtain is down, with it once its fade has had its time
+  const c = src('src/ui/curtain.ts');
+  assert.match(c, /const wait: number = \(window as \{ __soundLeave\?: \(\) => number \}\)\.__soundLeave\?\.\(\) \?\? 0;/);
+  assert.match(c, /void curtainDown\(\)\.then\(\(\) => \{ const left = wait - LEAVE_MS; if \(left > 0\) setTimeout\(go, left\); else go\(\); \}\);/);
+  assert.match(p, /leavePage\(playUrl\(params, extra\)\);/);
   assert.match(p, /if \(params\.has\('noreload'\)\) return;/);
   assert.doesNotMatch(src('src/ui/play.ts'), /audio\/Sound/, 'the page knows no engine');
+  assert.doesNotMatch(c, /audio\/Sound/, 'the curtain knows no engine');
 });

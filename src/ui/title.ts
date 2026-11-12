@@ -6,6 +6,7 @@ import type { Look } from '../audio/score';
 import { keysOf, LANGS, onSettings, type Lang } from '../settings/settings';
 import { actName, slotName } from '../input/caps';
 import { chooseLanguage, pageLang } from '../settings/language';
+import { leavePage } from './curtain';
 
 /** The title screen (choice P2, journal Passe L4; the operator's decisions UM-R4 « La vraie ville derrière » and UM2-4 « Le titre d'abord, la ville apparaît
  *  derrière », journal Passe UM3): « New game » (it asks the player's name, choice K2; a version 2 game, the default game since the operator's decision
@@ -31,11 +32,8 @@ const LANG_NAME: Record<Lang, string> = { fr: 'Français', en: 'English' };
 /** `look`: the day state of the town behind the screen (its ambience under the title's music) */
 export interface TitleChoice { explore: () => void; look?: Look }
 
-/** to another page once the title's music went down (the engine's fade; at once when it never started) */
-function leaveTo(url: string): void {
-  const wait: number = (window as { __soundLeave?: () => number }).__soundLeave?.() ?? 0;
-  if (wait > 0) setTimeout(() => location.assign(url), wait); else location.assign(url);
-}
+/** to another page behind the black curtain (AU-07, journal Passe LC4), once the title's music went down (the engine's fade; at once when it never started) */
+function leaveTo(url: string): void { leavePage(url); }
 
 const CSS = `
 #title-screen{inset:0;z-index:60;background:var(--ds-ink);transition:background-color .9s}

@@ -34,11 +34,13 @@ body.cdt-settings #ah-pause>div{visibility:hidden}
 #ah-pause .ah-set:hover,#ah-pause .ah-set:focus{color:var(--ds-accent);outline:0}
 body.pm-pad #ah-pause .pad-only{display:flex;justify-content:center;align-items:center;gap:10px}
 body.pm-pad #ah-pause .kb{display:none}
-#arena-hud .ah-ch{display:flex;align-items:center;gap:10px;margin-top:8px;min-height:1.3em}
-#arena-hud .ah-f.r .ah-ch{flex-direction:row-reverse}
-#arena-hud .ah-ch>span{flex:none;max-width:60%;overflow:hidden;text-overflow:ellipsis;font-size:var(--ds-fs-small);line-height:1.3;color:var(--ds-muted);white-space:nowrap}
+/* the cards are taller than the other duels' (the gauge, the charge and its name on their own line, the state under them): the top veil reaches lower (journal Passe LC4: « Stunned » at 3.7:1 at the end of day) */
+#arena-hud.auto .top{height:min(300px,42vh)}
+#arena-hud .ah-ch{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:8px}
+#arena-hud .ah-f.r .ah-ch{align-items:flex-end}
+#arena-hud .ah-ch>span{min-height:1.3em;font-size:var(--ds-fs-small);line-height:1.3;color:var(--ds-muted);white-space:nowrap}
 #arena-hud .ah-ch.big>span{color:var(--ds-accent)}
-#arena-hud .ah-cb{position:relative;flex:1;height:3px;background:var(--ds-trough)}
+#arena-hud .ah-cb{position:relative;align-self:stretch;height:3px;background:var(--ds-trough)}
 #arena-hud .ah-cb i{position:absolute;top:0;bottom:0;left:0;width:0;background:var(--ds-muted)}
 #arena-hud .ah-f.r .ah-cb i{left:auto;right:0}
 #arena-hud .ah-ch.big .ah-cb i{background:var(--ds-accent)}
@@ -57,7 +59,7 @@ body.pm-pad #ah-pause .kb{display:none}
 .ah-b.ctl.active b,.ah-b.ctl.active em{color:var(--ds-accent)}
 #arena-hud .ah-b.ctl.active kbd{border-color:var(--ds-accent);color:var(--ds-accent)}
 @media (max-width:1240px){.ah-b.slot .ord{grid-row:1;margin-bottom:2px}}
-@media (max-height:480px){#arena-hud .ah-ch{margin-top:3px}}
+@media (max-height:480px){#arena-hud .ah-ch{margin-top:3px;gap:2px}}
 `;
 
 export class AutoHud {

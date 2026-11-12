@@ -59,11 +59,13 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   const s = host.state(), kit = v2KitOf(s) as { loadout: string[]; levels: Record<string, number> }, chosen = new Set<string>(kit.loadout), owned = Object.keys(kit.levels).filter((k) => kit.levels[k] > 0);
   const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card pm-two pm-skills');
   card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.skills.title'));
-  card.innerHTML = `<section class="pm-self">${sheet === null ? `${figHtml(s)}<div class="pm-worn pm-ladder"></div><dl class="pm-stats">${statsHtml(s)}</dl>` : `<div class="pm-foe-side">${sheet}</div><div class="pm-stats pm-ladder2"></div>`}</section>`
+  card.innerHTML = `<section class="pm-self${sheet === null ? '' : ' pm-match'}">${sheet === null ? `${figHtml(s)}<div class="pm-worn pm-ladder"></div><dl class="pm-stats">${statsHtml(s)}</dl>` : `<div class="pm-foe-side">${sheet}</div><div class="pm-stats pm-ladder2"></div>`}</section>`
     + `<section class="pm-goods"><header class="pm-ghead"><h2 class="pm-h">${tx('v2.skills.title')}<small>${tx(sheet === null ? 'v2.skills.sub' : 'v2.skills.pick')}</small></h2><div class="pm-purse"><b></b><small>${tx('ui.skill.of4')}</small></div></header><div class="pm-glist"></div><div class="pm-detail" aria-live="polite"></div><div class="pm-foot"></div></section>`;
   root.appendChild(card);
   const list = card.querySelector('.pm-glist') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement, foot = card.querySelector('.pm-foot') as HTMLElement;
   const fit = scrollFade(detail);
+  // the match sheet's side (both fighters, then the order of the four) scrolls under its fade where the window is short (journal Passe LC4: 720 px)
+  const side = card.querySelector('.pm-match') as HTMLElement | null, fitSide = side ? scrollFade(side) : null;
   const close = footBtn('Esc', tx('ui.close'), () => host.close());
   const go = sheet === null ? null : footBtn('Enter', tx('v2.skills.keep'), () => host.enter?.(), true);
   const four = (): string[] => { const was = v2KitOf(host.state()).loadout as string[]; return was.filter((x) => chosen.has(x)).concat([...chosen].filter((x) => !was.includes(x))); };
@@ -84,13 +86,20 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   };
   /** the order of the four (AC-09): the skill selected one place earlier (left) or later (right), the game's at once (setOrder) */
   const ordered = (): string[] => autoOrderView(host.state(), four()).map((t) => t.id);
+  /** the order in sight under the side's fade (the keys that move it touched, whether it moves or not) */
+  const showOrder = (): void => {
+    const ladder = card.querySelector<HTMLElement>('.pm-ladder2');
+    if (side && ladder) { const d = ladder.getBoundingClientRect().bottom - side.getBoundingClientRect().bottom; if (d > 0) side.scrollTop += d; fitSide?.(); }
+  };
   const move = (by: -1 | 1): void => {
+    showOrder();
     if (!chosen.has(now) || chosen.size !== 4) return;
     const o = ordered(), i = o.indexOf(now), j = i + by;
     if (i < 0 || j < 0 || j >= o.length) return;
     [o[i], o[j]] = [o[j], o[i]];
     host.act({ type: 'setOrder', skills: o });
     paint();
+    showOrder();
     list.querySelector<HTMLElement>('.pm-btn.on')?.focus();
   };
   const moveBtn = (dir: 'left' | 'right'): HTMLButtonElement => {

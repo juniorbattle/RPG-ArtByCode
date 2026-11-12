@@ -2,7 +2,8 @@
 // 1. the arena's own page (`?scene=arena`, Ren against each rival with DEV `foe=<id>`, the loop held): the HUD of the duel (both cards with their charge on the
 //    timeline, Ren's four skills in his order, ×2 and « Skip » with their keys), the approved sheets worn, every step of the whole duel drawn with baked frames
 //    only (no generated frame beside a sheet, as tools/arena-sheet-proof.mjs), every scripted moment (`jump`) without a page error, the replay ending on the
-//    duel's own result, ×2 doubling the duel's clock on the page's own loop, « Skip » reaching the K.O.;
+//    duel's own result, ×2 doubling the duel's clock on the page's own loop, « Skip » reaching the K.O. under its black curtain; the bodies on the floor never
+//    jumping between two frames (journal Passe LC4: the lunge and the knock-back, at most 0.6 m a frame at 60 fps) and each blow landing drawn;
 // 2. a version 2 game's match sheet (the named state `v2-day2-afternoon`): its table of both fighters against Node's own fighters for that bout (the health of the
 //    bout, the four stats, the forms of the day, the dodge and the guard), the rival's training points, the order shown; the order set with the player's left
 //    key, kept in the game; the arena then plays the duel of that order (its result against Node's on the same state), « Skip », the result in the state, and
@@ -43,13 +44,21 @@ try {
       const moments = A.presetNames(), jumped = [];
       for (const m of moments) { if (A.jump(m)) { A.renderOnce(); drawn(m); jumped.push(m); } }
       // the whole duel at the arena's step, from the start, the page's own presentation each step
-      A.auto.reset(); A.auto.drain(); A.paused = false; A.moment = false; A.hud?.still(false);
+      A.auto.reset(); A.onEvents(A.auto.drain()); A.paused = false; A.moment = false; A.hud?.still(false);
       const cards = [0, 0]; let steps = 0;
+      // the bodies on the floor (journal Passe LC4): each fighter's lunge and knock-back between two frames (its sprite's own shift, the sheets' push
+      // compensation, left out: the body stays where it was), and each blow drawn when it lands
+      const P = A.pres, body = { ren: { max: 0, snaps: 0, prev: null }, marek: { max: 0, snaps: 0, prev: null } }, landed = { n: 0, bad: [] }, impacts = [];
+      const on = A.onEvents; A.onEvents = function (evs) { on.call(this, evs); for (const e of evs) if (e.type === 'impact') impacts.push(e); };
       for (let i = 0; !A.auto.over && i < 3e5; i++) {
+        impacts.length = 0;
         A.update(1 / 60); drawn(`t ${A.auto.t.toFixed(1)}`);
+        for (const id of ['ren', 'marek']) { const x = P[id].off + P[id].knock, o = body[id]; if (o.prev !== null) { const d = Math.abs(x - o.prev); o.max = Math.max(o.max, d); if (d > 0.6) o.snaps++; } o.prev = x; }
+        for (const e of impacts) { landed.n++; if (A.sim.f[e.from].state !== 'acting' && landed.bad.length < 3) landed.bad.push(`${A.auto.t.toFixed(2)} ${e.from} ${e.action} ${A.sim.f[e.from].anim.name}`); }
         ['#ah-ren .ah-ch', '#ah-marek .ah-ch'].forEach((q, k) => { const c = hud.querySelector(q); if (!c.classList.contains('off') && /^Charging ./.test(c.textContent)) cards[k] = (cards[k] ?? 0) + 1; });
         steps = i + 1;
       }
+      A.onEvents = on;
       for (let i = 0; i < 120; i++) A.update(1 / 60);
       const res = A.auto.result, end = { t: A.auto.end, winner: A.auto.winner, ren: A.auto.f.ren.hp, marek: A.auto.f.marek.hp, ko: hud.querySelector('#ah-ko')?.textContent };
       // ×2: the duel's clock twice as fast on the page's own loop; « Skip »: the K.O. at once
@@ -58,9 +67,18 @@ try {
       const t1 = A.auto.t; A.action('attack', true);
       for (let i = 0; i < 60; i++) A.update(1 / 60);
       const t2 = A.auto.t - t1, fast = A.speed; A.action('attack', true);
-      A.action('dodge', true); for (let i = 0; i < 10; i++) A.update(1 / 60);
-      const P = A.set.portraits;
-      return { steps, slots, ctl, jumped, moments: moments.length, off: off.slice(0, 6), nOff: off.length, ren: seen.ren.size, marek: seen.marek.size, cards, end, res: { hp: res.hp, winner: res.winner, t: res.t }, t1, t2, fast, skipped: { over: A.auto.over, t: A.auto.t }, sheets: A.sheets?.info.sheets.map((s) => `${s.id} ${s.runtimeUse}`), face: [P.ren?.width, P.marek?.width] };
+      // « Skip » behind the black: the curtain down before the duel jumps, its K.O. reached under it, then lifted and gone (on the arena's own clock)
+      const fade = { maxOp: 0, overAt: -1, opAtOver: -1, frames: 0 };
+      A.action('dodge', true);
+      for (let i = 0; i < 60; i++) {
+        A.update(1 / 60);
+        const el = document.querySelector('.ar-skip-fade'), op = el ? +el.style.opacity : 0;
+        fade.maxOp = Math.max(fade.maxOp, op); if (el) fade.frames = i + 1;
+        if (A.auto.over && fade.overAt < 0) { fade.overAt = i; fade.opAtOver = op; }
+      }
+      fade.left = !!document.querySelector('.ar-skip-fade');
+      const PT = A.set.portraits;
+      return { steps, slots, ctl, jumped, moments: moments.length, off: off.slice(0, 6), nOff: off.length, ren: seen.ren.size, marek: seen.marek.size, cards, end, res: { hp: res.hp, winner: res.winner, t: res.t }, t1, t2, fast, skipped: { over: A.auto.over, t: A.auto.t }, fade, body: { ren: [body.ren.max, body.ren.snaps], marek: [body.marek.max, body.marek.snaps] }, landed, sheets: A.sheets?.info.sheets.map((s) => `${s.id} ${s.runtimeUse}`), face: [PT.ren?.width, PT.marek?.width] };
     });
     const sc = AV.sceneAutoDuel(foe);
     check(JSON.stringify(r.res) === JSON.stringify({ hp: sc.result.hp, winner: sc.result.winner, t: sc.result.t }), `${foe}: the page's duel is Node's (${r.res.winner === 0 ? 'Ren' : r.res.winner === 1 ? foe : 'decided on health'} at ${r.res.t} s, ${r.res.hp.join(' / ')})`);
@@ -72,6 +90,9 @@ try {
     check(r.jumped.length >= 8, `${foe}: ${r.jumped.length} of ${r.moments} scripted moments (${r.jumped.join(', ')})`);
     check(r.fast === 2 && Math.abs(r.t2 - 2 * r.t1) < 0.05, `${foe}: ×2 doubles the clock (${r.t1.toFixed(2)} s then ${r.t2.toFixed(2)} s for 1 s)`);
     check(r.skipped.over && Math.abs(r.skipped.t - r.end.t) < 0.5, `${foe}: « Skip » reaches the K.O. (${r.skipped.t.toFixed(1)} s)`);
+    check(r.fade.maxOp === 1 && r.fade.opAtOver === 1 && r.fade.overAt >= 10 && !r.fade.left && r.fade.frames <= 40, `${foe}: « Skip » behind the black: the K.O. reached under the curtain at frame ${r.fade.overAt} (opacity ${r.fade.opAtOver}), lifted and gone after ${r.fade.frames} frames`);
+    check(r.body.ren[1] === 0 && r.body.marek[1] === 0 && r.body.ren[0] <= 0.6 && r.body.marek[0] <= 0.6, `${foe}: the bodies never jump on the floor (largest step ${r.body.ren[0].toFixed(2)} m for Ren, ${r.body.marek[0].toFixed(2)} m for ${foe}, a frame at 60 fps)`);
+    check(r.landed.n > 50 && r.landed.bad.length === 0, `${foe}: each of ${r.landed.n} blows lands drawn${r.landed.bad.length ? `: ${r.landed.bad.join('; ')}` : ''}`);
     check(errors.length === 0, `${foe}: no page error${errors.length ? `: ${errors.slice(0, 2).join(' | ')}` : ''}`);
     if (foe === RIVALS[0]) {
       for (const m of ['renCharge', 'foeCharge', 'renSkill', 'break', 'ko']) { await page.evaluate((x) => window.__arena.jump(x) && window.__arena.renderOnce(), m); await page.screenshot({ path: path.join(outDir, `arena-${foe}-${m}.png`) }); }

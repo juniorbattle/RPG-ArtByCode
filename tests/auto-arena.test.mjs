@@ -76,6 +76,53 @@ test('the replay ends on the duel\'s own result, at the arena\'s step, skipped o
   assert.ok(ko === RIVALS.length * 2 && breaks > 0 && wards > 0 && dodges > 0, 'the paths are reached: breaks, wards, dodges');
 });
 
+test('each blow drawn from before it lands (journal Passe LC4): its run-up read from the script, within its charge or the enchaînement\'s gap, never in its striker\'s stun; the blow drawn when it lands', () => {
+  let firsts = 0, follows = 0, effects = 0;
+  for (const foe of RIVALS) for (const seed of [1, 2]) {
+    const d = duelOf(foe, seed === 1 ? 0 : 2, seed), r = d.result, rp = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe });
+    const seatOf = (who) => (who === d.ren.id ? 'ren' : 'marek');
+    // the oracle, from the script alone: each blow's or effect's window ends its run-up on the line's time
+    const want = { ren: [], marek: [] }, charge = { ren: null, marek: null }, prev = { ren: -1e9, marek: -1e9 }, stun = { ren: [], marek: [] };
+    for (const e of r.log) {
+      const s = seatOf(e.who);
+      if (e.ev === 'charge') { charge[s] = e; continue; }
+      if (e.ev === 'break') { stun[s].push([e.t, e.t + AU.AUTO_RULES.brk.stun]); continue; }
+      const first = !!charge[s], len = first ? charge[s].at - charge[s].t : 0;
+      want[s].push({ t: e.t, first, len, gap: e.t - prev[s], effect: e.ev === 'ward' || e.ev === 'boost', act: e.act });
+      if (!(e.ev === 'ward' || e.ev === 'boost')) prev[s] = e.t;
+      charge[s] = null;
+    }
+    for (const s of ['ren', 'marek']) {
+      const ws = rp.wins[s];
+      assert.equal(ws.length, want[s].length, `${foe} ${seed} ${s}: one window a blow or an effect`);
+      ws.forEach((w, i) => {
+        const o = want[s][i], lead = w.impactAt;
+        assert.ok(i === 0 || ws[i - 1].t0 <= w.t0, 'in the order they start');
+        assert.ok(Math.abs(w.t0 + lead - o.t) < 1e-9 && lead >= 0.04 - 1e-12, `${foe} ${s} ${o.act} at ${o.t}: its run-up ends on its line (${lead})`);
+        assert.equal(w.id, o.act);
+        if (o.first || o.effect) { assert.ok(lead <= 0.6 * o.len + 1e-9 || lead === 0.04, `${o.act}: within 60 % of its charge (${lead} of ${o.len})`); o.effect ? effects++ : firsts++; }
+        else { assert.ok(w.follow && lead <= 0.8 * o.gap + 1e-9 && lead <= AV.WIND.nextHit + 1e-9, `${o.act}: an enchaînement's next blow within its gap (${lead} of ${o.gap})`); follows++; }
+        for (const [a, b] of stun[s]) assert.ok(!(w.t0 > a + 1e-9 && w.t0 < b - 1e-9), `${foe} ${s} ${o.act}: no run-up begun in its own stun`);
+      });
+    }
+    // at the arena's step: every blow's run-up drawn before its impact, and the blow drawn when its impact is told
+    const ran = new Set(), clip = { light: 'strike', heavy: 'heavy', skill: 'skillOff' };
+    for (let i = 0; i < 1e6 && !rp.over; i++) {
+      rp.step(rp.D.dt);
+      for (const s of ['ren', 'marek']) { const an = rp.f[s].anim; if (rp.f[s].state === 'acting' && an.prep === 0 && an.t < an.impactAt - 1e-9) ran.add(`${s}:${(rp.t - an.t).toFixed(5)}`); }
+      for (const e of rp.drain()) {
+        if (e.type !== 'impact') continue;
+        const f = rp.f[e.from];
+        assert.equal(f.state, 'acting', `${foe} ${seed}: ${e.from}'s ${e.action} lands drawn (${f.state} ${f.anim.name})`);
+        assert.equal(f.anim.name, f.act.def.kind === 'skill' && f.act.def.family !== 'offensive' ? f.anim.name : clip[e.kind] ?? f.anim.name);
+        assert.ok(Math.abs(f.anim.t - f.anim.impactAt) <= rp.D.dt + 1e-9, `${e.action}: its impact on the frame it lands (${f.anim.t} / ${f.anim.impactAt})`);
+      }
+    }
+    for (const s of ['ren', 'marek']) for (const w of rp.wins[s]) if (w.t0 + w.impactAt <= rp.t) assert.ok(ran.has(`${s}:${w.t0.toFixed(5)}`), `${foe} ${seed} ${s}: the run-up of ${w.id} at ${w.t0 + w.impactAt} drawn before it lands`);
+  }
+  assert.ok(firsts > 100 && follows > 20 && effects > 0, `the paths are reached: ${firsts} first blows, ${follows} next blows, ${effects} effects`);
+});
+
 test('the replay\'s HUD: both charges on the timeline, the gauges as the trace said them, Ren\'s four in his order with their cooldowns (DB5-3)', () => {
   const d = duelOf('cassius', 1, 5), r = d.result, rp = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe });
   const order = d.ren.skills.map((a) => a.id);

@@ -35,11 +35,12 @@ const familyOf = (a: AutoAction): AutoCharge['family'] => (a.ward ? 'defensive' 
 /** the clip a blow or an effect plays (dynamicView maps them onto the sheets' clips) */
 const animOf = (a: AutoAction): string => (a.ward ? 'skillDef' : a.boost ? 'skillSup' : kindOf(a) === 'light' ? 'strike' : kindOf(a) === 'heavy' ? 'heavy' : 'skillOff');
 
+/** a blow, an effect or a reaction drawn on screen, read from the whole script before the duel plays (journal Passe LC4): its clip, when its animation
+ *  starts, its impact in it, its length; `follow`: an enchaînement's next blow (its run-up within the gap since the one before) */
+export interface AutoWindow { name: string; t0: number; impactAt: number; dur: number; follow?: boolean; id: string; kind: 'light' | 'heavy' | 'skill'; family: string }
+
 interface State {
   side: AutoSide; charge: AutoCharge | null;
-  /** the strike, an effect, a reaction or a flinch on screen: its animation's start and clip */
-  strike: { name: string; t0: number; impactAt: number; dur: number } | null;
-  react: { name: string; t0: number; impactAt: number; dur: number } | null;
   g: number; gT: number; broken: boolean; stunEnd: number;
   ward: { until: number; dur: number } | null; boost: { until: number; dur: number } | null;
   cd: Record<string, { until: number; dur: number }>;
@@ -76,6 +77,9 @@ export class AutoReplay {
   private acts: Record<Seat, Map<string, AutoAction>>;
   private ids: Record<string, Seat>;
   private koT = -1;
+  /** each fighter's blows and effects, and its reactions to the other's, in the order they start (`windowsOf`) */
+  readonly wins: Record<Seat, AutoWindow[]>;
+  readonly reacts: Record<Seat, AutoWindow[]>;
 
   constructor(readonly result: AutoResult, readonly fighters: { ren: AutoFighter; marek: AutoFighter }, names: Record<Seat, string> = { ren: 'Ren', marek: 'Marek' }) {
     this.D = { dt: 1 / 120, fighters: { ren: { name: names.ren }, marek: { name: names.marek } } };
@@ -85,6 +89,7 @@ export class AutoReplay {
     const w = result.winner ?? (result.hp[0] / result.maxHp[0] >= result.hp[1] / result.maxHp[1] ? 0 : 1);
     this.winner = w === 0 ? 'ren' : 'marek';
     this.end = result.t;
+    ({ wins: this.wins, reacts: this.reacts } = windowsOf(result.log, this.ids, this.acts));
     this.f = { ren: null!, marek: null! };
     this.s = { ren: null!, marek: null! };
     this.reset();
@@ -97,7 +102,7 @@ export class AutoReplay {
       const x = this.fighters[seat], maxHp = this.result.maxHp[k];
       const side: AutoSide = { hp: maxHp, maxHp, ap: AUTO_RULES.ap.start + (x.apStart ?? 0), state: 'idle', stateT: 0, guarding: false, anim: { name: 'ready', t: 0, dur: 1, loop: true }, act: null };
       this.f[seat] = side;
-      this.s[seat] = { side, charge: null, strike: null, react: null, g: 0, gT: 0, broken: false, stunEnd: 0, ward: null, boost: null, cd: {}, seq: false };
+      this.s[seat] = { side, charge: null, g: 0, gT: 0, broken: false, stunEnd: 0, ward: null, boost: null, cd: {}, seq: false };
     });
     this.out.push({ type: 'reset' });
     this.refresh();
@@ -165,21 +170,16 @@ export class AutoReplay {
         if (!a) break;
         const eff = a.ward ?? a.boost!, k = { until: e.t + eff.dur, dur: eff.dur };
         if (e.ev === 'ward') s.ward = k; else s.boost = k;
-        s.strike = { name: animOf(a), t0: e.t - this.wind(s, WIND.effect), impactAt: this.wind(s, WIND.effect), dur: this.wind(s, WIND.effect) + 0.35 };
         s.charge = null;
         if (tell) this.emit({ type: 'effect', who: seat, action: a.id, family: e.ev === 'ward' ? 'defensive' : 'support', dur: eff.dur });
         break;
       }
       case 'hit': case 'guarded': case 'dodged': {
         if (!a) break;
-        const first = (e.hit ?? 1) <= 1, kind = kindOf(a);
-        const lead = first ? this.wind(s, kind === 'light' ? WIND.light : kind === 'heavy' ? WIND.heavy : WIND.skill) : WIND.nextHit;
-        s.strike = { name: animOf(a), t0: e.t - lead, impactAt: lead, dur: lead + WIND.follow };
-        if (first) s.charge = null;
+        // an action's first blow ends its charge (its later blows, an enchaînement's, come after it)
+        const first = !!s.charge, kind = kindOf(a);
+        s.charge = null;
         if (first && s.seq) { s.seq = false; if (tell) this.emit({ type: 'sequenceEnd', who: seat }); }
-        if (e.ev === 'dodged') o.react = { name: 'dodge', t0: e.t - 0.06, impactAt: 0.06, dur: WIND.dodge };
-        else if (e.ev === 'guarded') o.react = { name: 'block', t0: e.t, impactAt: 1e6, dur: WIND.block };
-        else if (!o.broken) o.react = { name: 'hit', t0: e.t, impactAt: 0, dur: WIND.flinch };
         if (e.hp !== undefined) o.side.hp = e.hp;
         const dmg = e.dmg ?? 0;
         if (tell && e.ev === 'dodged' && other === 'ren') this.emit({ type: 'reactStart', who: other, kind: 'dodge', cost: 0, early: false });
@@ -188,7 +188,7 @@ export class AutoReplay {
         break;
       }
       case 'break': {
-        s.broken = true; s.stunEnd = e.t + AUTO_RULES.brk.stun; s.react = null;
+        s.broken = true; s.stunEnd = e.t + AUTO_RULES.brk.stun;
         // its charge is paused the stun's length (the duel's own rule): its leave, already in the script, comes later
         if (tell) { this.emit({ type: 'break', who: seat }); this.emit({ type: 'stun', who: seat, dur: AUTO_RULES.brk.stun, why: 'break' }); }
         break;
@@ -196,13 +196,10 @@ export class AutoReplay {
     }
   }
 
-  /** a wind-up never longer than most of the charge it ends */
-  private wind(s: State, w: number): number { const c = s.charge; return c ? Math.max(0.04, Math.min(w, 0.6 * (c.leave - c.start))) : w; }
-
   private ko(loser: Seat, tell: boolean): void {
     if (this.over) return;
     this.over = true; this.koT = this.t;
-    const s = this.s[loser]; s.side.state = 'down'; s.charge = null; s.strike = null; s.react = null;
+    const s = this.s[loser]; s.side.state = 'down'; s.charge = null;
     for (const seat of SEATS) this.s[seat].charge = null;
     if (tell) this.emit({ type: 'ko', who: loser });
   }
@@ -217,16 +214,14 @@ export class AutoReplay {
       const s = this.s[seat], f = s.side, c = s.charge;
       if (f.state === 'down' || (this.over && this.koT >= 0 && seat !== this.winner)) { f.state = 'down'; f.anim = { name: 'ko', t: t - this.koT, dur: 0.9 }; f.act = null; continue; }
       if (s.broken && t < s.stunEnd) { f.state = 'stunned'; f.anim = { name: 'recover', t: t - (s.stunEnd - AUTO_RULES.brk.stun), dur: AUTO_RULES.brk.stun, stunned: true }; f.act = null; continue; }
-      const r = s.react && t < s.react.t0 + s.react.dur ? s.react : null;
-      const k = s.strike && t < s.strike.t0 + s.strike.dur && t >= s.strike.t0 ? s.strike : null;
-      // the wind-up of the blow in charge: the strike drawn before its first hit lands
-      const windUp = c && !k ? this.windUpOf(seat, c) : null;
-      const strike = k ?? windUp;
-      if (r && (r.name !== 'hit' || !strike)) { f.state = 'idle'; f.anim = { name: r.name, t: t - r.t0, dur: r.dur, impactAt: r.impactAt }; f.act = null; continue; }
+      // its blow or effect up to its impact (a blow lands drawn), else a reaction (a dodge, a block; a flinch only while it strikes nothing), else the blow's
+      // follow-through: each drawn from its window, its run-up begun before it lands
+      const r = this.at(this.reacts[seat], t), strike = this.at(this.wins[seat], t), landing = !!strike && t - strike.t0 <= strike.impactAt + 0.04;
+      if (r && !landing && (r.name !== 'hit' || !strike)) { f.state = 'idle'; f.anim = { name: r.name, t: t - r.t0, dur: r.dur, impactAt: r.impactAt }; f.act = null; continue; }
       if (strike) {
         f.state = 'acting';
         f.anim = { name: strike.name, t: t - strike.t0, dur: strike.dur, impactAt: strike.impactAt, prep: 0 };
-        f.act = { def: { id: c?.id ?? strike.name, kind: strike.name === 'strike' ? 'light' : strike.name === 'heavy' ? 'heavy' : 'skill', family: strike.name === 'skillDef' ? 'defensive' : strike.name === 'skillSup' ? 'support' : 'offensive', anim: strike.name }, t: t - strike.t0 };
+        f.act = { def: { id: strike.id, kind: strike.kind, family: strike.family, anim: strike.name }, t: t - strike.t0 };
         continue;
       }
       if (r) { f.state = 'idle'; f.anim = { name: r.name, t: t - r.t0, dur: r.dur, impactAt: r.impactAt }; f.act = null; continue; }
@@ -243,12 +238,11 @@ export class AutoReplay {
     }
   }
 
-  /** the strike drawn in the last moments of a charge, before its blow lands (or its ward or boost takes hold) */
-  private windUpOf(seat: Seat, c: AutoCharge): State['strike'] {
-    const a = this.acts[seat].get(c.id)!, lead = a.ward || a.boost ? WIND.effect : c.kind === 'light' ? WIND.light : c.kind === 'heavy' ? WIND.heavy : WIND.skill;
-    const w = Math.max(0.04, Math.min(lead, 0.6 * (c.leave - c.start)));
-    if (this.t < c.leave - w) return null;
-    return { name: animOf(a), t0: c.leave - w, impactAt: w, dur: w + WIND.follow };
+  /** the latest window begun by `t`, while it lasts */
+  private at(list: AutoWindow[], t: number): AutoWindow | null {
+    let lo = 0, hi = list.length - 1, k = -1;
+    while (lo <= hi) { const m = (lo + hi) >> 1; if (list[m].t0 <= t + 1e-9) { k = m; lo = m + 1; } else hi = m - 1; }
+    return k >= 0 && t < list[k].t0 + list[k].dur ? list[k] : null;
   }
 
   // ------------------------------------------------------------------------------------------------ what the presentation asks a duel
@@ -262,7 +256,7 @@ export class AutoReplay {
   /** Ren's charge as the sheets draw it (his own charge frames, low for the light attack, high for a skill), while no blow is drawn */
   chargeView(): { held: boolean; reached: number; waiting: number } {
     const c = this.s.ren.charge, f = this.f.ren;
-    return { held: !!c && f.state === 'idle' && !this.over && !this.s.ren.react, reached: c && c.kind !== 'light' ? 1 : 0, waiting: -1 };
+    return { held: !!c && f.state === 'idle' && !this.over && !this.at(this.reacts.ren, this.t), reached: c && c.kind !== 'light' ? 1 : 0, waiting: -1 };
   }
   command(): boolean { return false; }
   react(): boolean { return false; }
@@ -311,6 +305,39 @@ export class AutoReplay {
 }
 
 const pct = (a: number, b: number): number => (b > 0 ? Math.max(0, Math.min(100, Math.round((a / b) * 1000) / 10)) : 0);
+/** every blow, effect and reaction of the script, before the duel plays: a blow's run-up starts before it lands (the replay never draws a lunge from its
+ *  impact on), an action's first blow winds up over at most 60 % of its charge, an enchaînement's next blow over at most 80 % of the gap since the one
+ *  before (its lunge kept), never before the end of the striker's own stun; a dodge starts 0.1 s before the blow it avoids */
+export function windowsOf(log: AutoEvent[] | undefined, ids: Record<string, Seat>, acts: Record<Seat, Map<string, AutoAction>>): { wins: Record<Seat, AutoWindow[]>; reacts: Record<Seat, AutoWindow[]> } {
+  const wins: Record<Seat, AutoWindow[]> = { ren: [], marek: [] }, reacts: Record<Seat, AutoWindow[]> = { ren: [], marek: [] };
+  const charge: Record<Seat, { start: number; leave: number } | null> = { ren: null, marek: null };
+  const prevHit: Record<Seat, number> = { ren: -1e9, marek: -1e9 }, stunEnd: Record<Seat, number> = { ren: -1e9, marek: -1e9 };
+  for (const e of log ?? []) {
+    const seat = ids[e.who]; if (!seat) continue;
+    const other: Seat = seat === 'ren' ? 'marek' : 'ren';
+    if (e.ev === 'charge') { charge[seat] = { start: e.t, leave: e.at ?? e.t }; continue; }
+    if (e.ev === 'break') { stunEnd[seat] = e.t + AUTO_RULES.brk.stun; continue; }
+    const a = e.act ? acts[seat].get(e.act) : undefined; if (!a) continue;
+    const c = charge[seat], len = c ? Math.max(0, c.leave - c.start) : Infinity, free = e.t - stunEnd[seat];
+    const cap = (w: number): number => Math.max(0.04, free > 0 ? Math.min(w, free) : w);
+    const kind = kindOf(a), id = a.id;
+    if (e.ev === 'ward' || e.ev === 'boost') {
+      const lead = cap(Math.min(WIND.effect, 0.6 * len));
+      wins[seat].push({ name: animOf(a), t0: e.t - lead, impactAt: lead, dur: lead + 0.35, id, kind, family: e.ev === 'ward' ? 'defensive' : 'support' });
+      charge[seat] = null; continue;
+    }
+    const first = !!c;
+    const lead = first ? cap(Math.min(kind === 'light' ? WIND.light : kind === 'heavy' ? WIND.heavy : WIND.skill, 0.6 * len)) : cap(Math.min(WIND.nextHit, 0.8 * (e.t - prevHit[seat])));
+    wins[seat].push({ name: animOf(a), t0: e.t - lead, impactAt: lead, dur: lead + WIND.follow, ...(first ? {} : { follow: true }), id, kind, family: familyOf(a) ?? 'offensive' });
+    prevHit[seat] = e.t; charge[seat] = null;
+    if (e.ev === 'dodged') reacts[other].push({ name: 'dodge', t0: e.t - 0.1, impactAt: 0.1, dur: WIND.dodge, id: 'dodge', kind: 'light', family: 'defensive' });
+    else if (e.ev === 'guarded') reacts[other].push({ name: 'block', t0: e.t, impactAt: 1e6, dur: WIND.block, id: 'block', kind: 'light', family: 'defensive' });
+    else reacts[other].push({ name: 'hit', t0: e.t, impactAt: 0, dur: WIND.flinch, id: 'hit', kind: 'light', family: 'defensive' });
+  }
+  for (const seat of SEATS) { wins[seat].sort((x, y) => x.t0 - y.t0); reacts[seat].sort((x, y) => x.t0 - y.t0); }
+  return { wins, reacts };
+}
+
 function actionsOf(x: AutoFighter): Map<string, AutoAction> {
   const m = new Map<string, AutoAction>();
   for (const a of [x.light, ...(x.combo ? [x.combo] : []), ...x.skills]) m.set(a.id, a);

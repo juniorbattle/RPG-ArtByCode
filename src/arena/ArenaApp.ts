@@ -92,6 +92,12 @@ const ATTACKS = new Set<Clip>(['strike', 'heavy', 'skill', 'slash']);
 const IMPACT_FRAME: Record<string, number> = { strike: 1, heavy: 2, skill: 1, slash: 1 };
 /** the fighters' marks on the floor (x), the camera's base framing */
 const HOME = { ren: -2.15, marek: 2.15 };
+/** « Skip » behind the black (the operator's rule of 2026-11-03, no hard cut; journal Passe LC4): the arena fades to the page's ink, the duel reaches its
+ *  K.O. under it, the black lifts on the K.O.; on the arena's own clock (s), so a tool stepping `update` sees it as a player does */
+const SKIP_FADE = { down: 0.22, hold: 0.06, up: 0.3 };
+/** the duel played by the computer: the fastest a body moves on the floor (m/s), its lunge's own peak (2.4 m closed in 0.13 s on a smoothstep); a move the
+ *  script asks faster (a lunge after a block or a dodge) runs at that speed instead of jumping (journal Passe LC4) */
+const AUTO_BODY_SPEED = 27;
 const CHAR_SCALE = 1.42;
 const BASE_POSE: CamPose = { yaw: 0, pitch: THREE.MathUtils.degToRad(3.5), dist: 15.6, fov: 34, shift: 0, tx: 0, ty: 2.3, tz: -0.6 };
 /** the moon's colour (cool, faint), and a colour's luminance (the sprites' LUM) */
@@ -397,7 +403,7 @@ export class ArenaApp {
     if (this.auto) {
       if (!down) return;
       if (id === 'attack' || id === 'speed') { if (!this.auto.over) this.speed = this.speed > 1 ? 1 : 2; }
-      else if (id === 'dodge' || id === 'skip') { if (!this.paused || this.moment) this.auto.skip(); }
+      else if (id === 'dodge' || id === 'skip') { if ((!this.paused || this.moment) && !this.auto.over && !this.skipFade) this.beginSkip(); }
       else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; this.hud?.still(false); }
       else if (id === 'settings') this.openSettings();
       else if (id === 'reset') { if (!this.opts.match) this.restart(); }
@@ -460,8 +466,9 @@ export class ArenaApp {
   private padPrev: boolean[] = [];
   /** gamepad (the prototype's mapping): A dodge, B guard, X / Y light / heavy, shoulders and triggers the techniques, Start pause, Back reset */
   private pollPad(): void {
-    // the version 2's charged duel: the shared gamepad reads it (bindInput)
-    if (this.charge) return;
+    // the version 2's duels (the charged one, the one played by the computer): the shared gamepad reads them (bindInput); read here too, a press came twice
+    // (journal Passe LC4: Start paused and resumed at once, A asked « Skip » twice)
+    if (this.charge || this.auto) return;
     const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
     const p = pads && pads[0]; if (!p) return;
     const PAD: Record<number, string> = this.charge ? V2_PAD : this.dyn ? dynPad(this.dyn.D.loadout) : { 0: 'dodge', 1: 'guard', 2: 'light', 3: 'heavy', 4: 't1', 5: 't2', 6: 't3', 7: 't4', 9: 'pause', 8: 'reset' };
@@ -472,6 +479,34 @@ export class ArenaApp {
       this.padPrev[i] = down;
     }
   }
+
+  /** « Skip »'s curtain under way: its time on the arena's clock, whether the duel has reached its K.O. under it */
+  private skipFade: { t: number; done: boolean; el: HTMLDivElement | null } | null = null;
+  private beginSkip(): void {
+    let el: HTMLDivElement | null = null;
+    if (typeof document !== 'undefined') {
+      el = document.createElement('div');
+      el.className = 'ar-skip-fade'; el.setAttribute('aria-hidden', 'true');
+      el.style.cssText = 'position:fixed;inset:0;z-index:2147482000;background:var(--ds-ink,#0b0d14);opacity:0;pointer-events:none';
+      document.body.appendChild(el);
+    }
+    this.skipFade = { t: 0, done: false, el };
+  }
+  /** the curtain's step: down, the duel skipped under the black (its K.O. told), then lifted (the fades kept with the reduced motion, RG-5) */
+  private stepSkip(dt: number): void {
+    const c = this.skipFade; if (!c) return;
+    c.t += dt;
+    const S = SKIP_FADE;
+    if (!c.done && c.t >= S.down) {
+      c.done = true;
+      this.paused = false; this.moment = false; this.hud?.still(false);
+      this.auto?.skip(); if (this.auto) this.onEvents(this.auto.drain());
+    }
+    const a = c.t < S.down ? smooth(c.t / S.down) : c.t < S.down + S.hold ? 1 : 1 - smooth((c.t - S.down - S.hold) / S.up);
+    if (c.el) c.el.style.opacity = a.toFixed(3);
+    if (c.t >= S.down + S.hold + S.up) this.endSkip();
+  }
+  private endSkip(): void { this.skipFade?.el?.remove(); this.skipFade = null; }
 
   restart(): void {
     this.sim.reset();
@@ -513,7 +548,7 @@ export class ArenaApp {
       else if ((e as { type: string }).type === 'chargeTier') this.pres.ren.flash = Math.max(this.pres.ren.flash, 0.45);
       else if (e.type === 'effect') { this.pres[e.who].flash = 0.6; this.spawnFx(e.family === 'defensive' ? 'guard' : 'spark', this.fighters[e.who], e.who === 'ren' ? 'marek' : 'ren'); }
       else if (e.type === 'reset') {
-        this.koT = -1; this.shake = 0; this.push = 0;
+        this.koT = -1; this.shake = 0; this.push = 0; this.endSkip();
         for (const p of Object.values(this.pres)) { p.off = p.knock = p.flash = p.guardHit = 0; }
         for (const f of this.fx) f.act.hidden = true;
         this.fx = [];
@@ -544,7 +579,7 @@ export class ArenaApp {
   private presentFighters(dt: number): void {
     const s = this.sim, cv = this.chargeView();
     for (const id of ['ren', 'marek'] as FighterId[]) {
-      const f = s.f[id], a = this.fighters[id], p = this.pres[id], an = f.anim!;
+      const f = s.f[id], a = this.fighters[id], p = this.pres[id], an = f.anim!, before = p.off;
       // under the new rules, today's clips on the new moments (dynamicView.ts: skills, the preparation held on the first frame)
       const dl = !!(this.dyn || this.auto);
       let clip = dl ? dynClip(an.name) : an.name;
@@ -569,10 +604,16 @@ export class ArenaApp {
         // the heavy closes the gap only in its last 0.16 s (gap and telegraph stay open through the charge, critique n° 3 of Passe P2)
         // under the new rules a skill's lunge waits for the end of its preparation
         const pr = an.prep ?? 0, t0 = clip === 'heavy' ? Math.max(0, ia - 0.16) : pr > 0 ? pr + (ia - pr) * 0.35 : ia * 0.35;
-        if (t <= ia + 0.12) p.off = A * smooth((t - t0) / Math.max(0.05, ia - t0));
+        if (this.auto) {
+          // the duel played by the computer: a lunge never pulls the body back (an enchaînement's next blow, a blow after a flinch keep it forward) and the
+          // body settles while its run-up has not begun (a rival's telegraph holds its first frame)
+          const v = t >= t0 && t <= ia + 0.12 ? A * smooth((t - t0) / Math.max(0.05, ia - t0)) : 0, settle = p.off * Math.exp(-dt * (p.off < 0 ? 4 : 5));
+          p.off = t <= ia + 0.12 ? Math.max(settle, v) : settle;
+        } else if (t <= ia + 0.12) p.off = A * smooth((t - t0) / Math.max(0.05, ia - t0));
         else p.off *= Math.exp(-dt * 5);
       } else if (clip === 'dodge') p.off = Math.min(p.off, -1.05 * smooth(an.t / 0.16));
       else p.off *= Math.exp(-dt * (p.off < 0 ? 4 : 5));
+      if (this.auto && dt > 0) { const d = p.off - before, L = AUTO_BODY_SPEED * dt; if (Math.abs(d) > L) p.off = before + Math.sign(d) * L; }
       p.knock *= Math.exp(-dt * 7); p.flash = Math.max(0, p.flash - dt / 0.14); p.guardHit = Math.max(0, p.guardHit - dt / 0.14);
       const facing = id === 'ren' ? 1 : -1;
       a.pos.x = HOME[id] + facing * (p.off + p.knock);
@@ -677,6 +718,7 @@ export class ArenaApp {
     U.uTime.value = this.time;
     U.uMoonDir.value.copy(this.keyDir);
     this.pollPad();
+    this.stepSkip(dt);
     if (!this.paused) {
       this.acc += dt * this.timeScale * this.speed;
       const step = this.sim.D.dt;

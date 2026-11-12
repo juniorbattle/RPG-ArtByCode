@@ -33,6 +33,7 @@ import { TodoCue } from './todo';
 import { actsOf, onSettings } from '../settings/settings';
 import type { Act } from '../settings/keys';
 import { bindCap, keyCap } from '../input/caps';
+import { leavePage } from './curtain';
 
 /** the menu's pages a gamepad's shoulders walk through (journal Passe MN2, MN-4) */
 type MenuPage = 'map' | 'journal' | 'board' | 'skills' | 'gear' | 'settings';
@@ -107,6 +108,8 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
 .pm-result .pm-big{text-align:center}
 .pm-foe{display:flex;gap:14px;align-items:flex-start;margin:6px 0}
 .pm-foe-side{grid-column:1 / 3;grid-row:1;min-width:0}
+.pm-self.pm-match{display:block;padding-right:6px}
+.pm-self.pm-match .pm-ladder2{margin-top:14px}
 .pm-foe-side p{margin:6px 0}
 .pm-foe-side .pm-warn{color:var(--ds-accent)}
 .pm-ladder>.pm-sub{margin:0 0 6px}
@@ -235,7 +238,7 @@ export class TownUi {
     this.current = o.root;
     const r = await o.done;
     this.modal = false; this.current = null;
-    if (r === 'title') location.assign(location.pathname);
+    if (r === 'title') leavePage(location.pathname);
   }
 
   private get st(): GameState { return this.host.state(); }
@@ -614,7 +617,7 @@ export class TownUi {
       i.addEventListener('change', async () => { const f = i.files?.[0]; if (!f) return; try { writeSave(await loadSaveFile(f)); this.host.reload(); } catch (e) { this.closeModal(); void this.card(`<p>${esc((e as Error).message)}</p>`); } });
       i.click();
     });
-    add(tx('ui.menu.quit'), () => location.assign(location.pathname));
+    add(tx('ui.menu.quit'), () => leavePage(location.pathname));
     const back = footBtn('Esc', tx('ui.menu.back'), () => this.closeModal()); foot.appendChild(back); back.classList.add('out');
     arrowKeys(card);
     document.body.appendChild(root); this.current = root;

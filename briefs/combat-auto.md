@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), l'essai de l'opérateur à venir** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; ensuite le lot 3 (le guide et le tutoriel de ce duel)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -611,6 +611,29 @@ graines 1 à 30). Le jeu d'aujourd'hui (`v2=0`) garde son duel.
 
 La fiche de l'essai : https://claude.ai/artifact/7j6XSZttdz2Q8HoPgR6SkT (`briefs/fiche-combat-auto-lot2.html`), dix cartes LC3-1 à LC3-10, à remplir après
 l'essai de l'opérateur.
+
+## 21. La fiche d'essai du lot 2 et la relecture fluide (12/11/2026, journal Passe LC4)
+
+La fiche relue le 12/11/2026 (choix cliqués de 17 h 47 à 17 h 49 UTC, aucune note), dix sur dix à la recommandation, aucune décision A3 :
+LC3-1 « Reçu », LC3-2 « Le rythme convient », LC3-3 « Les garder pour l’essai, juger en jouant », LC3-4 « Garder les tables du lot 1 pour l’essai »,
+LC3-5 « Le garder tel quel », LC3-6 « Bien ainsi », LC3-7 « Rien de plus pour l’instant », LC3-8 « Garder ainsi ; renommer au lot 5 », LC3-9 « Bien
+ainsi : lots 3 puis 4 », LC3-10 « Bien ainsi ». Rien des règles, des tables ni de la course ne change ; la fiche de match ne montre pas de chances ;
+×2 et « Passer » restent sur les touches d'attaque et d'esquive, les actions du duel renommées au remappage au lot 5 ; le guide et le tutoriel (lot 3)
+avant le son (lot 4).
+
+Puis, à la demande de l'opérateur (« Assurons nous que notre systeme est coherent avec tout le reste du jeu et que visuellement tout est bien amorce
+et fluide »), la relecture de l'arène :
+- elle lit tout le script avant que le duel se joue (`windowsOf`, `src/arena/autoView.ts`) : chaque coup est dessiné depuis son élan, qui finit sur
+  la ligne du coup (le premier coup d'une action dans 60 % au plus de sa charge, le coup suivant d'un enchaînement dans 80 % au plus de l'écart avec le
+  précédent, jamais pendant l'étourdissement de celui qui frappe ; une esquive 0,1 s avant le coup évité) ; un coup est dessiné jusqu'à son impact avant
+  toute réaction de celui qui le porte ;
+- dans l'arène de ce duel seul : un élan ne ramène jamais le corps en arrière (le coup suivant, un coup après un recul gardent l'avancée), le corps
+  revient pendant que l'élan n'a pas commencé (l'avertissement du rival), et un mouvement plus rapide que le pic de l'élan (27 m/s) est fait à cette
+  vitesse plutôt qu'en un saut ; les autres duels (`v2=0`, `duel=charge`, `combat=dynamic`) sont inchangés ;
+- « Passer » descend au noir en 0,22 s, le duel atteint son K.O. sous le noir, le noir se lève en 0,3 s (l'horloge de l'arène) ;
+- mesuré sur trois duels entiers à 60 images/s (Marek, Vessa, Orla) : sur `main` 0dfeeb8, 49 à 114 sauts de plus de 0,6 m par combattant et par duel,
+  jusqu'à 3,45 m d'une image à l'autre, et des coups portés le corps chez lui ou en esquive ; après, aucun saut, 0,45 m au plus par image (0,53 m avec
+  le recul d'un coup reçu), chaque coup porté dessiné, l'élan à l'impact de 1,48 m au moins (1,88 m en médiane pour Ren, son élan entier).
 
 ---
 

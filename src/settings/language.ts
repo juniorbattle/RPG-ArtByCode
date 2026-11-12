@@ -1,4 +1,5 @@
 import { driven, LANGS, langOf, loadSettings, saveSettings, type Lang } from './settings';
+import { leavePage } from '../ui/curtain';
 
 /** The language of the page (the operator's sheet of journal Passe RG2: RG-9 « La langue du navigateur, puis le choix gardé », RG-10 « Réglages et ligne de
  *  l’écran titre », RG-14): chosen before anything shows; English is the tables' own default, so nothing is loaded for it (the free-roaming district's static
@@ -25,5 +26,6 @@ export function pageInEnglish(): void { current = 'en'; document.documentElement
 /** the player's choice: kept, then the page reloaded to speak it (`reload` false: kept for the next page) */
 export function chooseLanguage(l: Lang, reload = true): void {
   saveSettings({ lang: l });
-  if (reload && l !== current) location.reload();
+  // the page reloaded behind the black curtain (AU-07, journal Passe LC4)
+  if (reload && l !== current) leavePage('reload');
 }

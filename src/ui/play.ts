@@ -4,6 +4,7 @@ import { loadingError, toneLoading } from './loading';
 import { readSave, writeSave } from './save';
 import { lang, useLanguage } from '../narrative/text';
 import { pageInEnglish } from '../settings/language';
+import { leavePage } from './curtain';
 
 /** The play mode's entry (journal Passe L3; `?play=1`, the tools' way in, and later the title screen's « New game » / « Continue »): the game
  *  state comes from the save (or a new game), and the page shows the scene of the state's place: the district (the town, App), or the
@@ -29,9 +30,8 @@ export function playUrl(params: URLSearchParams, extra: Record<string, string> =
 export function go(params: URLSearchParams, extra: Record<string, string> = {}): void {
   (window as any).__go = playUrl(params, extra);
   if (params.has('noreload')) return;
-  // the version 2's sound goes down with the page (SA-15, journal Passe SN3): what it still needs, in ms; today's game has no such handle
-  const wait: number = (window as any).__soundLeave?.() ?? 0;
-  if (wait > 0) setTimeout(() => location.assign(playUrl(params, extra)), wait); else location.assign(playUrl(params, extra));
+  // the black curtain first (AU-07, journal Passe LC4: src/ui/curtain.ts), the version 2's sound going down with the page meanwhile (SA-15, journal Passe SN3)
+  leavePage(playUrl(params, extra));
 }
 
 /** `&combat=dynamic` on a new game (or a named state): the game is played under the rules of the « tour par tour dynamique »
