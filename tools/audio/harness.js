@@ -36,7 +36,9 @@
     await s.unlock();
     await s.ready?.();
     const buses = s.buses ?? { music: s.musicBus, ambience: s.fxBus, fx: s.fxBus };
-    if (job.stem === 'music') for (const k of Object.keys(buses)) if (k !== 'music') buses[k].disconnect();
+    // the music alone: every other bus cut, and the arena's crowd, which goes its own way to the ambience's step back since the settings' lot (`crowdBus`, journal Passe
+    // RG3; the music's checks of tools/audio/engine-proof.mjs heard it from then on, journal Passe LC7)
+    if (job.stem === 'music') { for (const k of Object.keys(buses)) if (k !== 'music') buses[k].disconnect(); s.crowdBus?.disconnect(); }
     if (job.stem === 'fx') buses.music.disconnect();
     if (job.effect) window.setTimeout(() => s.play(job.effect), 10);
     // a storm's flashes, as the page's weather sends them (lot S2: src/atmosphere/Weather.ts)
