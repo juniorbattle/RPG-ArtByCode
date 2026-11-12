@@ -41,6 +41,9 @@ export interface AutoAction {
   gap?: number;
   ward?: AutoEffect;
   boost?: AutoEffect;
+  /** a ward the automatic raises to cover (as soon as it is ready and the AP left still pay an offensive skill, the opponent not broken), not only against a blow
+   *  seen coming */
+  cover?: boolean;
   /** a rival's skill: its weight among the skills it may choose */
   weight?: number;
   /** a rival's heavy blow (chosen by its own share), Ren's heavy attack (the finisher that may wound him: the game's V2B1-1) */
@@ -254,7 +257,8 @@ const active = (e: { until: number } | null, t: number): boolean => !!e && e.unt
 
 /** The automatic that places its supports (AC-09; the prototype's `autoSmartDecider`, journal Passe AC3), in the order of the player's skills (Ren's
  *  `skills`: the first that holds, AC-09 « le joueur règle ses quatre compétences et leur ordre »):
- *  - a ward when the opponent charges a heavy blow or a skill that would leave while the ward is up, or when its own gauge passes two thirds;
+ *  - a ward when the opponent charges a heavy blow or a skill that would leave while the ward is up, or when its own gauge passes two thirds; a ward that
+ *    covers (`cover`) also as soon as the AP left after it still pay an offensive skill, unless the opponent is broken;
  *  - a boost when the opponent is broken, or when an offensive skill ready now can follow it (its AP after the boost's);
  *  - an offensive skill as soon as it can pay it and it is ready;
  *  - else the light attack, which gains the AP. */
@@ -268,6 +272,7 @@ export const playerDecider: AutoDecider = (v, x) => {
       if (wardTried || active(me.ward, t)) continue;
       wardTried = true;
       if ((foeBig && foeLeft > v.chargeOf(me, s)) || g >= (2 / 3) * v.rules.gauge.max) return s;
+      if (s.cover && !foe.broken && x.skills.some((o) => offensive(o) && me.ap >= (s.ap ?? 0) + (o.ap ?? 0))) return s;
       continue;
     }
     if (s.boost) {

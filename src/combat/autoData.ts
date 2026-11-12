@@ -33,6 +33,8 @@ export interface AutoSkillDef {
   /** a ward's or a boost's effect at level 1 */
   ward?: AutoEffect;
   boost?: AutoEffect;
+  /** a ward the automatic raises to cover, not only against a blow seen coming (AutoAction.cover) */
+  cover?: boolean;
   /** its charge times by level when they are not the catalogue's */
   charge?: Times;
 }
@@ -75,7 +77,7 @@ export function autoSkill(id: string, level: number, effect = 1): AutoAction {
   const a: AutoAction = { id, kind: id === 'heavy' ? 'heavy' : 'skill', family: d.family, charge: autoCharge(id, lv), ap: d.ap, cooldown: AUTO_COOLDOWN * autoCharge(id, 1) };
   if (id === 'heavy') a.heavy = true;
   const eff = (e: AutoEffect): AutoEffect => ({ dur: +(e.dur * k * effect).toFixed(2), dmg: e.dmg, gauge: e.gauge });
-  if (d.ward) a.ward = eff(d.ward);
+  if (d.ward) { a.ward = eff(d.ward); if (d.cover) a.cover = true; }
   else if (d.boost) a.boost = eff(d.boost);
   else {
     a.power = autoPower(id, lv); a.gauge = a.power * GAUGE_SKILL * (d.gaugeK ?? 1);
@@ -118,7 +120,8 @@ export function autoRen(stats: FighterStats, kit: AutoKit, o: { weapon?: string 
  *  its own skills (an offensive one's charge from its wind-up, its power by its charge against 3.5 s; a ward or a boost charged 2.5 s), each at its own
  *  cooldown and weight; its habits (the share of its choices a ready skill takes, its heavy blow's, its combo's among its light blows); its traits (today's
  *  dodge, half its guard: AC-05) */
-export interface AutoFoeSkill { id: string; family: AutoFamily; charge: number; cooldown: number; weight: number; ward?: AutoEffect; boost?: AutoEffect }
+/** `gaugeK`: what an offensive skill adds to the gauge against its power × 0.25 (a rival's breaker: its blow made to break the guard) */
+export interface AutoFoeSkill { id: string; family: AutoFamily; charge: number; cooldown: number; weight: number; ward?: AutoEffect; boost?: AutoEffect; gaugeK?: number }
 export interface AutoFoeDef {
   light: number; combo: { n: number; gap: number }; skills: AutoFoeSkill[];
   ai: { chance: number; heavy: number; combo: number }; traits: { dodge: number; guard: number };
@@ -137,20 +140,24 @@ export const AUTO_FOES: Record<string, AutoFoeDef> = {
 };
 /** a rival's blows at equal stats (POWER: the DB7 sheet's, ×2 with Ren's health since DB11-6): its light blow, its heavy one, an offensive skill of 3.5 s */
 const FOE_HEAVY_CHARGE = 1.6, FOE_COMBO_CHARGE = 1.4, FOE_COMBO_SHARE = 0.75, FOE_SKILL_REF = 3.5, FOE_GAUGE_LIGHT = 0.1;
+/** the rivals' cadence (the operator's note on AC-01, word for word « mais il faut s'assurer que cela soit rythme, dynamique », journal Passe AC4): a rival's
+ *  light attack's and combo's charge × `light`, its heavy blow's and its skills' × `big`, each one's power × the same (its damage and its gauge a second
+ *  kept), a skill's cooldown unchanged; 1 = the prototype's */
+export const AUTO_CADENCE = { light: 1, big: 1 };
 const r2 = (x: number): number => +x.toFixed(2);
 
 /** a rival's actions: its light attack, its combo, its heavy blow and its skills (`skills`, the heavy blow first) */
 export function autoFoeActions(kitOf: string): Pick<AutoFighter, 'light' | 'combo' | 'skills' | 'ai'> {
-  const K = AUTO_FOES[kitOf] ?? AUTO_FOES.marek, cL = K.light, n = K.combo.n;
-  const light: AutoAction = { id: 'm_light', kind: 'light', charge: cL, power: POWER.foeLight, gauge: POWER.foeLight * FOE_GAUGE_LIGHT, ap: 0 };
-  const cp = POWER.foeLight * FOE_COMBO_SHARE * n;
+  const K = AUTO_FOES[kitOf] ?? AUTO_FOES.marek, c = AUTO_CADENCE.light, cb = AUTO_CADENCE.big, cL = K.light * c, n = K.combo.n, pl = POWER.foeLight * c;
+  const light: AutoAction = { id: 'm_light', kind: 'light', charge: cL, power: pl, gauge: pl * FOE_GAUGE_LIGHT, ap: 0 };
+  const cp = pl * FOE_COMBO_SHARE * n;
   const combo: AutoAction = { id: 'm_combo', kind: 'light', charge: r2(cL * FOE_COMBO_CHARGE), power: cp, gauge: cp * FOE_GAUGE_LIGHT, ap: 0, hits: Array(n).fill(1 / n), gap: K.combo.gap };
-  const heavy: AutoAction = { id: 'm_heavy', kind: 'skill', heavy: true, charge: cL * FOE_HEAVY_CHARGE, power: POWER.foeHeavy, gauge: POWER.foeHeavy * GAUGE_SKILL, ap: 0 };
+  const heavy: AutoAction = { id: 'm_heavy', kind: 'skill', heavy: true, charge: K.light * cb * FOE_HEAVY_CHARGE, power: POWER.foeHeavy * cb, gauge: POWER.foeHeavy * cb * GAUGE_SKILL, ap: 0 };
   const skills: AutoAction[] = [heavy, ...K.skills.map((s): AutoAction => {
-    const a: AutoAction = { id: s.id, kind: 'skill', family: s.family, charge: s.charge, ap: 0, cooldown: s.cooldown, weight: s.weight };
+    const a: AutoAction = { id: s.id, kind: 'skill', family: s.family, charge: s.charge * cb, ap: 0, cooldown: s.cooldown, weight: s.weight };
     if (s.ward) a.ward = { ...s.ward };
     else if (s.boost) a.boost = { ...s.boost };
-    else { a.power = POWER.foeSkill * (s.charge / FOE_SKILL_REF); a.gauge = a.power * GAUGE_SKILL; }
+    else { a.power = POWER.foeSkill * (s.charge / FOE_SKILL_REF) * cb; a.gauge = a.power * GAUGE_SKILL * (s.gaugeK ?? 1); }
     return a;
   })];
   return { light, combo, skills, ai: { ...K.ai } };

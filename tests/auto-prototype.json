@@ -1,0 +1,478 @@
+{
+ "note": "The workshop prototype complete model (journal Passe AC3: tools/auto-duel/kits.mjs with KIT.combos on, the race level-P3), as the duel played by the computer read it before its balance (lot 1): the tables tests/combat-auto.test.mjs proves the port on.",
+ "skills": {
+  "heavy": {
+   "family": "offensive",
+   "ap": 1
+  },
+  "t1": {
+   "family": "offensive",
+   "ap": 2,
+   "hits": [
+    0.5,
+    0.5
+   ],
+   "gap": 0.25
+  },
+  "t2": {
+   "family": "offensive",
+   "ap": 2,
+   "pierce": true
+  },
+  "t3": {
+   "family": "offensive",
+   "ap": 3,
+   "gaugeK": 2.5,
+   "hits": [
+    0.36,
+    0.36,
+    0.36
+   ],
+   "gap": 0.25
+  },
+  "t4": {
+   "family": "offensive",
+   "ap": 4
+  },
+  "d1": {
+   "family": "defensive",
+   "ap": 2,
+   "ward": {
+    "dur": 9,
+    "dmg": 0.6,
+    "gauge": 0.5
+   }
+  },
+  "s1": {
+   "family": "support",
+   "ap": 3,
+   "boost": {
+    "dur": 12,
+    "dmg": 1.25,
+    "gauge": 1.5
+   }
+  },
+  "k_sunder": {
+   "family": "offensive",
+   "ap": 2,
+   "gaugeK": 2.5
+  },
+  "k_feint": {
+   "family": "offensive",
+   "ap": 1,
+   "pierce": true
+  },
+  "k_iron": {
+   "family": "defensive",
+   "ap": 2,
+   "ward": {
+    "dur": 11.2,
+    "dmg": 0.8,
+    "gauge": 0.3
+   }
+  },
+  "k_parry": {
+   "family": "defensive",
+   "ap": 1,
+   "ward": {
+    "dur": 4.8,
+    "dmg": 0.35,
+    "gauge": 0.6
+   }
+  },
+  "k_cry": {
+   "family": "support",
+   "ap": 2,
+   "boost": {
+    "dur": 7.5,
+    "dmg": 1.45,
+    "gauge": 1.2
+   }
+  },
+  "k_focus": {
+   "family": "support",
+   "ap": 2,
+   "boost": {
+    "dur": 13,
+    "dmg": 1.1,
+    "gauge": 2
+   }
+  }
+ },
+ "foes": {
+  "vessa": {
+   "light": 1.9,
+   "combo": {
+    "n": 4,
+    "gap": 0.26
+   },
+   "skills": [
+    {
+     "id": "m_lunge",
+     "family": "offensive",
+     "charge": 3,
+     "cooldown": 16,
+     "weight": 2
+    },
+    {
+     "id": "m_tempo",
+     "family": "support",
+     "charge": 2.5,
+     "cooldown": 30,
+     "weight": 1,
+     "boost": {
+      "dur": 7,
+      "dmg": 1.25,
+      "gauge": 1.4
+     }
+    },
+    {
+     "id": "m_brace",
+     "family": "defensive",
+     "charge": 2.5,
+     "cooldown": 36,
+     "weight": 1,
+     "ward": {
+      "dur": 6,
+      "dmg": 0.6,
+      "gauge": 0.5
+     }
+    }
+   ],
+   "ai": {
+    "chance": 0.3,
+    "heavy": 0.25,
+    "combo": 0.842
+   },
+   "traits": {
+    "dodge": 0.35,
+    "guard": 0.05
+   }
+  },
+  "tobin": {
+   "light": 2.8,
+   "combo": {
+    "n": 3,
+    "gap": 0.38
+   },
+   "skills": [
+    {
+     "id": "m_wild",
+     "family": "offensive",
+     "charge": 3.9,
+     "cooldown": 20,
+     "weight": 2
+    },
+    {
+     "id": "m_grit",
+     "family": "support",
+     "charge": 2.5,
+     "cooldown": 36,
+     "weight": 1,
+     "boost": {
+      "dur": 6,
+      "dmg": 1.25,
+      "gauge": 1.4
+     }
+    }
+   ],
+   "ai": {
+    "chance": 0.22,
+    "heavy": 0.38,
+    "combo": 0.563
+   },
+   "traits": {
+    "dodge": 0,
+    "guard": 0
+   }
+  },
+  "cassius": {
+   "light": 2.5,
+   "combo": {
+    "n": 3,
+    "gap": 0.36
+   },
+   "skills": [
+    {
+     "id": "m_riposte",
+     "family": "offensive",
+     "charge": 3.4,
+     "cooldown": 20,
+     "weight": 2
+    },
+    {
+     "id": "m_gild",
+     "family": "support",
+     "charge": 2.5,
+     "cooldown": 32,
+     "weight": 1,
+     "boost": {
+      "dur": 8,
+      "dmg": 1.25,
+      "gauge": 1.4
+     }
+    },
+    {
+     "id": "m_brace",
+     "family": "defensive",
+     "charge": 2.5,
+     "cooldown": 36,
+     "weight": 1,
+     "ward": {
+      "dur": 6,
+      "dmg": 0.6,
+      "gauge": 0.5
+     }
+    }
+   ],
+   "ai": {
+    "chance": 0.3,
+    "heavy": 0.46,
+    "combo": 0.571
+   },
+   "traits": {
+    "dodge": 0.2,
+    "guard": 0.1
+   }
+  },
+  "orla": {
+   "light": 2.2,
+   "combo": {
+    "n": 3,
+    "gap": 0.33
+   },
+   "skills": [
+    {
+     "id": "m_shoulder",
+     "family": "offensive",
+     "charge": 3.7,
+     "cooldown": 22,
+     "weight": 2
+    },
+    {
+     "id": "m_brace",
+     "family": "defensive",
+     "charge": 2.5,
+     "cooldown": 34,
+     "weight": 1,
+     "ward": {
+      "dur": 6,
+      "dmg": 0.6,
+      "gauge": 0.5
+     }
+    }
+   ],
+   "ai": {
+    "chance": 0.25,
+    "heavy": 0.45,
+    "combo": 0.667
+   },
+   "traits": {
+    "dodge": 0,
+    "guard": 0.075
+   }
+  },
+  "ilse": {
+   "light": 2.5,
+   "combo": {
+    "n": 3,
+    "gap": 0.33
+   },
+   "skills": [
+    {
+     "id": "m_smite",
+     "family": "offensive",
+     "charge": 3.8,
+     "cooldown": 22,
+     "weight": 2
+    },
+    {
+     "id": "m_aegis",
+     "family": "defensive",
+     "charge": 2.5,
+     "cooldown": 34,
+     "weight": 1,
+     "ward": {
+      "dur": 7,
+      "dmg": 0.6,
+      "gauge": 0.5
+     }
+    },
+    {
+     "id": "m_prayer",
+     "family": "support",
+     "charge": 2.5,
+     "cooldown": 36,
+     "weight": 1,
+     "boost": {
+      "dur": 6,
+      "dmg": 1.25,
+      "gauge": 1.4
+     }
+    }
+   ],
+   "ai": {
+    "chance": 0.28,
+    "heavy": 0.367,
+    "combo": 0.625
+   },
+   "traits": {
+    "dodge": 0,
+    "guard": 0.15
+   }
+  },
+  "marek": {
+   "light": 2.2,
+   "combo": {
+    "n": 3,
+    "gap": 0.33
+   },
+   "skills": [
+    {
+     "id": "m_ironfall",
+     "family": "offensive",
+     "charge": 4.3,
+     "cooldown": 26,
+     "weight": 2
+    },
+    {
+     "id": "m_bulwark",
+     "family": "defensive",
+     "charge": 2.5,
+     "cooldown": 34,
+     "weight": 1,
+     "ward": {
+      "dur": 7,
+      "dmg": 0.6,
+      "gauge": 0.5
+     }
+    },
+    {
+     "id": "m_resolve",
+     "family": "support",
+     "charge": 2.5,
+     "cooldown": 40,
+     "weight": 1,
+     "boost": {
+      "dur": 8,
+      "dmg": 1.25,
+      "gauge": 1.4
+     }
+    }
+   ],
+   "ai": {
+    "chance": 0.32,
+    "heavy": 0.4,
+    "combo": 0.75
+   },
+   "traits": {
+    "dodge": 0,
+    "guard": 0.175
+   }
+  },
+  "rhosk": {
+   "light": 2.5,
+   "combo": {
+    "n": 3,
+    "gap": 0.38
+   },
+   "skills": [
+    {
+     "id": "m_cleave",
+     "family": "offensive",
+     "charge": 4.4,
+     "cooldown": 26,
+     "weight": 2
+    },
+    {
+     "id": "m_roar",
+     "family": "support",
+     "charge": 2.5,
+     "cooldown": 34,
+     "weight": 1,
+     "boost": {
+      "dur": 8,
+      "dmg": 1.25,
+      "gauge": 1.4
+     }
+    },
+    {
+     "id": "m_hide",
+     "family": "defensive",
+     "charge": 2.5,
+     "cooldown": 36,
+     "weight": 1,
+     "ward": {
+      "dur": 7,
+      "dmg": 0.6,
+      "gauge": 0.5
+     }
+    }
+   ],
+   "ai": {
+    "chance": 0.28,
+    "heavy": 0.54,
+    "combo": 0.583
+   },
+   "traits": {
+    "dodge": 0,
+    "guard": 0.075
+   }
+  }
+ },
+ "weapons": {
+  "training-sword": {
+   "hits": [
+    0.55,
+    0.55
+   ],
+   "gap": 0.3
+  },
+  "imported-blade": {
+   "hits": [
+    0.62,
+    0.62
+   ],
+   "gap": 0.32
+  },
+  "duelist-sabre": {
+   "hits": [
+    0.42,
+    0.42,
+    0.42
+   ],
+   "gap": 0.22
+  }
+ },
+ "race": {
+  "norm": {
+   "vessa": 0.974,
+   "tobin": 1.333,
+   "cassius": 1.084,
+   "orla": 0.877,
+   "ilse": 0.987,
+   "marek": 0.826,
+   "rhosk": 0.948
+  },
+  "pool": [
+   1,
+   1.1,
+   1.2
+  ],
+  "stage": {
+   "1": 1.267,
+   "2": 1.533
+  },
+  "prepFrom": 20,
+  "prepPer": 25
+ },
+ "light": {
+  "charge": 1.2,
+  "power": 6,
+  "gauge": 0.6000000000000001
+ },
+ "cadence": {
+  "light": 1,
+  "big": 1
+ }
+}
