@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), l'essai de l'opérateur à venir** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -583,6 +583,34 @@ Les choix de l'opérateur, mot pour mot :
   étendu aux 715 kits) et les temps de charge des compétences de Ren (la note de LC1-2 : au niveau 1, la Taille éclair 3,4 s, le Tourbillon 5,1 s, l'Estoc
   7,65 s, Rempart 3,0 s, Ferveur 4,25 s, l'attaque simple 1,2 s, quand les gros coups des rivaux chargent 1,5 à 2,2 s à la cadence ×0,5), mesurés ensemble,
   puis la course relue sur 200 parties tenues à part.
+
+## 20. Le lot 2 construit (12/11/2026, journal Passe LC3)
+
+Le duel joué par l'ordinateur est le duel du jeu par défaut : chaque partie de la version 2 y joue le combat du jour, les défis et les représailles, et ses
+combats hors écran (AC-18) ; `flags.autoDuel` n'existe plus. Le jeu par défaut rejoue au JSON près les parties `--rules=auto` du lot 1 (cinq politiques,
+graines 1 à 30). Le jeu d'aujourd'hui (`v2=0`) garde son duel.
+
+- **AC-11 dans la table de l'équipement** : chaque point de chaque pièce, de la forge et de la pierre à aiguiser doublé dans `GEAR` (malus compris ; les PA
+  et la durée des effets gardés) : la page de l'équipement, la fiche de match et le duel disent le même nombre.
+- **L'arène joue le script** (`src/arena/autoView.ts`, `AutoHud.ts`) : le duel décidé avant (le résultat du jeu), son déroulé montré sur les feuilles de combat
+  approuvées sans image nouvelle (la charge de Ren sur ses images de charge, le télégraphe du rival qui charge un gros coup, l'élan et le coup à l'instant du
+  script, l'esquive, la garde, l'étourdi, les effets, le K.O.) ; les cartes portent chacune la charge en cours sur la ligne de temps, la jauge de rupture, les
+  effets ; le pied, les quatre compétences de Ren dans son ordre avec leurs recharges, puis ×2 et « Passer » (sur les touches de l'attaque et de l'esquive) ;
+  la pause et ses réglages. `?scene=arena` seul joue ce duel ; l'ancien duel à trois touches reste derrière `?duel=charge` pour ses preuves jusqu'au lot 5.
+- **La fiche de match** : les deux combattants comme le duel les construit (la santé du combat, les quatre stats, la forme du jour de chacun, l'esquive et la
+  garde de chacun contre l'autre), l'entraînement du rival en points d'Attaque (AC-17), l'ordre des quatre que le joueur règle (AC-09 : `kit.order`, l'action
+  `setOrder`, les touches gauche et droite sur une compétence emportée, dans la fiche comme dans la page des compétences). Elle ne montre pas de chances de
+  victoire (aucune décision ne les demande : carte LC3-7).
+- **Les deux réglages de LC1-3, mesurés ensemble** (temps de charge de Ren, la note de LC1-2 ; le catalogue entier, 715 kits) : raccourcir les charges divise
+  presque par deux les silences, mais avec la pente de poule décidée (+15 %, A3) le jour 5 tombe de 75 % à 19-47 % ; calée autrement, la course sort de DB5
+  (A3) ; les retouches du catalogue cassent le test de AC-12 ou la course. **Aucun nombre ne change** ; trois cartes pour l'opérateur (LC3-3 à LC3-5).
+- **La course relue** sur 200 parties tenues à part (101 à 300) : la référence 96 / 95 / 75 / 70 / 52 %, 34 % de titres (le planificateur 14 %, le curieux 5 %) ;
+  des combats de 153 / 228 / 247 s en médiane ; 10,5 % du temps en silences de plus de 3 s.
+- **Les écarts jusqu'aux lots suivants** : le tutoriel du premier duel (TU-11) ne s'affiche plus et le guide décrit l'ancien duel (lot 3) ; le son n'a pas de
+  moments neufs (lot 4) ; les touches et les outils de l'ancien duel (lot 5).
+
+La fiche de l'essai : https://claude.ai/artifact/7j6XSZttdz2Q8HoPgR6SkT (`briefs/fiche-combat-auto-lot2.html`), dix cartes LC3-1 à LC3-10, à remplir après
+l'essai de l'opérateur.
 
 ---
 

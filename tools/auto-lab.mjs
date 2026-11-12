@@ -1,5 +1,5 @@
 // The laboratory of the duel played by the computer (lot 1 of briefs/combat-auto.md § 17.3): the game's own duel (src/combat/auto.ts, autoData.ts,
-// autoMatch.ts) measured on whole games of the TournamentLab (`--rules=auto`: the player's bouts, his challenges and the off-screen bouts in the new duel)
+// autoMatch.ts) measured on whole games of the TournamentLab (a version 2 game's, the default game's since lot 2: the player's bouts, his challenges and the off-screen bouts in the new duel)
 // and on isolated duels. Node only, no browser. The workshop's prototype (tools/auto-duel-lab.mjs) measured the sheet; this one measures the game.
 //   node tools/auto-lab.mjs games [--policies=reference,planner,curious,diligent,idle] [--seeds=101..160] [--json=f]
 //       the stages won (days 2, 4, 5, the semi-final, the third place, the final), the titles, the bouts' length, skills, blows, breaks, turns, and the rhythm

@@ -1,0 +1,336 @@
+<title>Combat auto, essai</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions du responsable · 12/11/2026</span>
+    <h1>Fiche d'arbitrages — ton essai du combat joué par l'ordinateur</h1>
+    <p class="lede">Le lot 2 est construit : le combat joué par l’ordinateur est le duel du jeu par défaut, l’arène joue son déroulé, la fiche de match dit ce qui le décide et tu y règles l’ordre de tes quatre compétences (journal Passe LC3). Avant ton essai, l’équilibre du catalogue et les temps de charge de Ren ont été mesurés ensemble : je ne change rien sans toi. Joue d’abord (le mode d’emploi est en bas), puis clique tes choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Ton essai, pas à pas</h2>
+    <p>1. Ouvre le jeu à son adresse habituelle (http://127.0.0.1:5173/, le dossier principal sur main à jour), « Nouvelle partie ». 2. Prépare-toi le premier jour comme tu veux (achats, entraînement, compétences). 3. Le jour 2 après-midi, « Entrer dans l’arène » ouvre la fiche de match : lis-la, règle l’ordre de tes quatre compétences (gauche / droite sur une compétence emportée), puis Entrée. 4. Regarde le combat à ×1, puis essaie ×2 (J) et « Passer » (L), la pause (Espace). 5. Va aussi loin que tu veux dans le tournoi : chaque combat se prépare ainsi.</p>
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne dans les documents du projet, puis j’enchaîne sur la suite décidée (le lot 3, ou ce que tes choix demandent d’abord).</p>
+    <p class="src">Sources : JOURNAL.md, Passes LC1, LC2, LC3 ; briefs/combat-auto.md (§ 17, § 19, § 20) ; tests/auto-arena.test.mjs ; tools/auto-arena-proof.mjs, tools/auto-lab.mjs.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+// Apostrophes : l’apostrophe typographique ’ (ou \') ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+const GROUPS = [
+  { id: 'essai', title: 'Ton essai du lot 2', sub: 'Le duel joué par l’ordinateur est le duel du jeu par défaut : une nouvelle partie, la fiche de match avant chaque combat, l’arène qui joue le combat. Joue d’abord, puis réponds à ces deux cartes.', fam: 'var(--astre)', items: [
+    { id: 'LC3-1', tag: 'lot 2 · AC-20', title: 'Le duel joué par l’ordinateur, dans le jeu',
+      ctx: 'Chaque combat d’une partie (le combat du jour, un défi, une représaille, et les combats que tu ne vois pas) est décidé par la simulation du lot 1, avant que l’arène s’ouvre ; l’arène joue son déroulé avec les feuilles de combat déjà approuvées, sans image nouvelle : chacun charge son action (sa barre se remplit sur sa carte), puis elle part, en un coup ou en enchaînement. En bas : tes quatre compétences dans ton ordre (celle en charge allumée, la recharge en secondes), puis ×2 et « Passer » (sur tes touches d’attaque et d’esquive : J et L, X et A à la manette ; Espace la pause et ses réglages). L’équipement compte double, comme tu l’as décidé (AC-11) : la page de l’équipement, la fiche de match et le duel disent le même nombre. Le jeu d’aujourd’hui (v2=0) n’a pas changé.',
+      shots: [['img/arene-foeCharge.jpg', 'Orla charge un coup puissant (sa barre en haut à droite), Ren son attaque ; en bas l’ordre, une recharge (9 s), ×2 et Passer'], ['img/arene-renSkill.jpg', 'Une compétence de Ren qui part, à l’instant du déroulé']],
+      rec: 'Reçu si le duel se lit (qui charge quoi, pourquoi un coup passe ou non) et si préparer change quelque chose pour toi ; sinon dis ce qui manque en note.',
+      opts: ['Reçu', 'Reçu avec retours (en note)', 'À reprendre (en note)'], recIdx: 0,
+      src: 'journal Passe LC3 ; src/arena/autoView.ts, AutoHud.ts ; src/combat/autoMatch.ts' },
+    { id: 'LC3-2', tag: 'AC-01 · LC1-2', title: 'Le rythme, que tu voulais juger en jouant',
+      ctx: 'Ta note sur AC-01 : « mais il faut s’assurer que cela soit rythme, dynamique » ; ton choix LC1-2 : « Garder ×0,5 et juger à mon essai ». Mesuré sur les 200 parties du joueur de référence (graines 101 à 300) : 72 coups par minute, 10,5 % du temps dans des silences de plus de 3 s sans coup (41 % dans le prototype de l’atelier), le plus long silence d’un combat 5,2 s en médiane, 8,5 s au plus ; sans aucun événement visible (coup, protection, soutien, rupture), 3,6 % du temps. Les combats durent 153 / 228 / 247 s en médiane (poule, tableau, finale) : DB5 tenue. Pendant les silences, les barres de charge se remplissent sur les cartes, et la caméra s’avance quand le rival charge un gros coup.',
+      shots: [['img/arene-renCharge.jpg', 'Ren charge Taille éclair (sa barre sous ses PV) pendant qu’Orla charge un enchaînement']],
+      rec: 'Ton ressenti décide ; si c’est trop lent, la carte LC3-3 dit ce que coûte de raccourcir les charges de Ren.',
+      opts: ['Le rythme convient', 'Trop lent : il faut plus de mouvement (en note)', 'Trop rapide pour suivre (en note)'], recIdx: 0,
+      src: 'journal Passe LC3 ; tools/auto-lab.mjs games --seeds=101..300' },
+  ]},
+  { id: 'mesures', title: 'Les deux réglages mesurés avant ton essai', sub: 'Ton choix LC1-3 « Reprendre au lot 2, avant mon essai », et ta note sur LC1-2. Mesurés ensemble, sur 715 kits et des parties entières ; je ne change rien sans toi.', fam: 'var(--voile)', items: [
+    { id: 'LC3-3', tag: 'note de LC1-2', title: 'Raccourcir les temps de charge des compétences de Ren ?',
+      ctx: 'Ta note : « il faut peut etre penser a baisser le temps de charge pour une competences car elle etait adapter a notre systeme de combat premier avec l’inspiration de Cyn de FF6 ». Aujourd’hui, au niveau 1 : coup lourd 1,7 s, Taille éclair 3,4 s, Estoc 7,65 s, Rempart 3,0 s, Ferveur 4,25 s (les gros coups des rivaux 1,5 à 2,2 s). Mesuré : tout ×0,75 ou ×0,6 divise presque par deux les silences (de 10,5 % à 4 à 7 % du temps ; à ×0,6, plus aucun silence de plus de 3 s sans événement) ; raccourcir les seules compétences longues ne change presque rien. Mais la victoire est une marche raide : avec la pente de poule que tu as décidée (+15 % par tour, A3), le jour 5 tombe de 75 % à 19 à 47 %, et le palier du tableau passe sous le troisième tour de poule (contre AC-16). En calant la poule sur son jour 5 (carte LC3-5) : ×0,75, la référence 100 / 98 / 80 / 59 / 51 % et 28 % de titres, mais 35 % des tableaux et 65 % des finales au-delà de 5 min (DB5) et le jour 2 gagné d’avance ; ×0,6 (les dégâts par seconde gardés) 100 / 97 / 80 / 63 / 48 %, 30 %, 45 % et 35 % au-delà de 5 min.',
+      rec: 'Les garder pour ton essai : la course tient ta cible (34 % de titres) et DB5 aussi. Raccourcir touche deux de tes décisions A3 (la pente de poule, la durée DB5) : à décider après avoir joué, avec la carte LC3-5.',
+      opts: ['Les garder pour l’essai, juger en jouant', 'Tout ×0,75 avec la poule calée sur le jour 5 (change DB5 : décision A3)', 'Tout ×0,6 avec la poule calée sur le jour 5 (change DB5 : décision A3)'], recIdx: 0,
+      src: 'journal Passe LC3 ; note des mesures du lot 2 (§ 1) ; src/combat/autoData.ts' },
+    { id: 'LC3-4', tag: 'LC1-3 · AC-12', title: 'L’équilibre du catalogue entier',
+      ctx: 'Les 715 kits de quatre compétences, chaque rival ramené au niveau où le kit de départ (Taille éclair, Estoc, Rempart, Ferveur) fait la cible de l’étape contre lui : aucun kit ne domine à aucune étape, et le test de AC-12 du lot 1 tient aux trois étapes sur les graines tenues à part (101 à 160). Restent : Rempart dans aucun bon kit de finale ; Peau de fer forte en poule et au tableau (dans 30 à 67 % des bons kits) ; le sabre meilleur que la lame contre les sept rivaux en finale (la lame au tableau) ; l’Estoc (7,65 s, exposée) faible partout. Une recherche sur les données resserre les compétences (l’écart de 30 à 19 points, Rempart utile en finale), mais casse le test de AC-12, dégrade le rythme (14 % de silences) et fait tomber le jour 5 à 42 % ; toute retouche du kit de départ (Rempart à 1 PA seul compris) aussi (49 à 51 %). Retoucher hors du kit de départ laisse la course au chiffre près, mais Peau de fer devient alors aussi faible que Rempart en finale.',
+      rec: 'Garder les tables du lot 1 pour ton essai : tu juges Rempart, Peau de fer, le sabre et l’Estoc en jouant, et on reprend ensuite avec la carte LC3-5.',
+      opts: ['Garder les tables du lot 1 pour l’essai', 'Retoucher hors du kit de départ (Peau de fer moins forte, rien pour Rempart)', 'Rééquilibrer tout le catalogue et recaler la course'], recIdx: 0,
+      src: 'journal Passe LC3 ; note des mesures du lot 2 (§ 2)' },
+    { id: 'LC3-5', tag: 'AC-16 · procédé', title: 'Le calage de la course (le procédé, pas la pente)',
+      ctx: 'Aujourd’hui, le niveau commun de chaque rival en poule est calé pour que la référence le batte 95 fois sur 100 au jour 2 ; la pente de +15 % par tour (ta décision LC1-1) fait le reste. Les jours 4 et 5 ne tombent juste que si la référence grandit d’autant entre le jour 2 et le jour 5 : c’est le cas aujourd’hui (la Taille éclair exercée, la maille, la vigueur), mais pas dès que ses compétences changent. 5 % de force en plus ou en moins chez tous les rivaux font passer ses titres de 65 à 11 %. Caler le niveau commun sur les trois jours de poule (au plus près de 95 / 85 / 75 %) au lieu du seul jour 2 tient la poule quand les compétences changent (Rempart à 1 PA : 100 / 91 / 75 % au lieu de 94 / 85 / 49 %), avec le jour 2 à 100 %. La pente ne change pas.',
+      rec: 'Le garder tel quel pour ton essai ; le changer seulement si tu veux ensuite raccourcir les charges ou rééquilibrer le catalogue (cartes LC3-3 et LC3-4).',
+      opts: ['Le garder tel quel', 'Caler la poule sur ses trois jours (après l’essai, avec LC3-3 ou LC3-4)'], recIdx: 0,
+      src: 'journal Passe LC3 ; note des mesures du lot 2 (§ 2c, § 4) ; src/combat/autoData.ts AUTO_RACE' },
+  ]},
+  { id: 'fixe', title: 'Ce que le lot 2 a fixé sans fiche', sub: 'Des choix de construction dans l’esprit de tes choix, que je te montre ; aucun ne touche une décision A3.', fam: 'var(--ronce)', items: [
+    { id: 'LC3-6', tag: 'fiche de match', title: 'Ce que montre la fiche de match, et l’ordre que tu règles',
+      ctx: 'Avant chaque combat : les deux combattants côte à côte comme le duel les construit (la santé du combat, chacune doublée par DB5, les quatre stats), la forme du jour de chacun (AC-08, « +14 % »), l’esquive et la garde de chacun contre l’autre (contre une attaque simple, contre une compétence vue venir), l’entraînement du rival en points d’Attaque (AC-17, « Entraînement de Vessa Lark : Attaque +0,7 »), et « Votre ordre au combat » : tes quatre compétences dans l’ordre que suit l’automatique, avec leurs PA et leur charge. Sur une compétence emportée, tes touches gauche et droite (la croix de la manette) la font passer plus tôt ou plus tard ; c’est gardé dans la partie, et la page des compétences (K) le permet aussi. La fiche ne dit pas qui est favori.',
+      shots: [['img/fiche-de-match.jpg', 'La fiche de match d’une partie, avant le premier combat']],
+      rec: 'Bien ainsi pour l’essai ; si tu veux savoir l’effet d’un ordre ou d’un équipement avant de combattre, la carte suivante.',
+      opts: ['Bien ainsi', 'À revoir (en note)'], recIdx: 0,
+      src: 'journal Passe LC3 ; src/ui/townUi.ts, skills.ts ; src/simulation/v2skills.ts (setOrder)' },
+    { id: 'LC3-7', tag: 'après l’essai', title: 'Montrer une estimation des chances de victoire ?',
+      ctx: 'Le combat est décidé par l’état : rejouer le même duel sur d’autres tirages (avec les mêmes formes du jour) se calcule en quelques millisecondes, et dirait aussitôt ce que change un ordre, une pièce ou un entraînement. Aucune de tes décisions ne le demande ; ta comparaison du « match de chevaux » y fait penser (une cote). Le risque : tout se joue alors sur la fiche, et la surprise disparaît.',
+      rec: 'Rien de plus pour l’essai ; juge si la fiche suffit à préparer. S’il en faut plus, un mot (favori, serré, outsider) plutôt qu’un pourcentage, pour garder la surprise.',
+      opts: ['Rien de plus pour l’instant', 'Un mot : favori, serré, outsider', 'Un pourcentage de chances'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 7 (« la fiche de match dit tout ce qui décide ») ; § 3' },
+    { id: 'LC3-8', tag: 'touches', title: '×2 et « Passer » sur tes touches d’attaque et d’esquive',
+      ctx: 'Tu n’agis pas pendant le duel. Plutôt que d’ajouter des actions au remappage, ×2 est sur ta touche d’attaque (J, X à la manette), « Passer » sur ta touche d’esquive (L, A), la pause et ses réglages sur la tienne (Espace, Menu) ; les boutons de l’écran disent tes touches. La garde de l’ancien duel reste au remappage sans servir, jusqu’au lot 5 qui retire l’ancien duel et ses touches (§ 13 de la spécification).',
+      rec: 'Garder ainsi pour l’essai ; au lot 5, renommer les actions du duel au remappage (×2, Passer, Pause) et retirer les anciennes.',
+      opts: ['Garder ainsi ; renommer au lot 5', 'Des touches à part pour ×2 et Passer (en note)'], recIdx: 0,
+      src: 'src/arena/ArenaApp.ts (action) ; src/settings/keys.ts' },
+    { id: 'LC3-9', tag: 'lots 3 et 4', title: 'Le tutoriel du premier duel, le guide et le son, jusqu’à leurs lots',
+      ctx: 'Le tutoriel du premier duel (TU-11) apprenait la commande à trois touches (la charge tenue, le PA gagné par une frappe, la riposte) : le nouveau duel n’a aucun de ces moments, il ne s’affiche plus ; le guide (H) décrit encore l’ancien duel dans « Le duel ». Le son suit le nouveau duel par ce qu’il connaît (les coups, la garde, l’esquive, la rupture, les effets, le K.O., la foule ; la mélodie qui s’écarte quand le rival charge un gros coup) ; rien pour une charge qui commence, ni pour ×2 et « Passer ». C’est le lot 3 (le guide et le tutoriel) et le lot 4 (le son et les effets).',
+      rec: 'Bien ainsi : le lot 3 écrit le guide et le tutoriel de ce duel, puis le lot 4 son son.',
+      opts: ['Bien ainsi : lots 3 puis 4', 'Le lot 4 (le son) avant le lot 3'], recIdx: 0,
+      src: 'journal Passe LC3 ; briefs/combat-auto.md § 17.3' },
+    { id: 'LC3-10', tag: 'AC-18', title: 'Les combats que tu ne vois pas',
+      ctx: 'Ils passent par la même simulation, l’IA des deux côtés (AC-18). « Serré » quand le vainqueur finit à un quart de ses PV ou moins, « écrasant » au-delà de 70 %, une surprise quand le moins réputé bat un rival de 15 points de réputation de plus (proposé au lot 1, gardé). Entre rivaux, le moins fort gagne un quart du temps. Conséquence vue en construisant : les graines des états nommés de Rhosk (le sable du terrain d’entraînement) ont changé, le tirage n’étant plus le même.',
+      rec: 'Bien ainsi.',
+      opts: ['Bien ainsi', 'À revoir (en note)'], recIdx: 0,
+      src: 'src/tournament/pool.ts (playOffscreenMatches) ; journal Passes LC1, LC3' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
