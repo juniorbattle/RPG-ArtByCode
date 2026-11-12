@@ -159,6 +159,8 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
     clear: () => { engine.clear(); stress = -1; },
     stress: () => { stress = 0; },
     active: () => engine.activeCount,
+    /** a candidate of lot 4 on a fighter (src/arena/fx/fxCandidates.ts; journal Passe LC6), for its sheet's captures: no duel plays them */
+    candidate: async (id: string, who: FighterId = 'ren') => { const { FX_CANDIDATES } = await import('./fxCandidates'); const r = FX_CANDIDATES[id]; if (!r) throw new Error(`no candidate "${id}"`); if (fighters) self(r, fighters[who]); },
   } });
   return fx;
 }

@@ -1,0 +1,384 @@
+<title>Le son du duel joué par l’ordinateur</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+code { font-family: var(--font-mono); font-size: .86em; background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 3px; padding: 0 3px; overflow-wrap: anywhere; }
+.block { display: flex; flex-direction: column; gap: 14px; }
+.block h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.block > p { margin: 0; max-width: 68ch; }
+.block h3 { margin: 6px 0 0; font-size: 17px; }
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 22px; margin: 0; padding: 0; list-style: none; }
+.verdict li { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.verdict b { font-size: 16px; }
+.verdict span { color: var(--muted); font-size: 15px; }
+.scale { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.scale h3 { margin: 0; font-size: 16px; }
+.scale .sub { margin: 0 0 6px; font-size: 14px; color: var(--muted); }
+.srow { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; align-items: center; font-size: 14px; }
+.strack { position: relative; height: 18px; }
+.strack .band { position: absolute; top: 0; bottom: 0; background: var(--rec-soft); }
+.strack .bar { position: absolute; top: 5px; height: 8px; left: 0; background: var(--brass); border-radius: 0 4px 4px 0; }
+.strack .target .bar, .srow.target .bar { background: var(--rec); }
+.sval { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 13px; }
+.axis { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; font-size: 12px; color: var(--muted); }
+.axis div { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+th { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.st { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.st.ok { color: var(--rec); } .st.part { color: var(--astre); } .st.no { color: var(--cendre); }
+.wide { min-width: 720px; }
+.clips { display: grid; grid-template-columns: 1fr; gap: 18px; }
+.clip { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.clip figcaption { font-size: 14px; font-weight: 600; }
+.clip audio { width: 100%; height: 40px; }
+.clip img.spec { width: 100%; height: auto; aspect-ratio: 820 / 272; border-radius: 4px; display: block; }
+.note { font-size: 14px; color: var(--muted); }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px 24px; }
+.limits > div { min-width: 0; }
+.limits h3 { margin: 0 0 4px; }
+.limits ul { margin: 0; padding-left: 18px; font-size: 15px; display: flex; flex-direction: column; gap: 3px; }
+
+
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · duel joué par l’ordinateur · lot 4 · fiche d’écoute · 12 novembre 2026</span>
+    <h1>Le son et les effets des nouveaux moments</h1>
+    <p class="lede">Le duel se joue seul depuis le lot 2. Ses nouveaux moments avaient encore les sons et les effets de l’ancien duel à trois touches, ou rien : la charge de Ren, les coups d’un enchaînement, la forme du jour, ×2 et « Passer ». Ce lot leur donne d’abord les sons et les effets que tu as déjà approuvés (lot S3 du son, effets FX2 à FX5) : c’est branché dans le jeu, tu le juges à l’oreille et en jouant. Un seul moment n’avait rien d’approuvé, la forme du jour : son signe est un candidat, hors du jeu jusqu’à ta réponse.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="block" aria-labelledby="h-diag">
+    <h2 id="h-diag">Ce qui change</h2>
+    <ul class="verdict">
+      <li><b>La charge de Ren</b><span>Quand l’ordinateur fait charger une compétence à Ren, la barre se remplit avec la note de vibraphone de son palier, celle que tu entendais en relâchant cette compétence dans l’ancien duel. Un souffle très doux revient toutes les 0,6 s pendant la charge, puis le fouet quand l’action part. L’effet suit : l’énergie qui converge sur Ren, ses particules pendant la charge, l’éclat au départ. L’attaque simple charge sans rien, comme avant.</span></li>
+      <li><b>Les coups d’un enchaînement</b><span>Taille éclair frappe deux fois, Tourbillon trois fois, l’attaque simple deux ou trois fois selon l’arme. Le son et l’effet propres d’une compétence passent sur son premier coup ; les coups suivants prennent le coup simple de leur camp, et la foule ne réagit qu’au premier.</span></li>
+      <li><b>La musique</b><span>La règle F suit les moments de ce duel : la mélodie s’écarte pendant que l’adversaire charge un gros coup ou une compétence (sa « séquence »), la tension monte sur elle, pendant que Ren charge une compétence, sur un étourdissement et sous 30 % des PV.</span></li>
+      <li><b>×2 et « Passer »</b><span>×2 donne le clic de l’interface, au clavier et à la manette comme au bouton. « Passer » fait descendre la musique avec le fondu au noir (0,22 s), le K.O. arrive sous le noir, puis son jingle comme avant.</span></li>
+      <li><b>La jauge du HUD</b><span>Elle avait une ligne de retard sur le duel : la part d’un coup s’affiche maintenant au coup même. Le duel et ses règles ne changent pas.</span></li>
+    </ul>
+    <h3>Comment les extraits sont faits</h3>
+    <p class="note">Le vrai moteur du jeu joue les événements de la relecture de l’arène, au pas de l’arène : Ren d’une partie neuve contre Marek, Vessa et Orla de la poule, la musique, la foule et la règle F comprises. « Aujourd’hui » rejoue ces duels comme l’arène les jouait avant ce lot. Les deux versions sortent au même niveau (−17,8 et −17,7 LUFS sur la minute et demie du duel de Marek). Rien n’est cuit : aucun fichier neuf. Le signe de la forme du jour est calculé dans la page, comme les pas et la pluie du lot S2.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne au journal mot pour mot, puis je fais ce que tu as décidé : reprendre ce que tu notes, et brancher le signe de la forme du jour si tu le valides, avant ton essai en jeu.</p>
+    <p class="src">Sources : <code>briefs/combat-auto.md</code> § 17.3 (le lot 4), <code>briefs/fiche-son-duel.html</code> et <code>briefs/fiche-son-couches.html</code> (tes fiches du lot S3), <code>JOURNAL.md</code> Passes SN13 à SN17, FX2 à FX5, LC3 à LC6.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+  { id: "branche", title: "Ce qui est branché : tes sons et tes effets sur les nouveaux moments", sub: "Rien de neuf à entendre : des sons et des effets que tu as déjà approuvés, placés sur ce duel.", fam: "var(--astre)", items: [
+    { id: "LC6-1", tag: "à l’oreille", title: "Le duel, aujourd’hui et avec le lot 4",
+      ctx: "La même minute et demie du duel contre Marek, au même niveau. La première comme l’arène la jouait avant ce lot, la seconde avec la charge de Ren, les enchaînements et la musique qui suit sa charge. Les charges de Ren commencent à 0:01, 0:11, 0:17, 0:28, 0:37, 0:45 ; le second coup de Taille éclair tombe à 0:05, 0:31 et 0:53.",
+      clips: [["audio/L-duel-today.mp3", "Aujourd’hui, 1:30"], ["audio/L-duel-lot4.mp3", "Avec le lot 4, 1:30"]],
+      rec: "Bien ainsi : rien n’y est neuf, seulement placé sur les moments de ce duel.",
+      opts: ["Bien ainsi", "À reprendre (en note)"], recIdx: 0, src: "`src/arena/autoView.ts` (la relecture), `src/audio/sfx.ts`, `tools/audio/lot4-listen.mjs`" },
+    { id: "LC6-2", tag: "à l’oreille et à l’œil", title: "La charge de Ren",
+      ctx: "Quand l’ordinateur fait charger une compétence à Ren : la note de son palier au début de la barre (la place de la compétence parmi ses quatre, de la plus courte à la plus longue, comme dans l’ancien duel), un souffle toutes les 0,6 s tant qu’elle se remplit (il reprend après un étourdissement), le fouet quand l’action part. Environ 8 charges par minute, 3,4 s en médiane. L’effet de la charge et son éclat au départ sont les recettes de l’ancien duel. Dans l’extrait du duel : à 0:01 Taille éclair, à 0:11 Rempart, à 0:17 Estoc (le palier le plus haut).",
+      shots: [["img/charge-palier-2.png", "Le début de la charge (palier 2), la nuit"], ["img/charge-depart.png", "Le départ de l’action"]],
+      clips: [["audio/L-duel-lot4.mp3", "Le duel avec le lot 4 : les charges à 0:01, 0:11, 0:17"]],
+      rec: "Bien ainsi. Tu avais gardé le souffle du maintien sur la fiche des sons du duel (S3-CHARGE) ; si sa répétition lasse quand c’est l’ordinateur qui charge, la seconde option le retire.",
+      opts: ["Bien ainsi", "Sans le souffle pendant la charge", "À reprendre (en note)"], recIdx: 0, src: "`src/audio/sfx.ts` (`chargeLevel`, `holdOf`), `src/arena/fx/fxRecipes.ts` (`chargeTier`, `chargeHold`, `release`), carte S3-CHARGE" },
+    { id: "LC6-3", tag: "à l’oreille", title: "Les coups d’un enchaînement",
+      ctx: "Le premier coup d’une action porte son son et son effet ; les suivants prennent le coup simple de leur camp (l’acier de Ren, les peaux des rivaux), sans réaction de la foule. Taille éclair a son éclair une fois, Tourbillon ses trois taillades une fois, puisque son et effet les dessinent déjà. Environ 35 coups suivants par minute, dont 2 à 3 de compétences.",
+      clips: [["audio/L-duel-lot4.mp3", "Le second coup de Taille éclair à 0:05, 0:31 et 0:53"]],
+      rec: "Le son propre au premier coup seulement : rejoué à chaque coup, l’éclair et l’anneau de choc reviendraient deux ou trois fois en une demi-seconde.",
+      opts: ["Bien ainsi", "Le son et l’effet propres à chaque coup", "À reprendre (en note)"], recIdx: 0, src: "`src/audio/sfx.ts` (`sfxOf`, `crowdOf`), `src/arena/fx/combatFx.ts`" },
+    { id: "LC6-4", tag: "à l’oreille", title: "La garde, l’esquive, la rupture et le K.O.",
+      ctx: "Inchangés depuis le lot S3, ils suivent déjà ce duel : un coup gardé sonne la garde (et son effet), un coup esquivé le coup manqué, et l’esquive de Ren son propre souffle ; la rupture a son bris, l’étourdi et le souffle coupé de la foule ; le K.O. son coup ralenti, la clameur et le jingle. La jauge qui monte n’a pas de son à elle : le coup gardé et la rupture la disent.",
+      clips: [["audio/L-duel-lot4.mp3", "Le duel avec le lot 4 : une rupture de Ren à 1:11"]],
+      rec: "Bien ainsi : ce sont tes choix du lot S3.",
+      opts: ["Bien ainsi", "Un son quand une jauge approche de la rupture", "À reprendre (en note)"], recIdx: 0, src: "`src/audio/sfx.ts`, cartes S3-COUPS, S3-LECTURE, S3-KO" },
+    { id: "LC6-5", tag: "à l’oreille", title: "Les couches de la musique (règle F)",
+      ctx: "La séquence de l’adversaire, c’est désormais sa charge d’un gros coup ou d’une compétence, jusqu’à son coup : 8 par minute, 2,9 s en médiane (7 par minute et 1,1 à 2,7 s dans l’ancien duel). La tension monte aussi pendant que Ren charge une compétence, sur un étourdissement et sous 30 % des PV. Mesuré sur 14 duels : la mélodie bouge 17 fois par minute, la tension 12 fois (13 à 15 et 15 à 19 dans l’ancien duel). Les enchaînements de coups simples des rivaux (6 par minute) ne comptent pas comme une séquence.",
+      clips: [["audio/L-duel-lot4.mp3", "Le duel avec le lot 4 : l’adversaire charge à 0:02, 0:07, 0:09, 0:12"]],
+      rec: "Bien ainsi : les mêmes moments que la règle F, lus dans ce duel.",
+      opts: ["Bien ainsi", "La séquence aussi pendant ses enchaînements", "À reprendre (en note)"], recIdx: 0, src: "`src/audio/plan.ts` (`moodStep`, `layerLevels`), carte CQ-REGLE « F · Des niveaux plus doux »" },
+    { id: "LC6-6", tag: "à l’oreille", title: "×2 et « Passer »",
+      ctx: "×2 donne le clic de l’interface (le bouton du HUD le donnait déjà ; la touche et la manette le donnent aussi). Les sons suivent le duel deux fois plus vite, la musique garde son tempo. « Passer » fait descendre la musique avec le fondu au noir, le duel atteint son K.O. sous le noir, puis vient le jingle. Aujourd’hui, la musique continuait pendant le fondu et s’arrêtait au K.O.",
+      clips: [["audio/L-skip-today.mp3", "« Passer » à 0:12, aujourd’hui"], ["audio/L-skip-lot4.mp3", "« Passer » à 0:12, avec le lot 4"], ["audio/L-speed-today.mp3", "×2 à 0:08, aujourd’hui"], ["audio/L-speed-lot4.mp3", "×2 à 0:08, avec le lot 4"]],
+      rec: "Bien ainsi : la musique part avec l’image, comme à chaque changement de page.",
+      opts: ["Bien ainsi", "Sans le clic de ×2", "À reprendre (en note)"], recIdx: 0, src: "`src/audio/Sound.ts` (`duelEvent`), `src/arena/ArenaApp.ts`, `src/ui/curtain.ts`" },
+  ]},
+  { id: "forme", title: "Ce qui est neuf : le signe de la forme du jour", sub: "Un candidat, calculé dans la page, hors du jeu jusqu’à ta réponse.", fam: "var(--ronce)", items: [
+    { id: "LC6-7", tag: "à l’oreille et à l’œil", title: "La forme du jour au début du combat",
+      ctx: "La forme du jour (±15 %, AC-08) n’existe que sur la fiche de match et dans la leçon du tutoriel. Le candidat la montre une fois, au début du combat, pour chaque combattant à +5 % ou plus, ou à −5 % ou moins : en bonne forme, deux notes de vibraphone qui montent d’une quinte et des particules de sa couleur qui s’élèvent autour d’une petite lueur (l’or de Ren, le rouge de forge du rival) ; en forme basse, deux notes qui descendent, plus sombres, et quelques particules grises qui tombent. Le son est calculé dans la page : aucun octet cuit. La forme basse se voit à peine la nuit : son signe repose surtout sur le son.",
+      shots: [["img/forme-bonne-ren-nuit.png", "Ren en bonne forme, la nuit"], ["img/forme-bonne-marek-nuit.png", "Marek en bonne forme, la nuit"], ["img/forme-bonne-ren-midi.png", "Ren en bonne forme, à midi"], ["img/forme-basse-ren-nuit.png", "Ren en forme basse, la nuit"], ["img/forme-basse-ren-midi.png", "Ren en forme basse, à midi"]],
+      clips: [["audio/L-sign-up.mp3", "Le signe de la bonne forme, seul"], ["audio/L-sign-down.mp3", "Le signe de la forme basse, seul"], ["audio/L-form-up-down.mp3", "Le début du combat : Ren en bonne forme, Marek en forme basse"], ["audio/L-form-down-up.mp3", "Le début du combat : Ren en forme basse, Vessa en bonne forme"]],
+      rec: "Les deux signes : la forme décide une part du combat, elle se lit ainsi dès son début. Si la forme basse te semble de trop, la deuxième option ne garde que la bonne.",
+      opts: ["Les deux signes", "Le signe de la bonne forme seulement", "Rien dans l’arène : la fiche de match et la leçon la disent", "À reprendre (en note)"], recIdx: 0, src: "`src/audio/formCue.ts`, `src/arena/fx/fxCandidates.ts` (candidats), AC-08 « Une forme du jour ±15 %, dite sur la fiche de match »" },
+  ]},
+  { id: "suite", title: "La suite", sub: "Une carte.", fam: "var(--rec)", items: [
+    { id: "LC6-8", tag: "la suite", title: "Ce qui vient après",
+      ctx: "Ce qui est branché reste dans le jeu, tu le juges en jouant. Si tu valides le signe de la forme du jour, je le branche dans le jeu par défaut, calculé dans la page (aucun fichier cuit, rien sous le plafond de 12 Mo), avec tes mots dans le journal. Puis vient le lot 5, le retrait de l’ancien duel.",
+      rec: "Brancher ce que tu valides, puis ton essai en jeu ; reprendre à part ce que tu notes.",
+      opts: ["Brancher ce que je valide, puis mon essai en jeu", "Reprendre d’abord ce que je note"], recIdx: 0, src: "`briefs/combat-auto.md` § 17.3, SA-17 (12 Mo au plus)" },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function richKids(s) { return s.split('`').map((p, i) => (i % 2 ? el('code', {}, p) : p)); }
+function rich(tag, cls, s) { return el(tag, { class: cls }, ...richKids(s)); }
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(rich('p', 'ctx', it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.clips) {
+    const grid = el('div', { class: 'clips' });
+    for (const [src, cap, svg] of it.clips) {
+      const a = el('audio', { controls: '', preload: 'metadata', src, 'aria-label': cap });
+      const msg = el('p', { class: 'src', hidden: '' }, 'Ce lecteur n’a pas pu charger le son : préviens-moi dans la conversation.');
+      a.addEventListener('error', () => { msg.hidden = false; });
+      const tl = svg ? el('img', { class: 'spec', src: svg, alt: 'Les trois couches au fil de l’extrait, et dessous les séquences de l’adversaire, les charges lourdes et l’étourdissement', loading: 'lazy' }) : null;
+      grid.append(el('figure', { class: 'clip' }, el('figcaption', {}, cap), a, tl, msg));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), ...richKids(it.rec)));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', ...richKids(it.src)));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

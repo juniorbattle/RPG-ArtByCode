@@ -1,8 +1,10 @@
 // The four effects that no code played (lot S0, journal Passes SN1 / SN2), played by the real game on a DEV server: a button's click, a dialog opening,
 // the coins changing, the hero's steps; and the duel's table on the real arena page. Since lot S2 (journal Passe SN19): the interface played by the band's baked
 // sounds, a refused action's sound, the steps computed in the page, the rain and the thunder after a flash on a square in a storm. Since lot S5 (journal Passe SN22): the
-// refused action 6 dB over the duel's refusal (S5-REFUS), the arena's crowd through its carve at 500 Hz (S5-FOULE). Every effect the page asks for is counted at `Sound.play`. Exit 1 on
-// a failure; a page of today's game must have no engine at all.
+// refused action 6 dB over the duel's refusal (S5-REFUS), the arena's crowd through its carve at 500 Hz (S5-FOULE). Since lot 4 of the duel played by the computer (journal Passe
+// LC6): the arena's duel plays by itself, Ren's charge of a skill heard (its tier's note, its breath, its whip), an enchaînement's later blows their side's plain blow,
+// ×2's click from its key, « Skip » taking the music down and the K.O.'s jingle after it. Every effect the page asks for is counted at `Sound.play`. Exit 1 on a failure;
+// a page of today's game must have no engine at all.
 //   node tools/audio/hooks-proof.mjs     (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -96,9 +98,16 @@ try {
   await page.mouse.click(W / 2, H / 2);
   await page.waitForFunction('window.__sound.ctx?.state === "running"', { timeout: 10000 });
   await page.waitForFunction('window.__sound.bank?.size > 0', { timeout: 60000 });
-  await page.evaluate(() => { const s = window.__sound; window.__cues = {}; window.__old = 0; const c = s.cue.bind(s); s.cue = (q) => { window.__cues[q.id] = (window.__cues[q.id] ?? 0) + 1; return c(q); }; const p = s.play.bind(s); s.play = (e, g, a) => { window.__old++; p(e, g, a); }; });
-  for (let i = 0; i < 10; i++) { await page.keyboard.down('j'); await wait(250); await page.keyboard.up('j'); await wait(700); }
-  const arena = await page.evaluate(() => { const c = window.__sound.crowd; return { bank: window.__sound.bank.size, crowd: !!c, carve: c instanceof BiquadFilterNode ? { type: c.type, hz: c.frequency.value, q: c.Q.value, db: c.gain.value } : null, cues: window.__cues, old: window.__old }; });
+  await page.evaluate(() => {
+    const s = window.__sound; window.__cues = {}; window.__old = 0; window.__ui = {}; window.__evs = []; window.__stings = [];
+    const c = s.cue.bind(s); s.cue = (q) => { window.__cues[q.id] = (window.__cues[q.id] ?? 0) + 1; return c(q); };
+    const p = s.play.bind(s); s.play = (e, g, a) => { if (e === 'click') window.__ui[e] = (window.__ui[e] ?? 0) + 1; else window.__old++; p(e, g, a); };
+    const d = s.duelEvent.bind(s); s.duelEvent = (e) => { window.__evs.push({ type: e.type, follow: e.follow, action: e.action, from: e.from, result: e.result }); d(e); };
+    const st = s.sting.bind(s); s.sting = (id) => { window.__stings.push(id); st(id); };
+  });
+  // the duel plays by itself (lot 2): twelve seconds of it, then ×2 from its key (the attack's), then « Skip » (the dodge's)
+  await wait(12000);
+  const arena = await page.evaluate(() => { const c = window.__sound.crowd; return { bank: window.__sound.bank.size, crowd: !!c, carve: c instanceof BiquadFilterNode ? { type: c.type, hz: c.frequency.value, q: c.Q.value, db: c.gain.value } : null, cues: window.__cues, old: window.__old, evs: window.__evs }; });
   console.log(`   the arena's sounds played: ${JSON.stringify(arena.cues)}`);
   const duel = Object.values(table).filter((e) => e.family !== 'interface').length;
   check(arena.bank === duel, `the arena: ${arena.bank} of the catalogue's ${duel} duel sounds decoded (the interface apart)`);
@@ -106,6 +115,21 @@ try {
   // S5-FOULE « Creuser la foule à 500 Hz »: the crowd's way in, a peaking filter at 500 Hz, Q 1, -5 dB
   check(arena.carve?.type === 'peaking' && arena.carve.hz === 500 && arena.carve.q === 1 && arena.carve.db === -5, `the arena: its crowd carved, ${JSON.stringify(arena.carve)}`);
   check(Object.values(arena.cues).reduce((a, n) => a + n, 0) > 0 && arena.old === 0, `the duel's events in the band's sounds (${Object.values(arena.cues).reduce((a, n) => a + n, 0)}), lot S0's recipes ${arena.old} time(s)`);
+  // lot 4: Ren's charge of a skill told and heard, an enchaînement's later blows their side's plain blow
+  const told = (t) => arena.evs.filter((e) => e.type === t).length, notes = ['charge1', 'charge2', 'charge3'].reduce((a, k) => a + (arena.cues[k] ?? 0), 0), breaths = ['hold1', 'hold2', 'hold3'].reduce((a, k) => a + (arena.cues[k] ?? 0), 0);
+  check(told('chargeTier') >= 1 && notes === told('chargeTier'), `Ren's charge of a skill: ${told('chargeTier')} told, ${notes} tier's note(s)`);
+  check(breaths >= 1 && (arena.cues.release ?? 0) === told('chargeRelease') && told('chargeRelease') >= 1, `its breath (${breaths}) and its whip at each release (${arena.cues.release ?? 0} for ${told('chargeRelease')})`);
+  const follows = arena.evs.filter((e) => e.type === 'impact' && e.follow && e.result === 'hit');
+  check(follows.length >= 1, `an enchaînement's later blows told (${follows.length}): ${[...new Set(follows.map((e) => e.action))].join(', ')}`);
+  // ×2 from its key: the interface's click once, the arena's clock twice as fast
+  const c0 = await page.evaluate(() => window.__ui.click ?? 0);
+  await page.keyboard.press('j'); await wait(300);
+  const sp = await page.evaluate(() => ({ click: window.__ui.click ?? 0, speed: window.__arena.speed }));
+  check(sp.click === c0 + 1 && sp.speed === 2, `×2 from its key: the click played ${sp.click - c0} time(s), the speed ${sp.speed}`);
+  // « Skip »: the music down with the curtain, the K.O. told under the black, its jingle after it
+  await page.keyboard.press('l'); await wait(2600);
+  const sk = await page.evaluate(() => ({ layered: !!window.__sound.layered, ko: window.__evs.filter((e) => e.type === 'ko').length, skip: window.__evs.filter((e) => e.type === 'skip').length, stings: window.__stings }));
+  check(sk.skip === 1 && !sk.layered && sk.ko === 1 && (sk.stings[0] === 'victoire' || sk.stings[0] === 'defaite'), `« Skip »: told ${sk.skip}, the music ${sk.layered ? 'still playing' : 'stopped'}, the K.O. told ${sk.ko}, the jingle ${sk.stings.join(', ')}`);
 
   // today's game: no engine at all
   await open(page, 'play=1&new=1&name=Aster&vis=0&fps=off&v2=0');

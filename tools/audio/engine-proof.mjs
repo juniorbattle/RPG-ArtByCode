@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { correlation, rmsDb } from './measure.mjs';
 
 const out = path.resolve(process.argv[2] ?? 'out-audio-engine'), here = import.meta.dirname, root = process.argv.find((a) => a.startsWith('--root='));
-const r = spawnSync(process.execPath, [path.join(here, 'render.mjs'), out, '--only=s1-,sn-', `--scripts=${path.join(here, 'engine-jobs.mjs')}`, ...(root ? [root] : [])], { stdio: 'inherit' });
+const r = spawnSync(process.execPath, [path.join(here, 'render.mjs'), out, '--only=s1-,sn-,lc-', `--scripts=${path.join(here, 'engine-jobs.mjs')}`, ...(root ? [root] : [])], { stdio: 'inherit' });
 if (r.status) process.exit(r.status);
 const META = JSON.parse(fs.readFileSync(path.join(out, 'meta.json'), 'utf8')), SR = META['s1-duck']?.sr ?? 44100, load = (n) => { const b = fs.readFileSync(path.join(out, 'raw', `${n}.f32`)), x = new Float32Array(b.buffer, b.byteOffset, b.length >> 2), l = new Float32Array(x.length >> 1); for (let i = 0; i < l.length; i++) l[i] = x[2 * i]; return l; };
 const win = (x, a, b) => x.subarray(Math.round(a * SR), Math.round(b * SR)), level = (x, a, b) => rmsDb(win(x, a, b));
@@ -129,6 +129,18 @@ for (const [job, want] of [['sn-win', 'victoire'], ['sn-lose', 'defaite']]) {
 {
   const y = load('sn-fanfare'), n = y.length, x = lay(baked('matin'), n, T0, CAT.matin.frames), fan = lay(baked('fanfare'), n, 4.05 + LAT / SR), before = fit(y, [x, fan], 2.5, 3.95), under = fit(y, [x, fan], 4.9, 11.8), step = dB(under.g[0] / before.g[0]);
   check(under.rest < 0.02 && Math.abs(step + 9) < 1.5 && under.g[1] > 0.1, `the fanfare over the morning's piece, which steps back ${step.toFixed(1)} dB under it (target -9), unexplained ${(under.rest * 100).toFixed(2)} %`);
+}
+// lot 4 of the duel played by the computer (journal Passe LC6): Ren's charge of a skill heard (its tier's note, its breath while it fills, none after it leaves); x2's
+// click from a key, none from the HUD's own button; « Skip » takes the music down with its curtain. On a frozen copy before lot 4, the click and the fade fail
+if (META['lc-charge']) {
+  const x = load('lc-charge'), lv = (a, b) => Math.max(-140, level(x, a, b)), floor = lv(1, 3.9), note = lv(4.0, 4.35), breath = lv(5.18, 5.5), after = lv(7.4, 8.6);
+  check(note > floor + 25 && note > -75, `the charge's note at its tier: ${note.toFixed(1)} dB over a floor of ${floor.toFixed(1)}`);
+  check(breath > after + 10, `its breath while it fills, none once it has left: ${breath.toFixed(1)} then ${after.toFixed(1)} dB`);
+  const y = load('lc-speed'), ly = (a, b) => Math.max(-140, level(y, a, b)), click = ly(2.0, 2.2), quiet = ly(3.0, 3.2);
+  check(click > ly(0.5, 1.8) + 25, `x2 from a key: the interface's click ${click.toFixed(1)} dB`);
+  check(quiet < click - 25, `x2 from the HUD's button: no second click (${quiet.toFixed(1)} dB; the button's own click is the page's)`);
+  const z = load('lc-skip'), lz = (a, b) => Math.max(-140, level(z, a, b)), before = lz(18.9, 19.45), gone = lz(19.95, 21.8);
+  check(before > -60 && gone < before - 40, `« Skip »: the music ${before.toFixed(1)} dB, then down with the curtain: ${gone.toFixed(1)} dB`);
 }
 console.log(failed ? `\nFAILED ${failed}` : '\nall checks passed');
 if (failed) process.exitCode = 1;

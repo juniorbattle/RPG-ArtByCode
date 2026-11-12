@@ -17,7 +17,10 @@ fs.mkdirSync(out, { recursive: true });
 
 // ---- the engine, bundled from the chosen root
 const entry = path.join(out, 'entry.gen.ts');
-fs.writeFileSync(entry, `export { Sound } from '${root.replaceAll('\\', '/')}/src/audio/Sound';\nexport * from '${root.replaceAll('\\', '/')}/src/audio/score';\n`);
+// the duel's sounds' levels (lot S3) and lot 4's candidate of the form's sign (src/audio/formCue.ts, journal Passe LC6) where the root has them: the listening
+// tools' pages read them
+const extraOf = (f) => (fs.existsSync(path.join(root, f)) ? `export * from '${root.replaceAll('\\', '/')}/${f.replace(/\.ts$/, '')}';\n` : '');
+fs.writeFileSync(entry, `export { Sound } from '${root.replaceAll('\\', '/')}/src/audio/Sound';\nexport * from '${root.replaceAll('\\', '/')}/src/audio/score';\n${extraOf('src/audio/sfx.ts')}${extraOf('src/audio/formCue.ts')}`);
 await build({ root, configFile: false, logLevel: 'error', cacheDir: path.join(out, '.vite'), publicDir: false,
   build: { write: true, outDir: path.join(out, 'bundle'), emptyOutDir: true, minify: false, lib: { entry, formats: ['iife'], name: 'AUD', fileName: () => 'audio.js' } } });
 

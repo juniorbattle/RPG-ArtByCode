@@ -18,6 +18,8 @@ const ST = await load('/src/combat/stats.ts');
 const S = await load('/src/audio/sfx.ts');
 const P = await load('/src/audio/plan.ts');
 const FX = await load('/src/arena/fx/fxRecipes.ts');
+const FC = await load('/src/audio/formCue.ts');
+const CAND = await load('/src/arena/fx/fxCandidates.ts');
 
 const RIVALS = Object.keys(ST.RIVAL_SHEETS);
 const LOADOUTS = [['t1', 't4', 'd1', 's1'], ['t3', 'k_sunder', 'k_iron', 'k_cry'], ['t2', 'heavy', 'k_parry', 'k_focus']];
@@ -104,6 +106,35 @@ test('which sound plays: the tier\'s note at the level its skill was released at
     }
   }
   assert.ok(follows > 200 && own > 10 && held > 150, `the paths: ${follows} later blows, ${own} own first blows, ${held} breaths`);
+});
+
+test('the form of the day\'s sign, a candidate (its sheet, briefs/fiche-combat-auto-lot4.html): computed in the page the same every time, at its level, wired into no page', async () => {
+  const fs = await import('node:fs'), path = await import('node:path');
+  for (const id of ['formUp', 'formDown']) {
+    const a = FC.formCue(id), b = FC.formCue(id);
+    assert.deepEqual(a, b, `${id}: its own seed, the same samples`);
+    let peak = 0, sum = 0; for (const v of a) { peak = Math.max(peak, Math.abs(v)); sum += v * v; }
+    assert.ok(peak > 0.01 && peak <= 0.7 + 1e-6, `${id}: peak ${peak}`);
+    assert.equal(a.length, 52800, '1.1 s at the band\'s rate');
+    // its loudest 400 ms at its target (-24 dB the good form, as the charge's first note; -27 the poor form), the peak kept under 0.7
+    const w = 19200; let best = 0; for (let i = 0; i + w <= a.length; i += w >> 2) { let s = 0; for (let j = i; j < i + w; j++) s += a[j] * a[j]; best = Math.max(best, Math.sqrt(s / w)); }
+    const db = 20 * Math.log10(best); assert.ok(Math.abs(db - (id === 'formUp' ? -24 : -27)) < 0.3 || peak > 0.699, `${id}: ${db.toFixed(1)} dB`);
+  }
+  assert.notDeepEqual(FC.formCue('formUp').subarray(0, 4800), FC.formCue('formDown').subarray(0, 4800));
+  // who shows a sign: +5 points and more, -5 and less, nothing between
+  assert.deepEqual([1.15, 1.05, 1.049, 1, 0.951, 0.95, 0.85].map(FC.formSignOf), ['formUp', 'formUp', null, null, null, 'formDown', 'formDown']);
+  // the candidates' recipes well formed, apart from the duel's own (no duel plays them: no recipe of that name, no import but the DEV server's hook)
+  for (const r of Object.values(CAND.FX_CANDIDATES)) {
+    assert.ok(r.duration > 0 && r.duration <= 1, `${r.id}: under a second (FX4)`);
+    assert.ok(r.steps.every((s) => s.at >= 0 && s.at < r.duration && ['orbit', 'glow', 'light', 'smoke', 'motes'].includes(s.kind)), r.id);
+    assert.ok(!r.steps.some((s) => s.kind === 'ring'), `${r.id}: nothing circular`);
+    assert.equal(FX.RECIPES[r.id], undefined, `${r.id}: not one of the duel's recipes`);
+  }
+  const src = (f) => fs.readFileSync(path.join(import.meta.dirname, '..', f), 'utf8');
+  const importers = (name) => { const out = []; const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (/\.ts$/.test(e.name) && fs.readFileSync(p, 'utf8').includes(name)) out.push(path.relative(path.join(import.meta.dirname, '..'), p).replaceAll('\\', '/')); } }; walk(path.join(import.meta.dirname, '..', 'src')); return out; };
+  assert.deepEqual(importers("from './formCue'").concat(importers("audio/formCue'")), [], 'the sign wired into no page');
+  assert.deepEqual(importers("'./fxCandidates'"), ['src/arena/fx/combatFx.ts'], 'the candidates reached only by combatFx');
+  assert.match(src('src/arena/fx/combatFx.ts'), /if \(import\.meta\.env\.DEV\) Object\.assign\(window, \{ __fx: \{[\s\S]*candidate: async[\s\S]*await import\('\.\/fxCandidates'\)/, 'through the DEV server\'s window.__fx only');
 });
 
 test('the music\'s rule F on this duel: the lead aside on the opponent\'s sequence (a big action charged), the tension up on it, on Ren\'s charge of a skill, a stun, under 30 %', () => {

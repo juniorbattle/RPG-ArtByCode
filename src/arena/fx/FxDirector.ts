@@ -78,7 +78,7 @@ export class FxDirector {
       case 'shards': engine.shards(at, element, { count: num('count', 7), radius: num('radius', 1.2), height: num('height', 2), duration: num('duration', 0.9) }); break;
       case 'dome': engine.dome(at, element, { radius: num('radius', 1.8), duration: num('duration', 1) }); break;
       case 'orb': engine.orb(at, element, { radius: num('radius', 1.8), duration: num('duration', 0.5), implode: p.implode === true }); break;
-      case 'motes': engine.motes(at, element, { count: num('count', 22), radius: num('radius', 0.9), rise: num('rise', 2.6) }); break;
+      case 'motes': engine.motes(at, element, { count: num('count', 22), radius: num('radius', 0.9), rise: num('rise', 2.6), sink: p.sink === true }); break;
       case 'smoke': engine.smoke(at.y < 0.3 ? at.clone().setY(0.5) : at, { count: num('count', 14), spread: num('spread', 0.5), size: num('size', 0.8), life: num('life', 1.2) }); break;
       case 'glow': engine.glow(at, element, num('size', 3), num('duration', 0.5)); break;
       case 'decal': engine.decal(at, element, { radius: num('radius', 1.6) }); break;

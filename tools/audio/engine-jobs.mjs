@@ -25,4 +25,10 @@ export const jobs = [
   { name: 'sn-double', secs: 22, scene:{ place: 'arena', look: 'night', music: { bout: 'duel' } }, stem: 'music', script: 'double', settle: true },
   // the fanfare at 4 s over the morning's piece, which steps back under it
   { name: 'sn-fanfare', secs: 12, scene, stem: 'music', script: 'fanfare', settle: true },
+  // lot 4 of the duel played by the computer (journal Passe LC6), on the empty stands (no crowd, the duel's own sounds): Ren charges his fourth skill at 4 s (the
+  // tier's note, a breath every 0.6 s), it leaves at 6.5 s (the whip, the breath stops); x2 at 2 s from a key (the click), at 3 s from the HUD's button (quiet);
+  // « Skip » at 19.5 s: the music down over the curtain's 0.22 s (the empty stands: the crowd's way reaches the output in the music's stem, journal Passe LC6)
+  { name: 'lc-charge', secs: 9, scene: { place: 'arena', look: 'night', music: { bout: 'duel', tiers: 5, empty: true } }, stem: 'fx', script: 'lcCharge', settle: true },
+  { name: 'lc-speed', secs: 5, scene: { place: 'arena', look: 'night', music: { bout: 'duel', tiers: 5, empty: true } }, stem: 'fx', script: 'lcSpeed', settle: true },
+  { name: 'lc-skip', secs: 22, scene: { place: 'arena', look: 'night', music: { bout: 'duel', tiers: 5, empty: true } }, stem: 'music', script: 'lcSkip', settle: true },
 ];

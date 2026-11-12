@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; ensuite le lot 4 (le son et les effets des nouveaux moments)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments, sa fiche d'écoute à relire (§ 23) ; ensuite le lot 5 (le retrait de l'ancien duel)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -659,6 +659,26 @@ l'ordinateur ; le guide (H) avec lui. Aucune règle, aucune table, aucun temps d
   « Le duel ») refait ces leçons au combat suivant. Les touches du duel dans « Touches » : ×2 sur l'attaque, « Passer » sur l'esquive, la pause (LC3-8).
 - **Les écarts jusqu'aux lots suivants** : le son des nouveaux moments (lot 4) ; le retrait de l'ancien duel et le renommage de ses actions au remappage
   (lot 5) ; la fiche de match sur téléphone en paysage ; AU-06.
+
+## 23. Le lot 4 construit : le son et les effets des nouveaux moments (12/11/2026, journal Passe LC6)
+
+Les sons du lot S3 et les recettes d'effets de FX2 à FX5, tous approuvés, placés sur les moments du duel joué par l'ordinateur ; rien de cuit. Aucune règle,
+aucune table, aucun temps de charge ni la course ne changent ; le jeu d'aujourd'hui (`v2=0`) reste muet, le duel à trois touches (`?duel=charge`) garde les siens.
+
+- **La charge de Ren** : sa charge d'une compétence est dite comme le palier de l'ancien duel (son rang parmi ses quatre par temps de charge) : la note de ce
+  palier au début de la barre, un souffle toutes les 0,6 s tant qu'elle se remplit (repris après un étourdissement), le fouet et l'éclat quand l'action part ;
+  son attaque simple charge sans rien, comme avant. Environ 8 charges par minute, 3,4 s en médiane.
+- **Les coups d'un enchaînement** : le son et la recette propres d'une action sur son premier coup ; les suivants, le coup simple de leur camp, sans la foule.
+- **La garde, l'esquive, la rupture et le K.O.** : inchangés (lot S3). La jauge qui monte n'a pas de son à elle.
+- **La règle F** (CQ-REGLE) lue dans ce duel : la séquence de l'adversaire est sa charge d'un gros coup ou d'une compétence jusqu'à son coup (8 par minute, 2,9 s
+  en médiane) ; la tension monte aussi pendant que Ren charge une compétence, sur un étourdissement et sous 30 % des PV.
+- **×2** donne le clic de l'interface ; **« Passer »** fait descendre la musique avec son fondu au noir, le K.O. sous le noir, puis le jingle.
+- **La jauge du HUD** au coup même (la relecture la remplit à la ligne du coup, comme le duel) : le relevé de la Passe LC5 corrigé sans toucher au script.
+- **La forme du jour** : un candidat, hors du jeu jusqu'à la décision de l'opérateur : au début du combat, pour un combattant à ±5 % ou plus, deux notes du
+  vibraphone qui montent (bonne forme) ou descendent (forme basse), calculées dans la page, et des particules de sa couleur qui s'élèvent ou tombent.
+
+La fiche d'écoute : https://claude.ai/artifact/4brjscrgkqpYEvxnU8kz8f (`briefs/fiche-combat-auto-lot4.html`), huit cartes LC6-1 à LC6-8, à relire quand
+l'opérateur la dit remplie.
 
 ---
 

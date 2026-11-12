@@ -19,4 +19,8 @@
   AUD_SCRIPTS.window = (s, job, at) => { at(4, () => s.duelEvent({ type: 'windowOpen', who: 'marek', action: 'm_slash', dur: 0.22 })); };
   AUD_SCRIPTS.double =(s, job, at) => { at(19, () => s.duelEvent({ type: 'sequenceStart', who: 'marek', len: 1 })); at(19.2, () => s.duelEvent({ type: 'sequenceEnd', who: 'marek' })); };
   AUD_SCRIPTS.fanfare = (s, job, at) => { at(4, () => s.sting('fanfare')); };
+  // lot 4 of the duel played by the computer (journal Passe LC6): Ren's charge of his fourth skill on a ladder of five, its release; x2 from a key then from the HUD; « Skip »
+  AUD_SCRIPTS.lcCharge = (s, job, at) => { at(4, () => s.duelEvent({ type: 'chargeTier', who: 'ren', idx: 4, open: true })); at(6.5, () => s.duelEvent({ type: 'chargeRelease', who: 'ren', idx: 4, ok: true })); };
+  AUD_SCRIPTS.lcSpeed = (s, job, at) => { at(2, () => s.duelEvent({ type: 'speed', on: true, quiet: false })); at(3, () => s.duelEvent({ type: 'speed', on: false, quiet: true })); };
+  AUD_SCRIPTS.lcSkip = (s, job, at) => { at(19.5, () => s.duelEvent({ type: 'skip', secs: 0.22, quiet: true })); };
 })();

@@ -79,8 +79,11 @@ const lessonNow = (page) => page.evaluate(() => document.querySelector('.tu-duel
  *  at SPEED_AT; none at the K.O.'s blow or after it */
 function oracle(log, ids) {
   const first = { start: 0 }, fresh = {}, put = (id, x) => { if (!(id in first)) first[id] = x; };
-  const koAt = log.find((e) => e.hp !== undefined && e.hp <= 0)?.t ?? Infinity, max = 70;
-  for (const e of log) {
+  const koAt = log.find((e) => e.hp !== undefined && e.hp <= 0)?.t ?? Infinity, max = 70, decay = 0.63;
+  // a target's gauge just after a blow: the next line's trace (written before its own blow fills anything) with its decay undone, full at that fighter's break or
+  // while it is broken (lot 4, journal Passe LC6: the HUD shows the gauge at the blow, no longer one line late)
+  const after = (i, k) => { const e = log[i], n = log[i + 1]; if (e.s[k] >= max) return max; if (!n) return 0; if (n.ev === 'break' && n.s[k] >= max) return max; return n.s[k] > 0 ? n.s[k] + decay * (n.t - e.t) : 0; };
+  for (const [i, e] of log.entries()) {
     if (e.t >= koAt) break;
     if (e.ev === 'charge') { fresh[e.who] = true; if (e.who === ids.ren && e.act !== ids.renLight) put('charge', e.t); continue; }
     if (e.ev === 'break') { put('break', e.t); continue; }
@@ -90,7 +93,7 @@ function oracle(log, ids) {
     if (follow) put('combo', e.t);
     if (e.ev !== 'hit') put('react', e.t);
     if (e.ev === 'hit' && !ids.light.includes(e.act)) put('form', e.t);
-    if (e.ev !== 'dodged' && (e.who === ids.ren ? e.s[3] : e.s[1]) >= max / 3) put('gauge', e.t);
+    if (e.ev !== 'dodged' && after(i, e.who === ids.ren ? 3 : 1) >= max / 3) put('gauge', e.t);
   }
   if (DT.SPEED_AT < koAt) put('speed', DT.SPEED_AT);
   return first;
