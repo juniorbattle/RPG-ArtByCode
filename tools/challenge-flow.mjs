@@ -2,8 +2,9 @@
 // phase », EV-5 « L’arène aux gradins vides », his note on EV-2 « une possibilite de combat et de represaille reelle »): the state is built in Node by
 // the game's own actions (for a reprisal, a theft caught at a sore keeper's stall and the dawn it hires the muscle; the draws forced through `advance`'s
 // rng), kept in the browser's save, the town page opened from it, the challenge put or the muscle faced through the page's interface (`__ui.run`), the
-// arena page loaded from the save: its stands empty (no spectator, no crowd), the lists' piece, both fighters at full health; the bout decided by scripted
-// inputs on `window.__arena`, the town page again; Node replays the browser's actions and must find the same fingerprint. The arena's two sheets are
+// arena page loaded from the save: its stands empty (no spectator, no crowd), the lists' piece, both fighters at full health; the bout is the duel played by
+// the computer since lot 2 (journal Passe LC3): the state decides it, so <win|lose> is the result the tool expects, the duel skipped (« Skip ») and its result
+// checked against Node's own on the browser's state; the town page again; Node replays the browser's actions and must find the same fingerprint. The arena's two sheets are
 // checked (Ren's and the opponent's, approved), and the opponent's face in the dialogue (journal Passe GA2).
 //   node tools/challenge-flow.mjs <outDir> <challenge|reprisal> <win|lose> [seed] [who]   (who: the fighter challenged, orla by default; aldric, ambrose, lucan,
 //   piers or kell, the generic fighters, at their place and hour (journal Passes GA2 / GA3); BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/play-flow.mjs)
@@ -86,7 +87,7 @@ try {
   await open(to);
   const seen = await page.evaluate(() => { const a = window.__arena, st = a.snapshot(); return { names: [a.sim.D.fighters.ren.name, a.sim.D.fighters.marek.name], hp: [a.sim.f.marek.hp, a.sim.f.marek.maxHp], rules: a.rules, stands: !!st.stands, fans: st.fans, empty: !!a.opts.match?.empty, piece: a.opts.match?.piece, hud: document.querySelector('#arena-hud')?.getAttribute('aria-label') ?? '' }; });
   const foe = kind === 'challenge' ? (GENERICS[who]?.name ?? 'Orla Brask') : 'Corra Dunmere';
-  check(seen.rules === 'v2' && seen.names[0] === 'Aster' && seen.names[1] === foe, `the arena seats ${seen.names.join(' vs ')} (${seen.rules})`);
+  check(seen.rules === 'auto' && seen.names[0] === 'Aster' && seen.names[1] === foe, `the arena seats ${seen.names.join(' vs ')} (${seen.rules})`);
   check(seen.empty && !seen.stands && seen.fans === 0, `the stands empty: no townsfolk (${seen.stands}), no generated spectator (${seen.fans})`);
   check(seen.piece === 'lices', `the lists' piece: ${seen.piece}`);
   check(seen.hp[0] === seen.hp[1], `the opponent at full health: ${seen.hp.join(' / ')}`);
@@ -97,10 +98,14 @@ try {
   await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn').click());
   await page.evaluate(() => { const a = window.__arena; for (let i = 0; i < 40; i++) a.update(1 / 60); });
   await page.screenshot({ path: path.join(outDir, `${kind}-${mode}-3-sand.png`) });
+  // the duel the game decides, on the browser's state at the arena (Node's own duel)
+  const atArena = await page.evaluate(() => window.__game.state());
+  const AM = await server.ssrLoadModule('/src/combat/autoMatch.ts'), node = AM.autoOutcome(atArena, 'challenge');
   const won = await page.evaluate((m) => {
     const a = window.__arena, s = a.sim;
+    if (a.auto) a.action('dodge', true);
     for (let i = 0; i < 60 * 90 && !(window.__go); i++) {
-      if (!s.over) {
+      if (!s.over && !a.auto) {
         if (m === 'win') { if (s.f.marek.hp > 25) s.f.marek.hp = 25; if (s.f.ren.state === 'idle') { s.f.ren.ap = 5; a.action('t4'); } }
         else { s.f.ren.hp = Math.min(s.f.ren.hp, 30); if (s.f.marek.state === 'idle') { if (s.forceAction) s.forceAction('marek', 'm_heavy'); else s.forceSequence(['m_heavy']); } }
       }
@@ -114,6 +119,7 @@ try {
   await page.screenshot({ path: path.join(outDir, `${kind}-${mode}-4-result.png`) });
   const outcome = await page.evaluate(() => window.__outcome);
   console.log(`outcome ${JSON.stringify(outcome)}`);
+  check(outcome.winner === node.winner && outcome.playerHp === node.playerHp && outcome.opponentHp === node.opponentHp, `the arena's duel is the game's (${node.winner} at ${node.duel.t} s)`);
   await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn').click());
   await openTown(await page.evaluate(() => window.__go));
   const st = await page.evaluate(() => ({ s: window.__game.state(), h: window.__game.hash() }));

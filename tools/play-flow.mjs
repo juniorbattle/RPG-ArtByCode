@@ -1,6 +1,8 @@
 // The play mode's scene changes in a browser (journal Passe L3): a new game in the town page, the clock driven by window.__game to the day's
 // bout, the arena page loaded from the save (the address the town would go to: window.__go, read with ?noreload=1), the bout decided by
-// scripted inputs on window.__arena (win: the opponent brought down by a technique; lose: the player struck by heavy blows), the result
+// scripted inputs on window.__arena in today's game (win: the opponent brought down by a technique; lose: the player struck by heavy blows); a version 2
+// game's bout is the duel played by the computer (journal Passe LC3): the state decides it, so <win|lose> is the result the tool expects (a new game that
+// only waits wins on day 2 with seed 1 and loses with seed 1842), the duel skipped (« Skip ») and its outcome checked against Node's own; the result
 // screen's button, then the town page loaded again from the save. At the end the browser's state is replayed in Node (src/simulation, the
 // same actions and the outcome the arena handed in) and both fingerprints must match.
 //   node tools/play-flow.mjs <outDir> <win|lose> [seed] [day=2|3]   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs;
@@ -68,7 +70,7 @@ try {
   check(/scene=arena/.test(to ?? ''), `the town goes to ${to}`);
   await open(to);
   const sheet = await page.evaluate(() => ({ names: [window.__arena.sim.D.fighters.ren.name, window.__arena.sim.D.fighters.marek.name], assist: window.__arena.assist, rules: window.__arena.rules, hud: document.querySelector('#arena-hud')?.getAttribute('aria-label') }));
-  check(sheet.rules === (V2 ? 'v2' : DYN ? 'dynamic' : 'classic'), `the arena plays ${sheet.rules}`);
+  check(sheet.rules === (V2 ? 'auto' : DYN ? 'dynamic' : 'classic'), `the arena plays ${sheet.rules}`);
   check(sheet.names[0] === 'Aster' && sheet.names[1] === FOE[day], `the arena seats ${sheet.names.join(' vs ')}`);
   // the version 2's bout names its stage (journal Passe VP2: « The pool · round 1 », « Semi-final »...), today's the slice's pool
   if (process.env.PAGE_LANG === 'fr' && V2) check(/La poule · tour \d/.test(sheet.hud ?? ''), `French HUD: ${sheet.hud}`);
@@ -77,11 +79,12 @@ try {
   if (V2) { const worn = await page.evaluate(() => window.__arena.sheets?.info.sheets.map((s) => `${s.id} ${s.runtimeUse}`).join(', ') ?? 'none'); check(worn === `hero-x3-combat production, ${sheet.names[1].split(' ')[0].toLowerCase()}-x3-combat production`, `the sheets worn: ${worn}`); }
   await page.screenshot({ path: path.join(outDir, `${mode}-2-report.png`) });
   await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn').click());
-  // 3. the bout, by scripted inputs, the loop stepped from here
+  // 3. the bout, by scripted inputs (a version 2 game: « Skip », the duel played by the computer decided before), the loop stepped from here
   const won = await page.evaluate((m) => {
     const a = window.__arena, s = a.sim;
+    if (a.auto) { a.update(1 / 60); a.action('dodge', true); }
     for (let i = 0; i < 60 * 90 && !(window.__go); i++) {
-      if (!s.over) {
+      if (!s.over && !a.auto) {
         if (m === 'win') { if (s.f.marek.hp > 25) s.f.marek.hp = 25; if (s.f.ren.state === 'idle') { s.f.ren.ap = 5; a.action('t4'); } }
         else { s.f.ren.hp = Math.min(s.f.ren.hp, 30); if (s.f.marek.state === 'idle') { if (s.forceAction) s.forceAction('marek', 'm_heavy'); else s.forceSequence(['m_heavy']); } }
       }
@@ -90,6 +93,8 @@ try {
     }
     return { over: s.over, winner: s.f.ren.state === 'down' ? 'opponent' : 'player', t: s.t };
   }, mode);
+  // the version 2: the duel the arena played is the one the game decides (src/combat/autoMatch.ts), computed in Node on the state of the bout
+  const auto = V2 ? await page.evaluate(() => ({ end: window.__arena.auto.end, winner: window.__arena.auto.winner, hp: window.__arena.auto.result.hp })) : null;
   check(won.over && won.winner === (mode === 'win' ? 'player' : 'opponent'), `the bout ends: ${won.winner} wins at ${won.t.toFixed(1)} s`);
   await page.waitForSelector('.pm-overlay .pm-btn', { timeout: 20000 });
   await page.screenshot({ path: path.join(outDir, `${mode}-3-result.png`) });
@@ -112,6 +117,10 @@ try {
     if (DYN) s.flags.combat = 'dynamic';
     if (V2) G.makeV2(s);
     for (const a of actionsDone) s = G.advance(s, a).state;
+    if (V2) {
+      const AM = await server.ssrLoadModule('/src/combat/autoMatch.ts'), o = AM.autoOutcome(s);
+      check(o.duel.t === auto.end && o.winner === (auto.winner === 'ren' ? 'player' : 'opponent') && o.playerHp === auto.hp[0] && o.opponentHp === auto.hp[1] && o.winner === outcome.winner && o.playerHp === outcome.playerHp, `the arena's duel is the game's: ${o.winner} at ${o.duel.t} s, ${o.playerHp} / ${o.opponentHp} health`);
+    }
     const last = st3.s.log.findLast((e) => e.id === 'player-won' || e.id === 'player-lost');
     s = G.advance(s, { type: 'fight', outcome }).state;
     check(G.hash(s) === st3.h, `Node replay ${G.hash(s)} = browser ${st3.h} (${last?.text})`);

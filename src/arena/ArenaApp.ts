@@ -25,7 +25,10 @@ import { ArenaHud, type Assist, type ArenaTexts } from './ArenaHud';
 import { DynamicHud, type DynTexts } from './DynamicHud';
 import { PRESETS, runScript } from './Presets';
 import { DYN_PRESETS, runDynScript } from './DynPresets';
-import { arenaRules, dynClip, dynClipFrame, dynKeys, dynPad, fxOn, tuneDyn, type ArenaRules } from './dynamicView';
+import { arenaRules, dynClip, dynClipFrame, dynKeys, dynPad, fxOn, tuneDyn, v2Rules, type ArenaRules } from './dynamicView';
+import { AutoReplay, sceneAutoDuel, type ReplayEvent } from './autoView';
+import { AutoHud, AUTO_TEXTS_EN, AUTO_TEXTS_FR, autoActionName, type AutoTexts } from './AutoHud';
+import type { AutoFighter, AutoResult } from '../combat/auto';
 import { FloorUI } from './FloorUI';
 import { chargeHudModel, makeV2Duel, runV2Script, V2_PAD, V2_PRESETS } from './v2Arena';
 import { CHARGE_TEXTS_EN, CHARGE_TEXTS_FR } from './DynamicHud';
@@ -65,8 +68,11 @@ export interface DuelSim {
 /** an official bout of the game's play mode (journal Passe L3): its data (a variant of CombatData, src/combat/match.ts), who sits in the
  *  opponent's seat, the assistance the preparation earned, the play mode's words; no restart, and `onOver` once the bout is decided */
 export interface ArenaMatch {
-  /** today's data, or the new rules' (with `rules: 'dynamic'`, the game's `flags.combat`, journal Passe C2) */
-  data: CombatData | DynData; rules?: ArenaRules; foe: string; assist: Assist; texts: ArenaTexts | DynTexts;
+  /** today's data, or the new rules' (with `rules: 'dynamic'`, the game's `flags.combat`, journal Passe C2); none for the duel played by the computer */
+  data?: CombatData | DynData; rules?: ArenaRules; foe: string; assist: Assist; texts: ArenaTexts | DynTexts | AutoTexts;
+  /** the duel played by the computer (`rules: 'auto'`, every version 2 bout since lot 2, journal Passe LC3): its result with its script, its two fighters, the
+   *  fighters' names on the cards */
+  auto?: { result: AutoResult; ren: AutoFighter; foe: AutoFighter; names: { ren: string; marek: string } };
   /** the version 2's charge tiers (with `rules: 'v2'`, src/combat/v2duel.ts, journal Passe V1) */
   tiers?: ChargeTier[];
   /** the band's piece of the bout (src/audio/plan.ts `boutPiece`, journal Passe SN10): the duel, the rival or the finale by the tournament's stage */
@@ -121,14 +127,18 @@ export class ArenaApp {
   readonly rules: ArenaRules;
   readonly classic: CombatSim | null = null;
   readonly dyn: DynamicSim | null = null;
-  /** the version 2's three buttons and charge (`v2`: ?v2=1 or a version 2 game; its inner simulation is `dyn`); null with `input=keys` */
+  /** the version 2's three buttons and charge of before (`v2`: ?duel=charge; its inner simulation is `dyn`); null with `input=keys` */
   readonly charge: ChargedDuel | null = null;
+  /** the duel played by the computer (`auto`: a version 2 game's bout, or the arena's own page): its script played on the arena's clock */
+  readonly auto: AutoReplay | null = null;
+  /** ×2 (AC-13): the duel's clock twice as fast while the player asks it */
+  speed = 1;
   lib!: MaterialLibrary;
   arena!: ArenaBuild;
   set!: ArenaSpriteSet;
   sprites!: SpriteRenderer;
   particles!: ParticleSystem;
-  hud: ArenaHud | DynamicHud | null = null;
+  hud: ArenaHud | DynamicHud | AutoHud | null = null;
   readonly floor = new FloorUI();
   assist: Assist = 'subtle';
   hudVisible = true;
@@ -189,11 +199,21 @@ export class ArenaApp {
     this.foe = opts.match?.foe ?? (import.meta.env.DEV ? opts.params.get('foe') : null) ?? 'marek';
     this.rules = arenaRules(opts.params, opts.match);
     if (this.rules === 'dynamic') this.sim = this.dyn = new DynamicSim(tuneDyn((opts.match?.data as DynData | undefined) ?? DYNAMIC_DATA, opts.params.get('dyn')));
-    else if (this.rules === 'v2') { const v = makeV2Duel(opts.params, opts.match ? { data: opts.match.data as DynData, tiers: opts.match.tiers } : undefined, this.foe); this.dyn = v.dyn; this.charge = v.charge; this.sim = (v.charge ?? v.dyn) as unknown as DuelSim;
+    else if (v2Rules(this.rules)) {
+      let maxHp: Record<FighterId, number>;
+      if (this.rules === 'auto') {
+        // the duel played by the computer: decided before the page (the game's own result), played from its script; the arena's own page plays Ren against Marek
+        const a = opts.match?.auto ?? sceneAutoDuel(this.foe, (parseInt(opts.params.get('duelseed') ?? '1337', 10) >>> 0) || 1337);
+        this.auto = new AutoReplay(a.result, { ren: a.ren, marek: a.foe }, opts.match?.auto?.names ?? { ren: 'Ren', marek: this.foe[0].toUpperCase() + this.foe.slice(1) }); this.sim = this.auto as unknown as DuelSim;
+        maxHp = { ren: this.auto.f.ren.maxHp, marek: this.auto.f.marek.maxHp };
+      } else {
+        const v = makeV2Duel(opts.params, opts.match ? { data: opts.match.data as DynData, tiers: opts.match.tiers } : undefined, this.foe); this.dyn = v.dyn; this.charge = v.charge; this.sim = (v.charge ?? v.dyn) as unknown as DuelSim;
+        maxHp = { ren: v.dyn.f.ren.maxHp, marek: v.dyn.f.marek.maxHp };
+      }
       // the version 2's sound (lot V8): the arena's roar, the duel's effects and the bout's piece of the band in its three layers (journal Passe SN10; the arena's
       // own page outside a game: `music=rival|finale`, the duel else), after the person's first gesture; N mutes
       const t = opts.params.get('time'), look = t === 'morning' || t === 'midday' || t === 'afternoon' ? t : 'night', m0 = opts.params.get('music');
-      const piece: PieceId = opts.match?.piece ?? (m0 === 'rival' || m0 === 'finale' ? m0 : 'duel'), maxHp = { ren: v.dyn.f.ren.maxHp, marek: v.dyn.f.marek.maxHp };
+      const piece: PieceId = opts.match?.piece ?? (m0 === 'rival' || m0 === 'finale' ? m0 : 'duel');
       void import('../audio/Sound').then((m) => {
         const snd = m.sound(); this.snd = snd as unknown as { duelEvent(e: unknown): void }; snd.setScene('arena', look, false, 1842, { bout: piece, maxHp, tiers: this.charge?.tiers.length, ...(opts.match?.empty ? { empty: true } : {}) });
         // mute: the player's key (the remapping, journal Passe RM2: mute is heard in the duel too)
@@ -257,7 +277,7 @@ export class ArenaApp {
     const painters = pq === 'main' ? 0 : pq !== null && /^\d+$/.test(pq) ? +pq : defaultPainters();
     this.frameCap.probe();
     // the version 2's arena flies the tournament's heraldry (journal Passe VP3); today's arena keeps its fleurs, byte for byte
-    setTournamentHeraldry(this.rules === 'v2');
+    setTournamentHeraldry(v2Rules(this.rules));
     this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
     // by day (J4 transposed): the window and lantern glass dims, the braziers' coals keep the night's glow on their own copy of the material;
     // the town houses' shop windows dim and their roofs take the state's tint, as in the district
@@ -301,7 +321,7 @@ export class ArenaApp {
     // AA2 / RC1 / CX1); compiled out of production builds, absent = the arena as before
     if (import.meta.env.DEV && this.opts.params.has('fighterdensity')) this.densityTrial = await (await import('../lab/fighterDensity')).installFighterDensity(this.set, this.opts.params, this.foe);
     // the version 2's duel on the approved combat sheets (journal Passe CX2, the operator's CX-P1 « Ren et Marek ensemble »); `cast=generated` keeps the generated fighters, for comparison
-    if (this.rules === 'v2' && !this.opts.forecourt && !(import.meta.env.DEV && this.densityTrial) && this.opts.params.get('cast') !== 'generated') this.sheets = await (await import('./CombatCast')).installCombatCast(this.set, this.foe, this.opts.params);
+    if (v2Rules(this.rules) && !this.opts.forecourt && !(import.meta.env.DEV && this.densityTrial) && this.opts.params.get('cast') !== 'generated') this.sheets = await (await import('./CombatCast')).installCombatCast(this.set, this.foe, this.opts.params);
     this.walkFrames = [...this.set.atlas.frames.keys()].filter((x) => x.startsWith('ren/side/walk.')).length;
     this.sprites = new SpriteRenderer(this.set.atlas, 96, (import.meta.env.DEV && this.densityTrial?.frame) || this.sheets?.frame || { w: CELL_W, h: CELL_H, foot: CELL_FOOT });
     this.sprites.charScale = CHAR_SCALE;
@@ -315,7 +335,7 @@ export class ArenaApp {
     this.scene.add(this.floor.mesh);
     if (fxOn(this.rules, this.opts.params)) this.combatFx = (await import('./fx/combatFx')).installCombatFx(this.scene, this.camera, this.opts.params, { foe: this.foe, guardReach: (who) => { const r = ((import.meta.env.DEV && this.densityTrial) || this.sheets) && this.set.reach[`${who}/block.0`]; return r ? r * PIXEL_WORLD * CHAR_SCALE : null; }, lights: this.lights, shake: (k) => { this.shake = Math.max(this.shake, k); }, timeScale: (k) => { this.timeScale = k; }, renderHeight: () => this.post.height });
     // a version 2 duel: the district's townsfolk on the stands (journal Passe PU1, the operator's sheet PU-1 to PU-8); `cast=generated` keeps today's spectators
-    if (this.rules === 'v2' && !this.opts.forecourt && !this.opts.match?.empty && this.opts.params.get('cast') !== 'generated') {
+    if (v2Rules(this.rules) && !this.opts.forecourt && !this.opts.match?.empty && this.opts.params.get('cast') !== 'generated') {
       this.stands = await (await import('./StandsCast')).installStands({ charScale: CHAR_SCALE, edgeGain: this.look ? lum(NIGHT_MOON) / lum(this.look.sunCol) : 1, shade: (await import('./CombatSheets')).shadeFor(this.opts.params.get('time')) });
       this.scene.add(this.stands.group);
     }
@@ -336,7 +356,10 @@ export class ArenaApp {
     // the moon's box is narrow (it lies low behind the gate); a high sun sees the floor and the stands from above: a wider box
     if (this.look) this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 2, -4), this.keyDir, 30, 30);
     else this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 3.5, -6), MOON_DIR, 24, 9);
-    if (!this.opts.params.has('clean')) {
+    if (!this.opts.params.has('clean') && this.auto) {
+      const a = this.opts.match?.auto, texts = (this.opts.match?.texts as AutoTexts | undefined) ?? (lang() === 'fr' ? AUTO_TEXTS_FR : AUTO_TEXTS_EN);
+      this.hud = new AutoHud(this.auto, this.set.portraits, a?.names ?? { ren: 'Ren', marek: this.foe[0].toUpperCase() + this.foe.slice(1) }, (id) => autoActionName(id, texts), texts, parseTime(this.opts.params));
+    } else if (!this.opts.params.has('clean')) {
       this.hud = this.dyn ? new DynamicHud(this.dyn, this.set.portraits, this.opts.match?.texts as DynTexts | undefined, parseTime(this.opts.params), this.charge ? { texts: this.opts.match ? (lang() === 'fr' ? CHARGE_TEXTS_FR : CHARGE_TEXTS_EN) : CHARGE_TEXTS_FR, tiers: this.charge.tiers } : null)
         : new ArenaHud(this.classic!, this.set.portraits, this.opts.match?.texts, parseTime(this.opts.params));
     }
@@ -370,6 +393,16 @@ export class ArenaApp {
   /** a command from the keys, a gamepad or the action bar */
   action(id: string, down = true): void {
     const s = this.sim;
+    // the duel played by the computer: the attack's key ×2, the dodge's « Skip » (the player's keys, the remapping), the pause's the pause
+    if (this.auto) {
+      if (!down) return;
+      if (id === 'attack' || id === 'speed') { if (!this.auto.over) this.speed = this.speed > 1 ? 1 : 2; }
+      else if (id === 'dodge' || id === 'skip') { if (!this.paused || this.moment) this.auto.skip(); }
+      else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; this.hud?.still(false); }
+      else if (id === 'settings') this.openSettings();
+      else if (id === 'reset') { if (!this.opts.match) this.restart(); }
+      return;
+    }
     if (id === 'guard') { s.setGuard('ren', down); return; }
     // the version 2's attack: held, it charges; released, it launches the tier reached (src/combat/charge.ts)
     if (id === 'attack') { this.charge?.attack(down); return; }
@@ -385,7 +418,7 @@ export class ArenaApp {
    *  Y or the pause's line; the duel stays paused under it, the image changes at once (src/settings/scene.ts), its keys go to the page alone */
   private settingsOpen = false;
   openSettings(): void {
-    if (!this.charge || !this.paused || this.moment || this.sim.over || this.settingsOpen) return;
+    if (!(this.charge || this.auto) || !this.paused || this.moment || this.sim.over || this.settingsOpen) return;
     this.settingsOpen = true; document.body.classList.add('cdt-settings');
     void import('../ui/settings').then((m) => { const p = m.settingsPage({ inDuel: true, close: () => { this.settingsOpen = false; document.body.classList.remove('cdt-settings'); } }); document.body.appendChild(p.root); p.focus(); });
   }
@@ -399,24 +432,25 @@ export class ArenaApp {
     }
     // the version 2's duel reads the player's keys (the remapping, journal Passe RM2: attack, guard, dodge, pause, today's V2_KEYS at the start; R, the
     // arena page's restart, and H, the HUD, give way to a key the player put there, RM-4); the other rules keep the prototype's keys (RM-1)
-    const KEYS: Record<string, string> = this.charge ? { r: 'reset' } : this.dyn ? dynKeys(this.dyn.D.loadout) : { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
+    const duelKeys = !!(this.charge || this.auto);
+    const KEYS: Record<string, string> = duelKeys ? { r: 'reset' } : this.dyn ? dynKeys(this.dyn.D.loadout) : { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
     window.addEventListener('keydown', (e) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || !this.ready || this.lesson || this.settingsOpen) return;
-      const bound = this.charge ? actsOf(e, 'duel') : [], k = e.key.toLowerCase(), m = bound.find((a) => a !== 'mute') ?? (bound.length ? undefined : KEYS[k]);
+      const bound = duelKeys ? actsOf(e, 'duel') : [], k = e.key.toLowerCase(), m = bound.find((a) => a !== 'mute') ?? (bound.length ? undefined : KEYS[k]);
       if (m) { e.preventDefault(); this.action(m, true); this.hud?.flash(m); }
       else if (k === 'h' && !bound.length) this.hudVisible = !this.hudVisible;
       else if (k === 'escape') this.openSettings();
     });
     window.addEventListener('cdt-open-settings', () => this.openSettings());
     window.addEventListener('keyup', (e) => {
-      if (this.charge) { const a = actsOf(e, 'duel'); if (a.includes('attack')) this.action('attack', false); if (a.includes('guard')) this.action('guard', false); }
+      if (duelKeys) { const a = actsOf(e, 'duel'); if (a.includes('attack')) this.action('attack', false); if (a.includes('guard')) this.action('guard', false); }
       else if (e.key.toLowerCase() === 'b') this.action('guard', false);
     });
     window.addEventListener('blur', () => { this.action('guard', false); if (this.charge) this.action('attack', false); });
     // the version 2's charged duel reads the shared gamepad (the operator's MN-5 « Les deux : X, B, A et les gâchettes en double », journal Passe MN2):
     // whichever pad was used last, X or RT the attack held, B or LT the guard held, A the dodge, Start the pause, View the page's restart; the
     // bands before and after the bout answer it as pages; the player's hits make it rumble (MN-9). Every other arena keeps pollPad, as before
-    if (this.charge) void import('../input/PadInput').then((m) => {
+    if (duelKeys) void import('../input/PadInput').then((m) => {
       this.pad = m.installPad({ duel: (id, down) => { this.action(id, down); if (down) this.hud?.flash(id); }, sound: () => import('../audio/Sound').then((s) => s.sound()) });
     });
   }
@@ -449,12 +483,12 @@ export class ArenaApp {
   /** the version 2's sound (lot V8, src/audio/Sound.ts): loaded on demand by a version 2 duel only; today's arena makes none */
   snd: { duelEvent(e: unknown): void } | null = null;
 
-  private onEvents(evs: Array<CombatEvent | DynEvent>): void {
+  private onEvents(evs: Array<CombatEvent | DynEvent | ReplayEvent>): void {
     this.combatFx?.onEvents(evs, this.fighters, this.charge?.tiers.length ?? 0);
     this.stands?.onEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
     this.pad?.duelEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>);
     this.onDuelEvents?.(evs as unknown as Array<{ type: string } & Record<string, unknown>>);
-    for (const e of evs) {
+    for (const e of evs as Array<CombatEvent | DynEvent>) {
       this.snd?.duelEvent(e);
       if (e.type === 'impact') {
         if (e.hp <= 0) this.finisher = e.kind;
@@ -485,7 +519,8 @@ export class ArenaApp {
         this.fx = [];
       }
     }
-    if (this.hud instanceof DynamicHud) this.hud.onEvents(evs as DynEvent[], this.dyn!);
+    if (this.hud instanceof AutoHud) this.hud.onEvents(evs as ReplayEvent[]);
+    else if (this.hud instanceof DynamicHud) this.hud.onEvents(evs as DynEvent[], this.dyn!);
     else this.hud?.onEvents(evs as CombatEvent[], this.classic!);
   }
 
@@ -503,21 +538,25 @@ export class ArenaApp {
   }
 
   /** each fighter's frame, place and tint from its simulation state */
+  /** Ren's charge as the sheets draw it: the three buttons' hold, or the duel played by the computer's charge on the timeline */
+  private chargeView(): { held: boolean; reached: number; waiting: number } | null { return this.charge?.view() ?? this.auto?.chargeView() ?? null; }
+
   private presentFighters(dt: number): void {
-    const s = this.sim;
+    const s = this.sim, cv = this.chargeView();
     for (const id of ['ren', 'marek'] as FighterId[]) {
       const f = s.f[id], a = this.fighters[id], p = this.pres[id], an = f.anim!;
       // under the new rules, today's clips on the new moments (dynamicView.ts: skills, the preparation held on the first frame)
-      let clip = this.dyn ? dynClip(an.name) : an.name;
+      const dl = !!(this.dyn || this.auto);
+      let clip = dl ? dynClip(an.name) : an.name;
       const clips = this.set.clips[id];
       if (s.over && f.state !== 'down') clip = 'victory';
       if (!clips[clip]) clip = id === 'marek' || f.ap >= 2 ? 'ready' : 'idle';
       // the version 2's charge, shown with today's images (the operator's brief, lot V1): the heavy attack's preparation held while the
       // attack is held and the player is free (not guarding: the guard's brace shows then)
-      const charging = id === 'ren' && !!this.charge && this.charge.view().held && f.state === 'idle' && !f.guarding && !!clips.heavy;
+      const charging = id === 'ren' && !!cv?.held && f.state === 'idle' && !f.guarding && !!clips.heavy;
       if (charging) clip = 'heavy';
       const def = clips[clip], n = def.frames.length;
-      let fi = charging ? 0 : this.dyn ? dynClipFrame(clip === dynClip(an.name) ? an.name : clip, clip, n, an, def.loop ?? 0) : clipFrame(clip, n, an.t, an.impactAt ?? 0, def.loop ?? 0);
+      let fi = charging ? 0 : dl ? dynClipFrame(clip === dynClip(an.name) ? an.name : clip, clip, n, an, def.loop ?? 0) : clipFrame(clip, n, an.t, an.impactAt ?? 0, def.loop ?? 0);
       if (clip === 'block' && p.guardHit > 0) fi = 1;
       a.anim = `${clip}.${fi}` as Anim;
       // lunges: an attack closes the gap so its blade lands on the opponent at the impact; a dodge leaps back; hits knock back
@@ -544,8 +583,8 @@ export class ArenaApp {
       a.t = 0;
       p.lastClip = clip;
     }
-    if (import.meta.env.DEV && this.densityTrial) this.densityTrial.present(this.fighters, this.time, s, this.charge?.view() ?? null);
-    this.sheets?.present(this.fighters, this.time, s, this.charge?.view() ?? null);
+    if (import.meta.env.DEV && this.densityTrial) this.densityTrial.present(this.fighters, this.time, s, (this.charge?.view() ?? null) as never);
+    this.sheets?.present(this.fighters, this.time, s, cv);
   }
 
   private presentFans(): void {
@@ -639,7 +678,7 @@ export class ArenaApp {
     U.uMoonDir.value.copy(this.keyDir);
     this.pollPad();
     if (!this.paused) {
-      this.acc += dt * this.timeScale;
+      this.acc += dt * this.timeScale * this.speed;
       const step = this.sim.D.dt;
       let n = 0;
       while (this.acc >= step && n++ < 24) { this.sim.step(step); this.onEvents(this.sim.drain()); this.acc -= step; }
@@ -659,14 +698,17 @@ export class ArenaApp {
     this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...this.fans], this.lights, this.camera, this.keyDir, null, this.fighters.ren);
     this.stands?.update(this.sim.t, this.lights, this.camera, this.keyDir);
     this.particles.update(pdt, this.time, this.camera, this.post.height, this.lights, null);
-    if (this.hud instanceof DynamicHud) this.hud.update(this.dyn!, this.assist, this.hudVisible, this.paused && !this.moment, this.charge ? chargeHudModel(this.charge.view()) : undefined);
+    if (this.hud instanceof AutoHud) this.hud.update(this.auto!.hud(), this.hudVisible, this.paused && !this.moment, this.speed > 1, this.auto!.over);
+    else if (this.hud instanceof DynamicHud) this.hud.update(this.dyn!, this.assist, this.hudVisible, this.paused && !this.moment, this.charge ? chargeHudModel(this.charge.view()) : undefined);
     else this.hud?.update(this.classic!, this.assist, this.hudVisible, this.paused && !this.moment);
     // an official bout: told once the KO has had its moment on screen
     const m = this.opts.match;
     if (m?.onOver && this.sim.over && !this.told && this.koT >= 0 && this.sim.t - this.koT >= 1.6) {
       this.told = true;
-      const f = this.sim.f;
-      m.onOver({ winner: f.ren.state === 'down' ? 'marek' : 'ren', hp: { ren: f.ren.hp, marek: f.marek.hp }, maxHp: { ren: f.ren.maxHp, marek: f.marek.maxHp }, finisher: this.finisher, t: this.sim.t });
+      const f = this.sim.f, r = this.auto?.result;
+      // the duel played by the computer: its own result, as the game decided it (the replay ends on it)
+      if (r) m.onOver({ winner: this.auto!.winner, hp: { ren: r.hp[0], marek: r.hp[1] }, maxHp: { ren: r.maxHp[0], marek: r.maxHp[1] }, finisher: r.finisher, t: this.sim.t });
+      else m.onOver({ winner: f.ren.state === 'down' ? 'marek' : 'ren', hp: { ren: f.ren.hp, marek: f.marek.hp }, maxHp: { ren: f.ren.maxHp, marek: f.marek.maxHp }, finisher: this.finisher, t: this.sim.t });
     }
   }
 
@@ -700,6 +742,7 @@ export class ArenaApp {
   /** the prototype's `jump`: a scripted moment from a reset, every step delivered to the presentation at the simulation's fixed step (the
    *  prototype delivered its last half second only: a KO before it never reached the screen), then held */
   jump(name: string): boolean {
+    if (this.auto) return this.jumpAuto(name);
     const v2p = this.charge ? V2_PRESETS[name] : undefined;
     const p = v2p ?? (this.dyn ? DYN_PRESETS[name] : PRESETS[name]); if (!p) return false;
     this.sim.reset(); this.hud?.still(false); this.onEvents(this.sim.drain());
@@ -719,8 +762,20 @@ export class ArenaApp {
 
   renderOnce(): void { this.update(0); this.render(); }
 
+  /** the duel played by the computer's moments (captures and reviews): a time of its script, every step before it applied without sounds or effects, then held */
+  private jumpAuto(name: string): boolean {
+    const a = this.auto!, m = AUTO_MOMENTS[name];
+    if (!m) return false;
+    const t = m(a);
+    if (t < 0) return false;
+    a.seek(t); this.onEvents(a.drain()); this.koT = a.over ? a.t : -1;
+    this.paused = true; this.moment = true; this.hud?.still(true);
+    this.presentFighters(0); this.update(0);
+    return true;
+  }
+
   /** the scripted moments `jump` knows under this page's rules */
-  presetNames(): string[] { return this.charge ? [...Object.keys(V2_PRESETS), ...Object.keys(DYN_PRESETS)] : Object.keys(this.dyn ? DYN_PRESETS : PRESETS); }
+  presetNames(): string[] { if (this.auto) return Object.keys(AUTO_MOMENTS); return this.charge ? [...Object.keys(V2_PRESETS), ...Object.keys(DYN_PRESETS)] : Object.keys(this.dyn ? DYN_PRESETS : PRESETS); }
 
   snapshot(): Record<string, unknown> {
     const r = this.renderer.info, p = this.perf, gpu = p.gpu.enabled ? { ...p.gpu.ms } : undefined;
@@ -733,9 +788,25 @@ export class ArenaApp {
       atlas: this.set ? `${this.set.atlas.width}x${this.set.atlas.height} (${this.set.atlas.frameCount} cells)` : null, drawCalls: p.drawCalls, frameTriangles: p.triangles, arenaTriangles: this.arena?.stats.triangles, resolution: `${this.post.width}x${this.post.height}`,
       pose: this.pose, assist: this.assist,
       ...(this.charge ? { charge: this.charge.view() } : {}),
+      ...(this.auto ? { auto: { end: this.auto.end, winner: this.auto.winner, over: this.auto.over, speed: this.speed, hud: this.auto.hud() } } : {}),
       ...(this.dyn ? { rules: this.rules, resist: { ren: +this.dyn.f.ren.resist.toFixed(2), marek: +this.dyn.f.marek.resist.toFixed(2) }, phase: this.dyn.inSequence() ? 'defense' : 'open' } : {}),
     };
   }
 }
+
+/** the duel played by the computer's scripted moments: a time of its script (-1 when the duel has none) */
+const AUTO_MOMENTS: Record<string, (a: AutoReplay) => number> = {
+  start: () => 0.05,
+  renCharge: (a) => { const t = a.timeOf((e) => e.who === 'ren' && e.ev === 'charge' && e.act !== 'light'); return t < 0 ? -1 : t + 0.5; },
+  foeCharge: (a) => { const e = a.result.log!.find((x) => x.who !== 'ren' && x.ev === 'charge' && x.act !== 'm_light' && x.act !== 'm_combo' && (x.at ?? 0) - x.t > 1); return e ? (e.t + (e.at ?? e.t)) / 2 : -1; },
+  renSkill: (a) => a.timeOf((e) => e.who === 'ren' && e.ev === 'hit' && e.act !== 'light'),
+  foeSkill: (a) => a.timeOf((e) => e.who !== 'ren' && e.ev === 'hit' && e.act !== 'm_light' && e.act !== 'm_combo'),
+  ward: (a) => { const t = a.timeOf((e) => e.ev === 'ward' || e.ev === 'boost'); return t < 0 ? -1 : t + 0.1; },
+  dodge: (a) => { const t = a.timeOf((e) => e.ev === 'dodged'); return t < 0 ? -1 : t + 0.08; },
+  guard: (a) => { const t = a.timeOf((e) => e.ev === 'guarded'); return t < 0 ? -1 : t + 0.08; },
+  break: (a) => { const t = a.timeOf((e) => e.ev === 'break'); return t < 0 ? -1 : t + 1; },
+  mid: (a) => a.end / 2,
+  ko: (a) => a.end + 1.2,
+};
 
 function smooth(x: number): number { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); }

@@ -111,7 +111,8 @@ test('UM-T2, lot 2: one sign for an alert, the K.O. alone on the screen, the tie
   assert.match(D, /#ah-tiers\{[^}]*opacity:0/);
   assert.match(D, /#ah-tiers\.on\{opacity:1\}/);
   assert.ok(!/ui\.arena\.keys/.test(P), 'no paragraph of keys');
-  assert.match(P, /v2 && !challenge \? gate/, 'the version 2\'s gate: its stage and the name');
+  // the version 2's gate: its stage and the name (a challenge's too since lot 2, journal Passe LC3: the duel played by the computer has no report to read there)
+  assert.match(P, /await overlay\(v2 \? gate/, 'the version 2\'s gate: its stage and the name');
 });
 
 test('UM-R3, UM-R5: no developer\'s word on screen, Explore in the system, no minimap', () => {

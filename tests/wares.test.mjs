@@ -53,13 +53,13 @@ test('every line sold anywhere: the « after » is what buying it really gives, 
 test('better and worse follow the number\'s sense: more Defence is better, less Speed is worse', () => {
   const st = v2('forecourt-morning'); st.player.coins = 300;
   const r = rows(P.preview(st, { type: 'shopBuy', shop: 'armourer', item: 'mail-shirt' }));
-  // the mail (DB7-2): Defence +3, Speed -0.5
-  assert.equal(r.def.better, true); assert.equal(r.def.after, r.def.now + 3);
-  assert.equal(r.viv.better, false); assert.equal(r.viv.after, r.viv.now - 0.5);
+  // the mail (DB7-2, its points doubled by AC-11 since journal Passe LC3): Defence +6, Speed -1
+  assert.equal(r.def.better, true); assert.equal(r.def.after, r.def.now + 6);
+  assert.equal(r.viv.better, false); assert.equal(r.viv.after, r.viv.now - 1);
   const w = v2(); w.player.coins = 300;
   const b = rows(P.preview(w, { type: 'shopBuy', shop: 'mara', item: 'docker-wrap' }));
-  // Ren 300 at the start (journal Passe DB8; DB11-6 « Ren 300 », journal Passe DB13), the wrap +18
-  assert.equal(b.hp.better, true); assert.equal(b.hp.after, 318);
+  // Ren 300 at the start (journal Passe DB8; DB11-6 « Ren 300 », journal Passe DB13), the wrap +36 (+18 before AC-11)
+  assert.equal(b.hp.better, true); assert.equal(b.hp.after, 336);
 });
 
 test('what it replaces, and the trap a swap hides: the forge\'s tiers leave with the old weapon', () => {
@@ -67,7 +67,7 @@ test('what it replaces, and the trap a swap hides: the forge\'s tiers leave with
   const p = P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'imported-blade' });
   assert.deepEqual([p.slot, p.replaces, p.tierLost], ['weapon', 'training-sword', 3]);
   const r = rows(p);
-  assert.equal(r.atk.better, false, 'three tiers (Attack +3) lost for the blade\'s +2: the Attack falls, and the page says it');
+  assert.equal(r.atk.better, false, 'three tiers (Attack +6 since AC-11) lost for the blade\'s +4: the Attack falls, and the page says it');
   st.v2.gear.tier = 1;
   const up = P.preview(st, { type: 'upgradeWeapon' });
   assert.deepEqual([up.slot, up.replaces, up.tierLost], ['weapon', null, 0], 'the forge keeps the weapon');

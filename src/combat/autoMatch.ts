@@ -1,49 +1,61 @@
 import type { GameState } from '../simulation/state';
 import type { DuelOutcome } from '../tournament/pool';
 import { rivalMods } from '../tournament/pool';
-import { v2Mods, v2Stats, wornFx } from '../simulation/v2gear';
-import { GEAR } from '../simulation/gear';
+import { v2Mods, v2Stats } from '../simulation/v2gear';
 import { v2KitOf } from '../simulation/v2';
 import { GENERICS } from '../narrative/generics';
-import { autoDuel, autoWinner, type AutoFighter, type AutoResult } from './auto';
-import { autoFoe, autoGenericSheet, autoRaceSheet, autoRen, autoRound } from './autoData';
-import { challengeSheetFor, matchSheetFor } from './match';
+import { AUTO_RULES, autoDuel, autoFormsOf, autoWinner, type AutoFighter, type AutoResult } from './auto';
+import { autoFoe, autoGenericSheet, autoPrepPoints, autoRaceSheet, autoRen, autoRound } from './autoData';
+import { challengeSheetFor, matchSheetFor, type MatchSheet } from './match';
 import type { FighterStats, Stage } from './stats';
 
-/** A game's bouts in the duel played by the computer (lot 1, briefs/combat-auto.md § 17.3): Ren and his opponent from a version 2 game's state, the player's
- *  bout of the day or the challenge waiting. Nothing of the game reads it yet but the laboratory's games (`flags.autoDuel`, the TournamentLab's
- *  `--rules=auto`): the duel of today stays on screen until lot 2. Pure. */
+/** A game's bouts in the duel played by the computer (briefs/combat-auto.md § 17.3): Ren and his opponent from a version 2 game's state, the player's bout
+ *  of the day or the challenge waiting. Every version 2 game plays it since lot 2 (journal Passe LC3: the arena shows its script, the match sheet says what
+ *  decides it); today's game (`v2=0`) keeps its own duel. Pure. */
 
-/** the operator's AC-11 « Doubler les points de l’équipement (décision A3 : change DB7-2) » (journal Passe AC4): every stat point of every piece worn and of the
- *  forge, the penalties included, ×2 in this duel (the gear's own table, src/simulation/gear.ts, keeps today's points until lot 2 switches the duel) */
-export const AUTO_GEAR_K = 2;
-
-/** Ren's stats in a bout of this duel: the game's (v2Stats: his start, his vigour, his gear, the whetstone, his training), the gear's points ×2 (AC-11) */
+/** Ren's stats in a bout of this duel: the game's (v2Stats: his start, his vigour, his gear, the whetstone, his training); the gear's points are the
+ *  doubled ones of the operator's AC-11 « Doubler les points de l’équipement (décision A3 : change DB7-2) » (journal Passe AC4), in the gear's own table
+ *  since lot 2 (src/simulation/gear.ts; lot 1 doubled them here) */
 export function autoRenStats(st: GameState): FighterStats {
-  const s = v2Stats(st), fx = wornFx(st), k = AUTO_GEAR_K - 1, stone = st.player.items.includes('whetstone') ? GEAR.whetstone.fx.atk ?? 0 : 0;
-  const out = { hp: s.hp + k * fx.hp, atk: s.atk + k * (fx.atk + stone), def: s.def + k * fx.def, end: s.end + k * fx.end, viv: s.viv + k * fx.viv };
-  for (const key of Object.keys(out) as Array<keyof FighterStats>) out[key] = +out[key].toFixed(2);
-  return out;
+  return v2Stats(st);
 }
 
-export interface AutoBout { ren: AutoFighter; foe: AutoFighter; foeId: string; seed: number; stage: Stage; round: number }
+export interface AutoBout { ren: AutoFighter; foe: AutoFighter; foeId: string; seed: number; stage: Stage; round: number; prep: number }
 
-/** the player's bout of the day (`bout`) or the challenge waiting (`challenge`) as the duel's two fighters and its seed; null when there is none */
+/** the sheet of the player's bout of the day (`bout`) or of the challenge waiting (`challenge`) */
+export const autoSheetOf = (st: GameState, kind: 'bout' | 'challenge' = 'bout'): MatchSheet | null => (kind === 'challenge' ? challengeSheetFor(st) : matchSheetFor(st));
+
+/** the player's bout of the day (`bout`) or the challenge waiting (`challenge`) as the duel's two fighters and its seed; null when there is none. `prep` the
+ *  opponent's preparation as the visible Attack points of AC-17 (0 for a generic fighter) */
 export function autoBoutOf(st: GameState, kind: 'bout' | 'challenge' = 'bout'): AutoBout | null {
-  const sh = kind === 'challenge' ? challengeSheetFor(st) : matchSheetFor(st);
+  const sh = autoSheetOf(st, kind);
   if (!sh) return null;
   const o = sh.sides[1].fighters[0], stage = sh.stage ?? 0, round = stage === 0 ? autoRound(st.day) : 0, mods = v2Mods(st), g = GENERICS[o.id];
   const ren = autoRen(autoRenStats(st), v2KitOf(st), { weapon: st.v2?.gear?.weapon, hpShare: mods.hp, apStart: mods.ap ?? 0, taken: mods.taken, effect: mods.effect });
   const c = st.competitors[o.id];
   const foe = g ? autoFoe(o.id, autoGenericSheet(g.profile, g, stage, round), { kitOf: g.profile })
     : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c?.preparation, hp: c ? rivalMods(c).hp : 1 }));
-  return { ren, foe, foeId: o.id, seed: (sh.seed ^ 0x5bd1e995) >>> 0, stage, round };
+  return { ren, foe, foeId: o.id, seed: (sh.seed ^ 0x5bd1e995) >>> 0, stage, round, prep: g || !c ? 0 : autoPrepPoints(c.preparation) };
 }
 
-/** the player's bout or challenge fought in this duel, as the game takes its result (DuelOutcome), and the duel itself */
+/** the player's bout or challenge fought in this duel, as the game takes its result (DuelOutcome), and the duel itself (`log`: its script, with each
+ *  event's state for the arena, `trace`) */
 export function autoOutcome(st: GameState, kind: 'bout' | 'challenge' = 'bout', o: { log?: boolean } = {}): DuelOutcome & { duel: AutoResult; bout: AutoBout } {
   const b = autoBoutOf(st, kind);
   if (!b) throw new Error(kind === 'challenge' ? 'no challenge waiting' : 'no duel today');
-  const r = autoDuel(b.ren, b.foe, b.seed, { log: o.log }), win = autoWinner(r) === 0;
+  const r = autoDuel(b.ren, b.foe, b.seed, { log: o.log, trace: o.log }), win = autoWinner(r) === 0;
   return { winner: win ? 'player' : 'opponent', playerHp: r.hp[0], playerMaxHp: r.maxHp[0], opponentHp: r.hp[1], opponentMaxHp: r.maxHp[1], finisher: r.finisher, duel: r, bout: b };
 }
+
+/** the form of the day of a bout's two fighters (AC-08 « Une forme du jour ±15 %, dite sur la fiche de match »): drawn from the bout's seed before it, as the
+ *  duel draws it (its own stream) */
+export const autoForms = (b: Pick<AutoBout, 'seed'>): [number, number] => autoFormsOf(b.seed);
+
+/** the chances of a reaction for a fighter defending against another (AC-05; briefs/combat-auto.md § 3, « La fiche de match montre les deux chances »): its
+ *  dodge, its guard against a light attack and against a skill seen coming (the duel's own formulas, its traits added, at most 90 %) */
+export function autoReactions(def: Pick<AutoFighter, 'def' | 'viv' | 'dodgeBonus' | 'guardBonus'>, att: Pick<AutoFighter, 'atk' | 'viv'>): { dodge: number; guard: number; guardSkill: number } {
+  const R = AUTO_RULES.react, ratio = (a: number, b: number) => (2 * a) / Math.max(1e-6, a + b);
+  const dodge = Math.min(1, R.dodge * ratio(def.viv, att.viv) + (def.dodgeBonus ?? 0)), g = R.guard * ratio(def.def, att.atk);
+  return { dodge, guard: Math.min(R.cap, g + (def.guardBonus ?? 0)), guardSkill: Math.min(R.cap, g * R.skillGuard + (def.guardBonus ?? 0)) };
+}
+

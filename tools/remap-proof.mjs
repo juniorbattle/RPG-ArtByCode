@@ -168,7 +168,7 @@ try {
   const menu = await page.evaluate(() => [...document.querySelectorAll('.pm-menu kbd[data-bind]')].map((k) => `${k.dataset.bind}:${k.textContent}`).join(' '));
   check(menu === 'map:M journal:J board:T skills:K gear:G settings:V guide:H', `the menu's caps, by action: ${menu}`);
   await tap('Escape', 'Escape');
-  await page.goto(`${BASE}?scene=arena`, { waitUntil: 'load', timeout: READY });
+  await page.goto(`${BASE}?scene=arena&duel=charge`, { waitUntil: 'load', timeout: READY });
   await page.waitForFunction('window.__ready === true && window.__arena?.ready', { timeout: READY });
   await sleep(600);
   const held = () => page.evaluate(() => !!window.__arena.snapshot().charge?.held);
@@ -195,7 +195,7 @@ try {
   await tap('KeyQ', 'a');
   check(await until(() => !!document.querySelector('[data-here]'), 3000, 'the list'), 'its A (at QWERTY\'s Q) opens the list');
   await tap('Escape', 'Escape');
-  await page.goto(`${BASE}?scene=arena`, { waitUntil: 'load', timeout: READY });
+  await page.goto(`${BASE}?scene=arena&duel=charge`, { waitUntil: 'load', timeout: READY });
   await page.waitForFunction('window.__ready === true && window.__arena?.ready', { timeout: READY });
   await sleep(600);
   await send('keyDown', 'Digit1', '&'); await sleep(250); const amp = await held(); await send('keyUp', 'Digit1', '&'); await frames(3);

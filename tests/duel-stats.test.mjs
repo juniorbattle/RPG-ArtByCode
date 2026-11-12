@@ -21,6 +21,7 @@ const G = await load('/src/simulation/index.ts');
 const VG = await load('/src/simulation/v2gear.ts');
 const GE = await load('/src/simulation/gear.ts');
 const P = await load('/src/simulation/preview.ts');
+const AD = await load('/src/combat/autoData.ts');
 const T = await load('/src/simulation/v2town.ts');
 const { GENERICS } = await load('/src/narrative/generics.ts');
 const { EN } = await load('/src/narrative/text/en.ts');
@@ -144,22 +145,23 @@ test('the cooldown (DB5-3 « 5 × le temps de charge », A3): a skill that left 
 test('Ren\'s stats from his state (DB7-2, DB7-3, DB7-4): the gear in points, the whetstone, the forge\'s tiers, the sessions\' stats for the next bout, the vigour', () => {
   const st = G.makeV2(G.namedState('day1-morning'));
   assert.deepEqual(VG.v2Stats(st), ST.REN_BASE);
-  // each piece's points (briefs/stats-combattants.md § 2.3; the health x2 since DB11-6)
+  // each piece's points (briefs/stats-combattants.md § 2.3; the health x2 since DB11-6), doubled with the penalties since lot 2 of the duel played by the computer
+  // (the operator's AC-11 « Doubler les points de l’équipement (décision A3 : change DB7-2) », journal Passe AC4, applied in journal Passe LC3); the AP and the effects kept
   const POINTS = {
-    'imported-blade': { atk: 2 }, 'duelist-sabre': { atk: 1.5, viv: 1 }, 'padded-jack': { def: 1 }, 'mail-shirt': { def: 3, viv: -0.5 }, 'dock-leathers': { def: 1.5, end: 1 },
-    'knight-hauberk': { def: 3.5, viv: -0.5 }, 'iron-ring': { end: 2 }, 'swift-boots': { viv: 1 }, 'docker-wrap': { hp: 18 }, 'river-pearl': { end: 1.5, hp: 10 },
-    'pilgrim-medal': { hp: 16, effect: 1.15 }, 'champion-token': { ap: 1, end: 0.5 }, 'lucky-ribbon': { ap: 1 }, 'fervour-charm': { effect: 1.3 }, whetstone: { atk: 0.5 },
+    'imported-blade': { atk: 4 }, 'duelist-sabre': { atk: 3, viv: 2 }, 'padded-jack': { def: 2 }, 'mail-shirt': { def: 6, viv: -1 }, 'dock-leathers': { def: 3, end: 2 },
+    'knight-hauberk': { def: 7, viv: -1 }, 'iron-ring': { end: 4 }, 'swift-boots': { viv: 2 }, 'docker-wrap': { hp: 36 }, 'river-pearl': { end: 3, hp: 20 },
+    'pilgrim-medal': { hp: 32, effect: 1.15 }, 'champion-token': { ap: 1, end: 1 }, 'lucky-ribbon': { ap: 1 }, 'fervour-charm': { effect: 1.3 }, whetstone: { atk: 1 },
   };
   for (const [id, fx] of Object.entries(POINTS)) assert.deepEqual(GE.GEAR[id].fx, fx, id);
-  assert.equal(GE.WEAPON_TIER_ATK, 1);
+  assert.equal(GE.WEAPON_TIER_ATK, 2);
   const s = structuredClone(st);
   s.v2.gear = { weapon: 'imported-blade', tier: 3, armour: 'dock-leathers', acc: ['iron-ring', 'docker-wrap'], bag: [] };
   s.player.items.push('whetstone'); s.player.training = 2; s.v2.prep = ['viv', 'end']; s.v2.wins = 4;
-  assert.deepEqual(VG.v2Stats(s), { hp: 300 + 4 * 24 + 18, atk: 10 + 2 + 3 + 0.5, def: 11.5, end: 10 + 1 + 2 + 1, viv: 11 });
+  assert.deepEqual(VG.v2Stats(s), { hp: 300 + 4 * 24 + 36, atk: 10 + 4 + 6 + 1, def: 13, end: 10 + 2 + 4 + 1, viv: 11 });
   // a session given to health (DB11-5): +20 at the next bout; where the health comes from, as the match sheet says it (journal Passe DB13)
   const h = structuredClone(s); h.v2.prep = ['hp', 'end']; h.player.injury = 1;
-  assert.equal(VG.v2Stats(h).hp, 300 + 96 + 18 + 20);
-  assert.deepEqual(VG.healthParts(h), { base: 300, vigour: 96, gear: 18, train: 20, wound: 434 - Math.round(434 * 0.8), total: Math.round(434 * 0.8) });
+  assert.equal(VG.v2Stats(h).hp, 300 + 96 + 36 + 20);
+  assert.deepEqual(VG.healthParts(h), { base: 300, vigour: 96, gear: 36, train: 20, wound: 452 - Math.round(452 * 0.8), total: Math.round(452 * 0.8) });
   // a session recorded before DB7 counts as Attack (its +5 % damage of before); two at most
   const old = structuredClone(st); old.player.training = 2; delete old.v2.prep;
   assert.equal(VG.v2Stats(old).atk, 12);
@@ -213,11 +215,13 @@ test('the pages read the stats (DB7-7): the gear page Ren\'s five, the skills pa
   const st = G.makeV2(G.namedState('day2-afternoon')), n = P.duelStats(st), x = VG.v2Stats(st);
   assert.deepEqual([n.atk, n.def, n.end, n.viv], [x.atk, x.def, x.end, x.viv]);
   assert.deepEqual(P.STAT_IDS.slice(0, 5), ['hp', 'atk', 'def', 'end', 'viv']);
-  for (let lv = 1; lv <= 5; lv++) assert.equal(P.skillFigures(st, 't4', lv).power, +ST.skillPower('t4', lv).toFixed(1));
+  // the duel played by the computer's power since lot 2 (journal Passe LC3): its own table (src/combat/autoData.ts)
+  for (let lv = 1; lv <= 5; lv++) assert.equal(P.skillFigures(st, 't4', lv).power, +AD.autoPower('t4', lv).toFixed(1));
   assert.equal(P.skillFigures(st, 'd1', 1).power, 0, 'a ward has no power');
-  assert.match(src('src/ui/townUi.ts'), /foeSheetOf\(foe, sh!\.stage \?\? 0\)/);
+  // the match sheet: both fighters as the duel builds them (src/combat/autoMatch.ts autoBoutOf), side by side
+  assert.match(src('src/ui/townUi.ts'), /const b = autoBoutOf\(s\), vs = b \? this\.autoVsHtml\(b\.ren, b\.foe, autoForms\(b\), r\.name\) : '';/);
   const FR = src('src/narrative/text/fr-texts.ts');
-  for (const key of ['v2.sheet.stats', 'ui.skill.power', 'stat.atk', 'stat.def', 'stat.end', 'stat.viv', 'v2.train.stat', 'v2.spar.stat']) { assert.ok(EN[key], key); assert.match(FR, new RegExp(`"${key.replace(/\./g, '\\.')}": `), key); }
+  for (const key of ['auto.sheet.hp', 'auto.sheet.form', 'auto.sheet.dodge', 'auto.sheet.guard', 'auto.sheet.prep', 'ui.skill.power', 'stat.atk', 'stat.def', 'stat.end', 'stat.viv', 'v2.train.stat', 'v2.spar.stat']) { assert.ok(EN[key], key); assert.match(FR, new RegExp(`"${key.replace(/\./g, '\\.')}": `), key); }
   assert.equal(EN['stat.viv'], 'Speed'); assert.match(FR, /"stat\.viv": "Vivacité"/);
 });
 

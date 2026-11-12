@@ -6,7 +6,7 @@
 //    lot 1 changing only data;
 // 2. each rule against an oracle written from the decisions (AC-02 to AC-09, AC-11, AC-13, AC-16 to AC-18, DB5-3, DB5-4, DB7-1), on hand-made fighters and
 //    views, never read from the code;
-// 3. the game untouched: nothing of the game plays it but a laboratory's game (`flags.autoDuel`), whose bouts and off-screen bouts it plays.
+// 3. the game: every version 2 game plays it since lot 2 (journal Passe LC3), its bouts, challenges and off-screen bouts; today's game (`v2=0`) keeps its own duel.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -25,6 +25,7 @@ const L = await load('/src/tournament/lab.ts');
 const G = await load('/src/simulation/index.ts');
 const PO = await load('/src/tournament/pool.ts');
 const VG = await load('/src/simulation/v2gear.ts');
+const GEAR_MOD = await load('/src/simulation/gear.ts');
 const { Rng } = await load('/src/core/rng.ts');
 const { GENERICS } = await load('/src/narrative/generics.ts');
 // the prototype's own view of the game's data (tools/auto-duel/kits.mjs loadGame)
@@ -338,9 +339,21 @@ function v2State(o = {}) {
   return st;
 }
 
-test('AC-11 (A3): every stat point of every piece worn and of the forge ×2 in this duel, the penalties included; today\'s duel keeps its points', () => {
-  const k = AM.AUTO_GEAR_K, base = AM.autoRenStats(v2State());
-  assert.equal(k, 2);
+test('AC-11 (A3): every stat point of every piece and of the forge ×2, the penalties included, in the gear\'s own table since lot 2; the AP and the effects\' length unchanged', () => {
+  const GR = GEAR_MOD;
+  // DB7-2's points (journal Passe DB8), the table AC-11 doubles (written here, never read from the code)
+  const DB72 = {
+    'imported-blade': { atk: 2 }, 'duelist-sabre': { atk: 1.5, viv: 1 }, 'padded-jack': { def: 1 }, 'mail-shirt': { def: 3, viv: -0.5 }, 'dock-leathers': { def: 1.5, end: 1 },
+    'lucky-ribbon': { ap: 1 }, 'iron-ring': { end: 2 }, 'swift-boots': { viv: 1 }, 'fervour-charm': { effect: 1.3 }, 'docker-wrap': { hp: 18 }, 'champion-token': { ap: 1, end: 0.5 },
+    'river-pearl': { end: 1.5, hp: 10 }, 'knight-hauberk': { def: 3.5, viv: -0.5 }, 'pilgrim-medal': { hp: 16, effect: 1.15 }, whetstone: { atk: 0.5 },
+  };
+  for (const [id, fx] of Object.entries(DB72)) {
+    const want = Object.fromEntries(Object.entries(fx).map(([k, v]) => [k, k === 'ap' || k === 'effect' ? v : v * 2]));
+    assert.deepEqual(GR.GEAR[id].fx, want, id);
+  }
+  assert.equal(GR.WEAPON_TIER_ATK, 2, 'a forge tier +2 Attack (+1 before AC-11)');
+  // the duel reads the game's stats as they are (v2Stats), the doubled points in them
+  const base = AM.autoRenStats(v2State());
   assert.deepEqual(base, VG.v2Stats(v2State()), 'nothing worn: the same stats');
   const cases = [
     [{ gear: { weapon: 'imported-blade' } }, { atk: 4 }],
@@ -351,23 +364,21 @@ test('AC-11 (A3): every stat point of every piece worn and of the forge ×2 in t
     [{ items: ['whetstone'] }, { atk: 1 }],
   ];
   for (const [o, d] of cases) {
-    const s = AM.autoRenStats(v2State(o)), today = VG.v2Stats(v2State(o));
-    for (const key of ['hp', 'atk', 'def', 'end', 'viv']) {
-      assert.ok(Math.abs(s[key] - (base[key] + (d[key] ?? 0))) < 1e-9, `${JSON.stringify(o)} ${key}: ${s[key]}`);
-      assert.ok(Math.abs(today[key] - (base[key] + (d[key] ?? 0) / 2)) < 1e-9, `today's ${JSON.stringify(o)} ${key}`);
-    }
+    const st = AM.autoRenStats(v2State(o));
+    assert.deepEqual(st, VG.v2Stats(v2State(o)), JSON.stringify(o));
+    for (const key of ['hp', 'atk', 'def', 'end', 'viv']) assert.ok(Math.abs(st[key] - (base[key] + (d[key] ?? 0))) < 1e-9, `${JSON.stringify(o)} ${key}: ${st[key]}`);
   }
 });
 
-// ------------------------------------------------------------------------------------------------------------------ the game: the laboratory only
+// ------------------------------------------------------------------------------------------------------------------ the game: every version 2 game
 
-test('AC-18: an off-screen bout is the same duel, the AI on both sides; a laboratory\'s game resolves its off-screen bouts with it', () => {
+test('AC-18: an off-screen bout is the same duel, the AI on both sides; a version 2 game resolves its off-screen bouts with it', () => {
   const r = AD.autoOffscreen('marek', 'vessa', { stage: 1, seed: 77 });
   const a = AD.autoFoe('marek', AD.autoRaceSheet('marek', 1), { side: 'ren' }), b = AD.autoFoe('vessa', AD.autoRaceSheet('vessa', 1));
   assert.equal(a.brain, 'rival'); assert.equal(b.brain, 'rival');
   assert.deepEqual(r, AU.autoDuel(a, b, 77));
-  // the pool's off-screen bouts of a laboratory's game, re-derived from the same draws: each one's seed from its match's stream, then the duel
-  const st = G.newGame(1842, 'Ren'); G.makeV2(st); st.flags.autoDuel = true;
+  // the pool's off-screen bouts of a version 2 game, re-derived from the same draws: each one's seed from its match's stream, then the duel
+  const st = G.newGame(1842, 'Ren'); G.makeV2(st);
   const m0 = st.tournament.matches.find((m) => !m.seen); st.day = m0.day;
   const before = JSON.parse(JSON.stringify(st)), rng = new Rng(4242), events = [];
   PO.playOffscreenMatches(st, (e) => events.push(e), rng);
@@ -380,13 +391,12 @@ test('AC-18: an off-screen bout is the same duel, the AI on both sides; a labora
   }
 });
 
-test('the game untouched: a new game and the default rules play the duel of today; the TournamentLab\'s --rules=auto plays this one, its bouts and challenges', () => {
+test('the game: every version 2 game plays this duel, its bouts, challenges and off-screen bouts (lot 2); today\'s game (v2=0) keeps its own', () => {
   const st = G.newGame(1842, 'Ren'); G.makeV2(st);
-  assert.equal(st.flags.autoDuel, undefined); assert.equal(PO.autoDuelRules(st), false);
-  // a laboratory's game in the new duel, played to its end by the reference player (AC-14)
-  const run = L.autoplay(1842, L.POLICIES.reference, 'Ren', 260, 'auto');
-  assert.ok(run.state.over && run.state.flags.autoDuel === true);
-  // its bout: the laboratory's outcome is this duel's; a game without the flag keeps the bot's duel of today
+  assert.equal(st.flags.autoDuel, undefined, 'no laboratory flag left'); assert.equal(PO.autoDuelRules(st), true);
+  const today = G.newGame(1842, 'Ren');
+  assert.equal(PO.autoDuelRules(today), false, 'today\'s game keeps its duel');
+  // a whole game of the reference player (AC-14): each bout the laboratory fights is this duel's outcome; the TournamentLab's lot 1 name, --rules=auto, the same game
   let fights = 0;
   const wrap = { name: 'w', skill: 0.6, choose: (s) => {
     const a = L.POLICIES.reference.choose(s);
@@ -394,11 +404,13 @@ test('the game untouched: a new game and the default rules play the duel of toda
       fights++;
       const o = AM.autoOutcome(s), lab = L.botOutcome(s, 0.6);
       assert.deepEqual(lab, { winner: o.winner, playerHp: o.playerHp, playerMaxHp: o.playerMaxHp, opponentHp: o.opponentHp, opponentMaxHp: o.opponentMaxHp, finisher: o.finisher });
-      const plain = { ...s, flags: { ...s.flags, autoDuel: undefined } };
-      assert.notEqual(L.botOutcome(plain, 0.6).playerMaxHp, o.playerMaxHp, 'without the flag: today\'s duel');
     }
     return a;
   } };
-  L.autoplay(7, wrap, 'Ren', 260, 'auto');
-  assert.ok(fights >= 5);
+  const run = L.autoplay(7, wrap, 'Ren', 260, 'v2');
+  assert.ok(run.state.over && fights >= 5);
+  assert.equal(L.autoplay(7, L.POLICIES.reference, 'Ren', 260, 'auto').hash, L.autoplay(7, L.POLICIES.reference, 'Ren', 260, 'v2').hash, '--rules=auto is --rules=v2');
+  // today's game: its bout fought by the bot in today's arena, as before
+  const c = L.autoplay(7, L.POLICIES.diligent, 'Ren', 260, 'classic');
+  assert.ok(c.state.over && !c.state.flags.v2);
 });

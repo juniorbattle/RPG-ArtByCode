@@ -92,8 +92,9 @@ test('what the gear changes in a duel (the operator\'s DB7-2 « Des points, le r
   const bare = structuredClone(st); bare.v2.gear = { weapon: 'training-sword', tier: 0, armour: null, acc: [null, null], bag: [] };
   st.v2.gear = { weapon: 'duelist-sabre', tier: 2, armour: 'mail-shirt', acc: ['lucky-ribbon', 'fervour-charm'], bag: [] };
   const m = VG.v2Mods(st), x = m.stats, x0 = VG.v2Stats(bare);
-  // the sabre +1.5 Attack and +1 Speed, two tiers +2 Attack, the mail +3 Defence and -0.5 Speed; the ribbon one AP, the charm the effects x 1.3
-  assert.deepEqual([x.atk - x0.atk, x.def - x0.def, x.end - x0.end, x.viv - x0.viv, x.hp - x0.hp], [3.5, 3, 0, 0.5, 0]);
+  // the sabre +3 Attack and +2 Speed, two tiers +4 Attack, the mail +6 Defence and -1 Speed (each point doubled since lot 2 of the duel played by the computer, the
+  // operator's AC-11 « Doubler les points de l’équipement (décision A3 : change DB7-2) », journal Passes AC4 / LC3); the ribbon one AP, the charm the effects x 1.3
+  assert.deepEqual([x.atk - x0.atk, x.def - x0.def, x.end - x0.end, x.viv - x0.viv, x.hp - x0.hp], [7, 6, 0, 1, 0]);
   assert.equal(m.damage, 1); assert.equal(m.taken, 1); assert.equal(m.ap, 1); assert.equal(m.charge, 1); assert.equal(m.gauge, 1); assert.equal(m.effect, 1.3);
   const sh = M.matchSheetFor(st), F = M.foeSheetOf(sh.sides[1].fighters[0], sh.stage), plain = M.v2SheetData(sh, undefined, G.v2KitOf(bare), VG.v2Mods(bare)), geared = M.v2SheetData(sh, undefined, G.v2KitOf(st), m);
   const k = (a, d) => (2 * a) / (a + d);
@@ -103,10 +104,10 @@ test('what the gear changes in a duel (the operator\'s DB7-2 « Des points, le r
   // the charge times by the Speed: Rampart's 3 s (3.5 x 0.85, journal Passe CH1) x 10 / Speed
   assert.equal(geared.tiers.find((t) => t.id === 'd1').at, +(3 * 10 / x.viv).toFixed(3));
   assert.equal(geared.data.actions.d1.ward.dur, +(plain.data.actions.d1.ward.dur * 1.3).toFixed(2));
-  // the iron ring: Endurance +2, what the opponent's blows add to Ren's gauge x 10 / Endurance
+  // the iron ring: Endurance +4 (+2 before AC-11), what the opponent's blows add to Ren's gauge x 10 / Endurance
   const ring = structuredClone(bare); ring.v2.gear.acc = ['iron-ring', null];
   const r = VG.v2Stats(ring);
-  assert.equal(r.end, x0.end + 2);
+  assert.equal(r.end, x0.end + 4);
   assert.ok(Math.abs(M.v2SheetData(sh, undefined, G.v2KitOf(ring), VG.v2Mods(ring)).data.actions.m_heavy.resist - plain.data.actions.m_heavy.resist * x0.end / r.end) <= 0.011);
   // no gear, no change: the plain sheet is the version 2 duel of lot V1
   assert.equal(JSON.stringify(M.v2SheetData(sh, undefined, G.v2KitOf(st)).data), JSON.stringify(V.v2DuelData(sh.sides[1].fighters[0].profile, { seed: sh.seed, playerName: sh.sides[0].fighters[0].name, opponentName: sh.sides[1].fighters[0].name, player: sh.sides[0].fighters[0].mods, enemy: sh.sides[1].fighters[0].mods }).data));

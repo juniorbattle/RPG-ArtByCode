@@ -8,23 +8,27 @@ import type { DynActionId, DynAnimState, DynData, DynamicSim, DynFighterId } fro
  *  Behind its parameter (CB-10, « Derrière un paramètre, défaut après mon essai »): `?combat=dynamic`, or a game whose `flags.combat` is
  *  'dynamic'; absent = the arena of today (`CombatSim`), unchanged. */
 
-/** 'v2': the version 2's duel (the three buttons and the charge, the opponents of C3; src/arena/v2Arena.ts, journal Passe V1) */
-export type ArenaRules = 'classic' | 'dynamic' | 'v2';
+/** 'v2': the version 2's duel of before (the three buttons and the charge, the opponents of C3; src/arena/v2Arena.ts, journal Passe V1); 'auto': the duel played
+ *  by the computer (src/arena/autoView.ts, lot 2 of briefs/combat-auto.md, journal Passe LC3), every version 2 game's bout since lot 2 */
+export type ArenaRules = 'classic' | 'dynamic' | 'v2' | 'auto';
 
 /** the rules of an arena page: the play mode's bout says (its game's flags); the arena alone plays the version 2's duel by default (the
- *  operator's VD-4 « Le duel de la version 2 par défaut », journal Passe VD2): `?v2=1` asks for it, `?combat=dynamic` the duel of C2, `?v2=0`
- *  the arena of today */
+ *  operator's VD-4 « Le duel de la version 2 par défaut », journal Passe VD2), the duel played by the computer since lot 2 (journal Passe LC3): `?v2=1` asks
+ *  for it, `?duel=charge` the three-button duel of before (its proofs, until lot 5 retires it), `?combat=dynamic` the duel of C2, `?v2=0` the arena of today */
 export function arenaRules(params: URLSearchParams, match?: { rules?: ArenaRules }): ArenaRules {
-  if (match) return match.rules === 'dynamic' || match.rules === 'v2' ? match.rules : 'classic';
-  const v2 = params.get('v2');
-  if (v2 === '' || v2 === '1') return 'v2';
+  if (match) return match.rules === 'dynamic' || match.rules === 'v2' || match.rules === 'auto' ? match.rules : 'classic';
+  const v2 = params.get('v2'), charge = params.get('duel') === 'charge';
+  if (v2 === '' || v2 === '1') return charge ? 'v2' : 'auto';
   if (params.get('combat') === 'dynamic') return 'dynamic';
-  return v2 === '0' ? 'classic' : 'v2';
+  if (v2 === '0') return 'classic';
+  return charge ? 'v2' : 'auto';
 }
+/** a duel under the version 2's rules (the three buttons of before or the duel played by the computer): its sheets, stands, heraldry, effects and sound */
+export const v2Rules = (rules: ArenaRules): boolean => rules === 'v2' || rules === 'auto';
 
 /** the duel's effects (src/arena/fx/, the operator's H-7 « Tâche à part, derrière flags.v2 », journal Passes FX4 / FX5): a duel under the version 2's rules;
  *  `fx=off` keeps the former frames, for comparison; any other page never loads them */
-export const fxOn = (rules: ArenaRules, params: URLSearchParams): boolean => rules === 'v2' && params.get('fx') !== 'off';
+export const fxOn = (rules: ArenaRules, params: URLSearchParams): boolean => v2Rules(rules) && params.get('fx') !== 'off';
 
 /** the keyboard under the new rules: 1 light, 2 heavy, 3-6 the four slots in their order, A dodge, B guard (held), R restart, Space pause */
 export function dynKeys(loadout: readonly DynActionId[]): Record<string, string> {

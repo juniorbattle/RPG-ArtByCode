@@ -52,7 +52,8 @@ export function skillPrice(s: GameState, id: string): number {
 export type V2SkillAction =
   | { type: 'buySkill'; skill: string }
   | { type: 'drillSkill'; skill: string }
-  | { type: 'setLoadout'; skills: string[] };
+  | { type: 'setLoadout'; skills: string[] }
+  | { type: 'setOrder'; skills: string[] };
 
 // the skills are taught and drilled at the training ground (lot V5)
 const atForecourt = (s: GameState) => s.place === 'training';
@@ -99,5 +100,21 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
       return null;
     },
     apply: (s, a, _r, emit) => { v2State(s).kit.loadout = [...a.skills]; emit({ kind: 'action', id: 'loadout', cause: 'action:setLoadout', visible: false, text: tx('v2.loadout.log', { skills: joined(a.skills.map(skillName)) }) }); },
+  },
+  /** the order of priority of the four brought, that the automatic follows in the duel played by the computer (the operator's AC-09 « L’automatique qui place
+   *  ses soutiens ; le joueur règle ses quatre compétences et leur ordre », journal Passe AC4): set on the match sheet (lot 2, journal Passe LC3), a minor action
+   *  as the four are; a skill brought later takes its place after the others (autoRen) */
+  setOrder: {
+    by: null,
+    list: () => [],
+    label: () => tx('v2.order.label'),
+    cost: () => 0,
+    check: (s, a) => {
+      if (!isV2(s)) return tx('v2.only');
+      const four = v2KitOf(s).loadout as string[];
+      if (!Array.isArray(a.skills) || a.skills.length !== four.length || new Set(a.skills).size !== four.length || a.skills.some((id) => !four.includes(id))) return tx('v2.order.four');
+      return null;
+    },
+    apply: (s, a, _r, emit) => { v2State(s).kit.order = [...a.skills]; emit({ kind: 'action', id: 'order', cause: 'action:setOrder', visible: false, text: tx('v2.order.log', { skills: joined(a.skills.map(skillName)) }) }); },
   },
 };

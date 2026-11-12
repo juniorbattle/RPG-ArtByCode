@@ -18,7 +18,7 @@ let failed = false;
 try {
   const page = await b.newPage(), errors = [];
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-  await page.goto(`${BASE}?scene=arena${extra ? '&' + extra : ''}`, { waitUntil: 'load', timeout: 120000 });
+  await page.goto(`${BASE}?scene=arena&duel=charge${extra ? '&' + extra : ''}`, { waitUntil: 'load', timeout: 120000 });
   await page.waitForFunction('window.__ready === true || window.__error', { timeout: 300000 });
   const err = await page.evaluate(() => window.__error); if (err) throw new Error(err);
   const box = await page.evaluate(() => { const r = document.querySelector('#ah-bar [data-act="attack"]').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; });

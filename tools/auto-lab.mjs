@@ -126,11 +126,11 @@ export const REF = {
 };
 const STAGE_DAY = { 0: 4, 1: 6, 2: 10 };
 /** isolated duels: a reference Ren (a day of REF) with a preparation (loadout, weapon, order) against a rival at its stage and round */
-/** a weapon's stat points in this duel (the gear's points × AUTO_GEAR_K), to swap the reference's own weapon for another */
+/** a weapon's stat points in this duel (the gear's own table, its points doubled by AC-11 since lot 2), to swap the reference's own weapon for another */
 const GE = await load('/src/simulation/gear.ts');
 export function weaponSwap(R, weapon) {
   if (!weapon || weapon === R.weapon) return R;
-  const fx = (w) => GE.GEAR[w]?.fx ?? {}, k = AM.AUTO_GEAR_K, a = fx(R.weapon), b = fx(weapon), out = { ...R, weapon };
+  const fx = (w) => GE.GEAR[w]?.fx ?? {}, k = 1, a = fx(R.weapon), b = fx(weapon), out = { ...R, weapon };
   for (const key of ['hp', 'atk', 'def', 'end', 'viv']) out[key] = +(R[key] + k * ((b[key] ?? 0) - (a[key] ?? 0))).toFixed(2);
   return out;
 }

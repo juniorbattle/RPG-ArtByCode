@@ -4,7 +4,7 @@
 // and must find the same fingerprint.
 //   tale: Vessa Lark beaten on day 2 (seed 1842), day 3's afternoon on the festival square: the taverns' tale of Orla in the journal, Brother Ambrose's word, the
 //         board's memory and what the town saw, Vessa told to her face on the forecourt, the board again;
-//   sand: Rhosk out of the title (seed 6), day 9's morning: the training sand refused with its reason, Sergeant Brann's words, Sergeant Hale told on the quay, the
+//   sand: Rhosk out of the title (seed 11 since journal Passe LC3), day 9's morning: the training sand refused with its reason, Sergeant Brann's words, Sergeant Hale told on the quay, the
 //         sand drilled on.
 //   node tools/rivals-flow.mjs <outDir> <tale|sand>   (BASE_URL: a DEV server, 5173 by default; W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/play-flow.mjs)
 import { createRequire } from 'node:module';

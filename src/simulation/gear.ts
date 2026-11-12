@@ -51,34 +51,37 @@ export const SHOPS: Record<ShopId, ShopDef> = {
   trinkets: { id: 'trinkets', place: 'lanterns', keeper: 'pip', specialty: 'accessories', open: ['afternoon', 'evening'], factor: 0.9 },
 };
 
+/** the points of every piece, the forge's tier and the whetstone, its penalties included, doubled since the duel played by the computer (the operator's AC-11
+ *  « Doubler les points de l’équipement (décision A3 : change DB7-2) », journal Passe AC4; applied with lot 2, journal Passe LC3): each one twice its DB7-2
+ *  figure; the AP and the effects' length unchanged */
 export const GEAR: Record<string, GearDef> = {
   // weapons
   'training-sword': { id: 'training-sword', slot: 'weapon', price: 0, fx: {} },
-  'imported-blade': { id: 'imported-blade', slot: 'weapon', price: 30, fx: { atk: 2 }, shop: 'mara' },
-  'duelist-sabre': { id: 'duelist-sabre', slot: 'weapon', price: 55, fx: { atk: 1.5, viv: 1 }, shop: 'master' },
+  'imported-blade': { id: 'imported-blade', slot: 'weapon', price: 30, fx: { atk: 4 }, shop: 'mara' },
+  'duelist-sabre': { id: 'duelist-sabre', slot: 'weapon', price: 55, fx: { atk: 3, viv: 2 }, shop: 'master' },
   // armour
-  'padded-jack': { id: 'padded-jack', slot: 'armour', price: 18, fx: { def: 1 }, shop: 'armourer' },
-  'mail-shirt': { id: 'mail-shirt', slot: 'armour', price: 40, fx: { def: 3, viv: -0.5 }, shop: 'armourer' },
-  'dock-leathers': { id: 'dock-leathers', slot: 'armour', price: 26, fx: { def: 1.5, end: 1 }, shop: 'mara' },
+  'padded-jack': { id: 'padded-jack', slot: 'armour', price: 18, fx: { def: 2 }, shop: 'armourer' },
+  'mail-shirt': { id: 'mail-shirt', slot: 'armour', price: 40, fx: { def: 6, viv: -1 }, shop: 'armourer' },
+  'dock-leathers': { id: 'dock-leathers', slot: 'armour', price: 26, fx: { def: 3, end: 2 }, shop: 'mara' },
   // accessories (two slots)
   'lucky-ribbon': { id: 'lucky-ribbon', slot: 'accessory', price: 12, fx: { ap: 1 }, shop: 'trinkets' },
-  'iron-ring': { id: 'iron-ring', slot: 'accessory', price: 24, fx: { end: 2 }, shop: 'armourer' },
-  'swift-boots': { id: 'swift-boots', slot: 'accessory', price: 30, fx: { viv: 1 }, shop: 'master' },
+  'iron-ring': { id: 'iron-ring', slot: 'accessory', price: 24, fx: { end: 4 }, shop: 'armourer' },
+  'swift-boots': { id: 'swift-boots', slot: 'accessory', price: 30, fx: { viv: 2 }, shop: 'master' },
   'fervour-charm': { id: 'fervour-charm', slot: 'accessory', price: 16, fx: { effect: 1.3 }, shop: 'trinkets' },
-  'docker-wrap': { id: 'docker-wrap', slot: 'accessory', price: 14, fx: { hp: 18 }, shop: 'mara' },
-  'champion-token': { id: 'champion-token', slot: 'accessory', price: 0, fx: { ap: 1, end: 0.5 } },
+  'docker-wrap': { id: 'docker-wrap', slot: 'accessory', price: 14, fx: { hp: 36 }, shop: 'mara' },
+  'champion-token': { id: 'champion-token', slot: 'accessory', price: 0, fx: { ap: 1, end: 1 } },
   // the passers-by's pieces (lot L2a, the operator's note on EV-6: « items unique ou rentable »), sold by no shop: bought, bargained for or stolen
   // from their owner (src/simulation/v2barter.ts PASSERS); the hauberk is the « rentable » one, better and cheaper than the armourer's mail
-  'river-pearl': { id: 'river-pearl', slot: 'accessory', price: 26, fx: { end: 1.5, hp: 10 } },
-  'knight-hauberk': { id: 'knight-hauberk', slot: 'armour', price: 34, fx: { def: 3.5, viv: -0.5 } },
-  'pilgrim-medal': { id: 'pilgrim-medal', slot: 'accessory', price: 18, fx: { hp: 16, effect: 1.15 } },
+  'river-pearl': { id: 'river-pearl', slot: 'accessory', price: 26, fx: { end: 3, hp: 20 } },
+  'knight-hauberk': { id: 'knight-hauberk', slot: 'armour', price: 34, fx: { def: 7, viv: -1 } },
+  'pilgrim-medal': { id: 'pilgrim-medal', slot: 'accessory', price: 18, fx: { hp: 32, effect: 1.15 } },
   // consumables (used up by the next bout, or at once)
-  whetstone: { id: 'whetstone', slot: 'consumable', price: 8, fx: { atk: 0.5 }, shop: 'mara' },
+  whetstone: { id: 'whetstone', slot: 'consumable', price: 8, fx: { atk: 1 }, shop: 'mara' },
   salve: { id: 'salve', slot: 'consumable', price: 10, fx: {}, shop: 'mara' },
 };
 
-/** the weapon's tiers: each +1 Attack (+8 % damage before DB7-2); the forge (Bram) raises it, the Wyrmsteel temper is the first tier (the steel
- *  cargo's quest) */
-export const WEAPON_TIER_ATK = 1;
+/** the weapon's tiers: each +2 Attack (+1 before AC-11, +8 % damage before DB7-2); the forge (Bram) raises it, the Wyrmsteel temper is the first tier
+ *  (the steel cargo's quest) */
+export const WEAPON_TIER_ATK = 2;
 export const MAX_WEAPON_TIER = 3;
 export const TIER_PRICE = [10, 25, 40];

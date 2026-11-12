@@ -6,9 +6,8 @@
 //      walk the menu's pages, the right stick scrolls a detail; the settings page (journal Passe RG3): a slider of the sound moved by the D-pad, the vibration switch in the controls; View the map;
 //      a key pressed gives the caps their keys back, a pad press takes them again;
 //   2. the bout: the clock to the first bout's afternoon (window.__game), Y the list, A « Enter the arena », the match sheet (X leaves a skill
-//      out and brings it back), A enters; the arena: A « Fight », X held charges and its release launches, LT holds the guard, A dodges, Start
-//      pauses (its words under the pad's button) and resumes, a heavy blow taken makes the pad rumble; the bout decided as tools/play-flow.mjs
-//      does, A « Back to the city »; Node replays every action the pages applied: same fingerprint;
+//      out and brings it back), A enters; the arena, the duel played by the computer since lot 2 (journal Passe LC3): A « Fight », X ×2 and back, Start
+//      pauses (its words under the pad's button) and resumes, a blow Ren takes in the script makes the pad rumble, A « Skip », A « Back to the city »; Node replays every action the pages applied: same fingerprint;
 //   3. a square: a cutscene (A the next line, Start skips), the stick walks into a way out (the screen dark, the move saved);
 //   4. the title screen: the D-pad walks it, A opens « New game », B goes back, A « Continue » takes up the game;
 //   5. a DualSense: the PlayStation symbols; 6. today's game and today's arena: the pad changes nothing (no layer installed, the hero still).
@@ -222,25 +221,14 @@ try {
     await press(B.A);
     const fight = await page.evaluate(() => ({ band: !!document.querySelector('.pm-overlay'), paused: window.__arena.paused }));
     check(!fight.band && !fight.paused, `A « Fight »: ${JSON.stringify(fight)}`);
+    // the duel played by the computer (lot 2, journal Passe LC3): its foot shows ×2 under the attack's button and « Skip » under the dodge's
     const bar = await caps(page, '#ah-bar kbd');
-    check(bar.map((c) => `${c.key}:${c.label}`).join() === 'guard:B,dodge:A,attack:X', `the duel's bar shows B, A, X: ${bar.map((c) => `${c.key}:${c.label}`)}`);
-    // the opponent held off while the commands are read
-    await page.evaluate(() => { window.__arena.sim.f.marek.aiWait = 1e9; window.__arena.sim.f.ren.ap = 5; });
-    await hold(B.X, true); await page.waitForFunction(() => window.__arena.charge.view().reached >= 1, { timeout: 15000 }).catch(() => {});
-    const held = await page.evaluate(() => window.__arena.charge.view());
-    await hold(B.RT, true); await hold(B.X, false); await frames(4);
-    const still = await page.evaluate(() => window.__arena.charge.view().held);
-    await hold(B.RT, false); await frames(6);
-    const launched = await page.evaluate(() => ({ held: window.__arena.charge.view().held, log: window.__pad.log.filter((x) => x.startsWith('duel')).slice(-4) }));
-    check(held.held && held.reached >= 1 && still && !launched.held, `X held charges (tier ${held.reached}), RT keeps it while X is let go, its release launches: ${launched.log.join(' · ')}`);
-    await sleep(1500);
-    await hold(B.LT, true); await frames(4);
-    const guard = await page.evaluate(() => window.__arena.sim.f.ren.guardHeld);
-    await hold(B.LT, false); await frames(4);
-    const guard2 = await page.evaluate(() => window.__arena.sim.f.ren.guardHeld);
-    check(guard && !guard2, `LT holds the guard: ${guard}, let go ${guard2}`);
-    await press(B.A);
-    check((await page.evaluate(() => window.__pad.log.filter((x) => x === 'duel dodge down').length)) >= 1, 'A dodges');
+    check(bar.map((c) => `${c.key}:${c.label}`).join() === 'attack:X,dodge:A', `the duel's foot shows X (×2) and A (Skip): ${bar.map((c) => `${c.key}:${c.label}`)}`);
+    await press(B.X); await frames(4);
+    const fast = await page.evaluate(() => window.__arena.speed);
+    await press(B.X); await frames(4);
+    const slow = await page.evaluate(() => window.__arena.speed);
+    check(fast === 2 && slow === 1, `X: ×2 (${fast}), and back (${slow})`);
     await press(B.START);
     // the pause's words (a cap's own letters left out) and, since journal Passe RG3, its settings line under the pad's Y (RG-2)
     const pause = await page.evaluate(() => ({ paused: window.__arena.paused, words: [...document.querySelectorAll('#ah-pause span')].filter((s) => !s.closest('kbd') && getComputedStyle(s).display !== 'none').map((s) => s.textContent), cap: document.querySelector('#ah-pause .pad-only kbd')?.getAttribute('aria-label'), set: document.querySelector('#ah-pause .ah-set kbd')?.getAttribute('aria-label') ?? null }));
@@ -248,19 +236,15 @@ try {
     await press(B.START);
     const resumed = await page.evaluate(() => window.__arena.paused);
     check(pause.paused && pause.cap === 'Menu' && pause.words.join() === 'to resume' && pause.set === 'Y' && !resumed, `Start pauses, under the pad's button (${pause.words}; the settings under ${pause.set}), and resumes`);
-    // a heavy blow taken: the pad rumbles
-    await page.evaluate(() => { const s = window.__arena.sim; s.f.marek.aiWait = 0; s.f.ren.hp = Math.max(s.f.ren.hp, 400); s.forceSequence(['m_heavy']); });
-    await page.waitForFunction(() => (window.__rumbles ?? []).length > 0, { timeout: 20000 }).catch(() => {});
+    // a blow taken by Ren in the script: the pad rumbles
+    await page.waitForFunction(() => (window.__rumbles ?? []).length > 0, { timeout: 60000 }).catch(() => {});
     const rumbles = await page.evaluate(() => window.__rumbles ?? []);
     check(rumbles.length > 0 && rumbles[0].type === 'dual-rumble' && rumbles[0].duration > 0, `a blow taken makes the pad rumble: ${JSON.stringify(rumbles[0] ?? null)}`);
-    // the bout decided as tools/play-flow.mjs does (win), then A « Back to the city »
-    const won = await page.evaluate(() => {
-      const a = window.__arena, s = a.sim;
-      for (let i = 0; i < 60 * 90; i++) { if (!s.over) { if (s.f.marek.hp > 25) s.f.marek.hp = 25; if (s.f.ren.state === 'idle') { s.f.ren.ap = 5; a.action('t4'); } } a.update(1 / 60); if (s.over && document.querySelector('.pm-overlay')) break; }
-      return { over: s.over, t: s.t };
-    });
+    // A « Skip »: the duel's K.O. at once, then its result
+    await press(B.A);
     await page.waitForSelector('.pm-overlay .pm-btn', { timeout: 30000 }).catch(() => {});
-    check(won.over, `the bout ends at ${won.t.toFixed(1)} s`);
+    const won = await page.evaluate(() => ({ over: window.__arena.sim.over, t: window.__arena.sim.t }));
+    check(won.over, `A skips to the end: ${won.t.toFixed(1)} s`);
     await press(B.A);
     const back = await page.evaluate(() => window.__go);
     check(!!back && !/scene=arena/.test(back), `A « Back to the city »: ${back}`);

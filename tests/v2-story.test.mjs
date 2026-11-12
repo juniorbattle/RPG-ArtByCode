@@ -11,6 +11,7 @@ const C = await load('/src/tournament/v2calendar.ts');
 const S = await load('/src/narrative/v2story.ts');
 const D = await load('/src/narrative/dialogue.ts');
 const L = await load('/src/tournament/lab.ts');
+const PO = await load('/src/tournament/pool.ts');
 const VG = await load('/src/simulation/v2gear.ts');
 const PZ = await load('/src/world/Plazas.ts');
 const VP = await load('/src/simulation/v2places.ts');
@@ -46,16 +47,18 @@ test('the pool: three rounds (days 2, 4, 5), every competitor once a round, ever
 test('the bracket over whole games: the cut takes the pool\'s best four, the semi-finals\' winners meet in the final, the champion is its winner', () => {
   for (const seed of [1, 2, 3, 7, 11]) for (const pol of ['diligent', 'idle']) {
     const policy = L.POLICIES?.[pol] ?? L[pol];
-    const run = L.autoplay(seed, policy, 'Ren', 400, 'v2'), s = run.state;
+    // the game played step by step to read the standings as the cut reads them (the pool's points, events included: a penalty takes some, journal Passe LC3)
+    let s = G.newGame(seed, 'Ren'), atCut = null; G.makeV2(s);
+    for (let i = 0; i < 400 && !s.over; i++) { const r = G.advance(s, policy.choose(s)); assert.ok(r.ok, r.reason); s = r.state; if (!atCut && s.log.some((e) => e.id === 'cut:in' || e.id === 'cut:out')) atCut = PO.standings(s).map((x) => x.id); }
     assert.ok(s.over && s.day === 10 && s.slot === 'evening', `seed ${seed} ${pol} over on the tenth evening`);
     const semis = C.stageMatches(s, 'semi'), gates = C.stageMatches(s, 'gate'), fin = C.stageMatches(s, 'final')[0];
     assert.equal(semis.length, 2); assert.equal(gates.length, 2);
     for (const m of [...semis, ...gates]) assert.equal(m.day, 6);
     const top4 = [...semis.flatMap((m) => [m.a, m.b])], rest = gates.flatMap((m) => [m.a, m.b]);
     assert.equal(new Set([...top4, ...rest]).size, 8);
-    // the cut: the standings at the end of day 5 (points earned after it are the bracket's)
-    const pts = {}; for (const m of s.tournament.matches.filter((x) => x.day <= 5)) { const l = m.winner === m.a ? m.b : m.a; pts[m.winner] = (pts[m.winner] ?? 0) + 3; pts[l] = (pts[l] ?? 0) + (m.close ? 1 : 0); }
-    assert.ok(Math.min(...top4.map((id) => pts[id])) >= Math.max(...rest.map((id) => pts[id])), `seed ${seed}: the four best of the pool go on`);
+    // the cut: the standings at the end of day 5's afternoon, its first four in the semi-finals (1 v 4, 2 v 3), the others at the Gate
+    assert.deepEqual([...top4].sort(), atCut.slice(0, 4).sort(), `seed ${seed}: the four best of the pool go on`);
+    assert.deepEqual([semis[0].a, semis[0].b, semis[1].a, semis[1].b], [atCut[0], atCut[3], atCut[1], atCut[2]]);
     assert.deepEqual([fin.a, fin.b].sort(), semis.map((m) => m.winner).sort());
     assert.equal(fin.day, 10); assert.equal(s.flags.champion, fin.winner);
     const third = C.stageMatches(s, 'third')[0]; assert.deepEqual([third.a, third.b].sort(), semis.map((m) => (m.winner === m.a ? m.b : m.a)).sort());

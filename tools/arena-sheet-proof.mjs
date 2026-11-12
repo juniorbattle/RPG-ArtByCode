@@ -17,7 +17,7 @@ try {
     const page = await b.newPage(), errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.evaluateOnNewDocument(`Object.defineProperty(window, '__arena', { configurable: true, get() { return undefined; }, set(v) { v.start = () => {}; Object.defineProperty(window, '__arena', { value: v, writable: true, configurable: true }); } })`);
-    await page.goto(`${BASE}?scene=arena&v2=1&foe=${foe}&freeze=7.3${TIME ? `&time=${TIME}` : ''}${Q ? `&${Q}` : ''}`, { waitUntil: 'load', timeout: 120000 });
+    await page.goto(`${BASE}?scene=arena&v2=1&duel=charge&foe=${foe}&freeze=7.3${TIME ? `&time=${TIME}` : ''}${Q ? `&${Q}` : ''}`, { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction('window.__ready === true || window.__error', { timeout: +(process.env.READY_MS || 300000) });
     const err = await page.evaluate(() => window.__error); if (err) throw new Error(`${foe}: ${err}`);
     const r = await page.evaluate((moments, secs) => {

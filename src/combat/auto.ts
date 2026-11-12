@@ -12,7 +12,7 @@ import { hitFactor } from './stats';
  *  plays them; an off-screen bout is the same duel, the AI on both sides (AC-18).
  *  Ported from the workshop's measuring prototype (tools/auto-duel/sim.mjs, journal Passes AC1 to AC3) with the rules the operator kept; the same
  *  fighters and the same seed give the prototype's own duel, event for event (tests/combat-auto.test.mjs). Pure: no DOM, no clock, no Math.random; the
- *  same seed gives the same duel. Nothing of the game plays it yet: the duel of today stays on screen until lot 2 (§ 17.3). */
+ *  same seed gives the same duel. Every version 2 game plays it since lot 2 (journal Passe LC3); today's game (`v2=0`) keeps its own duel. */
 
 export type AutoKind = 'light' | 'heavy' | 'skill';
 export type AutoFamily = 'offensive' | 'defensive' | 'support';
@@ -100,8 +100,9 @@ export const AUTO_RULES = {
 };
 export type AutoRules = typeof AUTO_RULES;
 
-/** one line of a duel's script (the arena of lot 2 shows it): t the time (s, two decimals), who the fighter's id */
-export interface AutoEvent { t: number; who: string; ev: 'charge' | 'ward' | 'boost' | 'hit' | 'guarded' | 'dodged' | 'break'; act?: string; at?: number; dmg?: number; hp?: number; hit?: number }
+/** one line of a duel's script (the arena shows it, lot 2): t the time (s, two decimals), who the fighter's id; `s` (with `trace`) both fighters' state just after
+ *  it, [AP of the first, gauge of the first, AP of the second, gauge of the second] (the gauge settled at that time, a broken one full) */
+export interface AutoEvent { t: number; who: string; ev: 'charge' | 'ward' | 'boost' | 'hit' | 'guarded' | 'dodged' | 'break'; act?: string; at?: number; dmg?: number; hp?: number; hit?: number; s?: [number, number, number, number] }
 export interface AutoCount { acts: number; skills: number; lights: number; dodged: number; guarded: number; hit: number; hits: number; breaks: number; dmg: number; dmgBroken: number; skillDmg: number; wasted: number }
 export interface AutoResult {
   /** 0 or 1 by the K.O.; null past `maxT` (decide on the health shares: autoWinner) */
@@ -146,17 +147,20 @@ export type AutoDecider = (v: AutoView, x: AutoFighter) => AutoAction;
 
 /**
  * One duel. `seed` decides every draw (the reactions, the rivals' choices, the initiative) and, from its own stream, the forms of the day. `o.log` keeps
- * the script; `o.rules` another set of rules (the laboratory); `o.deciders` replaces a brain (the laboratory).
+ * the script, `o.trace` each of its events' state (the arena reads it); `o.rules` another set of rules (the laboratory); `o.deciders` replaces a brain (the
+ * laboratory).
  */
-export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rules?: AutoRules; log?: boolean; deciders?: Partial<Record<AutoBrain, AutoDecider>> } = {}): AutoResult {
+export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rules?: AutoRules; log?: boolean; trace?: boolean; deciders?: Partial<Record<AutoBrain, AutoDecider>> } = {}): AutoResult {
   const R = o.rules ?? AUTO_RULES, s0 = seed >>> 0 || 1, rng = new Rng(s0), rand = () => rng.next(), log: AutoEvent[] | null = o.log ? [] : null;
+  /** a line of the script, with both fighters' state just after it when traced */
+  const put = (e: AutoEvent): void => { if (o.trace) e.s = [F[0].ap, +gaugeNow(F[0]).toFixed(2), F[1].ap, +gaugeNow(F[1]).toFixed(2)]; log!.push(e); };
   const mk = (x: AutoFighter): Side => {
     const hp = Math.round(x.hp * R.hpScale);
     return { x, hp, maxHp: hp, ap: R.ap.start + (x.apStart ?? 0), g: 0, gT: 0, broken: false, stunEnd: 0, cd: {}, ward: null, boost: null, act: null, at: 0, pending: false, combo: null, comboAt: 0, form: 1, n: zero() };
   };
   const F: [Side, Side] = [mk(A), mk(B)];
   // the form of the day, from its own stream: the duel's other draws stay the same with or without it
-  { const fr = new Rng((s0 ^ 0x9e3779b9) >>> 0 || 1); for (const f of F) f.form = 1 + R.form * (2 * fr.next() - 1); }
+  { const fm = autoFormsOf(s0, R); F[0].form = fm[0]; F[1].form = fm[1]; }
   const other = (f: Side): Side => (f === F[0] ? F[1] : F[0]);
   const speed = (f: Side): number => f.x.tempo / Math.max(1, f.x.viv);
   let t = 0, over = false, winner: 0 | 1 | null = null, finisher: AutoResult['finisher'] = null, leadChanges = 0, lastLead = 0;
@@ -176,14 +180,14 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     if (a.cooldown) f.cd[a.id] = t + a.cooldown;
     f.act = a; f.at = t + a.charge * speed(f); f.n.acts++;
     if (a.kind === 'light') f.n.lights++; else f.n.skills++;
-    log?.push({ t: T(), who: f.x.id, ev: 'charge', act: a.id, at: +f.at.toFixed(2) });
+    log && put({ t: T(), who: f.x.id, ev: 'charge', act: a.id, at: +f.at.toFixed(2) });
   }
   /** an action leaves: a ward or a boost takes hold; a blow strikes its first hit (true while an enchaînement goes on) */
   function land(f: Side): boolean {
     const a = f.act!; f.act = null;
     settle(f); settle(other(f));
-    if (a.ward) { f.ward = { until: t + a.ward.dur, dmg: a.ward.dmg, gauge: a.ward.gauge }; log?.push({ t: T(), who: f.x.id, ev: 'ward', act: a.id }); return false; }
-    if (a.boost) { f.boost = { until: t + a.boost.dur, dmg: a.boost.dmg, gauge: a.boost.gauge }; log?.push({ t: T(), who: f.x.id, ev: 'boost', act: a.id }); return false; }
+    if (a.ward) { f.ward = { until: t + a.ward.dur, dmg: a.ward.dmg, gauge: a.ward.gauge }; log && put({ t: T(), who: f.x.id, ev: 'ward', act: a.id }); return false; }
+    if (a.boost) { f.boost = { until: t + a.boost.dur, dmg: a.boost.dmg, gauge: a.boost.gauge }; log && put({ t: T(), who: f.x.id, ev: 'boost', act: a.id }); return false; }
     f.combo = { a, hits: a.hits ?? [1], i: 0, ap: false };
     hitOnce(f);
     if (over || !f.combo) return false;
@@ -200,7 +204,7 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
       if (rand() < R.react.dodge * ratio(g.x.viv, f.x.viv) + (g.x.dodgeBonus ?? 0)) res = 'dodged';
       else if (!a.pierce && rand() < Math.min(R.react.cap, R.react.guard * ratio(g.x.def, f.x.atk) * (a.kind === 'light' ? 1 : R.react.skillGuard) + (g.x.guardBonus ?? 0))) res = 'guarded';
     }
-    if (res === 'dodged') { g.n.dodged++; if (a.kind !== 'light') f.n.wasted++; log?.push({ t: T(), who: f.x.id, ev: 'dodged', act: a.id }); return; }
+    if (res === 'dodged') { g.n.dodged++; if (a.kind !== 'light') f.n.wasted++; log && put({ t: T(), who: f.x.id, ev: 'dodged', act: a.id }); return; }
     const wardOn = !!g.ward && g.ward.until > t, boostOn = !!f.boost && f.boost.until > t;
     let k = hitFactor(f.x.atk, g.x.def) * (res === 'guarded' ? 1 - R.guardReduce : 1) * (g.x.taken ?? 1) * f.form;
     if (boostOn) k *= f.boost!.dmg;
@@ -211,7 +215,7 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     if (res === 'guarded') g.n.guarded++; else g.n.hit++;
     f.n.hits++;
     if (a.kind === 'light' && !c.ap) { c.ap = true; f.ap = Math.min(R.ap.max, f.ap + R.ap.light); }
-    log?.push({ t: T(), who: f.x.id, ev: res, act: a.id, dmg, hp: g.hp, hit: c.i });
+    log && put({ t: T(), who: f.x.id, ev: res, act: a.id, dmg, hp: g.hp, hit: c.i });
     if (g.hp <= 0) { over = true; winner = f === F[0] ? 0 : 1; finisher = a.kind === 'light' ? 'light' : a.heavy ? 'heavy' : 'skill'; return; }
     if (!g.broken) {
       const add = (a.gauge ?? 0) * share * (10 / Math.max(1, g.x.end)) * (res === 'guarded' ? R.gauge.guardMul : 1) * (boostOn ? f.boost!.gauge : 1) * (wardOn ? g.ward!.gauge : 1);
@@ -221,7 +225,7 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
         // the break pauses the charge under way (nothing cuts it, V2-2): it leaves the stun's length later; it ends an enchaînement under way
         if (g.act) g.at += R.brk.stun;
         if (g.combo) { g.combo = null; g.pending = true; g.at = g.stunEnd; }
-        log?.push({ t: T(), who: g.x.id, ev: 'break' });
+        log && put({ t: T(), who: g.x.id, ev: 'break' });
       }
     }
   }
@@ -249,6 +253,13 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     if (!inCombo) after(next);
   }
   return { winner, finisher, t: T(), hp: [F[0].hp, F[1].hp], maxHp: [F[0].maxHp, F[1].maxHp], form: [F[0].form, F[1].form], n: [F[0].n, F[1].n], leadChanges, log };
+}
+
+/** the forms of the day a duel of this seed draws, before it (AC-08: said on the match sheet), from their own stream: the duel's other draws stay the same
+ *  with or without them */
+export function autoFormsOf(seed: number, R: Pick<AutoRules, 'form'> = AUTO_RULES): [number, number] {
+  const s0 = seed >>> 0 || 1, fr = new Rng((s0 ^ 0x9e3779b9) >>> 0 || 1);
+  return [1 + R.form * (2 * fr.next() - 1), 1 + R.form * (2 * fr.next() - 1)];
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------- the deciders

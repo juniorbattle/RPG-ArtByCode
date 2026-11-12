@@ -1,0 +1,162 @@
+// Lot 2 of the duel played by the computer (briefs/combat-auto.md § 17.3, journal Passe LC3): the arena plays the duel's script (src/arena/autoView.ts) and the
+// match sheet says what decides it, the player setting the order of his four skills (AC-09). What is proved here, in Node:
+// - the replay ends on the duel's own result, at the arena's step as when skipped or sought, and tells each blow once (the effects, the stands and the sound
+//   read those events); the trace (each event's AP and gauges) changes nothing of the duel;
+// - the form of the day is known before the bout (AC-08), the reactions the sheet shows are the duel's (AC-05), against oracles written here;
+// - the order: the player's, a minor action of the save; the automatic follows it; a skill brought later takes its place after the others;
+// - the arena's rules by page: a version 2 bout and the arena's own page play the duel played by the computer, `?duel=charge` the three buttons of before.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { load } from './load.mjs';
+
+const AU = await load('/src/combat/auto.ts');
+const AD = await load('/src/combat/autoData.ts');
+const AM = await load('/src/combat/autoMatch.ts');
+const AV = await load('/src/arena/autoView.ts');
+const DV = await load('/src/arena/dynamicView.ts');
+const G = await load('/src/simulation/index.ts');
+const ST = await load('/src/combat/stats.ts');
+const PV = await load('/src/simulation/preview.ts');
+
+const RIVALS = Object.keys(ST.RIVAL_SHEETS);
+const duelOf = (foe, stage, seed, loadout = ['t1', 't4', 'd1', 's1'], order) => {
+  const ren = AD.autoRen({ ...ST.REN_BASE, hp: 324, atk: 17, def: 15 }, { loadout, levels: { t1: 2, t2: 1, t3: 1, t4: 1, d1: 1, s1: 1, k_iron: 1, k_parry: 1, k_cry: 1, k_focus: 1, k_sunder: 1, k_feint: 1, heavy: 1 }, order }, { weapon: 'imported-blade' });
+  const f = AD.autoFoe(foe, AD.autoRaceSheet(foe, stage, 1));
+  return { ren, foe: f, result: AU.autoDuel(ren, f, seed, { log: true, trace: true }) };
+};
+const blows = (r) => r.log.filter((e) => e.ev === 'hit' || e.ev === 'guarded' || e.ev === 'dodged');
+
+test('the trace changes nothing of the duel: the same script, each line with both fighters\' AP and gauges', () => {
+  for (const [foe, seed] of [['orla', 3], ['vessa', 11], ['marek', 7]]) {
+    const { ren, foe: f, result } = duelOf(foe, 1, seed), plain = AU.autoDuel(ren, f, seed, { log: true });
+    assert.deepEqual(result.log.map(({ s, ...e }) => e), plain.log, foe);
+    assert.deepEqual({ ...result, log: null }, { ...plain, log: null });
+    for (const e of result.log) {
+      assert.equal(e.s.length, 4);
+      assert.ok(e.s[0] >= 0 && e.s[0] <= 5 && e.s[2] >= 0 && e.s[2] <= 5, 'AP within 0..5');
+      assert.ok(e.s[1] >= 0 && e.s[1] <= AU.AUTO_RULES.gauge.max && e.s[3] >= 0 && e.s[3] <= AU.AUTO_RULES.gauge.max, 'gauges within 0..70');
+      if (e.ev === 'break') assert.equal(e.s[e.who === 'ren' ? 1 : 3], AU.AUTO_RULES.gauge.max, 'a break: the gauge full');
+      if (e.ev === 'hit' || e.ev === 'guarded') assert.equal(e.hp, Math.max(0, e.hp), 'health');
+    }
+  }
+});
+
+test('the replay ends on the duel\'s own result, at the arena\'s step, skipped or sought, each blow told once', () => {
+  let ko = 0, breaks = 0, wards = 0, dodges = 0;
+  for (const foe of RIVALS) for (const seed of [1, 2]) {
+    const d = duelOf(foe, seed === 1 ? 0 : 2, seed), r = d.result, rp = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe });
+    const evs = [];
+    for (let i = 0; i < 1e6 && !rp.over; i++) { rp.step(rp.D.dt); evs.push(...rp.drain()); }
+    for (let i = 0; i < 240; i++) { rp.step(rp.D.dt); evs.push(...rp.drain()); }
+    const w = AU.autoWinner(r) === 0 ? 'ren' : 'marek';
+    assert.equal(rp.winner, w, `${foe} ${seed}`);
+    assert.equal(rp.f.ren.hp, r.hp[0]); assert.equal(rp.f.marek.hp, r.hp[1]);
+    assert.equal(rp.f[w === 'ren' ? 'marek' : 'ren'].state, 'down');
+    const impacts = evs.filter((e) => e.type === 'impact');
+    assert.equal(impacts.length, blows(r).length, 'one impact a blow of the script');
+    impacts.forEach((e, i) => { const b = blows(r)[i]; assert.equal(e.damage ?? 0, b.dmg ?? 0); assert.equal(e.result, b.ev); assert.equal(e.action, b.act); });
+    assert.equal(evs.filter((e) => e.type === 'ko').length, 1, 'one K.O.');
+    assert.equal(evs.filter((e) => e.type === 'break').length, r.log.filter((e) => e.ev === 'break').length);
+    assert.equal(evs.filter((e) => e.type === 'effect').length, r.log.filter((e) => e.ev === 'ward' || e.ev === 'boost').length);
+    ko++; breaks += evs.filter((e) => e.type === 'break').length; wards += evs.filter((e) => e.type === 'effect').length; dodges += impacts.filter((e) => e.result === 'dodged').length;
+    // « Skip »: the same end, its K.O. told, none of the blows before it
+    const sk = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe });
+    sk.step(); sk.drain(); sk.skip();
+    const se = sk.drain();
+    assert.ok(sk.over && sk.winner === w && sk.f.ren.hp === r.hp[0] && sk.f.marek.hp === r.hp[1]);
+    assert.equal(se.filter((e) => e.type === 'ko').length, 1);
+    assert.ok(se.filter((e) => e.type === 'impact').length <= 1, 'skipped: at most the last blow told');
+    // a moment sought: the state of the arena's clock at that time
+    const t = Math.round(r.t * 0.4 * 120) / 120, a = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe }), b = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe });
+    while (a.t < t - 1e-9) a.step(a.D.dt);
+    b.seek(a.t);
+    assert.equal(b.hash(), a.hash(), `seek ${foe} ${seed}`);
+    assert.deepEqual(b.hud(), a.hud());
+  }
+  assert.ok(ko === RIVALS.length * 2 && breaks > 0 && wards > 0 && dodges > 0, 'the paths are reached: breaks, wards, dodges');
+});
+
+test('the replay\'s HUD: both charges on the timeline, the gauges as the trace said them, Ren\'s four in his order with their cooldowns (DB5-3)', () => {
+  const d = duelOf('cassius', 1, 5), r = d.result, rp = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe });
+  const order = d.ren.skills.map((a) => a.id);
+  assert.deepEqual(rp.hud().slots.map((s) => s.id), order);
+  let charged = 0, cooled = 0;
+  r.log.forEach((e, i) => {
+    if (rp.hud().over) return;
+    while (rp.t < e.t - 1e-9) rp.step(rp.D.dt);
+    rp.step(rp.D.dt / 4); rp.drain();
+    const h = rp.hud(), last = !r.log[i + 1] || r.log[i + 1].t > e.t + 1e-9;
+    // the gauge as the last line of that instant left it (several lines can share one instant)
+    if (e.s && last && Math.abs(rp.t - e.t) < 0.01 && !h.over) {
+      const g = e.s[1] / AU.AUTO_RULES.gauge.max * 100, gr = h.ren.broken ? 100 : h.ren.gaugePct;
+      assert.ok(Math.abs(gr - g) < 0.5 || h.ren.broken, `the gauge at ${e.t}: ${gr} for ${g}`);
+    }
+    if (e.ev === 'charge' && e.who === 'ren' && e.act !== 'light' && !h.over) { charged++; assert.ok(h.slots.find((s) => s.id === e.act).charging, `${e.act} lit while charging`); }
+    if (h.slots.some((s) => s.cool > 0)) cooled++;
+  });
+  assert.ok(charged > 3 && cooled > 0);
+});
+
+test('AC-08: the form of the day known before the bout, as the duel draws it; AC-05: the reactions the match sheet shows are the duel\'s formulas', () => {
+  for (const seed of [1, 99, 1234, 777777]) {
+    const d = duelOf('orla', 1, seed);
+    assert.deepEqual(AU.autoFormsOf(seed), d.result.form);
+  }
+  // the oracles of briefs/combat-auto.md § 3: the dodge 12 % × 2·Spd / (Spd + Spd'), the guard 35 % × 2·Def / (Def + Atk'), ×2 against a skill seen coming, a
+  // trait added, at most 90 %
+  const me = { def: 12, viv: 10, dodgeBonus: 0.35, guardBonus: 0.05 }, him = { atk: 18, viv: 8 };
+  const r = AM.autoReactions(me, him);
+  assert.ok(Math.abs(r.dodge - (0.12 * 20 / 18 + 0.35)) < 1e-9);
+  assert.ok(Math.abs(r.guard - (0.35 * 24 / 30 + 0.05)) < 1e-9);
+  assert.ok(Math.abs(r.guardSkill - (0.35 * 24 / 30 * 2 + 0.05)) < 1e-9);
+  assert.equal(AM.autoReactions({ def: 40, viv: 10 }, { atk: 5, viv: 10 }).guardSkill, 0.9, 'at most 90 %');
+});
+
+test('AC-09: the order of the four, the player\'s (a minor action of the save) or the automatic\'s own; a skill brought later after the others', () => {
+  let st = G.newGame(1842, 'Ren'); G.makeV2(st);
+  const kit = G.v2KitOf(st);
+  assert.equal(kit.order, undefined);
+  assert.deepEqual(AD.autoOrderOf(kit), AD.autoDefaultOrder(kit.loadout, kit.levels));
+  for (const bad of [['t1', 't4', 'd1'], ['t1', 't4', 'd1', 'd1'], ['t1', 't4', 'd1', 'k_iron']]) assert.equal(G.advance(st, { type: 'setOrder', skills: bad }).ok, false, bad.join());
+  const want = ['t1', 'd1', 't4', 's1'], r = G.advance(st, { type: 'setOrder', skills: want });
+  assert.ok(r.ok); st = r.state;
+  assert.deepEqual(G.v2KitOf(st).order, want);
+  assert.notEqual(G.hash(st), G.hash(G.newGame(1842, 'Ren')), 'the order is the game\'s');
+  assert.deepEqual(AD.autoRen(ST.REN_BASE, G.v2KitOf(st)).skills.map((a) => a.id), want, 'the automatic follows it');
+  // a skill swapped in: the others keep their order, the new one last
+  assert.deepEqual(AD.autoOrderOf({ loadout: ['t1', 'k_iron', 't4', 's1'], levels: {}, order: want }), ['t1', 't4', 's1', 'k_iron']);
+  // the page's view: the order, each with its AP and its charge at Ren's Speed
+  const v = PV.autoOrderView(st, G.v2KitOf(st).loadout);
+  assert.deepEqual(v.map((x) => x.id), want);
+  assert.deepEqual(v.map((x) => x.ap), want.map((id) => AD.autoSkill(id, 1).ap));
+  assert.deepEqual(v.map((x) => x.charge), want.map((id) => AD.autoSkill(id, 1).charge));
+  // today's game has no such action
+  assert.equal(G.advance(G.newGame(1842, 'Ren'), { type: 'setOrder', skills: want }).ok, false);
+});
+
+test('a version 2 bout\'s duel is the one the match sheet prepared, and the order changes it', () => {
+  let st = G.newGame(1, 'Aster'); G.makeV2(st);
+  for (let i = 0; i < 4; i++) st = G.advance(st, { type: 'wait' }).state;
+  const b = AM.autoBoutOf(st), o = AM.autoOutcome(st, 'bout', { log: true });
+  assert.ok(b && o.duel.log.length > 50);
+  assert.deepEqual(o.duel.form, AM.autoForms(b));
+  assert.deepEqual(AU.autoDuel(b.ren, b.foe, b.seed), { ...o.duel, log: null });
+  const other = G.advance(st, { type: 'setOrder', skills: ['t4', 't1', 's1', 'd1'] }).state, o2 = AM.autoOutcome(other);
+  assert.notEqual(`${o2.duel.t}:${o2.playerHp}:${o2.opponentHp}`, `${o.duel.t}:${o.playerHp}:${o.opponentHp}`, 'another order, another duel');
+});
+
+test('the arena\'s rules: a version 2 bout and the arena\'s own page play the duel played by the computer; ?duel=charge the three buttons of before; ?v2=0 today\'s', () => {
+  const q = (s) => new URLSearchParams(s);
+  assert.equal(DV.arenaRules(q('scene=arena')), 'auto');
+  assert.equal(DV.arenaRules(q('scene=arena&v2=1')), 'auto');
+  assert.equal(DV.arenaRules(q('scene=arena&duel=charge')), 'v2');
+  assert.equal(DV.arenaRules(q('scene=arena&v2=0')), 'classic');
+  assert.equal(DV.arenaRules(q('scene=arena&v2=0&duel=charge')), 'classic');
+  assert.equal(DV.arenaRules(q('scene=arena&combat=dynamic&v2=0')), 'dynamic');
+  assert.equal(DV.arenaRules(q(''), { rules: 'auto' }), 'auto');
+  assert.ok(DV.fxOn('auto', q('')) && !DV.fxOn('auto', q('fx=off')) && DV.v2Rules('auto') && DV.v2Rules('v2') && !DV.v2Rules('classic'));
+  // the arena's own page: Ren of a new game against the pool's Marek, a fixed seed
+  const sc = AV.sceneAutoDuel();
+  assert.equal(sc.foe.id, 'marek'); assert.deepEqual(sc.ren.skills.map((a) => a.id), AD.autoDefaultOrder(['t1', 't4', 'd1', 's1'], { t1: 1, t4: 1, d1: 1, s1: 1 }));
+  assert.ok(sc.result.log.length > 50 && sc.result.log[0].s);
+});

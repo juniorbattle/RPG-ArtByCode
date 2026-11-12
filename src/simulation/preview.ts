@@ -10,8 +10,12 @@ import { DYN_PROFILES, PROFILES, duelData, dynDuelData } from '../combat/profile
 import { SKILL_BOOK } from '../combat/skillbook';
 import { MAX_LEVEL } from '../combat/skills';
 import { v2DuelData, type V2Duel, type V2Kit } from '../combat/v2duel';
-import { skillPower } from '../combat/stats';
+import { hitFactor, skillPower } from '../combat/stats';
 import { Rng } from '../core/rng';
+import { AUTO_RULES, type AutoFighter } from '../combat/auto';
+import { autoFoe, autoOrderOf, autoRaceSheet, autoRen, autoSkill } from '../combat/autoData';
+import { autoBoutOf } from '../combat/autoMatch';
+import { healthParts, v2Stats } from './v2gear';
 
 /** What a purchase or a change of gear would change (the operator's choice UM7-3 « Lot à part : héros, détail, comparaison », journal Passe UM9): no
  *  rule of its own, so it cannot drift from the game. The numbers are read from the duel's own data, built as a bout builds them; the « after » is the
@@ -30,9 +34,11 @@ const NAMES = { seed: 1, playerName: '', opponentName: '' };
  *  DB7 sheet, journal Passe DB8: health with the injury's share, Attack, Defence, Endurance, Speed, src/simulation/v2gear.ts v2Stats), the AP at the
  *  start and the wards' and boosts' length (% of the bare figure); the opponent's own numbers stay out of it */
 export function duelStats(s: GameState): Stats {
+  // a version 2 game: the duel played by the computer's Ren (lot 2, journal Passe LC3): his stats (the gear's points doubled, AC-11), his AP at the start, his
+  // effects' length; the health as the sheet counts it (the duel doubles every fighter's, DB5)
   if (isV2(s)) {
-    const m = v2Mods(s), d = skillDuel(s, v2KitOf(s).loadout, v2KitOf(s).levels).data, st = m.stats;
-    return { hp: d.fighters.ren.maxHp, atk: st.atk, def: st.def, end: st.end, viv: st.viv, ap: d.ap.start, effect: m.effect * 100 };
+    const m = v2Mods(s), st = v2Stats(s);
+    return { hp: healthParts(s).total, atk: st.atk, def: st.def, end: st.end, viv: st.viv, ap: AUTO_RULES.ap.start + (m.ap ?? 0), effect: m.effect * 100 };
   }
   const m = playerMods(s), d = s.flags.combat === 'dynamic' ? dynDuelData(DYN_PROFILES.marek, { ...NAMES, player: m }) : duelData(PROFILES.marek, { ...NAMES, player: m });
   return { hp: d.fighters.ren.maxHp, blow: d.actions.heavy.damage };
@@ -62,9 +68,27 @@ export interface SkillFigures {
 /** the four brought, with this skill among them (in the first slot when it is not) */
 const withSkill = (s: GameState, id: string): string[] => { const k = v2KitOf(s); return k.loadout.includes(id as never) ? k.loadout : [id, ...k.loadout.slice(1)]; };
 
-/** what a skill does in a bout at a level (journal Passe UM11): no rule of its own either, the numbers are the duel's, built as a bout builds them with this skill
- *  brought (in the first slot when it is not among the four), the gear and the charge's power in them */
+/** the two fighters of the next bout as the duel played by the computer builds them (the bout of the day, else Ren against the pool's Marek) */
+function autoPair(s: GameState): { ren: AutoFighter; foe: AutoFighter } {
+  const b = matchSheetFor(s) ? autoBoutOf(s) : null;
+  if (b) return { ren: b.ren, foe: b.foe };
+  const m = v2Mods(s);
+  return { ren: autoRen(v2Stats(s), v2KitOf(s), { weapon: s.v2?.gear?.weapon, hpShare: m.hp, apStart: m.ap ?? 0, effect: m.effect }), foe: autoFoe('marek', autoRaceSheet('marek', 0, 0)) };
+}
+
+/** what a skill does in a bout at a level (journal Passe UM11): no rule of its own either, the numbers are the duel's. A version 2 game's are the duel played by
+ *  the computer's (lot 2, journal Passe LC3): the skill at that level, its damage against the next opponent's Defence from Ren's Attack, what it adds to that
+ *  opponent's gauge by its Endurance, its charge at Ren's Speed, its effect's length with his gear */
 export function skillFigures(s: GameState, id: string, level: number): SkillFigures {
+  if (isV2(s)) {
+    const { ren, foe } = autoPair(s), a = autoSkill(id, level, v2Mods(s).effect), e = a.ward ?? a.boost;
+    const off = !e;
+    return {
+      ap: a.ap ?? 0, power: off ? +(a.power ?? 0).toFixed(1) : 0, damage: off ? Math.round((a.power ?? 0) * hitFactor(ren.atk, foe.def)) : 0,
+      gauge: off ? +((a.gauge ?? 0) * (10 / Math.max(1, foe.end))).toFixed(1) : 0, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2),
+      dur: e?.dur ?? 0, ward: a.ward ? { damage: a.ward.dmg, resist: a.ward.gauge } : null, boost: a.boost ? { damage: a.boost.dmg, resist: a.boost.gauge } : null, pierce: !!a.pierce,
+    };
+  }
   const k = v2KitOf(s), { data: d, tiers } = skillDuel(s, withSkill(s, id), { ...k.levels, [id]: level });
   const a = d.actions[id as DynActionId], e = a.ward ?? a.boost;
   return { ap: a.apCost ?? 0, power: a.family === 'offensive' ? +skillPower(id, level).toFixed(1) : 0, damage: a.damage, gauge: a.resist, charge: tiers.find((t) => t.id === id)!.at, dur: e?.dur ?? 0, ward: a.ward ?? null, boost: a.boost ?? null, pierce: !!a.ignoreGuard };
@@ -75,6 +99,13 @@ export function skillFigures(s: GameState, id: string, level: number): SkillFigu
 export function chargeLadder(s: GameState, ids: string[]): ChargeTier[] {
   const k = v2KitOf(s), full = [...ids, ...Object.keys(k.levels).filter((x) => !ids.includes(x))].slice(0, 4);
   return skillDuel(s, full, k.levels).tiers.filter((t) => t.id === 'light' || ids.includes(t.id));
+}
+
+/** the order the automatic follows with these four (AC-09), each with its AP and its charge at Ren's Speed, then the light attack: what the match sheet and the
+ *  skills' page show (lot 2, journal Passe LC3); a choice of fewer than four is shown as it stands */
+export function autoOrderView(s: GameState, ids: string[]): Array<{ id: string; ap: number; charge: number }> {
+  const k = v2KitOf(s), { ren } = autoPair(s), order = autoOrderOf({ loadout: ids, levels: k.levels, order: k.order });
+  return order.map((id) => { const a = autoSkill(id, k.levels[id] ?? 1); return { id, ap: a.ap ?? 0, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2) }; });
 }
 
 /** the level a skill can still reach and how: drilling up to its cap, then only the fighter who teaches it */

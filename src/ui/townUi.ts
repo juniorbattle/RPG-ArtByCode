@@ -12,17 +12,19 @@ import { portraitUrl } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
 import { arrowKeys, el, esc, footBtn, footOf, injectStyle, overlay, pageShell, scrollFade } from './style';
 import { skillsPage } from './skills';
-import { cap, itemText, lang, said, shortName, tx, word, type TextRef } from '../narrative/text';
+import { cap, itemText, lang, num, said, shortName, tx, word, type TextRef } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { pendingFinal, stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
-import { healthParts, itemName, v2Mods, weaponTier } from '../simulation/v2gear';
+import { healthParts, itemName, weaponTier } from '../simulation/v2gear';
 import { VIGOUR_HP } from '../combat/stats';
 import { marksOf } from '../simulation/v2law';
 import { peopleMarks } from '../simulation/v2marks';
 import { MARK_WORD, installMarkCss, markGlyph } from './npcMarks';
 import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
-import { foeSheetOf, matchSheetFor } from '../combat/match';
+import { matchSheetFor } from '../combat/match';
+import { autoBoutOf, autoForms, autoReactions } from '../combat/autoMatch';
+import { AUTO_RULES, type AutoFighter } from '../combat/auto';
 import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
 import { tabTo } from '../input/pad';
 import { guidePage, hintChapter, hintSeen, markHint, markTold, runTour, showHint, told, TOUR, type HintId } from './tutorial';
@@ -464,19 +466,34 @@ export class TownUi {
     const id = opponentOf(m), r = RIVALS[id], url = portraitUrl(id), g = s.v2?.gear;
     const stage = stageName(m);
     const intel = foeIntel(s, id), heard = heardLine(s, id), strap = strapCut(s);
-    // the opponent's stats at this bout's stage (the operator's DB7-7 « Équipement, fiche de match et compétences », journal Passe DB8)
-    const sh = matchSheetFor(s), foe = sh?.sides[1].fighters[0], fs = foe ? foeSheetOf(foe, sh!.stage ?? 0) : null;
-    const stats = fs ? tx('v2.sheet.stats', { hp: Math.round(fs.hp * (foe!.mods.hp ?? 1)), atk: +fs.atk.toFixed(1), def: +fs.def.toFixed(1), end: +fs.end.toFixed(1), viv: +fs.viv.toFixed(1) }) : '';
-    // the operator's DB11-5 « Le dire partout » (journal Passe DB13): Ren's stats beside the opponent's, and where his health comes from
-    const me = v2Mods(s).stats, hp = healthParts(s);
-    const you = tx('v2.sheet.you', { hp: hp.total, atk: +me.atk.toFixed(1), def: +me.def.toFixed(1), end: +me.end.toFixed(1), viv: +me.viv.toFixed(1) });
+    // the duel played by the computer (lot 2, journal Passe LC3): what decides it, side by side (briefs/combat-auto.md § 7: « les stats des deux, les chances de
+    // garde et d'esquive, la préparation du rival, sa forme du jour »), the numbers the duel itself will play (autoBoutOf: the same fighters)
+    const b = autoBoutOf(s), vs = b ? this.autoVsHtml(b.ren, b.foe, autoForms(b), r.name) : '';
+    const prep = b && b.prep >= 0.05 ? tx('auto.sheet.prep', { name: r.name, n: num(+b.prep.toFixed(1)) }) : '';
+    // the operator's DB11-5 « Le dire partout » (journal Passe DB13): where Ren's health comes from
+    const hp = healthParts(s);
     const from = [tx('v2.sheet.hp.base', { n: hp.base }), hp.vigour ? tx('v2.sheet.hp.vigour', { n: hp.vigour, per: VIGOUR_HP }) : '', hp.gear ? tx('v2.sheet.hp.gear', { n: hp.gear }) : '',
       hp.train ? tx('v2.sheet.hp.train', { n: hp.train }) : '', hp.wound ? tx('v2.sheet.hp.wound', { n: hp.wound }) : ''].filter(Boolean).join(', ') + '.';
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
-      + (stats ? `<p class="pm-sub pm-fstats">${esc(stats)}</p>` : '')
-      + `<p class="pm-sub pm-fstats">${esc(you)}</p><p class="pm-sub">${esc(from)}</p>`
+      + vs + (prep ? `<p class="pm-sub pm-fstats">${esc(prep)}</p>` : '') + `<p class="pm-sub">${esc(tx('auto.sheet.note'))}</p><p class="pm-sub">${esc(from)}</p>`
       + `<p class="pm-sub">${esc(intel)}</p>${heard ? `<p class="pm-sub">${esc(heard)}</p>` : ''}<p class="pm-sub">${esc(gear)}</p>${strap ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.strap'))}</p>` : ''}${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
+  }
+
+  /** the two fighters side by side as the duel played by the computer reads them: the health of the bout (each one's doubled, DB5), the four stats, the form of the
+   *  day (AC-08), the dodge and the guard each has against the other (AC-05, the duel's own formulas, the traits in them) */
+  private autoVsHtml(ren: AutoFighter, foe: AutoFighter, form: [number, number], foeName: string): string {
+    const pc = (k: number) => tx('auto.sheet.pct', { n: Math.round(k * 100) });
+    const signed = (f: number) => `${f >= 1 ? '+' : '−'}${pc(Math.abs(f - 1))}`;
+    const rr = autoReactions(ren, foe), fr = autoReactions(foe, ren), n1 = (x: number) => num(+x.toFixed(1));
+    const rows: Array<[string, string, string]> = [
+      [tx('auto.sheet.hp'), String(Math.round(ren.hp * AUTO_RULES.hpScale)), String(Math.round(foe.hp * AUTO_RULES.hpScale))],
+      [tx('stat.atk'), n1(ren.atk), n1(foe.atk)], [tx('stat.def'), n1(ren.def), n1(foe.def)], [tx('stat.end'), n1(ren.end), n1(foe.end)], [tx('stat.viv'), n1(ren.viv), n1(foe.viv)],
+      [tx('auto.sheet.form'), signed(form[0]), signed(form[1])],
+      [tx('auto.sheet.dodge'), pc(rr.dodge), pc(fr.dodge)],
+      [tx('auto.sheet.guard'), `${pc(rr.guard)} · ${pc(rr.guardSkill)}`, `${pc(fr.guard)} · ${pc(fr.guardSkill)}`],
+    ];
+    return `<table class="pm-vs"><thead><tr><th></th><th>${esc(tx('auto.sheet.you'))}</th><th>${esc(foeName)}</th></tr></thead><tbody>${rows.map(([l, a, c]) => `<tr><td>${esc(l)}</td><td>${esc(a)}</td><td>${esc(c)}</td></tr>`).join('')}</tbody></table>`;
   }
 
   /** the version 2's gear (lot V3) and the bag: the page of the shops without a keeper (src/ui/wares.ts, UM7-3) */

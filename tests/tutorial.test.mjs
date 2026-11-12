@@ -175,13 +175,16 @@ test('which event is which first: the player\'s charge past the quick blow, an a
   assert.match(src('src/combat/dynamic.ts'), /\{ type: 'impact'; from: DynFighterId; to: DynFighterId; action: DynActionId; kind: DynKind; result: DynImpactResult; damage: number; mitigated: number; hp: number; resist: number \}/);
 });
 
-test('the lessons hold the duel and its keys, only in a version 2 game\'s bout; the guide teaches them again (TU-7)', () => {
+test('the lessons hold the duel and its keys; the guide teaches them again (TU-7); the duel played by the computer shows none of them (lot 2, until lot 3)', () => {
   const arena = src('src/arena/ArenaApp.ts'), page = src('src/ui/playArena.ts'), dt = src('src/ui/duelTutorial.ts'), tu = src('src/ui/tutorial.ts');
   // the settings page over a paused duel holds its keys too (journal Passe RG3, RG-2)
   assert.match(arena, /if \(e\.repeat \|\| e\.metaKey \|\| e\.ctrlKey \|\| e\.altKey \|\| !this\.ready \|\| this\.lesson \|\| this\.settingsOpen\) return;/);
   assert.match(arena, /this\.lesson = on; this\.paused = on; this\.moment = on; this\.hud\?\.still\(on\);/);
   assert.match(arena, /this\.onDuelEvents\?\.\(evs/);
-  assert.match(page, /if \(v2\) \{\n\s*const coach = new DuelCoach\(\{ hold: \(on\) => app\.holdForLesson\(on\), data: \(\) => app\.dyn\?\.D \?\? null \}, b\.params\);/);
+  // the first duel's lessons taught the three buttons of before (TU-11): a version 2 game's bout is the duel played by the computer since lot 2 (journal Passe
+  // LC3), which has none of their moments; the page shows none of them until lot 3 writes this duel's tutorial
+  assert.doesNotMatch(page, /new DuelCoach/);
+  assert.match(page, /the guide and the tutorial of this duel are lot 3/);
   assert.match(dt, /this\.off = !tutorialOn\(params\)/);
   assert.match(dt, /'cite-du-tournoi\.duel-lessons'/);
   assert.doesNotMatch(dt, /writeSave|__game|\.act\(/);

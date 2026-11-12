@@ -129,7 +129,7 @@ test('no sound before a gesture; only the version 2\'s pages load the engine', (
   assert.deepEqual(users, ['src/arena/ArenaApp.ts', 'src/main.ts', 'src/ui/playPlaza.ts', 'src/ui/playTown.ts', 'src/ui/settings.ts', 'src/ui/title.ts', 'src/ui/townUi.ts']);
   for (const f of users) { const t = src(f); assert.doesNotMatch(t, /^import .*audio\/Sound/m, `${f}: no static import`); }
   assert.match(src('src/ui/playTown.ts'), /if \(isV2\(st\)\) void import\('\.\.\/audio\/Sound'\)/);
-  assert.match(src('src/arena/ArenaApp.ts'), /else if \(this\.rules === 'v2'\) \{[^]*?import\('\.\.\/audio\/Sound'\)/);
+  assert.match(src('src/arena/ArenaApp.ts'), /else if \(v2Rules\(this\.rules\)\) \{[^]*?import\('\.\.\/audio\/Sound'\)/);
   // the title screen (VD-5): « titre » over the town's ambience, asked at once, heard from the first key or click; a key on the screen starts it
   const title = src('src/ui/title.ts').replace(/\r\n/g, '\n');
   assert.match(title, /const snd = import\('\.\.\/audio\/Sound'\)\.then\(\(m\) => \{ const s = m\.sound\(\); s\.setScene\('district', c\.look \?\? 'midday', false, 1842, \{ opening: true \}\); return s; \}\);/);

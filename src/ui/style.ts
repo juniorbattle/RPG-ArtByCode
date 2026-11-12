@@ -68,6 +68,10 @@ const CSS = `
 .pm-stats div{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid var(--ds-line);font-size:var(--ds-fs-small)}
 .pm-stats dt{color:var(--ds-muted)}
 .pm-stats dd{margin:0;white-space:nowrap}
+.pm-vs{width:100%;border-collapse:collapse;margin:12px 0 6px;font-size:var(--ds-fs-small);font-variant-numeric:tabular-nums}
+.pm-vs th{font-weight:400;color:var(--ds-muted);text-align:right;padding:2px 0 4px 12px;white-space:nowrap}
+.pm-vs td{text-align:right;padding:4px 0 4px 12px;border-top:1px solid var(--ds-line);white-space:nowrap}
+.pm-vs td:first-child,.pm-vs th:first-child{text-align:left;padding-left:0;color:var(--ds-muted);white-space:normal}
 .pm-goods{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;min-height:0;min-width:0}
 .pm-ghead{display:flex;align-items:center;gap:16px;padding-bottom:12px}
 .pm-ghead img{display:block;width:64px;height:64px;image-rendering:pixelated}

@@ -245,7 +245,8 @@ test('the three buttons: the heavy and the skills lose their automatic preparati
   assert.deepEqual(kh.data.actions.heavy, { ...D.DYNAMIC_DATA.actions.heavy, family: 'offensive', damage: Math.round(120 * (K.chargeTime('heavy', 1) / K.chargeTime('t4', 1)) * kr), resist: +(24 * ke).toFixed(2), cooldown: +(5 * K.chargeTime('heavy', 1)).toFixed(3) });
   const q = (s) => new URLSearchParams(s);
   assert.equal(A.v2Input(q('v2=1')), 'charge'); assert.equal(A.v2Input(q('v2=1&input=keys')), 'keys');
-  assert.equal(DV.arenaRules(q('scene=arena&v2=1')), 'v2'); assert.equal(DV.arenaRules(q('scene=arena&v2')), 'v2');
+  // the arena's own page plays the duel played by the computer since lot 2 (journal Passe LC3); the three buttons behind ?duel=charge until lot 5
+  assert.equal(DV.arenaRules(q('scene=arena&v2=1')), 'auto'); assert.equal(DV.arenaRules(q('scene=arena&v2')), 'auto'); assert.equal(DV.arenaRules(q('scene=arena&duel=charge')), 'v2');
   assert.equal(DV.arenaRules(q('scene=arena&v2=0')), 'classic'); assert.equal(DV.arenaRules(q('scene=arena&v2=0&combat=dynamic')), 'dynamic');
   assert.equal(DV.arenaRules(q(''), { rules: 'v2' }), 'v2');
   // the keys: the attack is none of the forecourt's walking keys (WASD, the arrows); the attack and the guard are held
@@ -305,33 +306,14 @@ test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a stairca
   for (const r of [strong, weak, m6, o6, m2]) assert.ok(r.min >= 1.2 && r.min <= 5, `duel length ${r.min.toFixed(1)} min`);
 });
 
-test('the harder rivals (journal Passes VP4, V2C2) under V2-2 « Rien ne la coupe » (journal Passe V2C1): whole version 2 games on seeds 1..12, a staircase by the player\'s skill and preparation', () => {
+test('the rivals\' blows of the three buttons\' duel (journal Passes VP4, V2C2, DB13): the DB7 sheet\'s strength, ×2 with Ren\'s health', () => {
   // the fighters' stats of journal Passes DB8 to DB10: the rivals' blows at the DB7 sheet's strength (the operator's « The DB7 sheet's curve »)
   // x2 with Ren's health since the operator's DB11-6 « Ren 300, tout ce qui touche à ses PV ×2 et les coups des rivaux ×2 » (journal Passe DB13)
+  // (whole version 2 games played this duel until lot 2 of the duel played by the computer, journal Passe LC3: their staircase by the player's skill, measured
+  // here until then, has no meaning in a duel the player does not fight; the duel's own rules stay proved in this file until lot 5 retires it)
   assert.deepEqual([ST.POWER.foeLight, ST.POWER.foeHeavy, ST.POWER.foeSkill], [11.2, 33.6, 50.4]);
-  const S = Array.from({ length: 12 }, (_, i) => i + 1);
-  const at = (skill) => ({ name: `diligent-${skill}`, skill, choose: (st) => { const a = L.POLICIES.diligent.choose(st); return a.type === 'fight' ? { type: 'fight', outcome: L.botOutcome(st, skill) } : a; } });
-  const idle = L.labReport(S, L.POLICIES.idle, 'v2'), prepared = L.labReport(S, L.POLICIES.diligent, 'v2'), expert = L.labReport(S, at(0.9), 'v2');
-  // the player who only fights wins nothing; the prepared player of average skill about six bouts in ten, makes the cut, rarely the crown; the
-  // expert nine in ten and the crown in about two games in three: Passe VP4's staircase, which V2-2 had lifted (85 bouts in 100, journal Passe
-  // V2C1), found again by the rivals' harder blows and health (the operator's « Oui, recaler », journal Passe V2C2)
-  // since the fighters' stats (journal Passes DB8 / DB9) a player who only fights wins a little at the pool, as the DB7 sheet's weak player (17 %); a fifth at most
-  // since journal Passe DB13 the pool is easier (the operator's DB11-7 « La poule plus facile, tableau et finale sur la courbe DB7 »): a player who only fights wins
-  // a third of his bouts (34.9 % on seeds 1..50), mostly the pool's
-  assert.ok(idle.rates.playerWins <= 0.45, `idle ${idle.rates.playerWins}`);
-  // since journal Passe DB10 the reference of six bouts in ten is the DB7 sheet's expected player, who drills his skills (the operator's « The DB7 sheet's
-  // curve »): the lab's prepared player, who never does, wins about four bouts in ten (42 % on seeds 1..50) and makes the cut three games in four
-  // since journal Passe DB13 (the pool easier) he wins a little more than half (55.2 % on seeds 1..50) and always makes the cut
-  assert.ok(prepared.rates.playerWins >= 0.45 && prepared.rates.playerWins <= 0.65, `prepared ${prepared.rates.playerWins}`);
-  assert.ok(prepared.v2.madeCut >= 0.75 && prepared.v2.champion <= 0.15, `prepared ${JSON.stringify(prepared.v2)}`);
-  // since the fighters' stats (journal Passes DB8 / DB9) the final is the epic of DB7-6 (PV x 2.5 and stats): the lab's players never drill their skills,
-  // and at level 1 Marek is not beaten in the final even at 0.9 (a player at level 3 beats him seven times in ten at 0.6: tools/duel-balance.mjs); the
-  // expert still wins most of its bouts and makes the cut (the final rarely, at level 1: journal Passe DB10)
-  assert.ok(expert.rates.playerWins >= 0.6 && expert.v2.madeCut >= 0.75, `expert ${expert.rates.playerWins} ${JSON.stringify(expert.v2)}`);
-  assert.ok(idle.rates.playerWins < prepared.rates.playerWins && prepared.rates.playerWins < expert.rates.playerWins, 'the staircase');
 });
-
-test('the off-screen race of the version 2 agrees with full duels on held-out seeds (81..120: the kill within 15 %, the damage within 12 %), and decides the version 2\'s off-screen bouts', () => {
+test('the off-screen race of the version 2 agrees with full duels on held-out seeds (81..120: the kill within 15 %, the damage within 12 %)', () => {
   for (const foe of ['tobin', 'orla', 'vessa', 'marek']) {
     let kill = 0, dps = 0, n = 0;
     for (let i = 81; i <= 120; i++) {
@@ -348,9 +330,10 @@ test('the off-screen race of the version 2 agrees with full duels on held-out se
   // the champion is the strongest of the race, the farm boy the weakest
   const str = (id) => V.V2_RACERS[id].kill * V.V2_RACERS[id].dps;
   for (const id of Object.keys(V.V2_RACERS)) { assert.ok(str('marek') >= str(id), id); assert.ok(str('tobin') <= str(id), id); }
-  // a version 2 game's off-screen bout: the race of the version 2; the same game without the flag: today's dynamic race
+  // a version 2 game's off-screen bouts are the duel played by the computer since lot 2 (journal Passe LC3; tests/combat-auto.test.mjs, AC-18); today's dynamic
+  // game keeps today's dynamic race
   const pool = fs.readFileSync(path.join(ROOT, 'src/tournament/pool.ts'), 'utf8');
-  assert.match(pool, /const p = isV2\(s\)\s*\? raceWinChance\(v2RacerOf\(A\.id, rivalMods\(A\)\), v2RacerOf\(B\.id, rivalMods\(B\)\), 0, V2_RACE_SLOPE\)/);
+  assert.match(pool, /if \(autoDuelRules\(s\)\) \{/);
   const a = L.autoplay(7, L.POLICIES.idle, 'Ren', 200, 'v2'), b = L.autoplay(7, L.POLICIES.idle, 'Ren', 200, 'dynamic');
   assert.notEqual(G.hash(a.state), G.hash(b.state));
   assert.equal(L.autoplay(7, L.POLICIES.idle, 'Ren', 200, 'v2').hash, a.hash, 'deterministic');
@@ -411,12 +394,14 @@ test('the charged duel\'s fingerprint: its fixed script on the scene\'s duel giv
 
 test('the version 2 reaches the arena and the play mode only through its flag; today\'s duels are untouched', () => {
   const app = fs.readFileSync(path.join(ROOT, 'src/arena/ArenaApp.ts'), 'utf8');
-  assert.match(app, /else if \(this\.rules === 'v2'\) \{ const v = makeV2Duel\(/);
+  // the three buttons of before only behind ?duel=charge since lot 2 (journal Passe LC3); a version 2 game's bout is the duel played by the computer
+  assert.match(app, /else if \(v2Rules\(this\.rules\)\) \{/);
+  assert.match(app, /const v = makeV2Duel\(/);
   const pa = fs.readFileSync(path.join(ROOT, 'src/ui/playArena.ts'), 'utf8');
   // the actions' names in the page's language since journal Passe RG4 (`actionNames()`: ACTION_NAMES_EN through the table's `word`)
-  assert.match(pa, /const v2d = v2 \? v2SheetData\(sheet, actionNames\(\), v2KitOf\(st\), v2Mods\(st\)\) : null;/);
+  assert.match(pa, /const ao = v2 \? autoOutcome\(st, challenge \? 'challenge' : 'bout', \{ log: true \}\) : null;/);
   assert.match(pa, /const actionNames = \(\): Record<string, string> => Object\.fromEntries\(Object\.entries\(ACTION_NAMES_EN\)\.map\(\(\[k, v\]\) => \[k, word\(v\)\]\)\);/);
-  // a version 2 game's bout is the version 2's: its data and tiers come from the sheet, its kit the player's
+  // a version 2 game's bout: the duel played by the computer (tests/combat-auto.test.mjs, tests/auto-arena.test.mjs)
   const st = G.makeV2(G.namedState('day2-afternoon'));
   const lab = L.botOutcome(st, 0.6);
   assert.ok(lab.winner === 'player' || lab.winner === 'opponent');

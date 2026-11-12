@@ -167,7 +167,8 @@ test('the arena reaches the sheets through CombatCast under the version 2\'s rul
   for (const l of uses) assert.ok(/import\.meta\.env\.DEV &&/.test(l) || /private declare densityTrial/.test(l), `unguarded: ${l.trim()}`);
   const loads = src.filter((l) => /import\('\.\/CombatCast'\)/.test(l));
   assert.equal(loads.length, 1, 'one import');
-  assert.match(loads[0], /if \(this\.rules === 'v2' && /, 'a version 2 duel only');
+  // a duel under the version 2's rules (the three buttons of before or the duel played by the computer since lot 2, journal Passe LC3: v2Rules)
+  assert.match(loads[0], /if \(v2Rules\(this\.rules\) && /, 'a version 2 duel only');
   assert.match(loads[0], /!this\.opts\.forecourt/); assert.match(loads[0], /get\('cast'\) !== 'generated'/);
   const imports = (f) => read(f).toString('utf8').split(/\r?\n/).filter((l) => /^import .*CombatCast|^import .*CombatSheets/.test(l) && !/^import type/.test(l));
   assert.deepEqual(imports('src/arena/ArenaApp.ts'), [], 'no static import: the chunk loads on demand');

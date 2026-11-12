@@ -133,7 +133,8 @@ test('the walking keys go through the player\'s keys (RG-7, then the remapping o
   assert.match(town, /this\.hereKey\.innerHTML = `\$\{bindCap\('list'\)\}/);
   assert.match(town, /onSettings\(\(\) => this\.render\(\)\);/);
   // the version 2's duel reads the player's keys too; the other rules keep the prototype's
-  assert.match(arena, /const bound = this\.charge \? actsOf\(e, 'duel'\) : \[\]/);
+  assert.match(arena, /const bound = duelKeys \? actsOf\(e, 'duel'\) : \[\]/);
+  assert.match(arena, /const duelKeys = !!\(this\.charge \|\| this\.auto\);/);
 });
 
 test('the player\'s keys (journal Passe RM2): the starting keys are today\'s, a swap in one moment, the reserved keys, the slots, the record', () => {
@@ -205,7 +206,8 @@ test('the settings page (RG-1, RG-2): four parts; from the title screen, the ver
   assert.doesNotMatch(town, /openSound/);
   assert.match(src('src/ui/title.ts'), /add\('settings', tx\('set\.open'\), tx\('set\.openSub'\)/);
   const arena = src('src/arena/ArenaApp.ts');
-  assert.match(arena, /if \(!this\.charge \|\| !this\.paused \|\| this\.moment \|\| this\.sim\.over \|\| this\.settingsOpen\) return;/);
+  // the version 2's duels: the three buttons of before, or the duel played by the computer (lot 2, journal Passe LC3)
+  assert.match(arena, /if \(!\(this\.charge \|\| this\.auto\) \|\| !this\.paused \|\| this\.moment \|\| this\.sim\.over \|\| this\.settingsOpen\) return;/);
   assert.match(arena, /else if \(k === 'escape'\) this\.openSettings\(\);/);
   // with the first duel's lesson (journal Passe TU4): the duel ignores the keys of a lesson and of the page
   assert.match(arena, /if \(e\.repeat \|\| e\.metaKey \|\| e\.ctrlKey \|\| e\.altKey \|\| !this\.ready \|\| this\.lesson \|\| this\.settingsOpen\) return;/, 'the duel ignores the keys of the page');

@@ -7,8 +7,8 @@
 //      afternoon), Space opening its chapter of the guide; the first square (the forecourt), its picture kept beside the quay's; the evening; none twice;
 //   4. a game begun before, in a fresh profile: « Continue » hears the guide's line once (TU-8), no tour;
 //   5. today's game (v2=0): no tour, no hint, no « Guide » in its menu;
-//   6. the first bout (journal Passe TU4): the duel held on its first lesson (its keys the duel's, the fight and its keys held), the lessons the bout reaches said
-//      once each, the others given to the coach as the duel emits them, their numbers the duel's, forgotten lessons said again, Esc skipping the rest.
+//   6. the first bout: the duel played by the computer since lot 2 (journal Passe LC3), none of the first duel's lessons of journal Passe TU4 (they taught the three
+//      buttons of before; lot 3 writes this duel's tutorial), the duel not held.
 // DEV or production server: no named state is used.
 //   node tools/tutorial-proof.mjs <outDir>   (BASE_URL, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs)
 import { createRequire } from 'node:module';
@@ -144,49 +144,12 @@ try {
   check(/scene=arena/.test(arenaAt ?? ''), `the match sheet opens the arena: ${arenaAt}`);
   await open(page, arenaAt);
   await page.evaluate(() => document.querySelector('.pm-overlay.pm-band .pm-btn.primary')?.click());
-  const first = await until(page, () => document.querySelector('.tu-duel .pm-h')?.textContent ?? null, 5000, 'the duel\'s first lesson');
-  check(first === 'The duel', `« Fight »: the duel holds on its first lesson: ${first}`);
-  const duelCaps = await page.evaluate(() => [...document.querySelectorAll('.tu-duel kbd[data-cap="arena"]')].map((k) => k.textContent));
-  check(duelCaps.join() === 'J,K,L', `its keys are the duel's: ${duelCaps.join(', ')}`);
-  const held = await page.evaluate(() => ({ paused: window.__arena.paused, t: window.__arena.snapshot().t }));
-  await sleep(600);
-  check(held.paused && (await page.evaluate(() => window.__arena.snapshot().t)) === held.t, `the duel holds while the lesson is read (t ${held.t})`);
-  await page.keyboard.press('j'); await sleep(200);
-  check((await page.evaluate(() => window.__arena.snapshot().t)) === held.t, 'the duel\'s keys do not reach the fight meanwhile');
-  await page.screenshot({ path: path.join(outDir, '6-duel-lesson.png') });
-  await key(page, 'Enter');
-  check(await page.evaluate(() => !document.querySelector('.tu-duel') && !window.__arena.paused), 'Enter: the fight goes on');
-  const said = ['The duel'], t0 = Date.now();
-  const want = ['A skill, charged', 'Action points', 'The opponent\'s turn', 'The riposte'];
-  const lesson = () => page.evaluate(() => document.querySelector('.tu-duel .pm-h')?.textContent ?? null);
-  const readIt = async () => { const h = await lesson(); if (!h) return false; said.push(h); await sleep(330); await page.keyboard.press('Enter'); await sleep(250); return true; };
-  while (Date.now() - t0 < 90000 && !want.every((w) => said.includes(w)) && !(await page.evaluate(() => window.__arena.sim.over))) {
-    // a charge held four seconds, then quick blows
-    await page.evaluate(() => window.__arena.action('attack', true));
-    for (let k = 0; k < 20; k++) { await sleep(200); if (await readIt()) break; }
-    await page.evaluate(() => window.__arena.action('attack', false));
-    for (let k = 0; k < 8; k++) { await page.evaluate(() => { window.__arena.action('attack', true); window.__arena.action('attack', false); }); await sleep(380); await readIt(); }
-  }
-  console.log(`   said in the bout: ${said.join(' | ')}`);
-  check(want.every((w) => said.includes(w)), `the bout itself says the charge, the action points, the opponent's turn and the riposte: ${want.filter((w) => !said.includes(w)).join(', ') || 'all'}`);
-  check(new Set(said).size === said.length, 'no lesson said twice');
-  // the gauge and the break, as the duel emits them, if the bout has not reached them yet
-  for (const [ev, title] of [[{ type: 'impact', from: 'ren', to: 'marek', result: 'hit', resist: 40 }, 'The resistance gauge'], [{ type: 'break', who: 'marek' }, 'Broken']]) {
-    if (said.includes(title)) continue;
-    await page.evaluate((e) => window.__coach.onEvents([e]), ev);
-    const h = await until(page, () => document.querySelector('.tu-duel .pm-h')?.textContent ?? null, 3000, title);
-    check(h === title, `${ev.type}: « ${h} »`);
-    if (title === 'Broken') check(/stunned for 8 seconds and takes 2 times the damage/.test(await page.evaluate(() => document.querySelector('.tu-duel').textContent)), 'its numbers are the duel\'s (8 s, twice the damage)');
-    await sleep(330); await page.keyboard.press('Enter'); await sleep(250);
-  }
-  // the guide's « The duel » teaches them again; Esc on a lesson skips the rest
-  await page.evaluate(() => localStorage.removeItem('cite-du-tournoi.duel-lessons'));
-  await page.evaluate(() => window.__coach.onEvents([{ type: 'riposte', who: 'marek', lights: 3 }]));
-  check((await until(page, () => document.querySelector('.tu-duel .pm-h')?.textContent ?? null, 3000, 'a lesson again')) === 'The riposte', 'forgotten lessons are said again');
-  await sleep(330); await page.keyboard.press('Escape'); await sleep(300);
-  await page.evaluate(() => window.__coach.onEvents([{ type: 'break', who: 'marek' }, { type: 'apGain', who: 'ren', amount: 1, ap: 2 }]));
-  await sleep(500);
-  check(!(await lesson()) && !(await page.evaluate(() => window.__arena.paused)), 'Esc skipped the lessons left: none held the duel again');
+  // the duel played by the computer since lot 2 (journal Passe LC3): the first duel's lessons (TU-11) taught the three buttons of before and have none of its
+  // moments; the bout shows none of them and is not held, until lot 3 writes this duel's tutorial
+  await sleep(3000);
+  const bout = await page.evaluate(() => ({ rules: window.__arena.rules, band: !!document.querySelector('.tu-duel'), paused: window.__arena.paused, t: window.__arena.snapshot().t }));
+  check(bout.rules === 'auto' && !bout.band && !bout.paused && bout.t > 1, `the first bout: the duel played by the computer, no lesson, not held (t ${bout.t})`);
+  await page.screenshot({ path: path.join(outDir, '6-duel.png') });
   await page.close();
 
   // 4. a game begun before, in a fresh profile: the guide's line once

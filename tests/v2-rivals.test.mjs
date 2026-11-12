@@ -248,7 +248,8 @@ test('Rhosk out of the title takes the training sand on the free day before the 
   assert.ok(sign && sign.day === 8 && sign.slot === 'evening' && sign.visible && /Corra Dunmere/.test(sign.text) && /training sand tomorrow/.test(sign.text));
   assert.ok(st.flags['sand:9'] && st.facts.includes('rhosk-offer'));
   // the sign's causes, written out: Rhosk at the Gate, the player one of the semi-finals' four, the next bout in exactly two days, nothing cleared yet
-  const eve = G.play(G.makeV2(G.newGame(6, 'Ren')), [...POOL, W, WON, W, W, W, W, W, W]); // day 8's evening
+  // seed 11 since the off-screen bouts are the duel played by the computer (journal Passe LC3: seed 6 puts Rhosk in the semi-finals' four now)
+  const eve = G.play(G.makeV2(G.newGame(11, 'Ren')), [...POOL, W, WON, W, W, W, W, W, W]); // day 8's evening
   assert.equal(eve.day, 8); assert.equal(eve.slot, 'evening');
   const fires = (mut) => { const s = structuredClone(eve); mut(s); s.pulse = computePulse(s); return run(s, ['v2-rhosk-offer']).length === 1; };
   assert.ok(fires(() => {}));
@@ -258,7 +259,7 @@ test('Rhosk out of the title takes the training sand on the free day before the 
   assert.ok(!fires((s) => { s.day = 6; }), 'the bout in four days');
   assert.ok(!fires((s) => { for (const m of s.tournament.matches) if (m.stage === 'semi') { if (m.a === 'player') m.a = 'tobin'; if (m.b === 'player') m.b = 'tobin'; } }), 'not in the bracket\'s four');
   // the semi lost: the third place on day 8, the sand on day 7
-  const lost = G.play(G.makeV2(G.newGame(6, 'Ren')), [...POOL, W, LOST, W, W]);
+  const lost = G.play(G.makeV2(G.newGame(11, 'Ren')), [...POOL, W, LOST, W, W]);
   assert.equal(lost.day, 7); assert.ok(lost.flags['sand:7']);
 });
 
@@ -315,7 +316,8 @@ test('a friend warns of the forge\'s sabotage the afternoon after the hood bough
 
 test('the curious player tells Hale of Rhosk\'s plan before the sand day, and takes a friend\'s warning as a sign of its chain', () => {
   let signs = 0;
-  for (const seed of [6, 7, 10, 11, 15, 16]) {
+  // the seeds re-read since the duel played by the computer decides every bout (journal Passe LC3): the sign on seeds 6, 9, 12 and 13 among these
+  for (const seed of [6, 7, 9, 12, 13, 16]) {
     const st = LAB.autoplay(seed, LAB.POLICIES.curious, 'Ren', 400, 'v2').state;
     const sign = st.log.find((e) => e.id === 'v2-rhosk-offer');
     if (!sign) continue;

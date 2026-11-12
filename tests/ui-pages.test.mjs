@@ -12,6 +12,8 @@ const VS = await load('/src/simulation/v2skills.ts');
 const P = await load('/src/simulation/preview.ts');
 const M = await load('/src/combat/match.ts');
 const SB = await load('/src/combat/skillbook.ts');
+const AM = await load('/src/combat/autoMatch.ts');
+const AD = await load('/src/combat/autoData.ts');
 const SK = await load('/src/combat/skills.ts');
 const B = await load('/src/ui/board.ts');
 const J = await load('/src/ui/journal.ts');
@@ -20,30 +22,34 @@ const POOL = await load('/src/tournament/pool.ts');
 const src = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\r\n/g, '\n');
 const GEARS = [{}, { weapon: 'imported-blade', tier: 2 }, { armour: 'mail-shirt', acc: ['lucky-ribbon', 'docker-wrap'] }, { weapon: 'duelist-sabre', acc: ['swift-boots', 'iron-ring'] }];
 
-test('what a skill does is the duel\'s own: every skill at every level, the gear in it, against the data a bout is built from', () => {
+test('what a skill does is the duel\'s own: every skill at every level, the gear in it, against the fighters a bout is built from', () => {
+  // the duel played by the computer since lot 2 (journal Passe LC3): the skill as the bout's Ren brings it (src/combat/autoMatch.ts autoBoutOf, his four in his order),
+  // its damage by DB7-1's formula against the opponent's Defence, what it adds to that opponent's gauge by its Endurance (written here), its charge at Ren's Speed
   const st = G.makeV2(G.namedState('day2-afternoon'));
   for (const gear of GEARS) for (const id of Object.keys(SB.SKILL_BOOK)) for (let level = 1; level <= SK.MAX_LEVEL; level++) {
     const s = structuredClone(st); Object.assign(s.v2.gear, gear); s.v2.kit.levels[id] = level;
-    const loadout = s.v2.kit.loadout.includes(id) ? s.v2.kit.loadout : [id, ...s.v2.kit.loadout.slice(1)];
-    const { data: d, tiers } = M.v2SheetData(M.matchSheetFor(s), undefined, { loadout, levels: s.v2.kit.levels }, VG.v2Mods(s)), a = d.actions[id], f = P.skillFigures(s, id, level);
-    assert.equal(f.damage, a.damage, `${id} ${level}`); assert.equal(f.gauge, a.resist); assert.equal(f.ap, a.apCost ?? 0);
-    assert.equal(f.charge, tiers.find((t) => t.id === id).at); assert.equal(f.dur, (a.ward ?? a.boost)?.dur ?? 0);
-    assert.deepEqual(f.ward, a.ward ?? null); assert.deepEqual(f.boost, a.boost ?? null); assert.equal(f.pierce, !!a.ignoreGuard);
+    if (!s.v2.kit.loadout.includes(id)) s.v2.kit.loadout = [id, ...s.v2.kit.loadout.slice(1)];
+    const b = AM.autoBoutOf(s), a = b.ren.skills.find((x) => x.id === id), f = P.skillFigures(s, id, level), e = a.ward ?? a.boost;
+    assert.ok(a, `${id} brought`);
+    const k = (2 * b.ren.atk) / (b.ren.atk + b.foe.def);
+    assert.equal(f.ap, a.ap ?? 0, `${id} ${level}`);
+    assert.equal(f.damage, e ? 0 : Math.round(a.power * k)); assert.equal(f.gauge, e ? 0 : +(a.gauge * 10 / b.foe.end).toFixed(1));
+    assert.equal(f.charge, +(a.charge * 10 / b.ren.viv).toFixed(2)); assert.equal(f.dur, e?.dur ?? 0);
+    assert.deepEqual(f.ward, a.ward ? { damage: a.ward.dmg, resist: a.ward.gauge } : null); assert.deepEqual(f.boost, a.boost ? { damage: a.boost.dmg, resist: a.boost.gauge } : null); assert.equal(f.pierce, !!a.pierce);
   }
 });
 
-test('the charge the page shows is the duel\'s: its tiers in their order; a level up never weakens a skill', () => {
+test('the order the page shows is the duel\'s: the four in the order the automatic follows; a level up never weakens a skill', () => {
+  // the duel played by the computer since lot 2 (journal Passe LC3): the order of its Ren (AC-09), each with its AP and its charge at his Speed
   const st = G.makeV2(G.namedState('day2-afternoon'));
-  for (const gear of GEARS) {
-    const s = structuredClone(st); Object.assign(s.v2.gear, gear);
-    const { tiers } = M.v2SheetData(M.matchSheetFor(s), undefined, s.v2.kit, VG.v2Mods(s));
-    assert.deepEqual(P.chargeLadder(s, s.v2.kit.loadout), tiers);
+  for (const gear of GEARS) for (const order of [undefined, ['t1', 'd1', 't4', 's1']]) {
+    const s = structuredClone(st); Object.assign(s.v2.gear, gear); if (order) s.v2.kit.order = order;
+    const b = AM.autoBoutOf(s), v = P.autoOrderView(s, s.v2.kit.loadout);
+    assert.deepEqual(v.map((x) => x.id), b.ren.skills.map((x) => x.id));
+    assert.deepEqual(v.map((x) => x.charge), b.ren.skills.map((x) => +(x.charge * 10 / b.ren.viv).toFixed(2)));
   }
-  // three chosen of four: the three, in their order, with the light attack (the heavy attack only when chosen: a skill since journal Passe CH1)
-  const three = P.chargeLadder(st, st.v2.kit.loadout.slice(0, 3)), ats = three.map((t) => t.at);
-  assert.equal(three.length, 4); assert.deepEqual(ats, [...ats].sort((a, b) => a - b)); assert.ok(!three.some((t) => t.id === st.v2.kit.loadout[3] || t.id === 'heavy'));
-  const withHeavy = P.chargeLadder(st, ['heavy', 't1', 'd1']);
-  assert.deepEqual(withHeavy.map((t) => t.id), ['light', 'heavy', 'd1', 't1']);
+  // three chosen of four: the three, in the automatic's order
+  assert.deepEqual(P.autoOrderView(st, st.v2.kit.loadout.slice(0, 3)).map((x) => x.id), AD.autoDefaultOrder(st.v2.kit.loadout.slice(0, 3), st.v2.kit.levels));
   for (const id of Object.keys(SB.SKILL_BOOK)) for (let level = 1; level < SK.MAX_LEVEL; level++) {
     const a = P.skillFigures(st, id, level), b = P.skillFigures(st, id, level + 1);
     assert.ok(b.damage >= a.damage && b.gauge >= a.gauge && b.dur >= a.dur && b.charge <= a.charge, `${id} ${level}`);

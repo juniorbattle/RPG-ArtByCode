@@ -232,7 +232,9 @@ test('the wiring: loaded on demand by the version 2\'s pages and the title scree
   assert.ok(/m\.installPad\(\{ sound: \(\) => snd \}\)/.test(src('src/ui/title.ts')) && !/dispose\(\)/.test(src('src/ui/title.ts')), 'the title: its layer stays for Explore');
   for (const f of users) assert.ok(!/^import [^;]*from '[^']*input\/PadInput'/m.test(src(`src/${f}`)), `${f}: no static import`);
   assert.ok(/if \(isV2\(st\)\) void import\('\.\.\/input\/PadInput'\)/.test(src('src/ui/playTown.ts')), 'the town: a version 2 game only');
-  assert.ok(/if \(this\.charge\) void import\('\.\.\/input\/PadInput'\)/.test(src('src/arena/ArenaApp.ts')), 'the arena: the version 2\'s charged duel only');
+  // the arena: a duel under the version 2's rules only, the three buttons of before or the duel played by the computer (lot 2, journal Passe LC3: its pause, ×2 and
+  // « Skip » on the duel's own buttons)
+  assert.ok(/const duelKeys = !!\(this\.charge \|\| this\.auto\);/.test(src('src/arena/ArenaApp.ts')) && /if \(duelKeys\) void import\('\.\.\/input\/PadInput'\)/.test(src('src/arena/ArenaApp.ts')), 'the arena: the version 2\'s duels only');
   const poll = src('src/arena/ArenaApp.ts').match(/private pollPad\(\): void \{([\s\S]*?)\n  \}/)[1];
   assert.ok(/if \(this\.charge\) return;/.test(poll) && /navigator\.getGamepads/.test(poll) && /pads && pads\[0\]/.test(poll), 'pollPad kept for the other arenas');
   // the review's glyphs on the DEV server only

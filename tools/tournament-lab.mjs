@@ -12,8 +12,9 @@
 //   --rules=classic: today's game (the arena of today, `?v2=0`);
 //   --rules=dynamic (any of the above): today's game under the rules of the « tour par tour dynamique » (src/combat/dynamic.ts, journal Passe C1),
 //       its duels in DynamicSim and its off-screen matches in the same rules' race
-//   --rules=auto: version 2 games in the duel played by the computer (briefs/combat-auto.md, lot 1: `flags.autoDuel`, src/combat/auto.ts), the player's
-//       bouts, his challenges and the off-screen bouts; --policy=reference the reference player of AC-14 (the planner, Hilde's look, its kit drilled)
+//   a version 2 game plays its bouts, its challenges and its off-screen bouts in the duel played by the computer since lot 2 (briefs/combat-auto.md,
+//       src/combat/auto.ts, journal Passe LC3); --rules=auto, lot 1's name for it, is --rules=v2; --policy=reference the reference player of AC-14 (the
+//       planner, Hilde's look, its kit drilled)
 import fs from 'node:fs';
 import path from 'node:path';
 import { createServer } from 'vite';
@@ -38,7 +39,6 @@ try {
     let st = arg('save') ? G.deserialize(fs.readFileSync(arg('save'), 'utf8')) : G.namedState(arg('state'));
     if (named === 'dynamic') st.flags.combat = 'dynamic';
     if ((named === 'v2' || named === 'auto') && !G.isV2(st)) G.makeV2(st);
-    if (named === 'auto') st.flags.autoDuel = true;
     const target = st.day + +(arg('days', '0'));
     while (!st.over && st.day < target) { const r = G.advance(st, policy.choose(st)); if (!r.ok) throw new Error(r.reason); st = r.state; }
     console.log(`day ${st.day} ${st.slot}${st.over ? ' (slice over)' : ''}, hash ${G.hash(st)}\n${table(st)}`);

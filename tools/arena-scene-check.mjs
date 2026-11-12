@@ -37,7 +37,8 @@ try {
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
   await page.evaluateOnNewDocument(SEED);
-  await page.goto(`${BASE}?scene=arena&freeze=7.3${extra ? '&' + extra : ''}`, { waitUntil: 'load', timeout: 120000 });
+  // the three buttons of before behind duel=charge since lot 2 (journal Passe LC3: the arena alone plays the duel played by the computer, tools/auto-arena-proof.mjs)
+  await page.goto(`${BASE}?scene=arena&duel=charge&freeze=7.3${extra ? '&' + extra : ''}`, { waitUntil: 'load', timeout: 120000 });
   await page.waitForFunction('window.__ready === true || window.__error', { timeout: +(process.env.READY_MS || 300000) });
   const err = await page.evaluate(() => window.__error);
   if (err) throw new Error(err);

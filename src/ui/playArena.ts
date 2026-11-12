@@ -1,10 +1,11 @@
 import { ArenaApp } from '../arena/ArenaApp';
 import { TEXTS_EN } from '../arena/ArenaHud';
 import { DYN_TEXTS_EN, DYN_TEXTS_FR_GAME } from '../arena/DynamicHud';
-import { challengeSheetFor, dynSheetData, dynSheetView, matchSheetFor, sheetData, v2SheetData } from '../combat/match';
-import { V2_FOES, FOE_SKILLS } from '../combat/v2duel';
-import { isV2, v2KitOf } from '../simulation/v2';
-import { healthParts, v2Mods } from '../simulation/v2gear';
+import { challengeSheetFor, dynSheetData, dynSheetView, matchSheetFor, sheetData } from '../combat/match';
+import { autoOutcome } from '../combat/autoMatch';
+import { AUTO_TEXTS_EN, AUTO_TEXTS_FR } from '../arena/AutoHud';
+import { isV2 } from '../simulation/v2';
+import { healthParts } from '../simulation/v2gear';
 import { VIGOUR_HP } from '../combat/stats';
 import { dynamicRules } from '../tournament/pool';
 import { stageName } from '../tournament/v2calendar';
@@ -23,13 +24,14 @@ import { esc, overlay } from './style';
 import { standingsHtml } from './board';
 import { fontsReady, installDesign } from './design/system';
 import { progressOn } from './loading';
-import { DuelCoach } from './duelTutorial';
 
 /** The official bout (journal Passe L3; choice G1: the arena as it is, played from a match sheet): the day's opponent in Marek's seat, the
  *  player's name and preparation in Ren's, the English HUD (choice K1). A scouting report before the first blow; once the KO has had its
  *  moment, the result goes to the simulation (`fight`), the game is saved and the player returns to the city, at the end of day (G2).
  *  A game under the rules of the « tour par tour dynamique » (`flags.combat`, journal Passe C2) fights its bout in DynamicSim with its HUD,
- *  the discreet assistance for every bout and the scouting report at the preparation screen (CB-7). */
+ *  the discreet assistance for every bout and the scouting report at the preparation screen (CB-7). A version 2 game's bout or challenge is the duel played by
+ *  the computer (lot 2 of briefs/combat-auto.md, journal Passe LC3): decided here from the game's state (src/combat/autoMatch.ts), the arena plays its script, ×2 and
+ *  « Skip » at hand, and the game takes the result the duel gave. */
 
 export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   let st = st0;
@@ -53,17 +55,16 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   const q = new URLSearchParams(arenaQuery(st));
   for (const k of ['fps', 'freeze', 'painters', 'hud', 'gpuprof', 'input', 'fx']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   const dyn = dynamicRules(st), v2 = isV2(st), view = dyn ? dynSheetView(sheet, opp.name, opp.id) : { assist: sheet.assist, intel: sheet.intel };
-  // the version 2 (journal Passe V1): scouting also names the opponent's skills (C3), announced in the duel by the light alert
-  if (v2 && view.intel.length) view.intel.push(tx('ui.arena.foeSkills', { name: opp.name, skills: (V2_FOES[opp.id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') }));
-  const v2d = v2 ? v2SheetData(sheet, actionNames(), v2KitOf(st), v2Mods(st)) : null;
+  // the version 2: the duel played by the computer, decided from the state now (the same duel the match sheet prepared), its script for the arena
+  const ao = v2 ? autoOutcome(st, challenge ? 'challenge' : 'bout', { log: true }) : null;
   if (dyn && b.params.has('dyn')) q.set('dyn', b.params.get('dyn')!);
-  const texts = { ...(dyn ? (lang() === 'fr' ? DYN_TEXTS_FR_GAME : DYN_TEXTS_EN) : TEXTS_EN), subtitle: challenge ? tx(reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title') : v2 && m ? stageName(m) : tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
+  const texts = { ...(v2 ? (lang() === 'fr' ? AUTO_TEXTS_FR : AUTO_TEXTS_EN) : dyn ? (lang() === 'fr' ? DYN_TEXTS_FR_GAME : DYN_TEXTS_EN) : TEXTS_EN), subtitle: challenge ? tx(reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title') : v2 && m ? stageName(m) : tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
   const app = new ArenaApp({
     canvas: b.canvas, params: q,
     onProgress: progressOn(b.label, b.bar),
-    match: v2d
+    match: ao
       // a challenge or a reprisal in town (lot L2b, EV-5 « L’arène aux gradins vides »): the stands empty, no crowd, the lists' piece of the band
-      ? { data: v2d.data, tiers: v2d.tiers, rules: 'v2', foe: opp.id, assist: view.assist, texts, piece: challenge ? 'lices' : boutPiece(m?.stage), ...(challenge ? { empty: true } : {}), onOver: (r) => void finish(r) }
+      ? { rules: 'auto', auto: { result: ao.duel, ren: ao.bout.ren, foe: ao.bout.foe, names: { ren: st.player.name, marek: opp.name } }, foe: opp.id, assist: 'subtle', texts, piece: challenge ? 'lices' : boutPiece(m?.stage), ...(challenge ? { empty: true } : {}), onOver: (r) => void finish(r) }
       : dyn
       ? { data: dynSheetData(sheet, actionNames()), rules: 'dynamic', foe: opp.id, assist: view.assist, texts, onOver: (r) => void finish(r) }
       : { data: sheetData(sheet, actionNames()), foe: opp.id, assist: sheet.assist, texts, onOver: (r) => void finish(r) },
@@ -85,15 +86,10 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   // one preparation screen (journal Passe UM4): the version 2's is its match sheet in the town, here its stage and the name; today's game keeps its report
   // here, in the band at the foot of the screen, the fighters in view; the command bar says the keys
   const gate = `<p class="pm-sub">${challenge ? tx(reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</p><h2 class="pm-h">${esc(opp.name)}</h2><p class="pm-sub">${esc(opp.epithet)}</p>`;
-  await overlay(v2 && !challenge ? gate : `${gate}${report}${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }], true).done;
+  await overlay(v2 ? gate : `${gate}${report}${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }], true).done;
   app.paused = false; app.moment = false;
-  // the first duel's tutorial (journal Passe TU4, TU-11): a version 2 duel holds the first time each thing comes up, a lesson read at the foot of the screen
-  if (v2) {
-    const coach = new DuelCoach({ hold: (on) => app.holdForLesson(on), data: () => app.dyn?.D ?? null }, b.params);
-    (window as any).__coach = coach;
-    app.onDuelEvents = (evs) => coach.onEvents(evs);
-    coach.begin();
-  }
+  // the first duel's tutorial (journal Passe TU4, TU-11) taught the three buttons of before: the duel played by the computer has none of its moments (the AP
+  // gained by a tap, the charge held, the riposte), so it shows none of them; the guide and the tutorial of this duel are lot 3 (journal Passe LC3)
 
   async function finish(r: { winner: 'ren' | 'marek'; hp: Record<string, number>; maxHp: Record<string, number>; finisher: string | null }): Promise<void> {
     const outcome = { winner: r.winner === 'ren' ? 'player' : 'opponent', playerHp: r.hp.ren, playerMaxHp: r.maxHp.ren, opponentHp: r.hp.marek, opponentMaxHp: r.maxHp.marek, finisher: r.finisher };

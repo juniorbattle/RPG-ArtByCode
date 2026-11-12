@@ -107,11 +107,17 @@ export function autoDefaultOrder(loadout: readonly string[], levels: Record<stri
 }
 
 export interface AutoKit { loadout: readonly string[]; levels: Record<string, number>; order?: readonly string[] }
+/** the order the automatic follows (AC-09): the player's (kit.order, set on the match sheet), a skill brought since taking their place after the others; else
+ *  its own (autoDefaultOrder) */
+export function autoOrderOf(kit: AutoKit): string[] {
+  const order = kit.order?.length ? kit.order.filter((id) => kit.loadout.includes(id)) : autoDefaultOrder(kit.loadout, kit.levels);
+  for (const id of kit.loadout) if (!order.includes(id)) order.push(id);
+  return order;
+}
 /** Ren as a fighter: his stats (for the bout: his gear, his training, his vigour), his four skills in his order, his weapon; what a state adds on top (the
  *  injury's share of his health, the AP of his gear and a friend, the night's tampering, his gear's share on the effects' length) */
 export function autoRen(stats: FighterStats, kit: AutoKit, o: { weapon?: string | null; hpShare?: number; apStart?: number; taken?: number; effect?: number; brain?: AutoBrain } = {}): AutoFighter {
-  const order = kit.order?.length ? kit.order.filter((id) => kit.loadout.includes(id)) : autoDefaultOrder(kit.loadout, kit.levels);
-  for (const id of kit.loadout) if (!order.includes(id)) order.push(id);
+  const order = autoOrderOf(kit);
   return {
     id: 'ren', side: 'ren', hp: stats.hp * (o.hpShare ?? 1), atk: stats.atk, def: stats.def, end: stats.end, viv: stats.viv, tempo: 10,
     apStart: o.apStart ?? 0, taken: o.taken ?? 1, light: autoLight(o.weapon), skills: order.map((id) => autoSkill(id, kit.levels[id] ?? 1, o.effect ?? 1)), brain: o.brain ?? 'player',

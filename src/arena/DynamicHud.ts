@@ -97,7 +97,7 @@ body.pm-pad #ah-pause .kb{display:none}
 `;
 
 /** the additions to the arena HUD's rules: the resistance gauges, the effect tags, the phase sign, the locked and preparing buttons */
-const DYN_CSS = `
+export const DYN_CSS = `
 #arena-hud .ah-rs{display:flex;align-items:center;gap:8px;margin-top:6px}
 #arena-hud .ah-f.r .ah-rs{flex-direction:row-reverse}
 #arena-hud .ah-rs>span{display:none;flex:none;font-size:var(--ds-fs-small);color:var(--ds-muted);white-space:nowrap}
