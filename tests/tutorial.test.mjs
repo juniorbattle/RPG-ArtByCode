@@ -21,6 +21,14 @@ const STATS = await load('/src/combat/stats.ts');
 const { POINTS } = await load('/src/narrative/roster.ts');
 const WORK = await load('/src/simulation/v2work.ts');
 const POOL = await load('/src/tournament/pool.ts');
+// the first duel's lessons (lot 3, journal Passe LC5): loaded before any test runs (a load after the first tests ran met the closed loader)
+const DT = await load('/src/ui/duelTutorial.ts');
+const AV = await load('/src/arena/autoView.ts');
+const AU = await load('/src/combat/auto.ts');
+const AD = await load('/src/combat/autoData.ts');
+const AM = await load('/src/combat/autoMatch.ts');
+const T = await load('/src/narrative/text/index.ts');
+const { FR } = await load('/src/narrative/text/fr.ts');
 
 const src = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\r\n/g, '\n');
 const v2 = () => { const s = G.newGame(1842, 'Ren'); G.makeV2(s); return s; };
@@ -32,7 +40,7 @@ test('the texts: in the table, numbers only through slots, every cap known (TU-5
   for (const k of tutKeys.filter((x) => /^tut\.(ch|hint)\./.test(x))) assert.doesNotMatch(EN[k], /\d/, `${k} writes a number: ${EN[k]}`);
   // a key in a text is a cap the gamepad and the keyboard layout redraw, never a letter in the prose
   // [Move] and [Run], the walk's keys and the run, since the remapping (journal Passe RM2, RM-6: the words « the arrow keys », « Shift » became caps that follow)
-  for (const k of tutKeys) for (const m of EN[k].matchAll(/\[([^\]]+)\]/g)) assert.ok(['E', 'Q', 'Menu', 'M', 'Space', 'Enter', 'Back', 'J', 'K', 'L', 'Move', 'Run'].includes(m[1]), `${k}: unknown cap [${m[1]}]`);
+  for (const k of tutKeys) for (const m of EN[k].matchAll(/\[([^\]]+)\]/g)) assert.ok(['E', 'Q', 'Menu', 'M', 'Space', 'Enter', 'Back', 'J', 'K', 'L', 'Move', 'Run', 'Left', 'Right'].includes(m[1]), `${k}: unknown cap [${m[1]}]`);
   // an action's cap carries its action (data-bind) and shows the player's key; a fixed key's carries its English name (data-key) and shows its name
   const html = TU.rich('Press [E], then [Menu]; <b>x</b>');
   assert.match(html, /<kbd data-bind="talk" data-cap="hints">E<\/kbd>/);
@@ -135,61 +143,165 @@ test('it moves by fades only (TU-10: the reduced motion is the game\'s own setti
   assert.match(css, /tu-hint\{[^}]*animation:ds-fade/);
 });
 
-// ------------------------------------------------------------------------------------------------ lot 2: the first duel's lessons (journal Passe TU4, TU-11)
-const DT = await load('/src/ui/duelTutorial.ts');
-const V2D = await load('/src/combat/v2duel.ts');
+// ------------------------------------------------------------------------------------------------ the first duel's lessons (TU-11): the duel played by the computer
+// (lot 3 of briefs/combat-auto.md, journal Passe LC5; the three-button duel's lessons of journal Passe TU4 went with lot 2)
+const R = AU.AUTO_RULES, pc = (x) => Math.round(x * 100);
+const FOES = ['marek', 'vessa', 'orla', 'cassius', 'ilse', 'rhosk', 'tobin'];
+const lessonDuel = (d, names = { ren: 'Ren', marek: 'Marek' }) => ({ ren: d.ren, foe: d.foe, form: d.result.form, names });
 
-test('the first duel\'s lessons: one per first, their numbers from the duel\'s own data (TU-11, TU-6)', () => {
-  assert.deepEqual(DT.LESSONS, ['start', 'charge', 'ap', 'priority', 'gauge', 'break', 'riposte']);
+test('the first duel\'s lessons: one per first of the duel played by the computer, their numbers the bout\'s own (TU-11, TU-6)', () => {
+  assert.deepEqual(DT.LESSONS, ['start', 'charge', 'combo', 'ap', 'react', 'form', 'gauge', 'break', 'speed']);
   for (const k of tutKeys.filter((x) => /^tut\.duel\./.test(x))) assert.doesNotMatch(EN[k], /\d/, `${k} writes a number`);
-  const D = V2D.v2DuelData('marek', { seed: 1, playerName: 'Ren', opponentName: 'Marek' }).data;
-  assert.match(DT.lessonText('break', D), new RegExp(`stunned for ${V2D.V2_BREAK.stun} seconds and takes ${V2D.V2_BREAK.damage} times the damage`));
-  assert.match(DT.lessonText('riposte', D), new RegExp(`After ${V2D.V2_RIPOSTE.after} quick blows`));
-  assert.match(DT.lessonText('priority', D), new RegExp(`takes ${Math.round(D.guard.reduce * 100)} % off each blow`));
-  assert.match(DT.lessonText('ap', D), new RegExp(`gives you ${D.actions.light.apGain} action point\. You start a bout with ${D.ap.start} and hold ${D.ap.max} at most`));
-  assert.match(DT.lessonText('start', D), /<kbd data-bind="attack" data-cap="arena">J<\/kbd>|\[J\]/);
-  // the guide's chapter says the same numbers (read from the same data)
-  const duel = TU.chapterText(v2(), TU.CHAPTERS.find((c) => c.id === 'duel'));
-  assert.match(duel, new RegExp(`stunned for ${V2D.V2_BREAK.stun} seconds and takes ${V2D.V2_BREAK.damage} times`));
-  assert.match(duel, new RegExp(`After ${V2D.V2_RIPOSTE.after} quick blows`));
-  // the caps of the duel in a text are the duel's
-  assert.match(TU.rich('[J] [K] [L]'), /<kbd data-bind="attack" data-cap="arena">J<\/kbd> <kbd data-bind="guard" data-cap="arena">K<\/kbd> <kbd data-bind="dodge" data-cap="arena">L<\/kbd>/);
+  for (const id of DT.LESSONS) assert.ok(`tut.duel.${id}.title` in EN && `tut.duel.${id}.body` in EN, id);
+  // the old duel's lessons are gone with it (no priority of the opponent, no riposte: AC-07, A3)
+  assert.ok(!('tut.duel.priority.body' in EN) && !('tut.duel.riposte.body' in EN));
+  const d = AV.sceneAutoDuel('marek', 1337), D = lessonDuel(d);
+  assert.match(DT.lessonText('start', D), new RegExp(`You use your ${d.ren.skills.length} skills in your order`));
+  assert.match(DT.lessonText('charge', D), new RegExp(`your light attack charges ${AD.AUTO_LIGHT.charge} seconds at your Speed of ${d.ren.viv}`));
+  assert.match(DT.lessonText('combo', D), new RegExp(`your light attack strikes ${AD.AUTO_WEAPONS['training-sword'].hits.length} with your weapon`));
+  assert.match(DT.lessonText('ap', D), new RegExp(`gives you ${R.ap.light} action point\\. You started this bout with ${R.ap.start} and hold ${R.ap.max} at most`));
+  assert.match(DT.lessonText('ap', D), new RegExp(`comes back ${AD.AUTO_COOLDOWN} times its charge later`));
+  const rr = AM.autoReactions(d.ren, d.foe), fr = AM.autoReactions(d.foe, d.ren);
+  assert.match(DT.lessonText('react', D), new RegExp(`${R.react.skillGuard} times as often against a skill or a heavy blow seen coming\\. A guarded blow loses ${pc(R.guardReduce)} % of its damage`));
+  assert.match(DT.lessonText('react', D), new RegExp(`you dodge ${pc(rr.dodge)} % of Marek's blows and guard ${pc(rr.guard)} %, ${pc(rr.guardSkill)} % of those seen coming; Marek dodges ${pc(fr.dodge)} % of yours and guards ${pc(fr.guard)} %`));
+  const sg = (f) => `${f >= 1 ? '\\+' : '−'}${Math.round(Math.abs(f - 1) * 100)}`;
+  assert.match(DT.lessonText('form', D), new RegExp(`up to ${pc(R.form)} % either way: today ${sg(d.result.form[0])} % for you, ${sg(d.result.form[1])} % for Marek`));
+  assert.match(DT.lessonText('gauge', D), new RegExp(`fills the guarder's ${R.gauge.guardMul} times as much`));
+  assert.match(DT.lessonText('break', D), new RegExp(`stunned for ${R.brk.stun} seconds, and takes ${R.brk.dmg} times the damage`));
+  // ×2 and « Skip » on the attack's and the dodge's keys (LC3-8), the duel's caps
+  assert.match(TU.rich(DT.lessonText('speed', D)), /<kbd data-bind="attack" data-cap="arena">J<\/kbd> plays it twice as fast, and back; <kbd data-bind="dodge" data-cap="arena">L<\/kbd> skips to the result/);
+  // the numbers follow the bout, not constants: a Ren at Speed 8 with the sabre and an AP of his gear
+  const ren = AD.autoRen({ ...d.ren, hp: 300, viv: 8 }, { loadout: ['t1', 't4', 'd1', 's1'], levels: {} }, { weapon: 'duelist-sabre', apStart: 1 });
+  const D2 = { ...D, ren };
+  assert.match(DT.lessonText('charge', D2), new RegExp(`charges ${+(AD.AUTO_LIGHT.charge * 10 / 8).toFixed(2)} seconds at your Speed of 8`));
+  assert.match(DT.lessonText('combo', D2), new RegExp(`strikes ${AD.AUTO_WEAPONS['duelist-sabre'].hits.length} with your weapon`));
+  assert.match(DT.lessonText('ap', D2), new RegExp(`You started this bout with ${R.ap.start + 1}`));
+  // in French: the decimal comma, the article meeting the name (« des coups d’Orla »)
+  const o = AV.sceneAutoDuel('orla', 7), DO = lessonDuel(o, { ren: 'Ren', marek: 'Orla' });
+  T.useLanguage('fr', FR);
+  try {
+    assert.match(DT.lessonText('charge', D2), /se charge en 1,5 secondes à votre Vivacité de 8/);
+    assert.match(DT.lessonText('react', DO), /des coups d’Orla et en gardez/);
+    for (const id of DT.LESSONS) assert.doesNotMatch(DT.lessonText(id, DO), /[{}]|\b(the|your|and)\b/, id);
+  } finally { T.useLanguage('en'); }
 });
 
-test('which event is which first: the player\'s charge past the quick blow, an action point, the opponent\'s sequence, a gauge a third full, its break, the riposte', () => {
-  const of = DT.lessonOf;
-  assert.equal(of({ type: 'chargeTier', idx: 1 }), 'charge');
-  assert.equal(of({ type: 'chargeTier', idx: 0 }), null);
-  assert.equal(of({ type: 'apGain', who: 'ren', amount: 1, ap: 2 }), 'ap');
-  assert.equal(of({ type: 'apGain', who: 'marek', amount: 1, ap: 2 }), null);
-  assert.equal(of({ type: 'sequenceStart', who: 'marek', len: 3 }), 'priority');
-  assert.equal(of({ type: 'sequenceStart', who: 'ren', len: 1 }), null);
-  assert.equal(of({ type: 'impact', from: 'ren', to: 'marek', result: 'hit', resist: DT.GAUGE_SHOWN - 1 }), null);
-  assert.equal(of({ type: 'impact', from: 'ren', to: 'marek', result: 'hit', resist: DT.GAUGE_SHOWN }), 'gauge');
-  assert.equal(of({ type: 'impact', from: 'ren', to: 'marek', result: 'dodged', resist: 90 }), null);
-  assert.equal(of({ type: 'break', who: 'marek' }), 'break');
-  assert.equal(of({ type: 'break', who: 'ren' }), null);
-  assert.equal(of({ type: 'riposte', who: 'marek', lights: 3 }), 'riposte');
-  // the events the duel really emits carry these fields (src/combat/charge.ts, src/combat/dynamic.ts)
-  assert.match(src('src/combat/charge.ts'), /type: 'chargeTier'; idx: number/);
-  assert.match(src('src/combat/dynamic.ts'), /\{ type: 'impact'; from: DynFighterId; to: DynFighterId; action: DynActionId; kind: DynKind; result: DynImpactResult; damage: number; mitigated: number; hp: number; resist: number \}/);
+/** the first time each lesson opens in a duel, from the script alone (its lines and their trace), independent of the replay's events: Ren's first light attack
+ *  that lands, a blow that is not its action's first, a guard or a dodge, a skill or a heavy blow landing, a target's gauge a third full at a blow, a break, Ren
+ *  charging a skill; the clock's lesson at SPEED_AT; none at the K.O.'s blow or after it */
+function oracle(d) {
+  const log = d.result.log, light = new Set([d.ren.light.id, d.foe.light.id, d.foe.combo?.id]), first = { start: 0 }, fresh = {};
+  const put = (id, t) => { if (!(id in first)) first[id] = t; };
+  const koAt = log.find((e) => e.hp !== undefined && e.hp <= 0)?.t ?? Infinity;
+  for (const e of log) {
+    if (e.t >= koAt) break;
+    if (e.ev === 'charge') { fresh[e.who] = true; if (e.who === d.ren.id && e.act !== d.ren.light.id) put('charge', e.t); continue; }
+    if (e.ev === 'break') { put('break', e.t); continue; }
+    if (e.ev === 'ward' || e.ev === 'boost') { fresh[e.who] = false; continue; }
+    const follow = !fresh[e.who]; fresh[e.who] = false;
+    if (e.who === d.ren.id && e.act === d.ren.light.id && e.ev !== 'dodged') put('ap', e.t);
+    if (follow) put('combo', e.t);
+    if (e.ev !== 'hit') put('react', e.t);
+    if (e.ev === 'hit' && !light.has(e.act)) put('form', e.t);
+    if (e.ev !== 'dodged' && (e.who === d.ren.id ? e.s[3] : e.s[1]) >= R.gauge.max / 3) put('gauge', e.t);
+  }
+  if (DT.SPEED_AT < koAt) put('speed', DT.SPEED_AT);
+  return first;
+}
+
+test('each lesson opens on the line of the script that opens it, at the arena\'s step, once, never at the K.O. (TU-11)', () => {
+  let n = 0;
+  for (const foe of FOES) for (const seed of [1337, 7, 42]) {
+    const d = AV.sceneAutoDuel(foe, seed), rp = new AV.AutoReplay(d.result, { ren: d.ren, marek: d.foe }), dt = rp.D.dt;
+    rp.drain();
+    const seen = { start: 0 }, count = {};
+    while (!rp.over) {
+      rp.step();
+      const evs = rp.drain();
+      if (evs.some((e) => e.type === 'ko')) break;
+      for (const e of evs) for (const id of DT.lessonsOf(e)) { count[id] = (count[id] ?? 0) + 1; if (!(id in seen)) seen[id] = rp.t; }
+      const at = DT.lessonAt(rp.t); if (at && !(at in seen)) seen[at] = rp.t;
+    }
+    const want = oracle(d);
+    assert.deepEqual(Object.keys(seen).sort(), Object.keys(want).sort(), `${foe} ${seed}: the lessons the bout reaches`);
+    for (const [id, t] of Object.entries(want)) {
+      assert.ok(seen[id] >= t - 1e-9 && seen[id] - t <= dt + 1e-9, `${foe} ${seed} ${id}: opens at ${seen[id]}, its line at ${t}`);
+      n++;
+    }
+    // each opens once in a bout whatever the events after it (the coach keeps what it said)
+    assert.ok(Object.keys(count).length >= 4, `${foe} ${seed}: lessons reached`);
+  }
+  assert.ok(n >= 7 * 3 * 7, `lessons checked: ${n}`);
+  // the replay's impact says what the lessons read: its blow's place in its action, the AP its striker gained
+  const d = AV.sceneAutoDuel('marek', 1337), rp = new AV.AutoReplay(d.result, { ren: d.ren, marek: d.foe });
+  rp.skip(); rp.reset(); rp.drain();
+  const imp = [];
+  while (!rp.over) { rp.step(); imp.push(...rp.drain().filter((e) => e.type === 'impact')); }
+  assert.ok(imp.some((e) => e.follow === true) && imp.some((e) => e.follow === false));
+  assert.ok(imp.filter((e) => e.apGain > 0).every((e) => e.kind === 'light' && e.result !== 'dodged'), 'only a light attack that lands gains AP');
+  assert.ok(imp.some((e) => e.from === 'ren' && e.apGain === R.ap.light));
 });
 
-test('the lessons hold the duel and its keys; the guide teaches them again (TU-7); the duel played by the computer shows none of them (lot 2, until lot 3)', () => {
+test('the coach holds the bout on the step a lesson opens and its keys; the guide teaches it again (TU-7); every bout of a game has it', () => {
   const arena = src('src/arena/ArenaApp.ts'), page = src('src/ui/playArena.ts'), dt = src('src/ui/duelTutorial.ts'), tu = src('src/ui/tutorial.ts');
   // the settings page over a paused duel holds its keys too (journal Passe RG3, RG-2)
   assert.match(arena, /if \(e\.repeat \|\| e\.metaKey \|\| e\.ctrlKey \|\| e\.altKey \|\| !this\.ready \|\| this\.lesson \|\| this\.settingsOpen\) return;/);
   assert.match(arena, /this\.lesson = on; this\.paused = on; this\.moment = on; this\.hud\?\.still\(on\);/);
-  assert.match(arena, /this\.onDuelEvents\?\.\(evs/);
-  // the first duel's lessons taught the three buttons of before (TU-11): a version 2 game's bout is the duel played by the computer since lot 2 (journal Passe
-  // LC3), which has none of their moments; the page shows none of them until lot 3 writes this duel's tutorial
-  assert.doesNotMatch(page, /new DuelCoach/);
-  assert.match(page, /the guide and the tutorial of this duel are lot 3/);
+  // no step after the one that opened a lesson; neither ×2 nor « Skip » while it is read; no lesson under « Skip »'s curtain
+  assert.match(arena, /while \(!this\.paused && this\.acc >= step && n\+\+ < 24\)/);
+  assert.match(arena, /if \(!down \|\| this\.lesson\) return;/);
+  assert.match(arena, /if \(!this\.skipFade\) this\.onDuelEvents\?\.\(evs as unknown as Array<\{ type: string \} & Record<string, unknown>>, this\.sim\.t\);/);
+  // a version 2 game's bout or challenge (the duel played by the computer): the coach with the bout's fighters and forms
+  assert.match(page, /if \(ao\) \{\n\s*const duel = \{ ren: ao\.bout\.ren, foe: ao\.bout\.foe, form: ao\.duel\.form, names: \{ ren: st\.player\.name, marek: opp\.name \} \};\n\s*const coach = new DuelCoach\(\{ hold: \(on\) => app\.holdForLesson\(on\), data: \(\) => duel \}, b\.params\);/);
+  assert.match(page, /app\.onDuelEvents = \(evs, t\) => coach\.onEvents\(evs, t\);\n\s*coach\.begin\(\);/);
   assert.match(dt, /this\.off = !tutorialOn\(params\)/);
-  assert.match(dt, /'cite-du-tournoi\.duel-lessons'/);
+  assert.match(dt, /'cite-du-tournoi\.auto-lessons'/);
+  assert.match(dt, /if \(evs\.some\(\(e\) => e\.type === 'ko'\)\) \{ this\.ended = true; this\.queue = \[\]; return; \}/);
   assert.doesNotMatch(dt, /writeSave|__game|\.act\(/);
   assert.match(tu, /if \(at\.id === 'duel'\) \{ forgetLessons\(\);/);
+  // fades only (TU-10): the light appears at its place
+  assert.match(tu, /export function spotlight\(sel: string\): \(\) => void/);
   // no localStorage in Node: nothing is said twice, nothing throws
   assert.equal(DT.lessonSeen('start'), false);
   assert.doesNotThrow(() => DT.forgetLessons());
+});
+
+test('the guide\'s « The duel » and « Preparing a bout » for the duel played by the computer, their numbers the duel\'s (lot 3)', () => {
+  const s = v2(), duel = TU.chapterText(s, TU.CHAPTERS.find((c) => c.id === 'duel')), prep = TU.chapterText(s, TU.CHAPTERS.find((c) => c.id === 'prepare'));
+  const hits = Object.values(AD.AUTO_WEAPONS).map((w) => w.hits.length);
+  assert.match(duel, /^The computer fights your bouts as you prepared them\./);
+  assert.match(duel, new RegExp(`gives ${R.ap.light} action point; you start with ${R.ap.start} and hold ${R.ap.max} at most\\. A skill comes back ${AD.AUTO_COOLDOWN} times its charge`));
+  assert.match(duel, new RegExp(`your light attack ${Math.min(...hits)} to ${Math.max(...hits)} by your weapon`));
+  assert.match(duel, new RegExp(`${R.react.skillGuard} times as often against a skill or a heavy blow seen coming; a guarded blow loses ${pc(R.guardReduce)} % of its damage`));
+  assert.match(duel, new RegExp(`stunned for ${R.brk.stun} seconds and takes ${R.brk.dmg} times the damage`));
+  assert.match(duel, new RegExp(`up to ${pc(R.form)} % either way`));
+  assert.doesNotMatch(duel, /riposte|priority|Hold \[J\]/, 'nothing of the duel of before');
+  assert.match(prep, /bring four skills and set their order: the duel uses them in that order/);
+  assert.match(prep, new RegExp(`every fighter's health is multiplied by ${R.hpScale}`));
+  assert.match(prep, /your order of the four, which \[Left\] and \[Right\] change there/);
+  assert.match(TU.rich('[Left] [Right]'), /<kbd data-bind="left">.*<\/kbd> <kbd data-bind="right">.*<\/kbd>/);
+  // the duel's keys in « Keys »: ×2 on the attack's, « Skip » on the dodge's, the pause; the guard's does nothing there (lot 5 renames them)
+  assert.match(src('src/ui/tutorial.ts'), /const duel = row\(a\('attack'\), 'tut\.key\.attack'\) \+ row\(a\('dodge'\), 'tut\.key\.dodge'\) \+ row\(a\('pause'\), 'tut\.key\.pause'\);/);
+  assert.equal(EN['tut.key.attack'], 'the bout twice as fast, and back');
+  assert.equal(EN['tut.key.dodge'], 'skip to the result');
+  // equal numbers read from different rules (the cooldown and the AP's cap are both 5; the guard against a skill seen coming, a guarded blow's gauge and the
+  // break's damage are all 2): each text reads its own constant
+  const tuSrc = src('src/ui/tutorial.ts'), dtSrc = src('src/ui/duelTutorial.ts');
+  for (const [file, line] of [
+    [tuSrc, 'gain: R.ap.light, start: R.ap.start, max: R.ap.max, cool: AUTO_COOLDOWN, lo: Math.min(...hits), hi: Math.max(...hits), times: R.react.skillGuard, reduce: pct(R.guardReduce), stun: R.brk.stun, dmg: R.brk.dmg, form: pct(R.form)'],
+    [dtSrc, "case 'ap': return tx(k, { gain: R.ap.light, start: R.ap.start + (d.ren.apStart ?? 0), max: R.ap.max, cool: AUTO_COOLDOWN });"],
+    [dtSrc, 'return tx(k, { times: R.react.skillGuard, reduce: pct(R.guardReduce), foe,'],
+    [dtSrc, "case 'gauge': return tx(k, { mul: R.gauge.guardMul });"],
+    [dtSrc, "case 'break': return tx(k, { stun: R.brk.stun, times: R.brk.dmg });"],
+  ]) assert.ok(file.includes(line), line);
+  // the chapter's figure: the order of the four as the duel follows it (the match sheet's, autoOrderView)
+  assert.equal(TU.CHAPTERS.find((c) => c.id === 'duel').fig, 'order');
+  // the light attack has one name in the order (the match sheet, the skills page, this chapter's figure) and on the duel's HUD, in English and in French
+  // (journal Passe LC5: the French order said « Coup rapide », the old duel's quick blow, where the HUD says « Attaque simple »)
+  assert.equal(EN['ui.skill.light'], EN['auto.light']);
+  T.useLanguage('fr', FR);
+  try { assert.equal(T.tx('ui.skill.light'), T.tx('auto.light')); } finally { T.useLanguage('en'); }
+  // the eve's hint and the tour's last band say the order and the duel that plays itself
+  assert.match(EN['tut.hint.eve.body'], /choose your four skills and their order/);
+  assert.match(EN['tut.tour.end.body'], /you prepare it, and the duel plays itself/);
 });

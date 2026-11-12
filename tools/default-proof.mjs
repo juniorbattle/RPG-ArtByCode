@@ -12,10 +12,12 @@
 //   6. « Explore the district » (VD-3): the version 2's look, the pad walks the hero, the town's piece of midday follows « titre »;
 //   7. a save of today's game (v2=0): « Continue » marked « the earlier version » (VD-2).
 // A DEV server or a production bundle (`vite preview`): no named state is used.
-//   node tools/default-proof.mjs <outDir>   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs)
+//   node tools/default-proof.mjs <outDir>   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs; PAGE_LANG=fr a French browser, every
+//   text checked against the French table (journal Passe LC5); REDUCED=1 the game's reduced motion on (RG-5); MOTION=reduce|no-preference the system's)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createServer } from 'vite';
 
 const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
@@ -33,9 +35,14 @@ const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** a browser a person drives: the page must not see automation (tools/title-proof.mjs) */
-// an English browser (journal Passe RG4: the game speaks the browser's language, RG-9, and this headed Chrome reports the operator's French Windows);
-// the French has its own proofs (tools/settings-proof.mjs, PAGE_LANG=fr in tools/play-flow.mjs)
-const HUMAN = `Object.defineProperty(Navigator.prototype, 'webdriver', { get: () => false }); Object.defineProperty(Navigator.prototype, 'language', { get: () => 'en-US' });`;
+// an English browser (journal Passe RG4: the game speaks the browser's language, RG-9, and this headed Chrome reports the operator's French Windows), or a
+// French one with PAGE_LANG=fr (journal Passe LC5): the texts the proof reads come from the game's own tables in that language
+const L = process.env.PAGE_LANG === 'fr' ? 'fr' : 'en', REDUCED = process.env.REDUCED === '1', MOTION = process.env.MOTION;
+const HUMAN = `Object.defineProperty(Navigator.prototype, 'webdriver', { get: () => false }); Object.defineProperty(Navigator.prototype, 'language', { get: () => '${L === 'fr' ? 'fr-FR' : 'en-US'}' });`;
+const server = await createServer({ root: path.resolve(import.meta.dirname, '..'), configFile: false, logLevel: 'error', appType: 'custom', cacheDir: 'node_modules/.vite-test', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, optimizeDeps: { noDiscovery: true } });
+const TX = await server.ssrLoadModule('/src/narrative/text/index.ts'), { FR } = await server.ssrLoadModule('/src/narrative/text/fr.ts');
+const t = (k, v) => { TX.useLanguage(L, L === 'fr' ? FR : undefined); try { return TX.tx(k, v); } finally { TX.useLanguage('en'); } };
+console.log(`   language ${L}, the game's reduced motion ${REDUCED ? 'on' : 'off'}, the system's ${MOTION ?? 'as this Chrome reports it'}`);
 /** the fake pad (tools/pad-proof.mjs), defined before the page's scripts */
 function fakePad(id) {
   const pad = { id, index: 0, connected: true, mapping: 'standard', timestamp: 0, buttons: Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 })), axes: [0, 0, 0, 0],
@@ -51,6 +58,8 @@ try {
   page.on('pageerror', (e) => { errors++; console.log('[pageerror]', e.message); });
   await page.evaluateOnNewDocument(HUMAN);
   await page.evaluateOnNewDocument(fakePad, XBOX);
+  if (REDUCED) await page.evaluateOnNewDocument(() => { try { const k = 'cite-du-tournoi.settings', s = JSON.parse(localStorage.getItem(k) ?? '{}'); if (s.reducedMotion !== true) localStorage.setItem(k, JSON.stringify({ ...s, reducedMotion: true })); } catch { /* none */ } });
+  if (MOTION) await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: MOTION }]);
   const frames = (n = 3) => page.evaluate((n) => new Promise((r) => { let k = 0; const f = () => (++k >= n ? r() : requestAnimationFrame(f)); requestAnimationFrame(f); }), n);
   const press = async (i, hold = 90) => { await page.evaluate((i) => window.__padSet(i, true), i); await frames(3); await sleep(hold); await page.evaluate((i) => window.__padSet(i, false), i); await frames(3); await sleep(60); };
   const until = async (f, ms, what) => { const t0 = Date.now(); for (;;) { const v = await page.evaluate(f).catch(() => null); if (v) return v; if (Date.now() - t0 > ms) { check(false, `waited ${ms} ms for ${what}`); return null; } await sleep(150); } };
@@ -103,7 +112,8 @@ try {
   check(st.day === 1 && st.slot === 'morning' && st.place === 'district' && st.name === 'Aster' && st.foe === 2, `the first morning on the quay, the first bout on day 2 (the pool of the ten days): day ${st.day}, ${st.slot}, ${st.place}, bout on day ${st.foe}`);
   check(await page.evaluate(() => !!window.__pad), 'the version 2 pad layer is installed in its town');
   const clock = await page.evaluate(() => document.querySelector('#pm-state')?.textContent ?? document.body.innerText.slice(0, 200));
-  check(/Day 1 \/ 10/i.test(clock), `the clock says ten days: ${clock.replace(/\s+/g, ' ').slice(0, 120)}`);
+  check(clock.replace(/\s+/g, ' ').includes(`${t('ui.clockDay', { day: 1 })} ${t('ui.clockOf', { days: 10 })}`), `the clock says ten days: ${clock.replace(/\s+/g, ' ').slice(0, 120)}`);
+  check(await page.evaluate(() => document.documentElement.lang || 'en') === L && (await page.evaluate(() => document.documentElement.classList.contains('cdt-reduced'))) === REDUCED, `the page in ${L}, the game's reduced motion ${REDUCED ? 'on' : 'off'} whatever the system says`);
 
   // 3. the sound on the game's first page: « titre » taken up where the title left it, no intro again (SA-15)
   await sleep(1500);
@@ -126,7 +136,7 @@ try {
   // real clock, figures, list and menu lit; then the guide from the menu with the pad (Start, the D-pad to « Guide », A): thirteen chapters (journal Passe ECO2), the ten days drawn
   // from the game, the scene here as a live picture; X replays the tour, B leaves it
   const band1 = await until(() => document.querySelector('.tu-band .tu-step')?.textContent ?? null, 10000, 'the tour');
-  check(band1 === 'Tour · 1 of 6', `the tour opens after the arrival's news: ${band1}`);
+  check(band1 === t('tut.tour.step', { n: 1, of: 6 }), `the tour opens after the arrival's news: ${band1}`);
   const tourCaps = await page.evaluate(() => [...document.querySelectorAll('.tu-band .pm-foot kbd')].map((k) => k.getAttribute('aria-label') ?? k.textContent));
   check(tourCaps.join() === 'A,B', `its foot shows the pad's buttons: ${tourCaps.join(', ')}`);
   await page.screenshot({ path: path.join(outDir, '3-tour-1.png') });
@@ -134,7 +144,7 @@ try {
   for (let i = 2; i <= 6; i++) {
     await sleep(320); await press(BTN.A);
     const r = await until(() => { const t = document.querySelector('.tu-band .tu-step')?.textContent; return t ? { t, lit: !!document.querySelector('.tu-spot.on') } : null; }, 5000, `band ${i}`);
-    check(r?.t === `Tour · ${i} of 6`, `A goes on: ${r?.t}`);
+    check(r?.t === t('tut.tour.step', { n: i, of: 6 }), `A goes on: ${r?.t}`);
     lit.push(r?.lit ? 'lit' : '-');
     if (i === 2) await page.screenshot({ path: path.join(outDir, '3-tour-2.png') });
   }
@@ -143,13 +153,13 @@ try {
   check(!!(await until(() => !document.querySelector('.tu-band') && !document.querySelector('.tu-spot'), 5000, 'the tour to end')), 'the last band plays on: the tour ends');
   // the people marked on the quay: the marks' hint once the tour is done (the operator's MK-11, journal Passe MK3), A closes it
   const mk = await until(() => document.querySelector('.tu-hint .pm-h')?.textContent ?? null, 5000, 'the marks\' hint');
-  check(mk === 'Someone has something new', `the marks' hint after the tour: ${mk}`);
+  check(mk === t('tut.hint.npcMark.title'), `the marks' hint after the tour: ${mk}`);
   await sleep(320); await press(BTN.A);
   check(!!(await until(() => !document.querySelector('.tu-hint'), 5000, 'the hint to close')), 'A closes the marks\' hint');
   await press(9);
   await until(() => !!document.querySelector('.pm-menu'), 5000, 'the menu');
   const items = await page.evaluate(() => [...document.querySelectorAll('.pm-menu .pm-body .pm-btn')].map((x) => x.textContent.trim()));
-  const gi = items.findIndex((t) => /^Guide/.test(t));
+  const gi = items.findIndex((x) => x.startsWith(t('tut.guide')));
   check(gi > 0, `the menu has « Guide »: ${items.join(' | ')}`);
   for (let k = 0; k < gi; k++) await press(13);
   await press(BTN.A);
@@ -159,8 +169,17 @@ try {
   const pic = await until(() => document.querySelector('.tu-guide .tu-fig img')?.getAttribute('src')?.slice(0, 23) ?? null, 5000, 'the scene\'s picture');
   check(pic === 'data:image/webp;base64,', `« Walking and talking » shows the scene here, taken as the guide opened: ${pic}`);
   await page.screenshot({ path: path.join(outDir, '3-guide.png') });
+  // « The duel » (lot 3, journal Passe LC5): its order of the four drawn from the game; X there teaches the first duel's lessons again instead of the tour
+  for (let k = 0; k < 9; k++) await press(13);
+  const dc = await until(() => (document.querySelector('.tu-guide section:last-child .pm-h')?.textContent ? { t: document.querySelector('.tu-guide section:last-child .pm-h').textContent, order: document.querySelectorAll('.tu-order > div').length } : null), 5000, 'the duel\'s chapter');
+  check(dc?.t === t('tut.ch.duel.title') && dc.order === 5, `the pad reaches « ${dc?.t} »: the order of the four and the light attack (${dc?.order} lines)`);
   await sleep(320); await press(2);
-  check((await until(() => document.querySelector('.tu-band .tu-step')?.textContent ?? null, 5000, 'the tour replayed')) === 'Tour · 1 of 6', 'X replays the tour from the guide');
+  const dd = await until(() => document.querySelector('.tu-guide .tu-done')?.textContent ?? null, 5000, 'the lessons forgotten');
+  check(dd === t('tut.duel.again.done') && !(await page.evaluate(() => document.querySelector('.tu-band'))), `X there teaches the duel again, no tour: « ${dd} »`);
+  await page.screenshot({ path: path.join(outDir, '3-guide-duel.png') });
+  for (let k = 0; k < 9; k++) await press(12);
+  await sleep(320); await press(2);
+  check((await until(() => document.querySelector('.tu-band .tu-step')?.textContent ?? null, 5000, 'the tour replayed')) === t('tut.tour.step', { n: 1, of: 6 }), 'X replays the tour from the guide');
   await sleep(320); await press(BTN.B);
   check(!!(await until(() => !document.querySelector('.tu-band'), 5000, 'the tour to be skipped')), 'B skips the tour');
   if (await page.evaluate(() => !!document.querySelector('.pm-overlay'))) await press(BTN.B);
@@ -174,7 +193,7 @@ try {
   await page.goto(BASE, { waitUntil: 'load', timeout: READY });
   await page.waitForSelector('#title-screen #title-menu .pm-btn', { timeout: READY });
   const again = await page.evaluate(() => ({ ids: [...document.querySelectorAll('#title-menu .pm-btn')].map((x) => x.dataset.id), line: document.querySelector('#title-menu [data-id="continue"] .line')?.textContent ?? null }));
-  check(again.ids.join() === 'continue,new,explore,settings' && !/earlier/.test(again.line ?? ''), `the title screen again offers « Continue »: ${again.ids.join(', ')} — ${again.line}`);
+  check(again.ids.join() === 'continue,new,explore,settings' && !(again.line ?? '').includes(t('ui.title.earlier').replace(/^[\s·]+/, '')), `the title screen again offers « Continue »: ${again.ids.join(', ')} — ${again.line}`);
   await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY });
   await page.screenshot({ path: path.join(outDir, '4-title-continue.png') });
 
@@ -200,11 +219,11 @@ try {
   await page.goto(BASE, { waitUntil: 'load', timeout: READY });
   await page.waitForSelector('#title-screen #title-menu .pm-btn', { timeout: READY });
   const old = await page.evaluate(() => document.querySelector('#title-menu [data-id="continue"] .line')?.textContent ?? null);
-  check(/^Old · day 1, morning · the earlier version$/.test(old ?? ''), `« Continue » says the earlier version: ${old}`);
+  check(old === t('ui.title.save', { name: 'Old', day: 1, slot: 'morning', over: t('ui.title.earlier') }), `« Continue » says the earlier version: ${old}`);
   await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY });
   await page.screenshot({ path: path.join(outDir, '6-title-earlier.png') });
 } finally {
-  await b.close();
+  await b.close(); await server.close();
 }
 check(errors === 0, `no page error (${errors})`);
 console.log(failed ? `${failed} check(s) failed` : 'all checks passed');

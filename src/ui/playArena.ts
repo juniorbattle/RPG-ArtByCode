@@ -24,6 +24,7 @@ import { esc, overlay } from './style';
 import { standingsHtml } from './board';
 import { fontsReady, installDesign } from './design/system';
 import { progressOn } from './loading';
+import { DuelCoach } from './duelTutorial';
 
 /** The official bout (journal Passe L3; choice G1: the arena as it is, played from a match sheet): the day's opponent in Marek's seat, the
  *  player's name and preparation in Ren's, the English HUD (choice K1). A scouting report before the first blow; once the KO has had its
@@ -88,8 +89,15 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   const gate = `<p class="pm-sub">${challenge ? tx(reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</p><h2 class="pm-h">${esc(opp.name)}</h2><p class="pm-sub">${esc(opp.epithet)}</p>`;
   await overlay(v2 ? gate : `${gate}${report}${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }], true).done;
   app.paused = false; app.moment = false;
-  // the first duel's tutorial (journal Passe TU4, TU-11) taught the three buttons of before: the duel played by the computer has none of its moments (the AP
-  // gained by a tap, the charge held, the riposte), so it shows none of them; the guide and the tutorial of this duel are lot 3 (journal Passe LC3)
+  // the first duel's tutorial (TU-11), written for the duel played by the computer (lot 3, journal Passe LC5; the three-button duel's of journal Passe TU4 went
+  // with lot 2): the replay holds the first time each thing comes up in the script, a lesson read at the foot of the screen, its numbers this bout's
+  if (ao) {
+    const duel = { ren: ao.bout.ren, foe: ao.bout.foe, form: ao.duel.form, names: { ren: st.player.name, marek: opp.name } };
+    const coach = new DuelCoach({ hold: (on) => app.holdForLesson(on), data: () => duel }, b.params);
+    (window as any).__coach = coach;
+    app.onDuelEvents = (evs, t) => coach.onEvents(evs, t);
+    coach.begin();
+  }
 
   async function finish(r: { winner: 'ren' | 'marek'; hp: Record<string, number>; maxHp: Record<string, number>; finisher: string | null }): Promise<void> {
     const outcome = { winner: r.winner === 'ren' ? 'player' : 'opponent', playerHp: r.hp.ren, playerMaxHp: r.maxHp.ren, opponentHp: r.hp.marek, opponentMaxHp: r.maxHp.marek, finisher: r.finisher };

@@ -153,7 +153,7 @@ export class AutoReplay {
   private emit(e: ReplayEvent): void { this.out.push({ ...e, t: this.t }); }
 
   private apply(e: AutoEvent, tell: boolean): void {
-    const seat = this.ids[e.who], s = this.s[seat], other: Seat = seat === 'ren' ? 'marek' : 'ren', o = this.s[other];
+    const seat = this.ids[e.who], s = this.s[seat], other: Seat = seat === 'ren' ? 'marek' : 'ren', o = this.s[other], apWas = s.side.ap;
     if (e.s) { this.s.ren.side.ap = e.s[0]; this.s.ren.g = e.s[1]; this.s.ren.gT = e.t; this.s.marek.side.ap = e.s[2]; this.s.marek.g = e.s[3]; this.s.marek.gT = e.t; }
     const a = e.act ? this.acts[seat].get(e.act) : undefined;
     switch (e.ev) {
@@ -183,7 +183,9 @@ export class AutoReplay {
         if (e.hp !== undefined) o.side.hp = e.hp;
         const dmg = e.dmg ?? 0;
         if (tell && e.ev === 'dodged' && other === 'ren') this.emit({ type: 'reactStart', who: other, kind: 'dodge', cost: 0, early: false });
-        if (tell) this.emit({ type: 'impact', from: seat, to: other, action: a.id, kind, result: e.ev === 'hit' ? 'hit' : e.ev, damage: dmg, mitigated: 0, hp: o.side.hp, resist: o.g });
+        // `follow`: an enchaînement's next blow (not its action's first); `apGain`: the AP its striker gained by it (a light attack that lands, once per
+        // action); the first duel's tutorial reads them (lot 3, src/ui/duelTutorial.ts), the arena, the effects, the stands and the sound do not
+        if (tell) this.emit({ type: 'impact', from: seat, to: other, action: a.id, kind, result: e.ev === 'hit' ? 'hit' : e.ev, damage: dmg, mitigated: 0, hp: o.side.hp, resist: o.g, follow: !first, apGain: Math.max(0, s.side.ap - apWas) });
         if (e.hp !== undefined && e.hp <= 0) this.ko(other, true);
         break;
       }

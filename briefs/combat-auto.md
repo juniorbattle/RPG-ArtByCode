@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; ensuite le lot 3 (le guide et le tutoriel de ce duel)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; ensuite le lot 4 (le son et les effets des nouveaux moments)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -634,6 +634,31 @@ et fluide »), la relecture de l'arène :
 - mesuré sur trois duels entiers à 60 images/s (Marek, Vessa, Orla) : sur `main` 0dfeeb8, 49 à 114 sauts de plus de 0,6 m par combattant et par duel,
   jusqu'à 3,45 m d'une image à l'autre, et des coups portés le corps chez lui ou en esquive ; après, aucun saut, 0,45 m au plus par image (0,53 m avec
   le recul d'un coup reçu), chaque coup porté dessiné, l'élan à l'impact de 1,48 m au moins (1,88 m en médiane pour Ren, son élan entier).
+
+## 22. Le lot 3 construit : le guide et le tutoriel du premier duel (12/11/2026, journal Passe LC5)
+
+Le tutoriel du premier duel (TU-11 « Pendant le premier duel, figé à chaque première fois », la fiche TU de l'opérateur) écrit pour le duel joué par
+l'ordinateur ; le guide (H) avec lui. Aucune règle, aucune table, aucun temps de charge ni la course ne changent ; le jeu d'aujourd'hui (`v2=0`) et le duel
+à trois touches (`?duel=charge`) n'ont rien de neuf.
+
+- **Neuf leçons** (`src/ui/duelTutorial.ts`), chacune la première fois que son moment arrive dans le script du duel, la relecture tenue sur le pas qui
+  l'ouvre (plus aucun pas après lui ; ni ×2 ni « Passer » pendant la lecture) : le duel qui se joue seul et l'ordre des quatre (au « Combattre ») ; une
+  charge et sa barre (Ren charge une compétence) ; un enchaînement (un coup qui n'est pas le premier de son action) ; les PA (la première attaque simple de
+  Ren qui touche) ; la garde et l'esquive (un coup gardé ou esquivé : les chances de ce combat, celles de la fiche de match) ; la forme du jour (une
+  compétence ou un gros coup qui touche : la forme de chacun, celle de la fiche) ; la jauge (la jauge d'une cible au tiers) ; la rupture ; ×2 et « Passer »
+  (après 20 s de duel). Une bande au-dessus du pied du HUD les dit, l'élément du HUD dont elle parle éclairé comme la visite éclaire le sien ; Entrée
+  continue, Échap saute le reste ; chacune une fois par navigateur (`cite-du-tournoi.auto-lessons`), jamais au K.O. ni sous le noir de « Passer ».
+- **Les nombres** sont ceux du combat : `AUTO_RULES` (les PA, la garde ×2, −80 %, la rupture 10 s ×2, la forme ±15 %, la jauge d'un coup gardé ×2),
+  `AUTO_COOLDOWN`, l'arme de Ren (ses coups), sa Vivacité (sa charge), ses PA de départ, les chances de `autoReactions` des deux combattants, les formes
+  tirées avant le combat. Aucun chiffre n'est écrit dans les textes.
+- **Le guide** : « Le duel » (le combat joué par l'ordinateur, la charge, l'ordre des quatre, les PA et les recharges, les enchaînements, la garde et
+  l'esquive par les stats, la jauge et la rupture, la forme du jour, ×2 et « Passer » ; l'ordre des quatre dessiné d'après la partie) et « Préparer un
+  combat » (l'ordre réglé sur la fiche de match et dans la page des compétences, les PV multipliés au combat, l'arme qui fixe les coups de l'attaque
+  simple, la fiche de match et l'entraînement du rival en points d'Attaque). Les points de l'équipement : le guide dit que la page les montre tels que le
+  duel les joue (ils sont déjà doublés dans la table depuis le lot 2, AC-11) ; dire « ×2 » les ferait doubler deux fois. « Me réapprendre » (Espace dans
+  « Le duel ») refait ces leçons au combat suivant. Les touches du duel dans « Touches » : ×2 sur l'attaque, « Passer » sur l'esquive, la pause (LC3-8).
+- **Les écarts jusqu'aux lots suivants** : le son des nouveaux moments (lot 4) ; le retrait de l'ancien duel et le renommage de ses actions au remappage
+  (lot 5) ; la fiche de match sur téléphone en paysage ; AU-06.
 
 ---
 

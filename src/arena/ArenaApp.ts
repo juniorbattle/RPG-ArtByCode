@@ -151,11 +151,11 @@ export class ArenaApp {
   paused = false;
   /** the first duel's lesson being read (journal Passe TU4, src/ui/duelTutorial.ts): the duel holds and its keys do not reach the fight */
   private lesson = false;
-  /** the duel's events, for the first duel's tutorial (journal Passe TU4) */
-  onDuelEvents: ((evs: ReadonlyArray<{ type: string } & Record<string, unknown>>) => void) | null = null;
-  /** holds the duel for a lesson (no pause screen), the held commands let go, then gives it back */
+  /** the duel's events and its clock after them, for the first duel's tutorial (journal Passes TU4, LC5); none under « Skip »'s curtain */
+  onDuelEvents: ((evs: ReadonlyArray<{ type: string } & Record<string, unknown>>, t: number) => void) | null = null;
+  /** holds the duel for a lesson (no pause screen; the step that opened it is the last one played), the held commands let go, then gives it back */
   holdForLesson(on: boolean): void {
-    if (on) { this.action('guard', false); if (this.charge) this.action('attack', false); }
+    if (on) { this.action('guard', false); if (this.charge) this.action('attack', false); this.acc = 0; }
     this.lesson = on; this.paused = on; this.moment = on; this.hud?.still(on);
   }
   /** a scripted moment is on screen (`jump`): the simulation holds without the pause screen */
@@ -401,7 +401,8 @@ export class ArenaApp {
     const s = this.sim;
     // the duel played by the computer: the attack's key ×2, the dodge's « Skip » (the player's keys, the remapping), the pause's the pause
     if (this.auto) {
-      if (!down) return;
+      // a lesson of the first duel being read holds the bout (journal Passe LC5): neither ×2 nor « Skip » meanwhile, the HUD's buttons included
+      if (!down || this.lesson) return;
       if (id === 'attack' || id === 'speed') { if (!this.auto.over) this.speed = this.speed > 1 ? 1 : 2; }
       else if (id === 'dodge' || id === 'skip') { if ((!this.paused || this.moment) && !this.auto.over && !this.skipFade) this.beginSkip(); }
       else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; this.hud?.still(false); }
@@ -522,7 +523,7 @@ export class ArenaApp {
     this.combatFx?.onEvents(evs, this.fighters, this.charge?.tiers.length ?? 0);
     this.stands?.onEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
     this.pad?.duelEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>);
-    this.onDuelEvents?.(evs as unknown as Array<{ type: string } & Record<string, unknown>>);
+    if (!this.skipFade) this.onDuelEvents?.(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
     for (const e of evs as Array<CombatEvent | DynEvent>) {
       this.snd?.duelEvent(e);
       if (e.type === 'impact') {
@@ -723,7 +724,8 @@ export class ArenaApp {
       this.acc += dt * this.timeScale * this.speed;
       const step = this.sim.D.dt;
       let n = 0;
-      while (this.acc >= step && n++ < 24) { this.sim.step(step); this.onEvents(this.sim.drain()); this.acc -= step; }
+      // a lesson of the first duel opened by a step holds the duel on that step (journal Passe LC5): no step after it
+      while (!this.paused && this.acc >= step && n++ < 24) { this.sim.step(step); this.onEvents(this.sim.drain()); this.acc -= step; }
       if (n >= 24) this.acc = 0;
     }
     const pdt = this.paused ? 0 : dt;

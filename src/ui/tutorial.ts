@@ -1,5 +1,5 @@
 import { placeName, type GameState, type PlaceId, type SlotId } from '../simulation';
-import { lang, shortName, tx, type TextKey } from '../narrative/text';
+import { lang, num, shortName, skillName, tx, type TextKey } from '../narrative/text';
 import { PEOPLE } from '../narrative/people';
 import { POINTS } from '../narrative/roster';
 import { CHAMPION_PURSE, V2_DAY_KIND, V2_DAYS } from '../tournament/v2calendar';
@@ -12,7 +12,10 @@ import { argChance, DISCOUNT } from '../simulation/v2barter';
 import { fameTier, type FameTier } from '../simulation/v2react';
 import { INJURY_HP, TRAIN_MAX } from '../simulation/v2gear';
 import { REN_BASE, TRAIN_HP, TRAIN_POINT, VIGOUR_HP } from '../combat/stats';
-import { v2DuelData } from '../combat/v2duel';
+import { AUTO_RULES } from '../combat/auto';
+import { AUTO_COOLDOWN, AUTO_WEAPONS } from '../combat/autoData';
+import { autoOrderView } from '../simulation/preview';
+import { v2KitOf } from '../simulation/v2';
 import { forgetLessons } from './duelTutorial';
 import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
 import { bindCap, keyCap } from '../input/caps';
@@ -69,11 +72,14 @@ const hints = 'data-cap="hints"', arena = 'data-cap="arena"';
 const CAPS: Record<string, () => string> = {
   E: () => bindCap('talk', hints), Q: () => bindCap('list', hints), Menu: () => keyCap('Esc', hints), M: () => bindCap('map', hints),
   Space: () => keyCap('Space'), Enter: () => keyCap('Enter'), Back: () => keyCap('Esc'),
-  // the duel's keys (journal Passe TU4): the pad's buttons in the duel
+  // the duel's keys (journal Passe TU4): the pad's buttons in the duel; in the duel played by the computer the attack's key is ×2 and the dodge's « Skip »
+  // (journal Passe LC3, LC3-8: renamed at lot 5)
   J: () => bindCap('attack', arena), K: () => bindCap('guard', arena), L: () => bindCap('dodge', arena),
   Move: () => (['up', 'left', 'down', 'right'] as const).map((a) => bindCap(a, hints)).join(''), Run: () => bindCap('run', hints),
+  // the order of the four moved on the match sheet and the skills page (journal Passe LC3): the player's left and right
+  Left: () => bindCap('left'), Right: () => bindCap('right'),
 };
-const CAP_TOKEN = /\[(E|Q|Menu|M|Space|Enter|Back|J|K|L|Move|Run)\]/g;
+const CAP_TOKEN = /\[(E|Q|Menu|M|Space|Enter|Back|J|K|L|Move|Run|Left|Right)\]/g;
 /** a line of the table, its caps drawn and the rest escaped */
 export const inline = (t: string): string => esc(t).replace(CAP_TOKEN, (_, k: string) => CAPS[k]());
 /** a text of the table as paragraphs, its caps drawn and the rest escaped */
@@ -150,6 +156,26 @@ export function runTour(s: GameState, steps: TourStep[]): Promise<boolean> {
   });
 }
 
+/** the tour's light over a part of the screen that is not a band's own (the first duel's lessons, journal Passe LC5): a one-pixel rule round every element
+ *  `sel` names (their union), the rest of the scene veiled; it appears at its place once the page has drawn, it does not slide. Returns its removal. */
+export function spotlight(sel: string): () => void {
+  style();
+  const spot = el('div', 'pm tu-spot');
+  document.body.appendChild(spot);
+  let raf = 0;
+  const place = (): void => {
+    const rs = [...document.querySelectorAll(sel)].map((x) => x.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0);
+    spot.classList.remove('on');
+    if (!rs.length) return;
+    const pad = 8, l = Math.min(...rs.map((r) => r.left)), t = Math.min(...rs.map((r) => r.top)), r = Math.max(...rs.map((x) => x.right)), b = Math.max(...rs.map((x) => x.bottom));
+    Object.assign(spot.style, { left: `${l - pad}px`, top: `${t - pad}px`, width: `${r - l + 2 * pad}px`, height: `${b - t + 2 * pad}px` });
+    void spot.offsetWidth; spot.classList.add('on');
+  };
+  raf = requestAnimationFrame(() => { raf = requestAnimationFrame(place); });
+  window.addEventListener('resize', place);
+  return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', place); spot.remove(); };
+}
+
 // ------------------------------------------------------------------------------------------------ the hints (TU-3, TU-8)
 
 export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor' | 'vigour' | 'npcMark';
@@ -218,7 +244,7 @@ export interface GuideHost {
   replay?(): void;
 }
 
-type Fig = 'days' | 'moments' | 'scene' | 'places' | 'odds' | 'marks' | 'fame' | 'none';
+type Fig = 'days' | 'moments' | 'scene' | 'places' | 'odds' | 'marks' | 'fame' | 'order' | 'none';
 interface Chapter { id: string; title: TextKey; line: TextKey; body: TextKey; fig: Fig; keys?: 'explore' | 'duel' | 'all' }
 export const CHAPTERS: Chapter[] = [
   { id: 'tournament', title: 'tut.ch.tournament.title', line: 'tut.ch.tournament.line', body: 'tut.ch.tournament.body', fig: 'days' },
@@ -232,7 +258,7 @@ export const CHAPTERS: Chapter[] = [
   { id: 'intel', title: 'tut.ch.intel.title', line: 'tut.ch.intel.line', body: 'tut.ch.intel.body', fig: 'none' },
   { id: 'renown', title: 'tut.ch.renown.title', line: 'tut.ch.renown.line', body: 'tut.ch.renown.body', fig: 'fame' },
   { id: 'prepare', title: 'tut.ch.prepare.title', line: 'tut.ch.prepare.line', body: 'tut.ch.prepare.body', fig: 'none' },
-  { id: 'duel', title: 'tut.ch.duel.title', line: 'tut.ch.duel.line', body: 'tut.ch.duel.body', fig: 'none' },
+  { id: 'duel', title: 'tut.ch.duel.title', line: 'tut.ch.duel.line', body: 'tut.ch.duel.body', fig: 'order' },
   { id: 'keys', title: 'tut.ch.keys.title', line: 'tut.ch.keys.line', body: 'tut.ch.keys.body', fig: 'none', keys: 'all' },
 ];
 
@@ -247,8 +273,13 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'law': return tx(c.body, { day: STEAL_FINE.day, night: STEAL_FINE.night, max: LAW.wanted, fee: LAW.fee, hale: nameOf('hale') });
     case 'challenges': return tx(c.body, { names: list(Object.keys(CHALLENGERS).map(nameOf)), coins: STAKE.coins, name: STAKE.name, day: dayOf('semis') });
     case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM });
-    case 'prepare': return tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, wound: pct(INJURY_HP), anwen: nameOf('anwen') });
-    case 'duel': { const D = v2DuelData('marek', { seed: 1, playerName: '', opponentName: '' }).data; return tx(c.body, { gain: D.actions.light?.apGain ?? 1, start: D.ap.start, max: D.ap.max, guard: pct(D.guard.reduce), n: D.ai.riposte?.after ?? 0, stun: D.resist.breakStun, times: D.resist.breakDamage }); }
+    // the duel played by the computer (lot 3, journal Passe LC5): the order of the four, the match sheet, the health of a bout (AUTO_RULES.hpScale, DB5)
+    case 'prepare': return tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen') });
+    // its numbers the duel's own (src/combat/auto.ts AUTO_RULES, src/combat/autoData.ts: the cooldown, the weapons' chains of blows)
+    case 'duel': {
+      const R = AUTO_RULES, hits = Object.values(AUTO_WEAPONS).map((w) => w.hits.length);
+      return tx(c.body, { gain: R.ap.light, start: R.ap.start, max: R.ap.max, cool: AUTO_COOLDOWN, lo: Math.min(...hits), hi: Math.max(...hits), times: R.react.skillGuard, reduce: pct(R.guardReduce), stun: R.brk.stun, dmg: R.brk.dmg, form: pct(R.form) });
+    }
     case 'renown': return tx(c.body, { hale: nameOf('hale'), parade: Math.max(...daysOfKind('free')) });
     case 'time': return tx(c.body, { slot: tx('ui.oneSlot') });
     // the marks over the heads and the plan in the corner (MK-11), a line after the chapter's text
@@ -292,6 +323,12 @@ function figure(s: GameState, fig: Fig, here: () => string | null): string {
     const t = fameTier(s);
     return `<div class="tu-row" aria-hidden="true"><div class="num"><b>${s.player.reputation}</b><small>${tx('ui.reputation')}</small></div>${(Object.keys(FAME_WORD) as FameTier[]).map((k) => `<div class="${k === t ? 'now' : ''}"><b>${tx(FAME_WORD[k])}</b><small>${k === t ? tx('tut.fig.you') : '&nbsp;'}</small></div>`).join('')}</div>`;
   }
+  // the duel played by the computer (journal Passe LC5): the player's order of the four as the duel will follow it, each with its AP and its charge at Ren's
+  // Speed, as the match sheet and the skills page show it (autoOrderView), then the light attack
+  if (fig === 'order' && s.v2) {
+    const rows = autoOrderView(s, [...v2KitOf(s).loadout]).map((o, i) => `<div><span>${i + 1}. ${esc(skillName(o.id))}</span><b>${tx('v2.skills.ap', { ap: o.ap })} · ${num(o.charge)} s</b></div>`).join('');
+    return `<div class="tu-odds tu-order"><p class="pm-sub">${tx('ui.order.title')}</p>${rows}<div><span>${esc(tx('ui.skill.light'))}</span><b>${tx('ui.order.else')}</b></div></div>`;
+  }
   return '';
 }
 
@@ -301,7 +338,9 @@ function keysHtml(which: 'explore' | 'duel' | 'all'): string {
   const row = (cap: string, t: TextKey, cls = '') => `<div class="tu-k${cls}">${cap}<span>${inline(tx(t))}</span></div>`;
   const h = (x: Act) => bindCap(x, hints), a = (x: Act) => bindCap(x, arena), p = (k: string) => keyCap(k);
   const explore = row('', 'tut.key.walk') + row(h('talk'), 'tut.key.talk') + row(h('list'), 'tut.key.list') + row(keyCap('Esc', hints), 'tut.key.menu') + row(h('map'), 'tut.key.map');
-  const duel = row(a('attack'), 'tut.key.attack') + row(a('guard'), 'tut.key.guard') + row(a('dodge'), 'tut.key.dodge') + row(a('pause'), 'tut.key.pause');
+  // the duel played by the computer (journal Passes LC3, LC5): the attack's key ×2, the dodge's « Skip », the pause; the guard's does nothing there (LC3-8:
+  // the duel's actions renamed at lot 5)
+  const duel = row(a('attack'), 'tut.key.attack') + row(a('dodge'), 'tut.key.dodge') + row(a('pause'), 'tut.key.pause');
   if (which === 'explore') return `<div class="tu-keys">${explore}</div>`;
   if (which === 'duel') return `<div class="tu-keys">${duel}</div>`;
   const pages = row(p('Enter'), 'tut.key.confirm') + row(p('Esc'), 'tut.key.back') + row(p('Space'), 'tut.key.space');
@@ -400,8 +439,11 @@ body.pm-full .pm-overlay.pm-band.tu-hint{background:linear-gradient(to bottom,va
 .pm-col .pm-detail p.tu-lead{font-size:var(--ds-fs-label);line-height:1.3;margin:0 0 8px}
 .pm-detail p kbd,.tu-band p kbd,.tu-hint p kbd,.tu-k>span kbd{margin:0 2px}
 body.pm-pad .tu-k.kb,body.pm-pad .pm-sub.kb{display:none}
-/* a duel's lesson (journal Passe TU4): the action bar under its band steps aside while it is read */
+/* a duel's lesson (journal Passes TU4, LC5): the duel's HUD stays over its band (the cards, the four, ×2 and « Skip » in sight, as the tour leaves the
+   interface: the light veils the scene, its rule marks the element spoken of), its own veil at the foot gives way to the band's, its buttons wait */
+body.tu-lesson #arena-hud{z-index:41}
 body.tu-lesson #arena-hud .bot{visibility:hidden}
+body.tu-lesson #ah-bar{pointer-events:none}
 @media (max-width:700px){.tu-days{grid-template-columns:repeat(5,minmax(0,1fr))}.tu-fig{max-height:24vh}.tu-places{grid-template-columns:repeat(4,minmax(0,1fr))}.pm-overlay.pm-band.tu-hint{padding:12px 16px 40px}}
 @media (max-height:480px) and (min-width:701px){.pm-overlay .pm-card.pm-two.tu-guide{display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);column-gap:28px}.tu-guide .pm-col{min-height:0}.tu-fig{max-height:30vh}.tu-places{grid-template-columns:repeat(4,minmax(0,1fr))}}
 `;
