@@ -5,7 +5,8 @@ import { runBotDuel, runDynamicBotDuel, runV2BotDuel } from '../combat/bot';
 import { challengeSheetFor, dynSheetData, matchSheetFor, sheetData, v2SheetData } from '../combat/match';
 import { RIVALS, PLAYER_ID } from '../narrative/roster';
 import type { DuelOutcome } from './pool';
-import { dynamicRules, standings } from './pool';
+import { autoDuelRules, dynamicRules, standings } from './pool';
+import { autoOutcome } from '../combat/autoMatch';
 import { isV2, makeV2, v2KitOf } from '../simulation/v2';
 import { v2Mods } from '../simulation/v2gear';
 import { v2Ranking } from './v2calendar';
@@ -28,13 +29,21 @@ import { jobAt } from '../simulation/v2work';
  *  can be played under the rules of the « tour par tour dynamique » (`rules: 'dynamic'`, journal Passe C1): its duels in DynamicSim, its
  *  off-screen matches in the same rules' race (pool.ts). */
 
-/** 'v2': a version 2 game (src/simulation/v2.ts: its flag, the dynamic rules with it, journal Passe V0) */
-export type CombatRules = 'classic' | 'dynamic' | 'v2';
+/** 'v2': a version 2 game (src/simulation/v2.ts: its flag, the dynamic rules with it, journal Passe V0); 'auto': a version 2 game in the duel played by
+ *  the computer (briefs/combat-auto.md, lot 1: `flags.autoDuel`, its bouts, challenges and off-screen bouts in src/combat/auto.ts) */
+export type CombatRules = 'classic' | 'dynamic' | 'v2' | 'auto';
+
+/** a duel of the duel played by the computer, as the game takes it (the duel's own record left out) */
+function autoGameOutcome(st: GameState, kind: 'bout' | 'challenge'): DuelOutcome {
+  const o = autoOutcome(st, kind);
+  return { winner: o.winner, playerHp: o.playerHp, playerMaxHp: o.playerMaxHp, opponentHp: o.opponentHp, opponentMaxHp: o.opponentMaxHp, finisher: o.finisher };
+}
 
 /** the player's duel today, fought by the bot at this skill in the arena's simulation (the match sheet's data), or in the new rules' */
 export function botOutcome(st: GameState, skill: number): DuelOutcome {
   const sh = matchSheetFor(st);
   if (!sh) throw new Error('no duel today');
+  if (isV2(st) && autoDuelRules(st)) return autoGameOutcome(st, 'bout');
   const seed = sh.seed ^ 0x5bd1e995, v2 = isV2(st) ? v2SheetData(sh, undefined, v2KitOf(st), v2Mods(st)) : null;
   const r = v2 ? runV2BotDuel(v2.data, v2.tiers, { skill, seed }) : dynamicRules(st) ? runDynamicBotDuel(dynSheetData(sh), { skill, seed }) : runBotDuel(sheetData(sh), { skill, seed });
   if (!r.winner) throw new Error(`match ${sh.id}: no K.O. after ${r.t} s`);
@@ -45,6 +54,7 @@ export function botOutcome(st: GameState, skill: number): DuelOutcome {
 export function challengeOutcome(st: GameState, skill: number): DuelOutcome {
   const sh = challengeSheetFor(st);
   if (!sh) throw new Error('no challenge waiting');
+  if (autoDuelRules(st)) return autoGameOutcome(st, 'challenge');
   const v2 = v2SheetData(sh, undefined, v2KitOf(st), v2Mods(st)), r = runV2BotDuel(v2.data, v2.tiers, { skill, seed: sh.seed ^ 0x5bd1e995 });
   if (!r.winner) throw new Error(`challenge ${sh.id}: no K.O. after ${r.t} s`);
   return { winner: r.winner === 'player' ? 'player' : 'opponent', playerHp: r.playerHp, playerMaxHp: r.playerMaxHp, opponentHp: r.opponentHp, opponentMaxHp: r.opponentMaxHp, finisher: r.finisher };
@@ -86,7 +96,24 @@ export const POLICIES: Record<string, Policy> = {
    *  repairs a cold forge, trains twice and drills the Thrust and the heavy attack, and takes the town's jobs (src/simulation/v2work.ts) when nothing else
    *  holds; a version 2 game only (today's game plays the diligent) */
   planner: { name: 'planner', skill: 0.6, choose: (st) => (isV2(st) ? plannerV2(st) : POLICIES.diligent.choose(st)) },
+  /** the reference player of the duel played by the computer (AC-14): see referenceV2 */
+  reference: { name: 'reference', skill: 0.6, choose: (st) => (isV2(st) ? referenceV2(st) : POLICIES.diligent.choose(st)) },
 };
+
+/** the reference player of the duel played by the computer (the operator's AC-14 « Le planificateur, avec la vérification de Hilde et l’exercice de son kit »,
+ *  journal Passe AC4; the workshop's `reference`, tools/auto-duel-lab.mjs): the planner, who also has Hilde look at his gear on the morning of a bout of
+ *  the bracket or once a sign was seen (5 coins), and drills the skills he brings (the planner drills the heavy attack, which he does not bring) */
+function referenceV2(st: GameState): Action {
+  const bout = st.tournament.matches.some((m) => m.day === st.day && !m.winner && (m.a === PLAYER_ID || m.b === PLAYER_ID));
+  const signs = ['armour-asked', 'locker-open', 'friend-warned-gear'].some((f) => st.facts.includes(f));
+  if (st.slot === 'morning' && bout && (st.day >= 6 || signs) && !st.flags[`checked:${st.day}`]) {
+    const there: GameState = st.place === 'forecourt' ? st : { ...st, place: 'forecourt' };
+    if (has(there, { type: 'checkGear' })) { if (st.place === 'forecourt') return { type: 'checkGear' }; if (has(st, { type: 'move', to: 'forecourt' })) return { type: 'move', to: 'forecourt' }; }
+  }
+  const a = plannerV2(st);
+  if (a.type === 'drillSkill' && !(v2KitOf(st).loadout as string[]).includes(a.skill)) for (const k of ['t4', 't1']) { const d = { type: 'drillSkill', skill: k } as Action; if (has(st, d)) return d; }
+  return a;
+}
 
 /** the planner's purchases, in the order of the DB7 curve's gear (journal Passes DB9, ECO1) */
 const PLAN: ReadonlyArray<readonly [PlaceId, Action]> = [
@@ -269,7 +296,8 @@ export interface GameRun { seed: number; state: GameState; events: GameEvent[]; 
 export function autoplay(seed: number, policy: Policy, name = 'Ren', maxActions = 200, rules: CombatRules = 'classic'): GameRun {
   let st = newGame(seed, name);
   if (rules === 'dynamic') st.flags.combat = 'dynamic';
-  if (rules === 'v2') makeV2(st);
+  if (rules === 'v2' || rules === 'auto') makeV2(st);
+  if (rules === 'auto') st.flags.autoDuel = true;
   const events: GameEvent[] = [];
   for (let i = 0; i < maxActions && !st.over; i++) {
     const r = advance(st, policy.choose(st));
@@ -321,7 +349,7 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
     for (const id of fired) eventCounts[id] = (eventCounts[id] ?? 0) + 1;
     const w = st.tournament.matches.filter((m) => m.winner === PLAYER_ID).length;
     bouts += st.tournament.matches.filter((m) => m.a === PLAYER_ID || m.b === PLAYER_ID).length;
-    if (rules === 'v2') {
+    if (rules === 'v2' || rules === 'auto') {
       const r = v2Ranking(st).indexOf(PLAYER_ID); ranks[r]++;
       if (st.tournament.matches.some((m) => m.stage === 'semi' && (m.a === PLAYER_ID || m.b === PLAYER_ID))) cutIn++;
       if (st.tournament.matches.some((m) => m.stage === 'final' && (m.a === PLAYER_ID || m.b === PLAYER_ID))) finals++;
@@ -343,7 +371,7 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
     if (st.facts.includes('forge-burned')) sab++;
     if (st.facts.includes('saboteur-caught')) foil++;
     forg += forgotten(st).length;
-    const rank = rules === 'v2' ? v2Ranking(st).indexOf(PLAYER_ID) + 1 : standings(st).findIndex((r) => r.id === PLAYER_ID) + 1;
+    const rank = rules === 'v2' || rules === 'auto' ? v2Ranking(st).indexOf(PLAYER_ID) + 1 : standings(st).findIndex((r) => r.id === PLAYER_ID) + 1;
     games.push({ seed, hash: g.hash, points: st.tournament.points[PLAYER_ID], rank, wins: w, injuries: st.player.injury, forge: st.services.forge, events: fired });
   }
   const n = seeds.length;
@@ -351,6 +379,6 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
     policy: policy.name, rules, seeds: n, games, eventCounts, forgotten: forg,
     rates: { playerWins: wins / bouts, playerInjured: inj / n, rivalInjured: rivalInj / n, eliminations: elim / n, upsets: upsets / n, sabotaged: sab / n, foiled: foil / n },
     teamTransition: 'outside the slice: phase I (a points pool, 1v1) only; teams are typed (TeamState), never formed',
-    ...(rules === 'v2' ? { v2: { bouts: bouts / n, madeCut: cutIn / n, finalist: finals / n, champion: crowns / n, ranks, town: Object.fromEntries(Object.entries(town).map(([k, v]) => [k, v / n])), fest: { leaders: fest.leaders, deeds: fest.deeds / n, lanterns: fest.lanterns / n, behind: fest.behind }, money: Object.fromEntries(Object.entries(money).map(([k, v]) => [k, v / n])) } } : {}),
+    ...(rules === 'v2' || rules === 'auto' ? { v2: { bouts: bouts / n, madeCut: cutIn / n, finalist: finals / n, champion: crowns / n, ranks, town: Object.fromEntries(Object.entries(town).map(([k, v]) => [k, v / n])), fest: { leaders: fest.leaders, deeds: fest.deeds / n, lanterns: fest.lanterns / n, behind: fest.behind }, money: Object.fromEntries(Object.entries(money).map(([k, v]) => [k, v / n])) } } : {}),
   };
 }

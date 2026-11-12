@@ -12,6 +12,8 @@
 //   --rules=classic: today's game (the arena of today, `?v2=0`);
 //   --rules=dynamic (any of the above): today's game under the rules of the « tour par tour dynamique » (src/combat/dynamic.ts, journal Passe C1),
 //       its duels in DynamicSim and its off-screen matches in the same rules' race
+//   --rules=auto: version 2 games in the duel played by the computer (briefs/combat-auto.md, lot 1: `flags.autoDuel`, src/combat/auto.ts), the player's
+//       bouts, his challenges and the off-screen bouts; --policy=reference the reference player of AC-14 (the planner, Hilde's look, its kit drilled)
 import fs from 'node:fs';
 import path from 'node:path';
 import { createServer } from 'vite';
@@ -29,13 +31,14 @@ try {
   const pn = arg('policy', 'diligent'), policy = L.POLICIES[pn] ?? L.SCRIPTS[pn]?.();
   if (!policy) throw new Error(`no policy "${pn}" (known: ${[...Object.keys(L.POLICIES), ...Object.keys(L.SCRIPTS)].join(', ')})`);
   const out = arg('json'), named = arg('rules'), rules = named ?? 'v2';
-  if (rules !== 'classic' && rules !== 'dynamic' && rules !== 'v2') throw new Error(`no rules "${rules}" (known: classic, dynamic, v2)`);
+  if (!['classic', 'dynamic', 'v2', 'auto'].includes(rules)) throw new Error(`no rules "${rules}" (known: classic, dynamic, v2, auto)`);
   const table = (st) => T.standings(st).map((r, i) => `  ${String(i + 1).padStart(2)}. ${(r.id === 'player' ? st.player.name : RIVALS[r.id].name).padEnd(14)} ${String(r.points).padStart(2)} pts  rep ${String(r.reputation).padStart(3)}${r.id === 'player' ? '' : `  ${st.competitors[r.id].healthState.padEnd(7)} prep ${st.competitors[r.id].preparation}`}`).join('\n');
 
   if (arg('state') || arg('save')) {
     let st = arg('save') ? G.deserialize(fs.readFileSync(arg('save'), 'utf8')) : G.namedState(arg('state'));
     if (named === 'dynamic') st.flags.combat = 'dynamic';
-    if (named === 'v2' && !G.isV2(st)) G.makeV2(st);
+    if ((named === 'v2' || named === 'auto') && !G.isV2(st)) G.makeV2(st);
+    if (named === 'auto') st.flags.autoDuel = true;
     const target = st.day + +(arg('days', '0'));
     while (!st.over && st.day < target) { const r = G.advance(st, policy.choose(st)); if (!r.ok) throw new Error(r.reason); st = r.state; }
     console.log(`day ${st.day} ${st.slot}${st.over ? ' (slice over)' : ''}, hash ${G.hash(st)}\n${table(st)}`);

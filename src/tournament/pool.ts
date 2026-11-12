@@ -6,6 +6,9 @@ import { tx } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { v2RacerOf, V2_RACE_SLOPE } from '../combat/v2duel';
 import { DYN_PROFILES, DYN_RACE_SLOPE, dynRacerOf, PROFILES, raceWinChance, racerOf, type Mods } from '../combat/profiles';
+import { autoWinner } from '../combat/auto';
+import { autoOffscreen, autoRound } from '../combat/autoData';
+import { stageOf } from '../combat/stats';
 
 /** The pool of phase I (choice G3, journal Passe L2): eight competitors, two rounds in the slice, points (a defeat costs points, reputation,
  *  sometimes an injury, never the tournament). The matches the player does not fight are resolved by the damage race of the same combat
@@ -64,27 +67,41 @@ function rivalry(s: GameState, loser: string, winner: string, humiliating: boole
 /** the combat rules a game is played under: `flags.combat = 'dynamic'` for the « tour par tour dynamique » (src/combat/dynamic.ts, journal
  *  Passe C1; behind its parameter, CB-10: the TournamentLab's `--rules=dynamic` sets it); absent = the arena of today */
 export function dynamicRules(s: GameState): boolean { return s.flags.combat === 'dynamic'; }
+/** the duel played by the computer (briefs/combat-auto.md, lot 1): `flags.autoDuel` on a version 2 game, set by the TournamentLab's `--rules=auto` only until
+ *  lot 2 makes it the game's (the player's bouts, the challenges and the off-screen bouts in src/combat/auto.ts); absent = the duel of today */
+export function autoDuelRules(s: Pick<GameState, 'flags'>): boolean { return s.flags.autoDuel === true; }
 
 /** the round's matches without the player, at the end of the match afternoon */
 export function playOffscreenMatches(s: GameState, emit: Emit, rng: Rng): void {
   for (const m of s.tournament.matches) {
     if (m.day !== s.day || m.seen || m.winner) continue;
-    const A = s.competitors[m.a], B = s.competitors[m.b];
-    const p = isV2(s)
-      ? raceWinChance(v2RacerOf(A.id, rivalMods(A)), v2RacerOf(B.id, rivalMods(B)), 0, V2_RACE_SLOPE)
-      : dynamicRules(s)
-      ? raceWinChance(dynRacerOf(DYN_PROFILES[A.combatProfile], rivalMods(A)), dynRacerOf(DYN_PROFILES[B.combatProfile], rivalMods(B)), 0, DYN_RACE_SLOPE)
-      : raceWinChance(racerOf(PROFILES[A.combatProfile], rivalMods(A)), racerOf(PROFILES[B.combatProfile], rivalMods(B)));
-    const r = rng.fork(matchId(m)), aWins = r.next() < p;
-    const [w, l] = aWins ? [A, B] : [B, A], pw = aWins ? p : 1 - p;
-    m.winner = w.id; m.close = pw < 0.62;
+    const A = s.competitors[m.a], B = s.competitors[m.b], r = rng.fork(matchId(m));
+    let aWins: boolean, close: boolean, upset: boolean, crushing: boolean;
+    if (isV2(s) && autoDuelRules(s)) {
+      // the duel played by the computer (lot 1, a laboratory's game only): the same duel, the AI on both sides (AC-18); close and crushing read on the
+      // winner's health as the player's bout reads them; an upset, the less renowned beating one renowned 15 points more (« proposé », lot 2 settles it)
+      const d = autoOffscreen(A.id, B.id, { stage: stageOf(m.day, m.stage === 'final'), round: autoRound(m.day), seed: Math.floor(r.next() * 4294967296), a: { preparation: A.preparation, hp: rivalMods(A).hp }, b: { preparation: B.preparation, hp: rivalMods(B).hp } });
+      const wi = autoWinner(d), share = d.hp[wi] / d.maxHp[wi];
+      aWins = wi === 0; close = share <= 0.25; crushing = share > 0.7;
+      upset = (aWins ? B : A).reputation - (aWins ? A : B).reputation >= 15;
+    } else {
+      const p = isV2(s)
+        ? raceWinChance(v2RacerOf(A.id, rivalMods(A)), v2RacerOf(B.id, rivalMods(B)), 0, V2_RACE_SLOPE)
+        : dynamicRules(s)
+        ? raceWinChance(dynRacerOf(DYN_PROFILES[A.combatProfile], rivalMods(A)), dynRacerOf(DYN_PROFILES[B.combatProfile], rivalMods(B)), 0, DYN_RACE_SLOPE)
+        : raceWinChance(racerOf(PROFILES[A.combatProfile], rivalMods(A)), racerOf(PROFILES[B.combatProfile], rivalMods(B)));
+      aWins = r.next() < p;
+      const pw = aWins ? p : 1 - p;
+      close = pw < 0.62; upset = pw < 0.4; crushing = pw > 0.85;
+    }
+    const [w, l] = aWins ? [A, B] : [B, A];
+    m.winner = w.id; m.close = close;
     // the pool's points: a bout of the version 2's bracket (its `stage`) gives none (journal Passe VP1: the standings stay the pool's)
     if (!m.stage) { s.tournament.points[w.id] += POINTS.win; s.tournament.points[l.id] += m.close ? POINTS.close : POINTS.loss; }
-    w.reputation = clamp(w.reputation + (pw < 0.4 ? 10 : 5)); l.reputation = clamp(l.reputation - (m.close ? 1 : 3));
-    rivalry(s, l.id, w.id, pw > 0.85);
+    w.reputation = clamp(w.reputation + (upset ? 10 : 5)); l.reputation = clamp(l.reputation - (m.close ? 1 : 3));
+    rivalry(s, l.id, w.id, crushing);
     if (r.next() < (m.close ? 0.35 : 0.2)) l.healthState = 'hurt';
     if (!w.knownFacts.includes(`beat:${l.id}`)) w.knownFacts.push(`beat:${l.id}`);
-    const upset = pw < 0.4;
     if (upset) s.flags.upsets = ((s.flags.upsets as number) ?? 0) + 1;
     emit({
       kind: 'match', id: upset ? 'upset' : 'result', cause: `match:${matchId(m)}`, visible: true,
