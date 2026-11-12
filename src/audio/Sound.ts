@@ -7,6 +7,7 @@ import { CALM, jingleFor, layerLevels, moodStep, pieceFor, type Mood, type Piece
 import { ambienceOf, BAND_RATE, busGains, CALL_PAN, ceilingCurve, dbGain, DUCK, DUCK_AMBIENCE, duelCue, FADE, hz, JINGLE_AFTER, LIMITER, MIX, NOISE_SECONDS, noiseSamples, NOW_KEY, PATTER_LEVEL, RAIN_LEVEL, readNow, readSettings, recordOf, RESUME_MS, resumeAt, roomImpulse, SEND, STEP_LEVEL, STING_DUCK, STING_WAIT, take, THUNDER_LEVEL, thunderOf, UI_EFFECTS, UI_LEVEL, WEATHER_TRIM, type Ambience, type Effect, type Look, type NowPlaying, type SoundPlace, type SoundSettings, type Voice, type WeatherNow, type WeatherSound } from './score';
 import { compute, computeSteps, type ComputedId } from './places';
 import { installSoundHooks } from './hooks';
+import { formCue } from './formCue';
 import { CROWD_CARVE, CROWD_TRIM, HOLD_EVERY, REACT_QUIET, SFX_TRIM, THREAT_QUIET, crowdOf, holdOf, sfxOf, type CrowdId, type SfxCue } from './sfx';
 
 /** The version 2's sound engine (lot V8, journal Passe V8; lots S0 and S1, journal Passes SN2 / SN3): Web Audio only, every sound written in
@@ -267,6 +268,7 @@ export class Sound {
       if (e.type === 'skip') { const l = this.layered; if (l) { l.set.stop(Math.max(0.05, Number(e.secs) || 0.22)); this.layered = null; } if (this.hold) clearTimeout(this.hold.timer); this.hold = null; }
       return;
     }
+    if (e.type === 'formSign') { this.formSign(String(e.who), e.sign === 'down' ? 'formDown' : 'formUp'); return; }
     if (this.bank) this.duelSounds(e);
     // the bank not (yet) decoded, or not decodable here: lot S0's recipes, so that a duel never goes silent
     else { const q = duelCue(e); if (q) this.play(q.effect, q.gain ?? 1, q); }
@@ -294,6 +296,19 @@ export class Sound {
       this.hold = null;
       if (h > 0) { const breathe = () => { this.cue({ id: `hold${h}`, pan: -0.28, vary: 'none' }); if (this.hold) this.hold.timer = window.setTimeout(breathe, HOLD_EVERY * 1000); }; this.hold = { level: h, timer: window.setTimeout(breathe, HOLD_EVERY * 1000) }; }
     }
+  }
+  /** the form of the day's sign (the operator's LC6-7 « Les deux signes », journal Passe LC7): its two notes computed in the page once (src/audio/formCue.ts), played
+   *  as a duel's sound is, on the effects' bus at the duel's sounds' level, at its fighter's side, with the room */
+  private formSign(who: string, id: 'formUp' | 'formDown'): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.begun || !this.buses || !this.reverb || this.settings.muted) return;
+    const key = `form:${id}`;
+    let b = this.madeBufs.get(key);
+    if (!b) { const y = formCue(id, ctx.sampleRate); b = this.bufferOf([y, y]); this.madeBufs.set(key, b); }
+    const s = ctx.createBufferSource(), g = ctx.createGain(), p = ctx.createStereoPanner();
+    s.buffer = b; g.gain.value = dbGain(SFX_TRIM); p.pan.value = who === 'ren' ? -0.28 : 0.28;
+    s.connect(g); g.connect(p); p.connect(this.buses.fx); this.send(p, SEND.fx);
+    s.start(ctx.currentTime + 0.005);
   }
   /** one of the band's sounds on the effects' bus: another take than the last, varied as its kind allows (src/audio/sfx.ts, `varyOf`), at its place, with the
    *  room; false when it cannot play */

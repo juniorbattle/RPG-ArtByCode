@@ -139,6 +139,14 @@ if (META['lc-charge']) {
   const y = load('lc-speed'), ly = (a, b) => Math.max(-140, level(y, a, b)), click = ly(2.0, 2.2), quiet = ly(3.0, 3.2);
   check(click > ly(0.5, 1.8) + 25, `x2 from a key: the interface's click ${click.toFixed(1)} dB`);
   check(quiet < click - 25, `x2 from the HUD's button: no second click (${quiet.toFixed(1)} dB; the button's own click is the page's)`);
+  if (META['lc-form']) {
+    // both channels: the sign on its fighter's side
+    const b = fs.readFileSync(path.join(out, 'raw', 'lc-form.f32')), x = new Float32Array(b.buffer, b.byteOffset, b.length >> 2), L = new Float32Array(x.length >> 1), R = new Float32Array(x.length >> 1);
+    for (let i = 0; i < L.length; i++) { L[i] = x[2 * i]; R[i] = x[2 * i + 1]; }
+    const lv = (c, a, e) => Math.max(-140, rmsDb(c.subarray(Math.round(a * SR), Math.round(e * SR)))), quiet = lv(L, 0.2, 0.9), upL = lv(L, 1.0, 1.6), upR = lv(R, 1.0, 1.6), dnL = lv(L, 3.0, 3.6), dnR = lv(R, 3.0, 3.6);
+    check(upL > quiet + 25 && upL > upR + 2, `the form's sign in good form, Ren's side: ${upL.toFixed(1)} dB left, ${upR.toFixed(1)} right, over a floor of ${quiet.toFixed(1)}`);
+    check(dnR > quiet + 25 && dnR > dnL + 2 && dnR < upL, `in poor form, the opponent's side and softer: ${dnR.toFixed(1)} dB right, ${dnL.toFixed(1)} left`);
+  }
   const z = load('lc-skip'), lz = (a, b) => Math.max(-140, level(z, a, b)), before = lz(18.9, 19.45), gone = lz(19.95, 21.8);
   check(before > -60 && gone < before - 40, `« Skip »: the music ${before.toFixed(1)} dB, then down with the curtain: ${gone.toFixed(1)} dB`);
 }

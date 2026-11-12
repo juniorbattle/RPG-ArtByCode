@@ -26,6 +26,12 @@ export interface AutoCharge { id: string; kind: 'light' | 'heavy' | 'skill'; fam
 /** an event of the presentation (the shapes of today's DynEvent the arena, the effects, the stands and the sound already read) */
 export type ReplayEvent = { type: string; t?: number } & Record<string, unknown>;
 
+/** the form of the day's sign (the operator's LC6-7 « Les deux signes », journal Passe LC7; AC-08): told once at the start of the bout for a fighter whose blows are
+ *  × 1.05 and more (« up ») or × 0.95 and less (« down »), Ren's then the opponent's; nothing between */
+export const FORM_SIGN_FROM = 0.05;
+export const FORM_AT: Readonly<Record<Seat, number>> = { ren: 0.35, marek: 0.75 };
+export const formSignOf = (form: number): 'up' | 'down' | null => (form >= 1 + FORM_SIGN_FROM - 1e-9 ? 'up' : form <= 1 - FORM_SIGN_FROM + 1e-9 ? 'down' : null);
+
 /** the wind-up the presentation draws before a blow lands (s): the strike's run-up, then its follow-through after the impact; a skill's longer */
 export const WIND = { light: 0.2, heavy: 0.3, skill: 0.3, effect: 0.15, follow: 0.18, nextHit: 0.12, dodge: 0.32, block: 0.3, flinch: 0.22 };
 
@@ -80,6 +86,8 @@ export class AutoReplay {
   private acts: Record<Seat, Map<string, AutoAction>>;
   private ids: Record<string, Seat>;
   private koT = -1;
+  /** the form's sign told, by fighter (once a bout; passed over by « Skip » and a moment sought) */
+  private formTold: Partial<Record<Seat, boolean>> = {};
   /** each fighter's blows and effects, and its reactions to the other's, in the order they start (`windowsOf`) */
   readonly wins: Record<Seat, AutoWindow[]>;
   readonly reacts: Record<Seat, AutoWindow[]>;
@@ -107,7 +115,7 @@ export class AutoReplay {
 
   /** from the start of the duel */
   reset(): void {
-    this.t = 0; this.i = 0; this.over = false; this.koT = -1; this.out = [];
+    this.t = 0; this.i = 0; this.over = false; this.koT = -1; this.out = []; this.formTold = {};
     SEATS.forEach((seat, k) => {
       const x = this.fighters[seat], maxHp = this.result.maxHp[k];
       const side: AutoSide = { hp: maxHp, maxHp, ap: AUTO_RULES.ap.start + (x.apStart ?? 0), state: 'idle', stateT: 0, guarding: false, anim: { name: 'ready', t: 0, dur: 1, loop: true }, act: null };
@@ -148,6 +156,17 @@ export class AutoReplay {
       if (this.over) break;
     }
     this.expire(this.t, tell);
+    this.forms(tell);
+  }
+
+  /** the form of the day's sign of each fighter whose time has come (FORM_AT), told once; under « Skip » or a seek only marked */
+  private forms(tell: boolean): void {
+    SEATS.forEach((seat, k) => {
+      if (this.formTold[seat] || this.t < FORM_AT[seat] - 1e-9) return;
+      this.formTold[seat] = true;
+      const sign = formSignOf(this.result.form[k]);
+      if (tell && sign && !this.over) this.emit({ type: 'formSign', who: seat, sign, form: this.result.form[k] });
+    });
   }
 
   /** the stuns, wards and boosts that run out by `t`, in the order of the script (a line after a stun's end carries the state after it) */
@@ -341,6 +360,7 @@ export class AutoReplay {
     this.t = Math.min(t, this.end);
     while (this.i < log.length && log[this.i].t <= this.t + 1e-9) { const e = log[this.i++]; this.expire(e.t, false); this.apply(e, false); if (this.over) break; }
     this.expire(this.t, false);
+    this.forms(false);
     this.refresh();
   }
 
@@ -391,9 +411,11 @@ function actionsOf(x: AutoFighter): Map<string, AutoAction> {
 }
 
 /** the arena's own page (`?scene=arena`, outside a game): Ren of a new game (his start, the four of the start kit at level 1, the training sword) against
- *  the pool's Marek (or `foe`, a rival's sheet in its own duel; DEV a generic fighter), a fixed seed; `seed` another duel */
-export function sceneAutoDuel(foe = 'marek', seed = 1337): { result: AutoResult; ren: AutoFighter; foe: AutoFighter } {
-  const ren = autoRen({ ...REN_BASE }, { loadout: V2_START_KIT.loadout, levels: V2_START_KIT.levels });
+ *  the pool's Marek (or `foe`, a rival's sheet in its own duel; DEV a generic fighter), a fixed seed; `seed` another duel; DEV `o` another weapon or four skills
+ *  (the proofs of the gauge's enchaînements, journal Passe LC7) */
+export function sceneAutoDuel(foe = 'marek', seed = 1337, o: { weapon?: string | null; loadout?: readonly string[] } = {}): { result: AutoResult; ren: AutoFighter; foe: AutoFighter } {
+  const loadout = o.loadout?.length ? [...o.loadout] : V2_START_KIT.loadout;
+  const ren = autoRen({ ...REN_BASE }, { loadout, levels: o.loadout?.length ? Object.fromEntries(loadout.map((id) => [id, 1])) : V2_START_KIT.levels }, o.weapon ? { weapon: o.weapon } : {});
   const g = GENERICS[foe];
   const f = g ? autoFoe(foe, autoGenericSheet(g.profile, g, 0, 0), { kitOf: g.profile }) : autoFoe(foe, autoRaceSheet(foe, 0, 0));
   return { result: autoDuel(ren, f, seed, { log: true, trace: true }), ren, foe: f };

@@ -6,7 +6,8 @@
 // - which sound plays: the tier's note at the level the skill was released at before, the whip at its release, an enchaînement's later blows their side's plain
 //   blow (the action's own sound on its first blow only), no crowd's reaction on them;
 // - the music's rule F (CQ-REGLE « F · Des niveaux plus doux ») on this duel's moments: the lead steps aside while the opponent charges a big action (its
-//   sequence), the tension rises on it, on Ren's charge of a skill, on a stun and under 30 % of health.
+//   sequence), the tension rises on it, on Ren's charge of a skill, on a stun and under 30 % of health;
+// - the form of the day's sign (LC6-7 « Les deux signes », journal Passe LC7): once a fighter at the bout's start, its notes computed in the page.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './load.mjs';
@@ -19,7 +20,6 @@ const S = await load('/src/audio/sfx.ts');
 const P = await load('/src/audio/plan.ts');
 const FX = await load('/src/arena/fx/fxRecipes.ts');
 const FC = await load('/src/audio/formCue.ts');
-const CAND = await load('/src/arena/fx/fxCandidates.ts');
 
 const RIVALS = Object.keys(ST.RIVAL_SHEETS);
 const LOADOUTS = [['t1', 't4', 'd1', 's1'], ['t3', 'k_sunder', 'k_iron', 'k_cry'], ['t2', 'heavy', 'k_parry', 'k_focus']];
@@ -108,12 +108,12 @@ test('which sound plays: the tier\'s note at the level its skill was released at
   assert.ok(follows > 200 && own > 10 && held > 150, `the paths: ${follows} later blows, ${own} own first blows, ${held} breaths`);
 });
 
-test('the form of the day\'s sign, a candidate (its sheet, briefs/fiche-combat-auto-lot4.html): computed in the page the same every time, at its level, wired into no page', async () => {
+test('the form of the day\'s sign (LC6-7 « Les deux signes »): told once a fighter at the start of the bout from ±5 %, computed in the page the same every time, its recipes apart', async () => {
   const fs = await import('node:fs'), path = await import('node:path');
   for (const id of ['formUp', 'formDown']) {
     const a = FC.formCue(id), b = FC.formCue(id);
     assert.deepEqual(a, b, `${id}: its own seed, the same samples`);
-    let peak = 0, sum = 0; for (const v of a) { peak = Math.max(peak, Math.abs(v)); sum += v * v; }
+    let peak = 0; for (const v of a) peak = Math.max(peak, Math.abs(v));
     assert.ok(peak > 0.01 && peak <= 0.7 + 1e-6, `${id}: peak ${peak}`);
     assert.equal(a.length, 52800, '1.1 s at the band\'s rate');
     // its loudest 400 ms at its target (-24 dB the good form, as the charge's first note; -27 the poor form), the peak kept under 0.7
@@ -121,20 +121,37 @@ test('the form of the day\'s sign, a candidate (its sheet, briefs/fiche-combat-a
     const db = 20 * Math.log10(best); assert.ok(Math.abs(db - (id === 'formUp' ? -24 : -27)) < 0.3 || peak > 0.699, `${id}: ${db.toFixed(1)} dB`);
   }
   assert.notDeepEqual(FC.formCue('formUp').subarray(0, 4800), FC.formCue('formDown').subarray(0, 4800));
-  // who shows a sign: +5 points and more, -5 and less, nothing between
-  assert.deepEqual([1.15, 1.05, 1.049, 1, 0.951, 0.95, 0.85].map(FC.formSignOf), ['formUp', 'formUp', null, null, null, 'formDown', 'formDown']);
-  // the candidates' recipes well formed, apart from the duel's own (no duel plays them: no recipe of that name, no import but the DEV server's hook)
-  for (const r of Object.values(CAND.FX_CANDIDATES)) {
+  // who shows a sign: +5 points and more, -5 and less, nothing between (the match sheet's « +14 % »)
+  assert.deepEqual([1.15, 1.05, 1.049, 1, 0.951, 0.95, 0.85].map(AV.formSignOf), ['up', 'up', null, null, null, 'down', 'down']);
+  // the replay tells it once a fighter at its time, against the duel's own forms; « Skip » and a seek past it tell nothing
+  let told = 0, silent = 0;
+  for (const d of DUELS) {
+    const { rp, evs } = play(d), signs = evs.filter((e) => e.type === 'formSign');
+    ['ren', 'marek'].forEach((seat, k) => {
+      const f = d.result.form[k], want = f >= 1.05 - 1e-9 ? 'up' : f <= 0.95 + 1e-9 ? 'down' : null, got = signs.filter((e) => e.who === seat);
+      if (!want) { assert.equal(got.length, 0, `${d.foe.id} ${seat}: form ${f}, no sign`); silent++; return; }
+      assert.equal(got.length, 1, `${d.foe.id} ${seat}: one sign`); assert.equal(got[0].sign, want);
+      assert.ok(got[0].t >= AV.FORM_AT[seat] - 1e-9 && got[0].t - AV.FORM_AT[seat] <= rp.D.dt + 1e-9, `${seat}: at ${AV.FORM_AT[seat]} s (${got[0].t})`);
+      told++;
+    });
+    const sk = new AV.AutoReplay(d.result, { ren: d.ren, marek: d.foe }); sk.drain(); sk.skip();
+    assert.equal(sk.drain().filter((e) => e.type === 'formSign').length, 0, 'skipped: no sign');
+    const sought = new AV.AutoReplay(d.result, { ren: d.ren, marek: d.foe }); sought.seek(2); sought.drain(); for (let i = 0; i < 60; i++) sought.step();
+    assert.equal(sought.drain().filter((e) => e.type === 'formSign').length, 0, 'a moment sought past it: no sign');
+  }
+  assert.ok(told >= 8 && silent >= 1, `signs told ${told}, fighters without one ${silent}`);
+  // its recipes well formed, apart from the duel's one-to-one table (its sound is computed, not baked)
+  for (const r of Object.values(FX.FORM_RECIPES)) {
     assert.ok(r.duration > 0 && r.duration <= 1, `${r.id}: under a second (FX4)`);
     assert.ok(r.steps.every((s) => s.at >= 0 && s.at < r.duration && ['orbit', 'glow', 'light', 'smoke', 'motes'].includes(s.kind)), r.id);
     assert.ok(!r.steps.some((s) => s.kind === 'ring'), `${r.id}: nothing circular`);
     assert.equal(FX.RECIPES[r.id], undefined, `${r.id}: not one of the duel's recipes`);
   }
+  assert.deepEqual([['up', 'ren'], ['up', 'marek'], ['down', 'ren'], ['down', 'marek']].map(([s, w]) => FX.formRecipe(s, w).id), ['formUp', 'formUpFoe', 'formDown', 'formDown']);
+  // wired: the engine plays it (its notes computed once), the effects draw it
   const src = (f) => fs.readFileSync(path.join(import.meta.dirname, '..', f), 'utf8');
-  const importers = (name) => { const out = []; const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (/\.ts$/.test(e.name) && fs.readFileSync(p, 'utf8').includes(name)) out.push(path.relative(path.join(import.meta.dirname, '..'), p).replaceAll('\\', '/')); } }; walk(path.join(import.meta.dirname, '..', 'src')); return out; };
-  assert.deepEqual(importers("from './formCue'").concat(importers("audio/formCue'")), [], 'the sign wired into no page');
-  assert.deepEqual(importers("'./fxCandidates'"), ['src/arena/fx/combatFx.ts'], 'the candidates reached only by combatFx');
-  assert.match(src('src/arena/fx/combatFx.ts'), /if \(import\.meta\.env\.DEV\) Object\.assign\(window, \{ __fx: \{[\s\S]*candidate: async[\s\S]*await import\('\.\/fxCandidates'\)/, 'through the DEV server\'s window.__fx only');
+  assert.match(src('src/audio/Sound.ts'), /if \(e\.type === 'formSign'\) \{ this\.formSign\(/);
+  assert.match(src('src/arena/fx/combatFx.ts'), /else if \(e\.type === 'formSign'\) self\(formRecipe\(e\.sign, e\.who\)/);
 });
 
 test('the music\'s rule F on this duel: the lead aside on the opponent\'s sequence (a big action charged), the tension up on it, on Ren\'s charge of a skill, a stun, under 30 %', () => {

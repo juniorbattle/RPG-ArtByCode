@@ -14,7 +14,7 @@ import type { FighterId } from '../CombatSim';
 import { FX_EXPOSURE, FxEngine, type FxHooks } from './FxEngine';
 import { FxDirector, type FxPlayContext, type FxUnitRef } from './FxDirector';
 import { onSettings, reducedMotion } from '../../settings/settings';
-import { RECIPES, blowRecipe, chargeLevel, effectRecipe, type FxRecipe } from './fxRecipes';
+import { RECIPES, blowRecipe, chargeLevel, effectRecipe, formRecipe, type FxRecipe } from './fxRecipes';
 
 /** the figure's height (m), and how far before a fighter the blades meet on generated art (`cast=generated`): Ren holds his sword close, Marek's art at arm's length, Vessa on Ren's clips
  *  (the other rivals wear Marek's there, FighterArt's `FOES`); on the baked sheets, what the guard's frame reaches (`guardReach`) */
@@ -130,6 +130,8 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
         } else if (e.type === 'break') blow(RECIPES.break, F, e.who);
         else if (e.type === 'ko') blow(RECIPES.ko, F, e.who);
         else if (e.type === 'effect') self(effectRecipe(e.action, e.family), F[e.who as FighterId]);
+        // the form of the day's sign at the start of the bout (LC6-7 « Les deux signes », journal Passe LC7)
+        else if (e.type === 'formSign') self(formRecipe(e.sign, e.who), F[e.who as FighterId]);
         else if (e.type === 'chargeTier') { const level = chargeLevel(e.idx, tiers); if (e.open && level > 0) director.play(RECIPES[`charge${level}`], { source: unit(F.ren), target: unit(F.marek) }); }
         else if (e.type === 'chargeRelease') { if (e.ok && e.idx >= 1) self(RECIPES.release, F.ren); }
         else if (e.type === 'reset') { engine.clear(); flash.dur = lines.dur = punch.dur = 0; flashEl.style.opacity = linesEl.style.opacity = '0'; slowLeft = 0; fxScale = 1; arena.timeScale(1); for (const s of slots) { s.dur = 0; s.src.scale = s.src.targetScale = 0; } }
@@ -159,8 +161,8 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
     clear: () => { engine.clear(); stress = -1; },
     stress: () => { stress = 0; },
     active: () => engine.activeCount,
-    /** a candidate of lot 4 on a fighter (src/arena/fx/fxCandidates.ts; journal Passe LC6), for its sheet's captures: no duel plays them */
-    candidate: async (id: string, who: FighterId = 'ren') => { const { FX_CANDIDATES } = await import('./fxCandidates'); const r = FX_CANDIDATES[id]; if (!r) throw new Error(`no candidate "${id}"`); if (fighters) self(r, fighters[who]); },
+    /** the form of the day's sign on a fighter (journal Passe LC7), for captures */
+    form: (sign: 'up' | 'down', who: FighterId = 'ren') => { if (fighters) self(formRecipe(sign, who), fighters[who]); },
   } });
   return fx;
 }

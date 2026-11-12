@@ -30,5 +30,7 @@ export const jobs = [
   // « Skip » at 19.5 s: the music down over the curtain's 0.22 s (the empty stands: the crowd's way reaches the output in the music's stem, journal Passe LC6)
   { name: 'lc-charge', secs: 9, scene: { place: 'arena', look: 'night', music: { bout: 'duel', tiers: 5, empty: true } }, stem: 'fx', script: 'lcCharge', settle: true },
   { name: 'lc-speed', secs: 5, scene: { place: 'arena', look: 'night', music: { bout: 'duel', tiers: 5, empty: true } }, stem: 'fx', script: 'lcSpeed', settle: true },
+  // the form of the day's sign (LC6-7 « Les deux signes », journal Passe LC7): Ren in good form at 1 s (his side, the left), the opponent in poor form at 3 s (the right)
+  { name: 'lc-form', secs: 5, scene: { place: 'arena', look: 'night', music: { bout: 'duel', tiers: 5, empty: true } }, stem: 'fx', script: 'lcForm', settle: true },
   { name: 'lc-skip', secs: 22, scene: { place: 'arena', look: 'night', music: { bout: 'duel', tiers: 5, empty: true } }, stem: 'music', script: 'lcSkip', settle: true },
 ];

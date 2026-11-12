@@ -102,10 +102,12 @@ try {
     const s = window.__sound; window.__cues = {}; window.__old = 0; window.__ui = {}; window.__evs = []; window.__stings = [];
     const c = s.cue.bind(s); s.cue = (q) => { window.__cues[q.id] = (window.__cues[q.id] ?? 0) + 1; return c(q); };
     const p = s.play.bind(s); s.play = (e, g, a) => { if (e === 'click') window.__ui[e] = (window.__ui[e] ?? 0) + 1; else window.__old++; p(e, g, a); };
-    const d = s.duelEvent.bind(s); s.duelEvent = (e) => { window.__evs.push({ type: e.type, follow: e.follow, action: e.action, from: e.from, result: e.result }); d(e); };
+    const d = s.duelEvent.bind(s); s.duelEvent = (e) => { window.__evs.push({ type: e.type, follow: e.follow, action: e.action, from: e.from, result: e.result, sign: e.sign }); d(e); };
     const st = s.sting.bind(s); s.sting = (id) => { window.__stings.push(id); st(id); };
   });
-  // the duel plays by itself (lot 2): twelve seconds of it, then ×2 from its key (the attack's), then « Skip » (the dodge's)
+  // the duel plays by itself (lot 2), from its start again (the form of the day's sign comes in its first second, journal Passe LC7): twelve seconds of it, then ×2
+  // from its key (the attack's), then « Skip » (the dodge's)
+  await page.evaluate(() => window.__arena.restart());
   await wait(12000);
   const arena = await page.evaluate(() => { const c = window.__sound.crowd; return { bank: window.__sound.bank.size, crowd: !!c, carve: c instanceof BiquadFilterNode ? { type: c.type, hz: c.frequency.value, q: c.Q.value, db: c.gain.value } : null, cues: window.__cues, old: window.__old, evs: window.__evs }; });
   console.log(`   the arena's sounds played: ${JSON.stringify(arena.cues)}`);
@@ -121,6 +123,9 @@ try {
   check(breaths >= 1 && (arena.cues.release ?? 0) === told('chargeRelease') && told('chargeRelease') >= 1, `its breath (${breaths}) and its whip at each release (${arena.cues.release ?? 0} for ${told('chargeRelease')})`);
   const follows = arena.evs.filter((e) => e.type === 'impact' && e.follow && e.result === 'hit');
   check(follows.length >= 1, `an enchaînement's later blows told (${follows.length}): ${[...new Set(follows.map((e) => e.action))].join(', ')}`);
+  // the form of the day's sign (LC6-7 « Les deux signes »): told for each fighter in good or poor form, its notes computed in the page once (this duel: both in good form)
+  const forms = await page.evaluate(() => ({ told: window.__evs.filter((e) => e.type === 'formSign').length, made: [...window.__sound.madeBufs.keys()].filter((k) => k.startsWith('form:')) }));
+  check(forms.told === 2 && forms.made.join() === 'form:formUp', `the form of the day: ${forms.told} sign(s) told, computed ${forms.made.join(', ')}`);
   // ×2 from its key: the interface's click once, the arena's clock twice as fast
   const c0 = await page.evaluate(() => window.__ui.click ?? 0);
   await page.keyboard.press('j'); await wait(300);

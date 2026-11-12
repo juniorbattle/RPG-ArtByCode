@@ -209,7 +209,9 @@ export class ArenaApp {
       let maxHp: Record<FighterId, number>;
       if (this.rules === 'auto') {
         // the duel played by the computer: decided before the page (the game's own result), played from its script; the arena's own page plays Ren against Marek
-        const a = opts.match?.auto ?? sceneAutoDuel(this.foe, (parseInt(opts.params.get('duelseed') ?? '1337', 10) >>> 0) || 1337);
+        // DEV `weapon=` and `kit=a,b,c,d`: Ren's weapon and four skills on the arena's own page (the gauge's proofs on enchaînements of two and three blows, journal Passe LC7)
+        const dev = import.meta.env.DEV ? { weapon: opts.params.get('weapon'), loadout: opts.params.get('kit')?.split(',').filter(Boolean) } : {};
+        const a = opts.match?.auto ?? sceneAutoDuel(this.foe, (parseInt(opts.params.get('duelseed') ?? '1337', 10) >>> 0) || 1337, dev);
         this.auto = new AutoReplay(a.result, { ren: a.ren, marek: a.foe }, opts.match?.auto?.names ?? { ren: 'Ren', marek: this.foe[0].toUpperCase() + this.foe.slice(1) }); this.sim = this.auto as unknown as DuelSim;
         maxHp = { ren: this.auto.f.ren.maxHp, marek: this.auto.f.marek.maxHp };
       } else {

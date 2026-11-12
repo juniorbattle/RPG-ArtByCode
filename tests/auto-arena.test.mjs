@@ -19,8 +19,8 @@ const ST = await load('/src/combat/stats.ts');
 const PV = await load('/src/simulation/preview.ts');
 
 const RIVALS = Object.keys(ST.RIVAL_SHEETS);
-const duelOf = (foe, stage, seed, loadout = ['t1', 't4', 'd1', 's1'], order) => {
-  const ren = AD.autoRen({ ...ST.REN_BASE, hp: 324, atk: 17, def: 15 }, { loadout, levels: { t1: 2, t2: 1, t3: 1, t4: 1, d1: 1, s1: 1, k_iron: 1, k_parry: 1, k_cry: 1, k_focus: 1, k_sunder: 1, k_feint: 1, heavy: 1 }, order }, { weapon: 'imported-blade' });
+const duelOf = (foe, stage, seed, loadout = ['t1', 't4', 'd1', 's1'], order, weapon = 'imported-blade') => {
+  const ren = AD.autoRen({ ...ST.REN_BASE, hp: 324, atk: 17, def: 15 }, { loadout, levels: { t1: 2, t2: 1, t3: 1, t4: 1, d1: 1, s1: 1, k_iron: 1, k_parry: 1, k_cry: 1, k_focus: 1, k_sunder: 1, k_feint: 1, heavy: 1 }, order }, { weapon });
   const f = AD.autoFoe(foe, AD.autoRaceSheet(foe, stage, 1));
   return { ren, foe: f, result: AU.autoDuel(ren, f, seed, { log: true, trace: true }) };
 };
@@ -157,8 +157,20 @@ test('the replay\'s HUD: both charges on the timeline, the gauges as the script 
 
 test('the gauge at the blow that fills it (journal Passe LC5\'s note, fixed on the presentation\'s side in lot 4): the HUD and the impact say the gauge after the blow, the script\'s own', () => {
   let checked = 0, late = 0, breaks = 0;
-  for (const foe of RIVALS) for (const seed of [1, 2]) {
-    const d = duelOf(foe, seed === 1 ? 0 : 2, seed), r = d.result, rp = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe }), max = AU.AUTO_RULES.gauge.max;
+  // every blow, and by kind (the operator's report, journal Passe LC7: « la jauge de break qui semble avoir du retard lors des actions/coups executes surtout lorsqu'il y a
+  // des combos »): an enchaînement's later blows, the last blow of an enchaînement of two and of three, a blow on a ward, a blow under its striker's boost
+  const kinds = { later: 0, last2: 0, last3: 0, ward: 0, boost: 0 };
+  const cases = [];
+  for (const foe of RIVALS) for (const seed of [1, 2]) cases.push([foe, seed === 1 ? 0 : 2, seed]);
+  // Ren's three-blow enchaînements: the duelist's sabre's light attack and Tourbillon, with a ward and a boost of his own
+  for (const foe of RIVALS) cases.push([foe, 1, 3, ['t3', 'k_cry', 'k_iron', 't1'], undefined, 'duelist-sabre']);
+  for (const [foe, stage, seed, loadout, order, weapon] of cases) {
+    const d = duelOf(foe, stage, seed, loadout, order, weapon), r = d.result, rp = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe }), max = AU.AUTO_RULES.gauge.max;
+    // the wards and boosts under way at each line, from the script alone
+    const eff = [];
+    for (const e of r.log) if (e.ev === 'ward' || e.ev === 'boost') { const f = e.who === d.ren.id ? d.ren : d.foe, a = [f.light, f.combo, ...f.skills].find((x) => x?.id === e.act); eff.push({ who: e.who, kind: e.ev, from: e.t, to: e.t + (a.ward ?? a.boost).dur }); }
+    const on = (who, kind, t) => eff.some((x) => x.who === who && x.kind === kind && x.from <= t && t < x.to);
+    const hitsOf = (who, act) => { const f = who === d.ren.id ? d.ren : d.foe; return ([f.light, f.combo, ...f.skills].find((x) => x?.id === act)?.hits ?? [1]).length; };
     const seat = (who) => (who === d.ren.id ? 'ren' : 'marek'), byLine = new Map();
     // each blow's impact, in the order of the script's blows
     const imps = [];
@@ -171,6 +183,12 @@ test('the gauge at the blow that fills it (journal Passe LC5\'s note, fixed on t
       if (want === undefined) continue;
       assert.ok(Math.abs(imp.resist - want) < 0.02, `${foe} ${seed} line ${i} (${e.ev} ${e.act} at ${e.t}): the impact says ${imp.resist}, the script ${want}`);
       checked++; if (want - e.s[kt] > 0.5) late++; if (r.log[i + 1]?.ev === 'break') breaks++;
+      const n = hitsOf(e.who, e.act), target = e.who === d.ren.id ? d.foe.id : d.ren.id;
+      if ((e.hit ?? 1) > 1) kinds.later++;
+      if (n === 2 && e.hit === 2) kinds.last2++;
+      if (n >= 3 && e.hit === n) kinds.last3++;
+      if (on(target, 'ward', e.t)) kinds.ward++;
+      if (on(e.who, 'boost', e.t)) kinds.boost++;
     }
     // the HUD at the step after a blow: the gauge after it, a blow that breaks shows it full
     const h = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe });
@@ -183,8 +201,9 @@ test('the gauge at the blow that fills it (journal Passe LC5\'s note, fixed on t
       assert.ok(Math.abs((g.broken ? 100 : g.gaugePct) - (want / max) * 100) < 0.5, `${foe} ${seed}: the HUD at ${e.t} shows ${g.gaugePct} for ${(want / max) * 100}`);
     }
   }
-  // the fault this fixes was there: blows whose share was shown one line late
+  // the fault this fixes was there: blows whose share was shown one line late; every kind of blow reached
   assert.ok(checked > 1000 && late > 300 && breaks > 0, `blows checked ${checked}, of which ${late} late before lot 4, ${breaks} breaking`);
+  assert.ok(kinds.later > 300 && kinds.last2 > 100 && kinds.last3 > 50 && kinds.ward > 50 && kinds.boost > 50, `by kind: ${JSON.stringify(kinds)}`);
 });
 
 test('AC-08: the form of the day known before the bout, as the duel draws it; AC-05: the reactions the match sheet shows are the duel\'s formulas', () => {

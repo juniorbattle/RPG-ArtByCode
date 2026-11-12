@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments, sa fiche d'écoute à relire (§ 23) ; ensuite le lot 5 (le retrait de l'ancien duel)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -679,6 +679,18 @@ aucune table, aucun temps de charge ni la course ne changent ; le jeu d'aujourd'
 
 La fiche d'écoute : https://claude.ai/artifact/4brjscrgkqpYEvxnU8kz8f (`briefs/fiche-combat-auto-lot4.html`), huit cartes LC6-1 à LC6-8, à relire quand
 l'opérateur la dit remplie.
+
+## 24. La fiche d'écoute du lot 4 relue (12/11/2026, journal Passe LC7)
+
+Huit choix sur huit à la recommandation, aucune note, aucune décision A3 : LC6-1 à LC6-6 « Bien ainsi », LC6-7 « Les deux signes », LC6-8 « Brancher ce que je
+valide, puis mon essai en jeu ». Le signe de la forme du jour entre dans le jeu par défaut : une fois par combattant au début du combat (Ren à 0,35 s, l'adversaire à
+0,75 s), à ×1,05 et plus ou ×0,95 et moins, ses deux notes calculées dans la page, ses particules de sa couleur ; rien sous « Passer ».
+
+La jauge de rupture, mise en tête par l'opérateur (« apparemment on a la jauge de break qui semble avoir du retard lors des actions/coups executes surtout lorsqu'il y a
+des combos »), est prouvée au coup même dans le navigateur, image par image : sur huit duels entiers (77 424 images à 60 images/s, quatre rivaux, Ren à l'épée
+d'entraînement puis au sabre et avec Tourbillon), chaque barre montre la jauge du script à chaque image, et chaque coup qui doit la bouger la bouge sur sa propre image
+(325 sur 325 : 90 coups suivants d'un enchaînement, 57 derniers de deux, 17 derniers de trois, 80 sur une protection, 75 sous un soutien) ; la base d'avant le lot 4
+échoue (`tools/gauge-proof.mjs`).
 
 ---
 

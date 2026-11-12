@@ -239,6 +239,23 @@ export const RECIPES: Record<string, FxRecipe> = Object.fromEntries([
   BOOST('s1', 'gold'), BOOST('k_cry', 'steel'), BOOST('k_focus', 'sky'), BOOST('m_resolve', 'fire'), BOOST('m_tempo', 'ice'), BOOST('m_gild', 'gold'), BOOST('m_prayer', 'holy'), BOOST('m_grit', 'earth'), BOOST('m_roar', 'blood'),
 ].map((r) => [r.id, r]));
 
+/** the form of the day's sign (the operator's LC6-7 « Les deux signes », journal Passe LC7; shown as a candidate on the sheet of journal Passe LC6): at the start of the
+ *  bout, a fighter in good form rises in motes of its colour round a small warm glow (Ren's gold, the opponent's forge-red), one in poor form lets grey motes fall
+ *  to a little smoke; under a second (FX4's exception), nothing circular. Apart from RECIPES: its sound is computed in the page (src/audio/formCue.ts), not one of the
+ *  band's baked sounds one to one with the recipes */
+const formUp = (id: string, element: FxElement): FxRecipe => recipe(id, element, 0.9, [
+  s(0, 'orbit', 'sourceGround', { count: 16, radius: 1.1, duration: 0.85, rise: 3.2, spin: 2.6, size: 0.1 }),
+  s(0.1, 'glow', 'sourceChest', { size: 0.9, duration: 0.4 }),
+  lit(0.1, 5, 0.5, 'sourceChest'),
+]);
+export const FORM_RECIPES: Record<string, FxRecipe> = {
+  formUp: formUp('formUp', 'gold'),
+  formUpFoe: formUp('formUpFoe', 'fire'),
+  formDown: recipe('formDown', 'smoke', 0.9, [s(0, 'motes', 'sourceGround', { count: 14, radius: 0.7, sink: true }), s(0.15, 'smoke', 'sourceGround', { count: 10, spread: 0.6, size: 0.9, life: 1 })]),
+};
+/** the sign's recipe for a fighter */
+export const formRecipe = (sign: string, who: string): FxRecipe => FORM_RECIPES[sign === 'down' ? 'formDown' : who === 'ren' ? 'formUp' : 'formUpFoe'];
+
 /** a landed blow's recipe: its own, else the plain blow of its weight and side */
 export function blowRecipe(action: string, kind: string, from: string): FxRecipe {
   return RECIPES[action] ?? RECIPES[from === 'ren' ? (kind === 'heavy' ? 'heavy' : 'light') : kind === 'heavy' ? 'm_heavy' : 'm_slash'];

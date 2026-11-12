@@ -1,8 +1,9 @@
-/** The form of the day's sign, a CANDIDATE of lot 4 of the duel played by the computer (journal Passe LC6; its listening sheet briefs/fiche-combat-auto-lot4.html): the
- *  form (AC-08 « Une forme du jour ±15 %, dite sur la fiche de match ») has no sound of its own; this one is proposed to the operator's ear and is wired into no
- *  page until his decision (nothing imports it but the listening tools). Computed in the page, never baked (the way of lot S2's steps and rain, src/audio/
- *  places.ts: no byte under SA-17): two notes of the band's vibraphone (its formula, tools/audio/band/instruments.mjs `vibes`), a fifth of the motif's notes
- *  without a third, rising for a fighter in good form, falling and darker for one in poor form. Its own seed: the same samples every time. Pure. */
+/** The form of the day's sign (lot 4 of the duel played by the computer: shown as a candidate on the listening sheet briefs/fiche-combat-auto-lot4.html, journal
+ *  Passe LC6; wired by the operator's LC6-7 « Les deux signes » and LC6-8 « Brancher ce que je valide, puis mon essai en jeu », journal Passe LC7): the form (AC-08
+ *  « Une forme du jour ±15 %, dite sur la fiche de match ») heard once at the start of the bout. Computed in the page, never baked (the way of lot S2's steps and
+ *  rain, src/audio/places.ts: no byte under SA-17): two notes of the band's vibraphone (its formula, tools/audio/band/instruments.mjs `vibes`), a fifth of the motif's
+ *  notes without a third, rising for a fighter in good form, falling and darker for one in poor form. Its own seed: the same samples every time. Who shows a sign:
+ *  src/arena/autoView.ts (`formSignOf`). Pure. */
 import { Draw, seedOf } from './places';
 
 const hz = (midi: number): number => 440 * 2 ** ((midi - 69) / 12);
@@ -47,6 +48,3 @@ export function formCue(id: FormSign, sr = 48000): Float32Array {
   else { vibe(y, sr, r, A4, 0.35, 0, 0.4, 0.14, 0.5); vibe(y, sr, r, D4, 0.35, 0.12, 0.5, 0.18, 0.5); darken(y, sr, 2200); level(y, sr, -27); }
   return y;
 }
-/** who shows a sign: a form of the day this far from 1 (the match sheet's « +14 % »: ±5 points and more), its sign; nothing between */
-export const FORM_SIGN_FROM = 0.05;
-export const formSignOf = (form: number): FormSign | null => (form >= 1 + FORM_SIGN_FROM ? 'formUp' : form <= 1 - FORM_SIGN_FROM ? 'formDown' : null);
