@@ -184,15 +184,17 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
 
 /** The race of the rivals (the operator's AC-16 « La course, niveau commun en poule, +10 % par tour (décision A3 : change DB7-5, DB7-6, DB11-2) », journal
  *  Passe AC4): each rival keeps the shape of its sheet (DB7-5's RIVAL_SHEETS), brought to a common level in the pool (`norm`: its health, Attack, Defence and
- *  Endurance × the same factor; its pool Speed kept the whole tournament), then +10 % each round of the pool (`pool`: the rounds of days 2, 4, 5) and a lot at
+ *  Endurance × the same factor; its pool Speed kept the whole tournament), then +15 % each round of the pool (`pool`: the rounds of days 2, 4, 5; the operator's
+ *  LC1-1 « +15 % par tour (décision A3 : change AC-16) », journal Passe LC2, in place of AC-16's +10 %) and a lot at
  *  each stage of the final phase (`stage`: the bracket, the final); its preparation as visible Attack points, +1 per `prepPer` over `prepFrom` (AC-17).
  *  Fitted in lot 1 (journal Passe LC1, `node tools/auto-lab.mjs level --t0=95 --targets=65,50 --fitseeds=1..80`) on the balanced duel: each rival's pool factor so
  *  that the reference player of day 2 beats it 95 times in 100 (isolated duels), the bracket's and the final's on whole games of the reference (seeds 1 to 80) for
  *  the semi-final's 65 % and the final's 50 % (AC-15); on the held-out seeds 101 to 160 the reference wins 98 / 98 / 100 / 68 / 49 % from day 2 to the final, a
- *  title in three. The prototype's: 0.83 to 1.33, ×1.267, ×1.533 */
+ *  title in three. At +15 % a round (journal Passe LC2), the same factors (a refit, `level --keep-norm`, moved them under 1 %, inside the fit's noise): on the
+ *  held-out seeds 101 to 300 the reference wins 96 / 95 / 75 / 70 / 52 %, 34 % of titles. The prototype's: 0.83 to 1.33, ×1.267, ×1.533 */
 export const AUTO_RACE = {
   norm: { vessa: 1.036, tobin: 1.379, cassius: 1.038, orla: 0.84, ilse: 1.026, marek: 0.855, rhosk: 0.95 } as Record<string, number>,
-  pool: [1, 1.1, 1.2] as readonly number[],
+  pool: [1, 1.15, 1.3] as readonly number[],
   stage: { 1: 1.305, 2: 1.586 } as Record<1 | 2, number>,
   prepFrom: 20, prepPer: 25,
 };

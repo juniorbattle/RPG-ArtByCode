@@ -303,9 +303,10 @@ test('the rivals\' AI: its ward past half its gauge, a ready skill by its share 
 
 // ------------------------------------------------------------------------------------------------------------------ the race and the gear
 
-test('AC-16 (A3): the race — each rival\'s shape at a common level, +10 % each round of the pool, more at the bracket, more again in the final, its pool Speed kept', () => {
+test('AC-16 and LC1-1 (A3): the race — each rival\'s shape at a common level, +15 % each round of the pool, more at the bracket, more again in the final, its pool Speed kept', () => {
   const R = AD.AUTO_RACE;
-  assert.deepEqual(R.pool.map((x) => +(x / R.pool[0]).toFixed(6)), [1, 1.1, 1.2]);
+  // LC1-1 « +15 % par tour (décision A3 : change AC-16) » (journal Passe LC2), in place of AC-16's +10 %
+  assert.deepEqual(R.pool.map((x) => +(x / R.pool[0]).toFixed(6)), [1, 1.15, 1.3]);
   assert.ok(R.stage[1] > R.pool[2] && R.stage[2] > R.stage[1], 'little by little in the pool, a lot in the final phase');
   for (const id of RIVALS) {
     const b = ST.RIVAL_SHEETS[id];

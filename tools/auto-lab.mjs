@@ -12,9 +12,9 @@
 //       the test of AC-12: preparations against each rival (isolated duels, the reference of the stage): the good answers and what dominates
 //   node tools/auto-lab.mjs offscreen [--seeds=1..40]
 //       every pair of rivals at each stage, the less strong's chance, the cost of a duel
-//   node tools/auto-lab.mjs level [--t0=95] [--targets=65,50] [--fitseeds=1..80] [--seeds=101..160] [--out=f]
-//       the race fitted (AC-16): each rival's pool factor on isolated duels against the reference of day 2, the pool's rounds +10 % (A3), the bracket's and the
-//       final's factors on whole games of the reference, printed on held-out seeds
+//   node tools/auto-lab.mjs level [--t0=95] [--targets=65,50] [--fitseeds=1..80] [--seeds=101..160] [--keep-norm] [--out=f]
+//       the race fitted (AC-16): each rival's pool factor on isolated duels against the reference of day 2, the pool's rounds +15 % (LC1-1, A3), the bracket's
+//       and the final's factors on whole games of the reference, printed on held-out seeds; --keep-norm keeps the pool factors and fits the two stages alone
 //   every command: --set=<TABLE>.<path>=<value>[,...] changes RULES (AUTO_RULES), SKILLS (AUTO_SKILLS), FOES (AUTO_FOES), RACE (AUTO_RACE), WEAPONS
 //       (AUTO_WEAPONS), LIGHT (AUTO_LIGHT); --race=<file.json> loads a race ({ norm, pool, stage })
 import fs from 'node:fs';
@@ -258,10 +258,10 @@ function offscreen() {
   }
   console.log(`coût : ${(ms / n).toFixed(3)} ms par duel (Node, indicatif) ; chance moyenne du moins fort ${(100 * up / pairs).toFixed(1)} %`);
 }
-/** the race fitted: each rival's pool factor so that the reference of day 2 beats it `t0` of the time (isolated duels, 60 seeds), the pool's rounds +10 % (AC-16,
- *  A3), then the bracket's and the final's factors on whole games of the reference (calibration seeds) for the semi-final's and the final's targets */
-export function levelFit(t0, targets, fitSeeds, quiet = false) {
-  for (const id of RIVALS) {
+/** the race fitted: each rival's pool factor so that the reference of day 2 beats it `t0` of the time (isolated duels, 60 seeds), the pool's rounds +15 % (LC1-1,
+ *  A3; with `keepNorm` the pool factors are left as they are), then the bracket's and the final's factors on whole games of the reference (calibration seeds) for the semi-final's and the final's targets */
+export function levelFit(t0, targets, fitSeeds, quiet = false, keepNorm = false) {
+  if (!keepNorm) for (const id of RIVALS) {
     let lo = 0.3, hi = 4;
     for (let i = 0; i < 13; i++) { const m = (lo + hi) / 2; AD.AUTO_RACE.norm[id] = m; const r = duelsOf({ day: 2, foes: [id], seeds: range('1..60') })[0]; if (r.w / r.n > t0) lo = m; else hi = m; }
     AD.AUTO_RACE.norm[id] = +((lo + hi) / 2).toFixed(3);
@@ -272,7 +272,7 @@ export function levelFit(t0, targets, fitSeeds, quiet = false) {
   return { norm: { ...AD.AUTO_RACE.norm }, pool: [...AD.AUTO_RACE.pool], stage: { ...AD.AUTO_RACE.stage } };
 }
 function level() {
-  const L = levelFit(+arg('t0', '95') / 100, arg('targets', '65,50').split(',').map((x) => +x / 100), range(arg('fitseeds', '1..80')));
+  const L = levelFit(+arg('t0', '95') / 100, arg('targets', '65,50').split(',').map((x) => +x / 100), range(arg('fitseeds', '1..80')), false, process.argv.includes('--keep-norm'));
   if (arg('out')) fs.writeFileSync(arg('out'), JSON.stringify(L, null, 1));
   for (const id of RIVALS) { const sh = (s, r) => { const x = AD.autoRaceSheet(id, s, r); return `${Math.round(x.hp)} PV ${x.atk.toFixed(1)}/${x.def.toFixed(1)}/${x.end.toFixed(1)}/${x.viv}`; }; console.log(`  ${id.padEnd(8)} x${L.norm[id]} : poule ${sh(0, 0)} → ${sh(0, 2)} ; tableau ${sh(1)} ; finale ${sh(2)}`); }
   console.log(`graines tenues à part ${arg('seeds', '101..160')} :`);

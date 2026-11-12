@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -489,7 +489,7 @@ s'applique ; là où les §§ 1 à 16 diffèrent, il l'emporte.
 | AC-13 | « Garder DB5 : PV ×2, avec ×2 et Passer » | DB5 tenue (A3) ; § 8 |
 | AC-14 | « Le planificateur, avec la vérification de Hilde et l’exercice de son kit » | § 9 |
 | AC-15 | « Un titre sur trois (95, 85, 75, 65, 50 %) » | la cible de la course |
-| AC-16 | « La course, niveau commun en poule, +10 % par tour (décision A3 : change DB7-5, DB7-6, DB11-2) » | § 16.1, recalée à la construction (A3) |
+| AC-16 | « La course, niveau commun en poule, +10 % par tour (décision A3 : change DB7-5, DB7-6, DB11-2) » | § 16.1, recalée à la construction (A3) ; la pente changée par LC1-1 : +15 % par tour (A3, § 19) |
 | AC-17 | « Des points d’Attaque visibles sur la fiche de match » | § 16.1 |
 | AC-18 | « La même simulation, l’IA des deux côtés » | § 11 |
 | AC-19 | « L’amender maintenant avec ce texte, ajusté à mes choix » | contrat projet § 6.1 amendé le 11/11/2026 (A3) |
@@ -499,7 +499,8 @@ s'applique ; là où les §§ 1 à 16 diffèrent, il l'emporte.
 
 - **Changées** : DB-2 (la riposte, retirée, AC-07) ; DB7-2 (les points de l'équipement doublés, AC-11 ; le principe des points gardé) ; DB7-5, DB7-6 et
   DB11-2 (AC-16 : les fiches des rivaux deviennent des formes ramenées à un niveau commun en poule, la Vivacité de poule gardée tout le tournoi, +10 %
-  par tour de poule, ×1,27 au tableau, ×1,53 en finale ; la croissance de DB13, ×1,7 et ×3,5, remplacée) ; le § 6.1 du contrat projet (AC-19).
+  par tour de poule, ×1,27 au tableau, ×1,53 en finale ; la croissance de DB13, ×1,7 et ×3,5, remplacée) ; le § 6.1 du contrat projet (AC-19). Puis AC-16
+  elle-même, sur sa pente : +15 % par tour de poule (LC1-1, 12/11/2026, § 19).
 - **Gardées** : DB5 (la durée, tenue par les PV ×2), DB5-3 (la recharge), DB5-4 (la rupture), DB7-1 (les cinq stats et leurs formules), DB7-3 et DB11-5
   (l'entraînement), DB7-4 et DB11-6 (la vigueur, Ren 300).
 - **Retirés sans être des décisions A3** (§ 13) : la garde à 90 % des rivaux dans leurs pauses (DB5-2), la priorité de l'adversaire pendant sa séquence
@@ -558,10 +559,30 @@ construction a changé aux nombres du § 16, sans toucher aux règles décidées
 - **La course** (AC-16), recalée sur parties entières : les facteurs de poule de 0,84 (Orla) à 1,38 (Tobin), +10 % par tour (A3), ×1,305 au tableau,
   ×1,586 en finale. Graines tenues à part 101 à 160 : la référence 98 / 98 / 100 / 68 / 49 % du jour 2 à la finale, **33 % de titres** ; le planificateur
   17 %, le curieux 3 %, le diligent et l'inactif 0 % ; des combats de 143 / 226 / 250 s en médiane (poule, tableau, finale). La poule est plus facile que les
-  85 et 75 % visés aux jours 4 et 5 : à +15 % par tour, 98 / 97 / 75 / 66 / 45 % et 28 % de titres (fiche LC1-1, A3).
+  85 et 75 % visés aux jours 4 et 5 : à +15 % par tour, 98 / 97 / 75 / 66 / 45 % et 28 % de titres (fiche LC1-1, A3). La pente est passée à +15 % (§ 19).
 - **Les combats hors écran** : 0,16 ms par duel dans Node ; entre rivaux, le moins fort gagne 25 % du temps.
 
-La fiche du lot : https://claude.ai/artifact/WpWZvn9TyYa7dbGnY8t89y (`briefs/fiche-combat-auto-lot1.html`), quatre cartes, à remplir.
+La fiche du lot : https://claude.ai/artifact/WpWZvn9TyYa7dbGnY8t89y (`briefs/fiche-combat-auto-lot1.html`), quatre cartes, relue le 12/11/2026 (§ 19).
+
+## 19. La fiche du lot 1 (12/11/2026, journal Passe LC2)
+
+Les choix de l'opérateur, mot pour mot :
+
+| Carte | Choix | Ce qui s'applique |
+|---|---|---|
+| LC1-1 | « +15 % par tour (décision A3 : change AC-16) » | la poule à +15 % par tour (`AUTO_RACE.pool` 1, 1,15, 1,3) ; le reste d'AC-16 inchangé |
+| LC1-2 | « Garder ×0,5 et juger à mon essai » ; sa note : « il faut peut etre penser a baisser le temps de charge pour une competences car elle etait adapter a notre systeme de combat premier avec l'inspiration de Cyn de FF6 » | la cadence des rivaux ×0,5 gardée ; la note au lot 2 |
+| LC1-3 | « Reprendre au lot 2, avant mon essai » | l'équilibre du catalogue entier au lot 2 |
+| LC1-4 | « Bien ainsi » | les ajouts de la construction gardés |
+
+- **La course à +15 % par tour** : les facteurs de poule de chaque rival gardés (calés au premier tour), le tableau ×1,305 et la finale ×1,586 gardés
+  (le tableau ne dépasse plus le troisième tour de poule, ×1,3, que d'un rien). Graines tenues à part 101 à 300 (200 parties) : la référence 96 / 95 / 75 /
+  70 / 52 % du jour 2 à la finale, **34 % de titres** ; le planificateur 14 % ; des combats de 153 / 228 / 247 s. Un recalage des paliers (`level --keep-norm`)
+  les déplaçait de moins de 1 %, sous la résolution du calage, et rendait le tableau plus facile (76 %, 37 % de titres) : non gardé.
+- **Le lot 2, avant l'essai** : l'équilibre du catalogue entier (LC1-3 : Peau de fer en poule, Rempart en finale, le sabre au tableau, le test de AC-12
+  étendu aux 715 kits) et les temps de charge des compétences de Ren (la note de LC1-2 : au niveau 1, la Taille éclair 3,4 s, le Tourbillon 5,1 s, l'Estoc
+  7,65 s, Rempart 3,0 s, Ferveur 4,25 s, l'attaque simple 1,2 s, quand les gros coups des rivaux chargent 1,5 à 2,2 s à la cadence ×0,5), mesurés ensemble,
+  puis la course relue sur 200 parties tenues à part.
 
 ---
 
