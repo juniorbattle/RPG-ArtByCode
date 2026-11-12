@@ -50,6 +50,9 @@ export function sfxOf(e: { type: string } & Record<string, unknown>, tiers: numb
       if (e.result === 'dodged') return [cue('whiff', pan)];
       if (e.result === 'guarded') return [cue(e.kind === 'light' ? 'guard' : 'guardHeavy', pan, 'guard')];
       if (e.result === 'guardbreak') return [cue('break', pan, 'break')];
+      // an enchaînement's later blows (the duel played by the computer, AC-02: `follow`) play their side's plain light blow, the action's own sound on its first
+      // blow only (Taille éclair's bolt, Tourbillon's three cuts are written once: lot 4, journal Passe LC6)
+      if (e.follow) return [cue(foe ? 'm_slash' : 'light', pan, 'hit')];
       const action = String(e.action), id = OWN.has(action) ? action : foe ? (e.kind === 'heavy' ? 'm_heavy' : 'm_slash') : e.kind === 'heavy' ? 'heavy' : 'light';
       return [cue(id, pan, e.kind === 'heavy' || e.kind === 'skill' || (e.damage as number) >= 20 ? 'heavy' : 'hit')];
     }
@@ -68,17 +71,19 @@ export function sfxOf(e: { type: string } & Record<string, unknown>, tiers: numb
   }
 }
 
-/** the crowd's reaction to a duel's event: an « oh » when a heavy blow or a skill lands, a cheer when it is one of Ren's skills, a gasp at a break, the roar
- *  of the K.O. */
+/** the crowd's reaction to a duel's event: an « oh » when a heavy blow or a skill lands (its first blow), a cheer when it is one of Ren's skills, a gasp at a
+ *  break, the roar of the K.O. */
 export function crowdOf(e: { type: string } & Record<string, unknown>): CrowdId | null {
   if (e.type === 'ko') return 'roar';
   if (e.type === 'break') return 'gasp';
-  if (e.type === 'impact' && e.result === 'hit' && (e.kind === 'heavy' || e.kind === 'skill')) return e.from === 'ren' && OWN.has(String(e.action)) ? 'cheer' : 'oh';
+  if (e.type === 'impact' && e.result === 'hit' && !e.follow && (e.kind === 'heavy' || e.kind === 'skill')) return e.from === 'ren' && OWN.has(String(e.action)) ? 'cheer' : 'oh';
   return null;
 }
-/** the charge held: the level its breath plays at after this event (0: none), `now` the level before it; the breath stops when the charge ends or Ren is stunned */
+/** the charge held: the level its breath plays at after this event (0: none), `now` the level before it; the breath stops when the charge ends or Ren is stunned,
+ *  and takes up again when his charge goes on after the stun (`chargeHold`, the duel played by the computer: lot 4, journal Passe LC6) */
 export function holdOf(e: { type: string } & Record<string, unknown>, tiers: number, now: number): number {
   if (e.type === 'chargeTier' && e.open) { const l = chargeLevel(e.idx as number, tiers); return l || now; }
+  if (e.type === 'chargeHold') return chargeLevel(e.idx as number, tiers);
   if (e.type === 'chargeRelease' || e.type === 'chargeEnd' || e.type === 'ko' || e.type === 'reset' || e.type === 'stun' && e.who === 'ren') return 0;
   return now;
 }

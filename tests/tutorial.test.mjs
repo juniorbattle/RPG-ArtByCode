@@ -191,9 +191,12 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
  *  charging a skill; the clock's lesson at SPEED_AT; none at the K.O.'s blow or after it */
 function oracle(d) {
   const log = d.result.log, light = new Set([d.ren.light.id, d.foe.light.id, d.foe.combo?.id]), first = { start: 0 }, fresh = {};
+  // a target's gauge just after a blow, from the script alone: the next line's trace (written before its own blow fills anything) with its decay undone, full at
+  // that fighter's break or while it is broken (lot 4, journal Passe LC6: the HUD shows the gauge at the blow, no longer one line late)
+  const after = (i, k) => { const e = log[i], n = log[i + 1]; if (e.s[k] >= R.gauge.max) return R.gauge.max; if (!n) return 0; if (n.ev === 'break' && n.s[k] >= R.gauge.max) return R.gauge.max; return n.s[k] > 0 ? n.s[k] + R.gauge.decay * (n.t - e.t) : 0; };
   const put = (id, t) => { if (!(id in first)) first[id] = t; };
   const koAt = log.find((e) => e.hp !== undefined && e.hp <= 0)?.t ?? Infinity;
-  for (const e of log) {
+  for (const [i, e] of log.entries()) {
     if (e.t >= koAt) break;
     if (e.ev === 'charge') { fresh[e.who] = true; if (e.who === d.ren.id && e.act !== d.ren.light.id) put('charge', e.t); continue; }
     if (e.ev === 'break') { put('break', e.t); continue; }
@@ -203,7 +206,7 @@ function oracle(d) {
     if (follow) put('combo', e.t);
     if (e.ev !== 'hit') put('react', e.t);
     if (e.ev === 'hit' && !light.has(e.act)) put('form', e.t);
-    if (e.ev !== 'dodged' && (e.who === d.ren.id ? e.s[3] : e.s[1]) >= R.gauge.max / 3) put('gauge', e.t);
+    if (e.ev !== 'dodged' && after(i, e.who === d.ren.id ? 3 : 1) >= R.gauge.max / 3) put('gauge', e.t);
   }
   if (DT.SPEED_AT < koAt) put('speed', DT.SPEED_AT);
   return first;

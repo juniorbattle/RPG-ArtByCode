@@ -42,10 +42,13 @@ export interface AutoWindow { name: string; t0: number; impactAt: number; dur: n
 interface State {
   side: AutoSide; charge: AutoCharge | null;
   g: number; gT: number; broken: boolean; stunEnd: number;
-  ward: { until: number; dur: number } | null; boost: { until: number; dur: number } | null;
+  /** a ward or a boost under way: until when, its length, what it does to the gauge (the ward on the gauge one takes, the boost on the gauge one gives) */
+  ward: { until: number; dur: number; gauge: number } | null; boost: { until: number; dur: number; gauge: number } | null;
   cd: Record<string, { until: number; dur: number }>;
   /** the opponent's sequence (a big action charged) told to the sound's layers (sequenceStart / sequenceEnd) */
   seq: boolean;
+  /** Ren charging a skill: its tier on the ladder of his four (`AutoReplay.tierOf`, 0 none), told as the charge's tier (lot 4, journal Passe LC6) */
+  tier: number;
 }
 
 /** the HUD's reading of one fighter */
@@ -80,10 +83,17 @@ export class AutoReplay {
   /** each fighter's blows and effects, and its reactions to the other's, in the order they start (`windowsOf`) */
   readonly wins: Record<Seat, AutoWindow[]>;
   readonly reacts: Record<Seat, AutoWindow[]>;
+  /** the charge's ladder as the duel of before built it (src/combat/charge.ts): the light attack at 0, then Ren's four skills by their charge time, the shortest
+   *  first; `tiers` its length. Ren charging a skill tells its tier (`chargeTier`), so that the charge's sounds and effects of lot S3 and FX play at the level
+   *  they played when that skill was released (src/audio/sfx.ts, src/arena/fx/fxRecipes.ts: `chargeLevel`), and the music's rule F hears « la charge » */
+  readonly tiers: number;
+  private ladder = new Map<string, number>();
 
   constructor(readonly result: AutoResult, readonly fighters: { ren: AutoFighter; marek: AutoFighter }, names: Record<Seat, string> = { ren: 'Ren', marek: 'Marek' }) {
     this.D = { dt: 1 / 120, fighters: { ren: { name: names.ren }, marek: { name: names.marek } } };
     if (!result.log) throw new Error('the arena plays a duel\'s script: autoDuel(..., { log: true, trace: true })');
+    [...fighters.ren.skills].map((a, k) => ({ a, k })).sort((x, y) => x.a.charge - y.a.charge || x.k - y.k).forEach(({ a }, r) => this.ladder.set(a.id, r + 1));
+    this.tiers = 1 + fighters.ren.skills.length;
     this.acts = { ren: actionsOf(fighters.ren), marek: actionsOf(fighters.marek) };
     this.ids = { [fighters.ren.id]: 'ren', [fighters.marek.id]: 'marek' };
     const w = result.winner ?? (result.hp[0] / result.maxHp[0] >= result.hp[1] / result.maxHp[1] ? 0 : 1);
@@ -102,7 +112,7 @@ export class AutoReplay {
       const x = this.fighters[seat], maxHp = this.result.maxHp[k];
       const side: AutoSide = { hp: maxHp, maxHp, ap: AUTO_RULES.ap.start + (x.apStart ?? 0), state: 'idle', stateT: 0, guarding: false, anim: { name: 'ready', t: 0, dur: 1, loop: true }, act: null };
       this.f[seat] = side;
-      this.s[seat] = { side, charge: null, g: 0, gT: 0, broken: false, stunEnd: 0, ward: null, boost: null, cd: {}, seq: false };
+      this.s[seat] = { side, charge: null, g: 0, gT: 0, broken: false, stunEnd: 0, ward: null, boost: null, cd: {}, seq: false, tier: 0 };
     });
     this.out.push({ type: 'reset' });
     this.refresh();
@@ -144,7 +154,12 @@ export class AutoReplay {
   private expire(t: number, tell: boolean): void {
     for (const seat of SEATS) {
       const s = this.s[seat];
-      if (s.broken && t >= s.stunEnd) { s.broken = false; s.g = 0; s.gT = s.stunEnd; if (tell) this.emit({ type: 'stunEnd', who: seat }); }
+      if (s.broken && t >= s.stunEnd) {
+        s.broken = false; s.g = 0; s.gT = s.stunEnd;
+        if (tell) this.emit({ type: 'stunEnd', who: seat });
+        // Ren's charge, paused by the stun (the duel's rule), goes on: its breath again, without its tier's note (lot 4)
+        if (tell && s.tier && s.charge) this.emit({ type: 'chargeHold', who: seat, idx: s.tier });
+      }
       if (s.ward && t >= s.ward.until) { s.ward = null; if (tell) this.emit({ type: 'wardEnd', who: seat }); }
       if (s.boost && t >= s.boost.until) { s.boost = null; if (tell) this.emit({ type: 'boostEnd', who: seat }); }
     }
@@ -164,13 +179,18 @@ export class AutoReplay {
         // the opponent charging a big action: its sequence, for the music's layers (the lead steps aside, the tension rises: rule F)
         if (seat === 'marek' && kindOf(a) !== 'light' && !a.ward && !a.boost) { s.seq = true; if (tell) this.emit({ type: 'sequenceStart', who: seat, len: 1 }); }
         if (tell) this.emit({ type: 'commandStart', who: seat, action: a.id, kind: kindOf(a), prep: Math.max(0, (e.at ?? e.t) - e.t), impactAt: 0, reactable: false, seqIdx: 0, seqLen: 0 });
+        // Ren charging a skill: its tier reached at once (the charge's note, its breath while it fills, the music's tension: lot 4, journal Passe LC6); his light
+        // attack is the ladder's 0, as before (nothing)
+        s.tier = seat === 'ren' ? this.tierOf(a.id) : 0;
+        if (tell && s.tier) this.emit({ type: 'chargeTier', who: seat, action: a.id, idx: s.tier, open: true, prep: Math.max(0, (e.at ?? e.t) - e.t) });
         break;
       }
       case 'ward': case 'boost': {
         if (!a) break;
-        const eff = a.ward ?? a.boost!, k = { until: e.t + eff.dur, dur: eff.dur };
+        const eff = a.ward ?? a.boost!, k = { until: e.t + eff.dur, dur: eff.dur, gauge: eff.gauge };
         if (e.ev === 'ward') s.ward = k; else s.boost = k;
         s.charge = null;
+        this.release(seat, tell);
         if (tell) this.emit({ type: 'effect', who: seat, action: a.id, family: e.ev === 'ward' ? 'defensive' : 'support', dur: eff.dur });
         break;
       }
@@ -179,8 +199,16 @@ export class AutoReplay {
         // an action's first blow ends its charge (its later blows, an enchaînement's, come after it)
         const first = !!s.charge, kind = kindOf(a);
         s.charge = null;
+        if (first) this.release(seat, tell);
         if (first && s.seq) { s.seq = false; if (tell) this.emit({ type: 'sequenceEnd', who: seat }); }
         if (e.hp !== undefined) o.side.hp = e.hp;
+        // the gauge this blow fills, as the duel fills it right after writing the blow's line (its trace is the gauge before it: src/combat/auto.ts, hitOnce): the
+        // HUD shows it at the blow, not one line later (journal Passe LC5's note, fixed in lot 4 on the presentation's side; the duel and its script unchanged)
+        if (e.ev !== 'dodged' && !o.broken && (e.hp ?? 1) > 0) {
+          const share = (a.hits ?? [1])[(e.hit ?? 1) - 1] ?? 1, end = this.fighters[other].end;
+          const add = (a.gauge ?? 0) * share * (10 / Math.max(1, end)) * (e.ev === 'guarded' ? AUTO_RULES.gauge.guardMul : 1) * (s.boost ? s.boost.gauge : 1) * (o.ward ? o.ward.gauge : 1);
+          o.g = Math.min(AUTO_RULES.gauge.max, Math.max(0, o.g - AUTO_RULES.gauge.decay * (e.t - o.gT)) + add); o.gT = e.t;
+        }
         const dmg = e.dmg ?? 0;
         if (tell && e.ev === 'dodged' && other === 'ren') this.emit({ type: 'reactStart', who: other, kind: 'dodge', cost: 0, early: false });
         // `follow`: an enchaînement's next blow (not its action's first); `apGain`: the AP its striker gained by it (a light attack that lands, once per
@@ -198,11 +226,21 @@ export class AutoReplay {
     }
   }
 
+  /** Ren's tier for a skill (0 his light attack or a rival's action) */
+  tierOf(id: string): number { return this.ladder.get(id) ?? 0; }
+
+  /** the action charged leaves: Ren's skill tells its release (the charge's whip and its light, lot S3 and FX) */
+  private release(seat: Seat, tell: boolean): void {
+    const s = this.s[seat], idx = s.tier;
+    s.tier = 0;
+    if (tell && idx) this.emit({ type: 'chargeRelease', who: seat, idx, ok: true });
+  }
+
   private ko(loser: Seat, tell: boolean): void {
     if (this.over) return;
     this.over = true; this.koT = this.t;
     const s = this.s[loser]; s.side.state = 'down'; s.charge = null;
-    for (const seat of SEATS) this.s[seat].charge = null;
+    for (const seat of SEATS) { this.s[seat].charge = null; this.s[seat].tier = 0; }
     if (tell) this.emit({ type: 'ko', who: loser });
   }
 
@@ -259,6 +297,12 @@ export class AutoReplay {
   chargeView(): { held: boolean; reached: number; waiting: number } {
     const c = this.s.ren.charge, f = this.f.ren;
     return { held: !!c && f.state === 'idle' && !this.over && !this.at(this.reacts.ren, this.t), reached: c && c.kind !== 'light' ? 1 : 0, waiting: -1 };
+  }
+  /** Ren's charge as the effects' breath reads it (src/arena/fx/combatFx.ts, the charge held: the charged command's ChargeView): while he charges a skill, not
+   *  stunned, the duel not over; null else */
+  chargeFx(): { held: boolean; launch: number; waiting: number; tiers: { length: number } } | null {
+    const s = this.s.ren;
+    return s.tier && s.charge && !this.over && !(s.broken && this.t < s.stunEnd) ? { held: true, launch: s.tier, waiting: -1, tiers: { length: this.tiers } } : null;
   }
   command(): boolean { return false; }
   react(): boolean { return false; }

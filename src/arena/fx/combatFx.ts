@@ -122,7 +122,9 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
       for (const e of evs) {
         if (e.type === 'impact') {
           const to = e.to as FighterId, heavy = e.kind === 'heavy' || e.damage >= 20;
-          if (e.result === 'hit') blow(blowRecipe(e.action, e.kind, e.from), F, to);
+          // an enchaînement's later blows (the duel played by the computer: `follow`) draw their side's plain light blow, the action's own recipe on its first
+          // blow only (a shock ring appears once, on the blow: lot 4, journal Passe LC6)
+          if (e.result === 'hit') blow(e.follow ? blowRecipe('', 'light', e.from) : blowRecipe(e.action, e.kind, e.from), F, to);
           else if (e.result === 'guarded') blow(RECIPES[heavy ? 'guardHeavy' : 'guard'], F, to);
           else if (e.result === 'guardbreak') blow(RECIPES.break, F, to);
         } else if (e.type === 'break') blow(RECIPES.break, F, e.who);

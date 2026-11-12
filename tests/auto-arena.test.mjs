@@ -25,6 +25,16 @@ const duelOf = (foe, stage, seed, loadout = ['t1', 't4', 'd1', 's1'], order) => 
   return { ren, foe: f, result: AU.autoDuel(ren, f, seed, { log: true, trace: true }) };
 };
 const blows = (r) => r.log.filter((e) => e.ev === 'hit' || e.ev === 'guarded' || e.ev === 'dodged');
+/** a fighter's gauge just after line i of the script, from the script alone (lot 4, journal Passe LC6): a line's trace is written before its blow fills the gauge
+ *  (src/combat/auto.ts), so the gauge after it is the next line's trace with its decay undone, full when the next line is that fighter's break or when it is broken;
+ *  undefined when the next line finds it empty (a stun ended between them, or a decay to nothing) or there is no next line. k: 1 the first fighter, 3 the second */
+function gaugeAfter(log, i, k) {
+  const R = AU.AUTO_RULES, e = log[i], n = log[i + 1];
+  if (e.s[k] >= R.gauge.max) return R.gauge.max;
+  if (!n) return undefined;
+  if (n.ev === 'break' && n.s[k] >= R.gauge.max) return R.gauge.max;
+  return n.s[k] > 0 ? Math.min(R.gauge.max, n.s[k] + R.gauge.decay * (n.t - e.t)) : undefined;
+}
 
 test('the trace changes nothing of the duel: the same script, each line with both fighters\' AP and gauges', () => {
   for (const [foe, seed] of [['orla', 3], ['vessa', 11], ['marek', 7]]) {
@@ -123,7 +133,7 @@ test('each blow drawn from before it lands (journal Passe LC4): its run-up read 
   assert.ok(firsts > 100 && follows > 20 && effects > 0, `the paths are reached: ${firsts} first blows, ${follows} next blows, ${effects} effects`);
 });
 
-test('the replay\'s HUD: both charges on the timeline, the gauges as the trace said them, Ren\'s four in his order with their cooldowns (DB5-3)', () => {
+test('the replay\'s HUD: both charges on the timeline, the gauges as the script leaves them, Ren\'s four in his order with their cooldowns (DB5-3)', () => {
   const d = duelOf('cassius', 1, 5), r = d.result, rp = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe });
   const order = d.ren.skills.map((a) => a.id);
   assert.deepEqual(rp.hud().slots.map((s) => s.id), order);
@@ -133,15 +143,48 @@ test('the replay\'s HUD: both charges on the timeline, the gauges as the trace s
     while (rp.t < e.t - 1e-9) rp.step(rp.D.dt);
     rp.step(rp.D.dt / 4); rp.drain();
     const h = rp.hud(), last = !r.log[i + 1] || r.log[i + 1].t > e.t + 1e-9;
-    // the gauge as the last line of that instant left it (several lines can share one instant)
-    if (e.s && last && Math.abs(rp.t - e.t) < 0.01 && !h.over) {
-      const g = e.s[1] / AU.AUTO_RULES.gauge.max * 100, gr = h.ren.broken ? 100 : h.ren.gaugePct;
+    // the gauge as the last line of that instant left it (several lines can share one instant), the line's blow in it (lot 4: no longer one line late)
+    const ga = gaugeAfter(r.log, i, 1);
+    if (e.s && last && Math.abs(rp.t - e.t) < 0.01 && !h.over && ga !== undefined) {
+      const g = ga / AU.AUTO_RULES.gauge.max * 100, gr = h.ren.broken ? 100 : h.ren.gaugePct;
       assert.ok(Math.abs(gr - g) < 0.5 || h.ren.broken, `the gauge at ${e.t}: ${gr} for ${g}`);
     }
     if (e.ev === 'charge' && e.who === 'ren' && e.act !== 'light' && !h.over) { charged++; assert.ok(h.slots.find((s) => s.id === e.act).charging, `${e.act} lit while charging`); }
     if (h.slots.some((s) => s.cool > 0)) cooled++;
   });
   assert.ok(charged > 3 && cooled > 0);
+});
+
+test('the gauge at the blow that fills it (journal Passe LC5\'s note, fixed on the presentation\'s side in lot 4): the HUD and the impact say the gauge after the blow, the script\'s own', () => {
+  let checked = 0, late = 0, breaks = 0;
+  for (const foe of RIVALS) for (const seed of [1, 2]) {
+    const d = duelOf(foe, seed === 1 ? 0 : 2, seed), r = d.result, rp = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe }), max = AU.AUTO_RULES.gauge.max;
+    const seat = (who) => (who === d.ren.id ? 'ren' : 'marek'), byLine = new Map();
+    // each blow's impact, in the order of the script's blows
+    const imps = [];
+    for (let i = 0; i < 1e6 && !rp.over; i++) { rp.step(rp.D.dt); imps.push(...rp.drain().filter((e) => e.type === 'impact')); }
+    const bl = r.log.map((e, i) => ({ e, i })).filter(({ e }) => e.ev === 'hit' || e.ev === 'guarded' || e.ev === 'dodged');
+    bl.forEach(({ e, i }, k) => byLine.set(i, imps[k]));
+    for (const [i, imp] of byLine) {
+      const e = r.log[i]; if (!imp || e.ev === 'dodged' || (e.hp ?? 1) <= 0) continue;
+      const kt = seat(e.who) === 'ren' ? 3 : 1, want = gaugeAfter(r.log, i, kt);
+      if (want === undefined) continue;
+      assert.ok(Math.abs(imp.resist - want) < 0.02, `${foe} ${seed} line ${i} (${e.ev} ${e.act} at ${e.t}): the impact says ${imp.resist}, the script ${want}`);
+      checked++; if (want - e.s[kt] > 0.5) late++; if (r.log[i + 1]?.ev === 'break') breaks++;
+    }
+    // the HUD at the step after a blow: the gauge after it, a blow that breaks shows it full
+    const h = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe });
+    for (const [i] of byLine) {
+      const e = r.log[i]; if (e.ev === 'dodged' || (e.hp ?? 1) <= 0 || r.log[i + 1]?.t === e.t && r.log[i + 1]?.ev !== 'charge' && r.log[i + 1]?.ev !== 'break') continue;
+      const kt = seat(e.who) === 'ren' ? 3 : 1, want = gaugeAfter(r.log, i, kt); if (want === undefined) continue;
+      h.seek(e.t);
+      const g = h.hud()[seat(e.who) === 'ren' ? 'marek' : 'ren'];
+      if (h.hud().over) continue;
+      assert.ok(Math.abs((g.broken ? 100 : g.gaugePct) - (want / max) * 100) < 0.5, `${foe} ${seed}: the HUD at ${e.t} shows ${g.gaugePct} for ${(want / max) * 100}`);
+    }
+  }
+  // the fault this fixes was there: blows whose share was shown one line late
+  assert.ok(checked > 1000 && late > 300 && breaks > 0, `blows checked ${checked}, of which ${late} late before lot 4, ${breaks} breaking`);
 });
 
 test('AC-08: the form of the day known before the bout, as the duel draws it; AC-05: the reactions the match sheet shows are the duel\'s formulas', () => {

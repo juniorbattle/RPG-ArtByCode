@@ -221,7 +221,7 @@ export class ArenaApp {
       const t = opts.params.get('time'), look = t === 'morning' || t === 'midday' || t === 'afternoon' ? t : 'night', m0 = opts.params.get('music');
       const piece: PieceId = opts.match?.piece ?? (m0 === 'rival' || m0 === 'finale' ? m0 : 'duel');
       void import('../audio/Sound').then((m) => {
-        const snd = m.sound(); this.snd = snd as unknown as { duelEvent(e: unknown): void }; snd.setScene('arena', look, false, 1842, { bout: piece, maxHp, tiers: this.charge?.tiers.length, ...(opts.match?.empty ? { empty: true } : {}) });
+        const snd = m.sound(); this.snd = snd as unknown as { duelEvent(e: unknown): void }; snd.setScene('arena', look, false, 1842, { bout: piece, maxHp, tiers: this.charge?.tiers.length ?? this.auto?.tiers, ...(opts.match?.empty ? { empty: true } : {}) });
         // mute: the player's key (the remapping, journal Passe RM2: mute is heard in the duel too)
         window.addEventListener('keydown', (e) => { if (!e.repeat && actsOf(e, 'duel').includes('mute')) snd.set({ muted: !snd.settings.muted }); });
       });
@@ -370,7 +370,7 @@ export class ArenaApp {
         : new ArenaHud(this.classic!, this.set.portraits, this.opts.match?.texts, parseTime(this.opts.params));
     }
     if (this.hud) {
-      this.hud.onAction = (id, down) => this.action(id, down);
+      this.hud.onAction = (id, down) => this.action(id, down, 'hud');
       this.hud.project = (who) => this.headScreen(who);
     }
     this.bindInput();
@@ -397,14 +397,15 @@ export class ArenaApp {
 
   // ---------------------------------------------------------------- input
   /** a command from the keys, a gamepad or the action bar */
-  action(id: string, down = true): void {
+  action(id: string, down = true, from?: 'hud'): void {
     const s = this.sim;
     // the duel played by the computer: the attack's key ×2, the dodge's « Skip » (the player's keys, the remapping), the pause's the pause
     if (this.auto) {
       // a lesson of the first duel being read holds the bout (journal Passe LC5): neither ×2 nor « Skip » meanwhile, the HUD's buttons included
       if (!down || this.lesson) return;
-      if (id === 'attack' || id === 'speed') { if (!this.auto.over) this.speed = this.speed > 1 ? 1 : 2; }
-      else if (id === 'dodge' || id === 'skip') { if ((!this.paused || this.moment) && !this.auto.over && !this.skipFade) this.beginSkip(); }
+      // ×2: the interface's click from the keys and the pad, as the HUD's button gives it by itself (lot 4, journal Passe LC6)
+      if (id === 'attack' || id === 'speed') { if (!this.auto.over) { this.speed = this.speed > 1 ? 1 : 2; this.snd?.duelEvent({ type: 'speed', on: this.speed > 1, quiet: from === 'hud' }); } }
+      else if (id === 'dodge' || id === 'skip') { if ((!this.paused || this.moment) && !this.auto.over && !this.skipFade) this.beginSkip(from === 'hud'); }
       else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; this.hud?.still(false); }
       else if (id === 'settings') this.openSettings();
       else if (id === 'reset') { if (!this.opts.match) this.restart(); }
@@ -483,7 +484,7 @@ export class ArenaApp {
 
   /** « Skip »'s curtain under way: its time on the arena's clock, whether the duel has reached its K.O. under it */
   private skipFade: { t: number; done: boolean; el: HTMLDivElement | null } | null = null;
-  private beginSkip(): void {
+  private beginSkip(quiet = false): void {
     let el: HTMLDivElement | null = null;
     if (typeof document !== 'undefined') {
       el = document.createElement('div');
@@ -492,6 +493,8 @@ export class ArenaApp {
       document.body.appendChild(el);
     }
     this.skipFade = { t: 0, done: false, el };
+    // the music goes down with the curtain (the page's own fade, SA-15), the K.O. heard once the duel has reached it under the black (lot 4, journal Passe LC6)
+    this.snd?.duelEvent({ type: 'skip', secs: SKIP_FADE.down, quiet });
   }
   /** the curtain's step: down, the duel skipped under the black (its K.O. told), then lifted (the fades kept with the reduced motion, RG-5) */
   private stepSkip(dt: number): void {
@@ -520,7 +523,7 @@ export class ArenaApp {
   snd: { duelEvent(e: unknown): void } | null = null;
 
   private onEvents(evs: Array<CombatEvent | DynEvent | ReplayEvent>): void {
-    this.combatFx?.onEvents(evs, this.fighters, this.charge?.tiers.length ?? 0);
+    this.combatFx?.onEvents(evs, this.fighters, this.charge?.tiers.length ?? this.auto?.tiers ?? 0);
     this.stands?.onEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
     this.pad?.duelEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>);
     if (!this.skipFade) this.onDuelEvents?.(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
@@ -647,7 +650,7 @@ export class ArenaApp {
       f.act.anim = `${f.kind}.${i}` as Anim;
     }
     this.fx = this.fx.filter((f) => !f.act.hidden);
-    this.combatFx?.present(dt, this.fighters, this.charge?.view() ?? null);
+    this.combatFx?.present(dt, this.fighters, (this.charge?.view() ?? this.auto?.chargeFx() ?? null) as ReturnType<ChargedDuel['view']> | null);
   }
 
   /** the contextual camera: the base framing; a push-in toward Marek while he charges a heavy (scaled by the assistance), held through the
