@@ -8,7 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createServer } from 'vite';
-import { makeSim, GAME, TERRAIN, CD_CLASS, BOOST_NEXT, STYLE_TACTIC } from './sim.mjs';
+import { makeSim, GAME, TERRAIN, CD_CLASS, BOOST_NEXT, STYLE_TACTIC, BRUTE, BRUTE_ROLES, BRUTE_STYLES } from './sim.mjs';
 
 export const ROOT = path.resolve(import.meta.dirname, '../..');
 const hook = {
@@ -24,7 +24,13 @@ const hook = {
       if (!code.includes(a) || !code.includes(b)) throw new Error('autoBoutOf not found');
       return code
         .replace(a, 'const __k = globalThis.__finalKit ? globalThis.__finalKit(st, o.id, v2KitOf(st), g ? g.profile : o.id) : v2KitOf(st);\n  const ren = autoRen(autoRenStats(st), __k, {')
-        .replace(b, 'ren.gear = st.v2?.gear; ren.kitLevels = __k.levels; foe.kitId = g ? g.profile : o.id;\n  ' + b);
+        .replace(b, 'ren.gear = st.v2?.gear; ren.kitLevels = __k.levels; foe.kitId = g ? g.profile : o.id; foe.stageAt = stage;\n  ' + b);
+    }
+    if (f.endsWith('/src/combat/autoData.ts')) {
+      // the off-screen bouts' stage on their fighters (brute: the rivals' skill levels)
+      const a = 'return autoDuel(A, B, o.seed);';
+      if (!code.includes(a)) throw new Error('autoOffscreen not found');
+      return code.replace(a, 'A.stageAt = B.stageAt = o.stage; ' + a);
     }
     return null;
   },
@@ -36,7 +42,7 @@ export const LAB = await load('/src/tournament/lab.ts'), ST = await load('/src/c
 export const GE = await load('/src/simulation/gear.ts'), SK = await load('/src/combat/skills.ts');
 export const RIVALS = Object.keys(ST.RIVAL_SHEETS);
 export const SIM = makeSim({ hitFactor: ST.hitFactor, AUTO_RULES: AU.AUTO_RULES, autoFormsOf: AU.autoFormsOf, autoDraw: AU.autoDraw });
-export { GAME, TERRAIN, CD_CLASS, BOOST_NEXT, STYLE_TACTIC };
+export { GAME, TERRAIN, CD_CLASS, BOOST_NEXT, STYLE_TACTIC, BRUTE, BRUTE_ROLES, BRUTE_STYLES };
 
 // ------------------------------------------------------------------------------------------------------------------------------- helpers
 export const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
@@ -61,7 +67,7 @@ export function setModel(cfg, o = {}) {
 }
 /** a fighter under a configuration: its actions re-tagged (terrain, parry, next), its cooldowns by `cd`, a rival's tactic by its style; GAME leaves it as it is */
 export function prep(x, cfg) {
-  if (cfg === GAME || (cfg.cd === 'game' && !cfg.terrain && !cfg.parry && cfg.boost !== 'next' && !cfg.styles && !cfg.retag && !cfg.vivK && !cfg.powerOf)) return x;
+  if (cfg === GAME || (cfg.cd === 'game' && !cfg.terrain && !cfg.parry && cfg.boost !== 'next' && !cfg.styles && !cfg.retag && !cfg.vivK && !cfg.powerOf && !cfg.brute)) return x;
   const lv = (a) => (x.kitLevels?.[a.id] ?? 1);
   const re = (a) => {
     const b = { ...a };
@@ -77,13 +83,32 @@ export function prep(x, cfg) {
     return b;
   };
   const y = { ...x, light: re(x.light), heavy: re(x.heavy), skills: x.skills.map(re) };
+  if (cfg.brute) bruteOf(y, x, cfg);
   // the Speed points of the pieces Ren wears × vivK (the gear's table: AC-11 doubled them)
   if (cfg.vivK && x.gear) y.viv = x.viv - (1 - cfg.vivK) * [x.gear.weapon, x.gear.armour, ...(x.gear.acc ?? [])].reduce((n, id) => n + (id ? GE.GEAR[id]?.fx?.viv ?? 0 : 0), 0);
-  if (cfg.styles && x.brain === 'rival') {
+  if (cfg.styles && !cfg.brute && x.brain === 'rival') {
     const k = kitOf(x), S = (cfg.styleTable ?? STYLE_TACTIC)[k];
     if (S) y.tactic = y.skills.map((s) => S[s.id] ?? 'auto');
   }
   return y;
+}
+
+/** brute: each skill its role, its uses by its level (a rival's by its stage), its gap, its power and charge; a rival its style (its reactions, its heavy blow,
+ *  its tactic); BR.usesAll (a fixed count for every skill; Infinity: the gaps alone) and cfg.bruteRoles / cfg.bruteStyles change the tables */
+function bruteOf(y, x, cfg) {
+  const BR = cfg.brute, roles = cfg.bruteRoles ?? BRUTE_ROLES, rival = x.brain === 'rival';
+  const S = rival ? (cfg.bruteStyles ?? BRUTE_STYLES)[kitOf(x)] : null;
+  const lvOf = (a) => (rival ? BR.rivalLevel[x.stageAt ?? 0] ?? 1 : x.kitLevels?.[a.id] ?? 1);
+  y.skills = y.skills.map((a) => {
+    const R = roles[a.id]; if (!R) return a;
+    const b = { ...a, role: S?.parry?.includes(a.id) ? 'parry' : R.role, uses: BR.usesAll ?? BR.uses[Math.max(1, Math.min(5, lvOf(a))) - 1], cooldown: BR.gap[R.gap] };
+    if (R.undodge) b.undodge = true; if (R.pierce) b.pierce = true; if (R.pierceWard) b.pierceWard = true;
+    if (b.power) b.power *= BR.usePower;
+    b.charge = a.charge * BR.charge * (BR.roleCharge?.[b.role] ?? 1);
+    if (b.role === 'parry') b.ward = { ...(a.ward ?? { gauge: 0.5 }), dur: BR.parry.dur, dmg: 0.05 };
+    return b;
+  });
+  if (S && cfg.styles !== false) { y.style = { dodge: S.dodge, guard: S.guard, heavy: S.heavy }; y.tactic = y.skills.map((s) => S.tactic[s.id] ?? 'auto'); }
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------- whole games

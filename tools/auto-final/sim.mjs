@@ -19,7 +19,55 @@
 //   power, hp every blow's power ×, every health × (the durations)
 //   heavy     'game' the heavy blow when the opponent cannot defend or the AP are full; 'open' only when the opponent cannot defend; 'ready' also as soon as
 //             no skill goes (with ap 'none')
+//   brute     the model inspired by La Brute (journal Passe CF2, briefs/combat-auto.md § 32), an object of its numbers (BRUTE): each skill a role (`role`:
+//             exploit / punish / pierce / breaker / opener / interrupt / ward / parry / haste / slow / load, set by lab.mjs's prep from BRUTE_ROLES), a number
+//             of uses per duel (`uses`) and a gap between two uses (its cooldown); a fighter's opening (`openUntil`: neither guard nor dodge, the damage ×
+//             open.dmg) made by an opener, an interrupt, a parry or the whiff of a big action dodged; the haste and the slow on the charges; each role its
+//             automatic (autoRole); a fighter's style (`x.style`: its guard and dodge ×, its heavy blow 'ready' or 'open')
 export const GAME = { ap: 'game', apMax: 5, apReact: 0, cd: 'game', guard: 0.8, guardStat: null, terrain: false, parry: 0, boost: 'game', gearFx: false, styles: false, power: 1, hp: 1, heavy: 'game', tiers: null, cdLevel: 0, terrainK: null, gaugeMul: 1, decay: null, auto: 'game' };
+
+/** the model inspired by La Brute (cfg.brute): its numbers */
+export const BRUTE = {
+  // uses per duel by level (1 to 5); the gap between two uses of one skill by class (s): fast, medium, long (the operator's « rapide, moyen, long »)
+  uses: [1, 2, 2, 3, 3], gap: { R: 8, M: 16, L: 28 },
+  // an opening: the damage taken ×, no guard nor dodge; the whiff of a big action dodged opens its striker (s)
+  open: { dmg: 1.25 }, whiff: 2.5,
+  // the roles' numbers: exploit × in an opening (or a break) and outside; punish × on a fighter charging a big action; an opener's opening (s); an
+  // interrupt's opening and the stagger before the interrupted one acts again; a parry's opening of the striker; the haste's and the slow's charges ×; a
+  // load's × on the next offensive action
+  exploit: { hi: 2, lo: 0.6 }, punish: 1.7, opener: 8, interrupt: { open: 6, stagger: 1 }, parry: { open: 6, dur: 3 }, haste: { k: 0.7, dur: 15 }, slow: { k: 1.4, dur: 12 }, load: { dmg: 2, gauge: 1.5, dur: 15 },
+  // every skill's charge × (rare now, they come out faster); a rival's skills' level by stage (the pool, the bracket, the final)
+  charge: 0.6, rivalLevel: [1, 2, 3],
+  // the light attack's charge × (fewer skills: the light fills the time; RY-1's forty blows a minute kept)
+  lightCharge: 1.35,
+  // every offensive skill's power × (fewer uses, each heavier)
+  usePower: 1.2,
+};
+/** each skill's role, its gap's class and what it does besides (Ren's catalogue and the rivals' own) */
+export const BRUTE_ROLES = {
+  t1: { role: 'punish', gap: 'R' }, t2: { role: 'pierce', gap: 'R', pierceWard: true }, t3: { role: 'breaker', gap: 'M', undodge: true }, t4: { role: 'exploit', gap: 'L' },
+  d1: { role: 'ward', gap: 'M' }, s1: { role: 'haste', gap: 'L' },
+  k_sunder: { role: 'opener', gap: 'M' }, k_feint: { role: 'interrupt', gap: 'R', pierce: true }, k_iron: { role: 'ward', gap: 'M' }, k_parry: { role: 'parry', gap: 'M' },
+  k_cry: { role: 'slow', gap: 'L' }, k_focus: { role: 'load', gap: 'L' },
+  m_lunge: { role: 'punish', gap: 'R' }, m_tempo: { role: 'haste', gap: 'L' }, m_brace: { role: 'ward', gap: 'M' },
+  m_wild: { role: 'breaker', gap: 'M' }, m_grit: { role: 'load', gap: 'L' },
+  m_riposte: { role: 'pierce', gap: 'R', pierceWard: true }, m_gild: { role: 'load', gap: 'L' },
+  m_shoulder: { role: 'opener', gap: 'M' },
+  m_smite: { role: 'exploit', gap: 'L' }, m_aegis: { role: 'ward', gap: 'M' }, m_prayer: { role: 'load', gap: 'L' },
+  m_ironfall: { role: 'exploit', gap: 'L' }, m_bulwark: { role: 'ward', gap: 'M' }, m_resolve: { role: 'load', gap: 'L' },
+  m_cleave: { role: 'breaker', gap: 'M', undodge: true }, m_roar: { role: 'slow', gap: 'L' }, m_hide: { role: 'ward', gap: 'M' },
+};
+/** each rival's style under brute: its guard and dodge × (its kit's pieces: a shield, light leathers), its heavy blow ('ready' a brawler's, else when the
+ *  opponent cannot defend), the conditions of its skills (by id; 'auto' its role's automatic). Cassius's brace parries. */
+export const BRUTE_STYLES = {
+  vessa: { dodge: 2, guard: 0.5, tactic: { m_tempo: 'ready', m_lunge: 'auto', m_brace: 'incoming' } },
+  tobin: { dodge: 0.8, guard: 0.4, heavy: 'ready', tactic: { m_grit: 'follow', m_wild: 'ready' } },
+  cassius: { dodge: 1.3, guard: 1.2, parry: ['m_brace'], tactic: { m_brace: 'incoming', m_riposte: 'auto', m_gild: 'follow' } },
+  orla: { dodge: 0.6, guard: 1, heavy: 'ready', tactic: { m_shoulder: 'ready', m_brace: 'incoming' } },
+  ilse: { dodge: 0.5, guard: 1.6, tactic: { m_aegis: 'ready', m_smite: 'auto', m_prayer: 'follow' } },
+  marek: { dodge: 0.3, guard: 1.3, tactic: { m_resolve: 'follow', m_ironfall: 'auto', m_bulwark: 'incoming' } },
+  rhosk: { dodge: 0.3, guard: 0.8, tactic: { m_hide: 'gauge', m_roar: 'ready', m_cleave: 'ready' } },
+};
 
 /** each skill's ground with `terrain` (the catalogue's and the rivals' own): punish / pierce / finish; a breaker is its gaugeK */
 export const TERRAIN = {
@@ -98,6 +146,8 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
       case 'gauge': return v.gauge(me) >= (2 / 3) * v.rules.gauge.max;
       case 'foeGauge': return !foe.broken && v.gauge(foe) >= (2 / 3) * v.rules.gauge.max;
       case 'warded': return active(foe.ward, t + v.chargeOf(me, s));
+      case 'open': return brokenFor(v, s) || (foe.openUntil ?? 0) - t >= v.chargeOf(me, s);
+      case 'start': return t < 15;
       case 'hurt': return me.hp / me.maxHp < 0.5;
       case 'finish': return foe.hp / foe.maxHp < 1 / 3;
       case 'follow': return cfg.ap === 'none'
@@ -142,17 +192,74 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
     if (g === 'punish') return condHolds('incoming', v, x, s);
     return false;
   }
+  /** brute: a skill's effect still running (a ward up, a haste, the opponent slowed, a load waiting): not raised again */
+  function running(v, s) {
+    const { me, foe, t } = v;
+    if (s.ward) return active(me.ward, t);
+    if (s.role === 'haste') return (me.hasteUntil ?? 0) > t;
+    if (s.role === 'slow') return (foe.slowUntil ?? 0) > t;
+    if (s.role === 'load') return !!me.next && me.next.until > t;
+    return false;
+  }
+  /** brute: an interrupt lands while the opponent still charges a big action (and before it leaves) */
+  const interruptible = (v, s) => { const { me, foe, t } = v; if (!foe.act || foe.act.kind === 'light' || foe.combo || foe.broken) return false; const land = t + v.chargeOf(me, s); return foe.at > land; };
+  /** brute: each role's automatic (the 'auto' line of a tactic): what a player who knows the roles would set without knowing the rival */
+  function autoRole(v, x, s) {
+    const { me, foe, t, cfg } = v;
+    // cfg.brute.late: past this share of either health, a skill held for its moment leaves anyway (a use never spent is lost); haste and slow wait for theirs
+    const L = cfg.brute.late, late = !!L && (foe.hp / foe.maxHp < L || me.hp / me.maxHp < L);
+    // cfg.brute.plan 'general': the automatic plays the best single plan measured for every rival (journal Passe CF2): the exploit in an opening or a break (or to
+    // finish), the punish as soon as ready, the haste when hurt or at the opponent's break
+    if (cfg.brute.plan === 'general') switch (s.role) {
+      case 'exploit': return condHolds('open', v, x, s) || foe.hp / foe.maxHp < 0.25 || (!!L && me.hp / me.maxHp < L * 0.6);
+      case 'punish': return true;
+      case 'haste': return brokenFor(v, s) || me.hp / me.maxHp < 0.5;
+      case 'slow': return condHolds('incoming', v, x, s) || late;
+      default: break;
+    }
+    if (L) switch (s.role) {
+      case 'exploit': return condHolds('open', v, x, s) || condHolds('incoming', v, x, s) || late;
+      case 'punish': return condHolds('incoming', v, x, s) || late;
+      case 'haste': return brokenFor(v, s) || me.hp / me.maxHp < 0.5 || late;
+      case 'slow': return condHolds('incoming', v, x, s) || late;
+      case 'load': return condHolds('follow', v, x, s);
+      default: break;
+    }
+    switch (s.role) {
+      case 'exploit': return condHolds('open', v, x, s) || condHolds('incoming', v, x, s) || foe.hp / foe.maxHp < 0.25;
+      case 'punish': return condHolds('incoming', v, x, s);
+      case 'opener': return x.skills.some((o) => o !== s && (o.role === 'exploit' || o.role === 'load') && v.usable(o)) || v.usable(x.heavy) || !x.skills.some((o) => o.role === 'exploit');
+      case 'interrupt': return interruptible(v, s);
+      case 'parry': return condHolds('incoming', v, x, s);
+      case 'ward': {
+        const foeLeft = foe.act ? foe.at - t : 0, foeBig = !!foe.act && foe.act.kind !== 'light';
+        return (foeBig && foeLeft > v.chargeOf(me, s)) || v.gauge(me) >= (2 / 3) * v.rules.gauge.max;
+      }
+      case 'load': return condHolds('follow', v, x, s);
+      default: return true; // pierce, breaker, haste, slow: as soon as ready
+    }
+  }
+  /** brute: the skill a fighter charges by its tactic (one condition per skill, in its order) */
+  function bruteChoice(v, x, conds) {
+    for (let i = 0; i < x.skills.length; i++) {
+      const s = x.skills[i], c = conds?.[i] ?? 'auto';
+      if (c === 'never' || !v.usable(s) || running(v, s)) continue;
+      if (c === 'auto' ? autoRole(v, x, s) : condHolds(c, v, x, s)) return s;
+    }
+    return null;
+  }
   function heavyWhen(v, x) {
     const { me, foe, t, cfg } = v;
     if (!v.usable(x.heavy)) return false;
     const tc = v.chargeOf(me, x.heavy), land = t + tc;
     if (foe.broken && foe.stunEnd - t >= tc) return true;
     if (foe.act && foe.act.kind !== 'light' && foe.at >= land) return true;
+    if (cfg.brute) return (foe.openUntil ?? 0) - t >= tc || me.x.style?.heavy === 'ready';
     if (cfg.heavy === 'open') return false;
     if (cfg.heavy === 'ready' || cfg.ap === 'none') return cfg.heavy === 'ready';
     return me.ap >= v.rules.ap.max;
   }
-  const autoDecider = (v, x) => tacticChoice(v, x, x.tactic) ?? (heavyWhen(v, x) ? x.heavy : x.light);
+  const autoDecider = (v, x) => (v.cfg.brute ? bruteChoice(v, x, x.tactic) : tacticChoice(v, x, x.tactic)) ?? (heavyWhen(v, x) ? x.heavy : x.light);
 
   /**
    * One duel (the game's autoDuel, the same signature) under `cfg`. `o.deciders` replaces a brain's automatic, `o.commands` the hand.
@@ -163,7 +270,7 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
     const put = (e) => { if (o.trace) e.s = [F[0].ap, +gaugeNow(F[0]).toFixed(2), F[1].ap, +gaugeNow(F[1]).toFixed(2)]; log.push(e); };
     const mk = (x, i) => {
       const hp = Math.round(x.hp * R.hpScale * (cfg.hp ?? 1));
-      return { i, x, hp, maxHp: hp, ap: R.ap.start + (x.apStart ?? 0), g: 0, gT: 0, broken: false, stunEnd: 0, cd: {}, ward: null, boost: null, act: null, at: 0, pending: false, combo: null, comboAt: 0, form: 1, n: zero(), dec: 0, gfx: gearOf(x, cfg), next: null };
+      return { i, x, hp, maxHp: hp, ap: R.ap.start + (x.apStart ?? 0), g: 0, gT: 0, broken: false, stunEnd: 0, cd: {}, ward: null, boost: null, act: null, at: 0, pending: false, combo: null, comboAt: 0, form: 1, n: zero(), dec: 0, gfx: gearOf(x, cfg), next: null, used: {}, openUntil: 0, hasteUntil: 0, slowUntil: 0 };
     };
     const F = [mk(A, 0), mk(B, 1)];
     { const fm = o.forms ?? autoFormsOf(s0, R); F[0].form = fm[0]; F[1].form = fm[1]; }
@@ -180,9 +287,10 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
     // cfg.charges k: a skill keeps up to k uses ready, recharged one at a time (the 'full' clock: one more use ready each cooldown; at the start one ready)
     const K = cfg.charges ?? 1;
     // cfg.breath G: after a skill leaves its charge, no other skill of that fighter before G s (a shared breath: the skills compete for the moments)
-    const usable = (f, a) => (noAp || (a.ap ?? 0) <= f.ap) && (!cfg.breath || a.kind !== 'skill' || (f.breathAt ?? -1e9) <= t + 1e-9) && (!a.cooldown || (K > 1 && a.kind === 'skill' ? (f.cd[a.id] ?? (K - 1) * a.cooldown * (f.gfx.cd ?? 1)) - t <= (K - 1) * a.cooldown * (f.gfx.cd ?? 1) + 1e-9 : (f.cd[a.id] ?? 0) <= t + 1e-9));
+    const BR = cfg.brute;
+    const usable = (f, a) => (!BR || a.kind !== 'skill' || (f.used[a.id] ?? 0) < (a.uses ?? Infinity)) && (noAp || (a.ap ?? 0) <= f.ap) && (!cfg.breath || a.kind !== 'skill' || (f.breathAt ?? -1e9) <= t + 1e-9) && (!a.cooldown || (K > 1 && a.kind === 'skill' ? (f.cd[a.id] ?? (K - 1) * a.cooldown * (f.gfx.cd ?? 1)) - t <= (K - 1) * a.cooldown * (f.gfx.cd ?? 1) + 1e-9 : (f.cd[a.id] ?? 0) <= t + 1e-9));
     const view = (f) => { let c = 0; const d = f.dec; return { t, me: f, foe: other(f), rules: R, cfg, usable: (a) => usable(f, a), gauge: gaugeNow, chargeOf: (g, a) => chargeFor(g, a), rand: () => autoDraw(s0, f.i, d, c++, DRAW.decide) }; };
-    const chargeFor = (f, a) => a.charge * speed(f) * (a.kind === 'light' ? f.gfx.lightCharge ?? 1 : 1);
+    const chargeFor = (f, a) => a.charge * speed(f) * (a.kind === 'light' ? (f.gfx.lightCharge ?? 1) * (BR?.lightCharge ?? 1) : 1) * (BR ? (f.hasteUntil > t ? BR.haste.k : 1) * (f.slowUntil > t ? BR.slow.k : 1) : 1);
     const cmds = [...(o.commands ?? [])].sort((a, b) => a.t - b.t);
     let cmdDone = -1;
     const pressed = (f) => {
@@ -200,6 +308,7 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
     function start(f, a) {
       settle(f);
       if (a.ap && !noAp) f.ap -= a.ap;
+      if (BR && a.kind === 'skill') f.used[a.id] = (f.used[a.id] ?? 0) + 1;
       if (cfg.breath && a.kind === 'skill') f.breathAt = t + cfg.breath;
       if (a.cooldown) { const C = a.cooldown * (f.gfx.cd ?? 1); f.cd[a.id] = K > 1 && a.kind === 'skill' ? Math.max(f.cd[a.id] ?? (K - 1) * C, t) + C : t + C; }
       let ch = chargeFor(f, a);
@@ -211,7 +320,13 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
     function land(f) {
       const a = f.act; f.act = null;
       settle(f); settle(other(f));
-      if (a.ward) { f.ward = { until: t + a.ward.dur, dmg: a.ward.dmg, gauge: a.ward.gauge, parry: a.parry }; log && put({ t: T(), who: f.x.id, ev: 'ward', act: a.id }); return false; }
+      if (BR && (a.role === 'haste' || a.role === 'slow' || a.role === 'load')) {
+        if (a.role === 'haste') f.hasteUntil = t + BR.haste.dur;
+        else if (a.role === 'slow') other(f).slowUntil = t + BR.slow.dur;
+        else f.next = { until: t + BR.load.dur, dmg: BR.load.dmg, gauge: BR.load.gauge };
+        log && put({ t: T(), who: f.x.id, ev: 'boost', act: a.id }); return false;
+      }
+      if (a.ward) { f.ward = { until: t + a.ward.dur, dmg: a.ward.dmg, gauge: a.ward.gauge, parry: a.parry, bparry: BR && a.role === 'parry' }; log && put({ t: T(), who: f.x.id, ev: 'ward', act: a.id }); return false; }
       if (a.boost) {
         if (cfg.boost === 'next' && a.next) f.next = { until: t + a.boost.dur, dmg: a.boost.dmg, gauge: a.boost.gauge };
         else f.boost = { until: t + a.boost.dur, dmg: a.boost.dmg, gauge: a.boost.gauge };
@@ -231,13 +346,24 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
       settle(g);
       const exposed = R.exposed && ((!!g.act && g.act.kind !== 'light') || !!g.combo);
       const lastPierce = f.gfx.lastPierce && a.kind === 'light' && c.i === c.hits.length;
+      const open = !!BR && g.openUntil > t, st = BR ? g.x.style ?? {} : {};
       let res = 'hit';
-      if (!g.broken && !exposed) {
-        if (autoDraw(s0, f.i, c.k, c.i, DRAW.dodge) < R.react.dodge * ratio(g.x.viv, f.x.viv) * (g.gfx.dodge ?? 1)) res = 'dodged';
-        else if (!a.pierce && !lastPierce && autoDraw(s0, f.i, c.k, c.i, DRAW.guard) < Math.min(R.react.cap, R.react.guard * ratio(g.x.def, f.x.atk) * (a.kind === 'light' ? 1 : R.react.skillGuard) * (g.gfx.guardChance ?? 1))) res = 'guarded';
+      if (!g.broken && !exposed && !open) {
+        if (!(BR && a.undodge) && autoDraw(s0, f.i, c.k, c.i, DRAW.dodge) < R.react.dodge * ratio(g.x.viv, f.x.viv) * (g.gfx.dodge ?? 1) * (st.dodge ?? 1)) res = 'dodged';
+        else if (!a.pierce && !lastPierce && autoDraw(s0, f.i, c.k, c.i, DRAW.guard) < Math.min(R.react.cap, R.react.guard * ratio(g.x.def, f.x.atk) * (a.kind === 'light' ? 1 : R.react.skillGuard) * (g.gfx.guardChance ?? 1) * (st.guard ?? 1))) res = 'guarded';
       }
-      if (res === 'dodged') { g.n.dodged++; if (a.kind !== 'light') f.n.wasted++; if (cfg.apReact && !noAp) g.ap = Math.min(apMax, g.ap + cfg.apReact); log && put({ t: T(), who: f.x.id, ev: 'dodged', act: a.id }); return; }
+      if (res === 'dodged') {
+        g.n.dodged++; if (a.kind !== 'light') f.n.wasted++; if (cfg.apReact && !noAp) g.ap = Math.min(apMax, g.ap + cfg.apReact);
+        // brute: a big action dodged leaves its striker open (the whiff)
+        if (BR && a.kind !== 'light' && c.i === 1 && BR.whiff) { f.openUntil = Math.max(f.openUntil, t + BR.whiff); g.n.opened = (g.n.opened ?? 0) + 1; }
+        log && put({ t: T(), who: f.x.id, ev: 'dodged', act: a.id }); return;
+      }
       const wardOn = !!g.ward && g.ward.until > t, boostOn = !!f.boost && f.boost.until > t;
+      // brute: a parry (a ward of the parry role) takes a big blow and leaves its striker open, the rest of its enchaînement lost (no counter-blow: AC-07)
+      if (BR && wardOn && g.ward.bparry && a.kind !== 'light' && c.i === 1) {
+        f.openUntil = Math.max(f.openUntil, t + BR.parry.open); c.i = c.hits.length; g.n.parried = (g.n.parried ?? 0) + 1; g.n.opened = (g.n.opened ?? 0) + 1;
+        log && put({ t: T(), who: g.x.id, ev: 'parry', act: a.id }); return;
+      }
       const red = cfg.guardStat ? Math.min(cfg.guardStat.hi, Math.max(cfg.guardStat.lo, cfg.guardStat.base * ratio(g.x.def, f.x.atk))) : cfg.guard ?? R.guardReduce;
       let k = hitFactor(f.x.atk, g.x.def) * (res === 'guarded' ? 1 - red : 1) * (g.x.taken ?? 1) * f.form * (cfg.power ?? 1);
       if (boostOn) k *= f.boost.dmg;
@@ -249,6 +375,12 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
         if (a.terrain === 'punish' && exposed) k *= TK.punish ?? 1.5;
         if (a.terrain === 'finish' && (g.broken || g.hp / g.maxHp < 1 / 3)) k *= TK.finish ?? 1.5;
       }
+      if (BR) {
+        if (open) k *= BR.open.dmg;
+        if (a.role === 'exploit') k *= open || g.broken || exposed ? BR.exploit.hi : BR.exploit.lo;
+        if (a.role === 'punish' && exposed) k *= BR.punish;
+        if (wardOn && a.pierceWard) k /= g.ward.dmg;
+      }
       if (a.kind === 'light' && g.gfx.lightTaken) k *= g.gfx.lightTaken;
       const dmg = Math.max(1, Math.round((a.power ?? 0) * share * k));
       g.hp = Math.max(0, g.hp - dmg); f.n.dmg += dmg; if (g.broken) f.n.dmgBroken += dmg; if (a.kind !== 'light') f.n.skillDmg += dmg;
@@ -257,6 +389,12 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
       if (a.kind === 'light' && !c.ap) { c.ap = true; f.ap = Math.min(apMax, f.ap + R.ap.light); }
       log && put({ t: T(), who: f.x.id, ev: res, act: a.id, dmg, hp: g.hp, hit: c.i, ...(o.trace ? { fx: (wardOn ? 1 : 0) | (boostOn ? 2 : 0) } : {}) });
       if (g.hp <= 0) { over = true; winner = f === F[0] ? 0 : 1; finisher = a.kind; return; }
+      // brute: an opener leaves the opponent open; an interrupt cancels the big action it charges (its use spent), staggers and opens it
+      if (BR && c.i === 1 && a.role === 'opener') { g.openUntil = Math.max(g.openUntil, t + BR.opener); f.n.opened = (f.n.opened ?? 0) + 1; }
+      if (BR && c.i === 1 && a.role === 'interrupt' && g.act && g.act.kind !== 'light' && !g.combo && !g.broken) {
+        log && put({ t: T(), who: f.x.id, ev: 'interrupt', act: g.act.id });
+        g.act = null; g.pending = true; g.at = t + BR.interrupt.stagger; g.openUntil = Math.max(g.openUntil, t + BR.interrupt.open); f.n.interrupts = (f.n.interrupts ?? 0) + 1; f.n.opened = (f.n.opened ?? 0) + 1;
+      }
       // a parry: a big blow landing on a ward that parries fills the striker's gauge
       if (cfg.parry && wardOn && g.ward.parry && a.kind !== 'light' && c.i === 1 && !f.broken) addGauge(f, cfg.parry * (R.gauge.max / R.gauge.blows) * (10 / Math.max(1, f.x.end)));
       if (!g.broken) {
@@ -310,5 +448,5 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
     }
     return out;
   }
-  return { duel, autoDecider, tacticChoice, heavyWhen, condHolds, strongestOf, offensive, brokenFor };
+  return { duel, autoDecider, tacticChoice, bruteChoice, autoRole, heavyWhen, condHolds, strongestOf, offensive, brokenFor };
 }

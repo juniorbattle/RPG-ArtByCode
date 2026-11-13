@@ -1,5 +1,5 @@
 // The sets of rules the workshop measures (journal Passe CF1): each a configuration of sim.mjs. `game` is today's duel.
-import { GAME } from './sim.mjs';
+import { GAME, BRUTE } from './sim.mjs';
 const C = (o) => ({ ...GAME, ...o });
 export const TIERS = { R: 15, M: 30, L: 50 };
 export const VARIANTS = {
@@ -56,4 +56,15 @@ export const VARIANTS = {
   'PG-S20': { cfg: C({ ap: 'none', heavy: 'open', styles: true, terrain: true, parry: 2, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, vivK: 0.5, powerOf: { t3: 0.8 }, breath: 20 }), about: 'PG et un souffle commun : 20 s entre deux compétences' },
   // the AP kept (a shared budget), and what measured well around them
   PK: { cfg: C({ styles: true, terrain: true, parry: 2, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, vivK: 0.5 }), about: 'les PA gardés, les styles, les terrains, la parade (2 coups), la garde par les stats, les effets d’équipement, la Vivacité des pièces à moitié' },
+  // the model inspired by La Brute (journal Passe CF2): no AP, each skill its uses per duel by level and a gap between two uses, its role
+  BU: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, brute: { ...BRUTE, exploit: { hi: 1, lo: 1 }, punish: 1, opener: 0, interrupt: { open: 0, stagger: 0 }, parry: { open: 0, dur: 3 }, whiff: 0 }, styles: false }), about: 'sans PA ; des usages par combat (1 à 3 selon le niveau) et un délai entre deux ; les rôles sans leurs failles ni leurs multiplicateurs' },
+  BC: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, styles: true, brute: { ...BRUTE, usesAll: Infinity, gap: { R: 15, M: 30, L: 50 } } }), about: 'sans PA ; recharges seules (rapide 15 s, moyenne 30 s, longue 50 s), les rôles et leurs failles, les styles des rivaux' },
+  BF: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, brute: BRUTE, styles: false }), about: 'sans PA ; des usages par combat et un délai, les rôles et leurs failles ; pas de styles' },
+  BS: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, styles: true, brute: BRUTE }), about: 'le modèle La Brute : sans PA, usages par combat et délai, rôles et failles, styles des rivaux' },
+  BK: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, styles: true, brute: BRUTE, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, vivK: 0.5 }), about: 'BS, la garde par les stats, les effets d’équipement, la Vivacité des pièces à moitié' },
+  'BS-2': { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, styles: true, brute: { ...BRUTE, usesAll: 2 } }), about: 'BS, deux usages pour toute compétence quel que soit son niveau' },
+  BK2: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, styles: true, brute: { ...BRUTE, roleCharge: { exploit: 0.66 } }, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, vivK: 0.5 }), about: 'BK, l’Estoc et les compétences qui exploitent chargées plus vite (×0,4 au lieu de ×0,6) : elles tiennent dans une faille' },
+  BK3: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, styles: true, brute: { ...BRUTE, roleCharge: { exploit: 0.66 }, uses: [2, 2, 3, 3, 4] }, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, vivK: 0.5 }), about: 'BK2, des usages plus doux : 2, 2, 3, 3, 4 selon le niveau (les rivaux 2, 2, 3)' },
+  BK4: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, styles: true, brute: { ...BRUTE, roleCharge: { exploit: 0.66 }, late: 0.5 }, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, vivK: 0.5 }), about: 'BK2 et un automatique qui ne garde rien jusqu’au bout : passée la moitié d’une santé, ce qui attendait son moment part ; la Ferveur à la rupture ou blessé, le Cri sur un gros coup' },
+  BK5: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, styles: true, brute: { ...BRUTE, roleCharge: { exploit: 0.66 }, uses: [2, 2, 3, 3, 4], late: 0.5, plan: 'general' }, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, vivK: 0.5 }), about: 'le modèle proposé : usages 2, 2, 3, 3, 4, l’Estoc qui tient dans une faille, l’automatique qui joue le plan général (Estoc dans une faille ou à la rupture, Taille éclair dès que prête, Ferveur blessé ou à la rupture), la garde par les stats, les effets d’équipement, les styles' },
 };

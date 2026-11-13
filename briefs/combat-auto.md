@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -1231,6 +1231,85 @@ https://claude.ai/artifact/NVyUoTFKBigFFzzm1abjUz (`briefs/fiche-combat-final.ht
 | CF-14 | La cote | la part de combats d'essai, pour plus tard |
 | CF-15 | Le § 6.1 (A3) | l'amender avec le texte ajusté aux choix |
 | CF-16 | La construction | en quatre lots, l'essai après le lot 2 |
+
+## 32. La proposition « La Brute » : le duel de La Brute, la préparation de la Cité (13/11/2026, journal Passe CF2)
+
+Statut : la proposition de l'agent, faite à la demande de l'opérateur sans attendre son aval ; publiée le 13/11/2026 (§ 32.7), elle remplace la fiche de l'atelier CF1 (§ 31.6). Rien sous `src/` : tout au laboratoire `tools/auto-final/` (§ 31.1), sa copie toujours prouvée identique au jeu (2 240 duels, 120 parties entières). Les décisions A3 qu'elle toucherait restent à l'opérateur, mot pour mot, avant toute construction (§ 32.6).
+
+### 32.1 La demande, mot pour mot (13/11/2026)
+
+« je t'ai demande de proposer/implementer la solution la plus optimale selon toi qui allie strategie simulation et preparation ou la tactique par rival permet de maximiser les chances de gagner en plus de notre bon entrainement/preparation donc maintenant le gambit tactique permet de savoir quand nous voulons utiliser telle competences a tel moment et des actions en continue pour les attaques simples et lourdes + les gardes/esquives ... les competences doivent creer une difference pour changer le rythme du combat ou creer une faille. sachant que oui chaque rivaux ont leur propre maniere de combattre ... mais je pense vraiment que le jeu Brute doit etre une inspiration principale avec notre valeur ajoutee concrete,.
+Donc analuyse le plus profondement possible et propose moi une solution optimale selon ta perception et sans forcement avoir mon aval. je veux que tu proposes toutes les idees concrete que tu as. et qui peuvent bonifier notre jeu »
+
+### 32.2 Le modèle proposé (`BK5`)
+
+- **Deux couches.** La couche continue, automatique : l'attaque simple et son enchaînement, le coup puissant et sa recharge (SY-02, DB5-3), la garde et l'esquive par les stats, la rupture de RY-3. La garde prend de 30 à 70 % des dégâts selon la Défense contre l'Attaque (50 % à égalité ; DB5-2 à revoir, la demande de l'opérateur). Les coups d'éclat : les quatre compétences, décidées par le plan de combat.
+- **Les coups d'éclat comptés** (comme les super-compétences de La Brute) : 2, 2, 3, 3, 4 usages par combat du niveau 1 au niveau 5, et un délai entre deux usages, rapide (8 s), moyen (16 s) ou long (28 s) selon son type (la « recharge rapide, moyenne, longue » de l'opérateur). Plus de PA (AC-03). Les compétences chargent à ×0,6 de leur temps d'aujourd'hui, celles qui exploitent à ×0,4 (elles tiennent dans une faille). Un rival : le niveau 1, 2, 3 de ses compétences en poule, au tableau, en finale.
+- **La faille** : un état visible d'un combattant, ni garde ni esquive, les dégâts subis +25 %. Créée par Fracas (8 s), la Feinte qui interrompt un gros coup en charge (6 s, l'usage adverse perdu, 1 s avant qu'il agisse de nouveau), la Garde de riposte qui pare un gros coup dans sa fenêtre de 3 s (6 s, sans contre-coup : AC-07), un gros coup esquivé (2,5 s). La rupture reste la grande faille (10 s, ×1,4).
+- **Un rôle par compétence** (`BRUTE_ROLES`) : exploiter (l'Estoc ; la Chute de fer de Marek, le Châtiment d'Ilse : ×2 dans une faille, une rupture ou sur un adversaire qui charge, ×0,6 sinon), punir (la Taille éclair, la Fente de Vessa : ×1,7 sur un adversaire qui charge), percer (la Fente, la Riposte de Cassius : à travers la garde et la protection), casser (le Tourbillon, inesquivable ; le Coup sauvage de Tobin, la Taille du Nord de Rhosk), ouvrir (Fracas ; l'Épaule d'Orla), interrompre (la Feinte), protéger (le Rempart, la Peau de fer, les protections des rivaux), parer (la Garde de riposte ; la protection de Cassius), accélérer (la Ferveur ; le Tempo de Vessa : les charges ×0,7 pendant 15 s), ralentir (le Cri de guerre ; le Rugissement de Rhosk : les charges adverses ×1,4 pendant 12 s), charger (la Concentration et les soutiens des rivaux : la prochaine action offensive ×2).
+- **Le plan de combat** : une condition par compétence parmi celles de son rôle (SY-08), l'ordre des quatre la priorité (AC-09) ; deux conditions nouvelles, « dans une faille » et « au début ». **L'automatique joue le plan général** mesuré : l'Estoc dans une faille ou à la rupture (ou pour finir), la Taille éclair dès qu'elle est prête, la Ferveur quand Ren est blessé ou à la rupture adverse, la Feinte sur un gros coup en charge, la protection quand un gros coup arrive, et passée la moitié d'une santé, plus rien de gardé.
+- **Les styles des rivaux** (`BRUTE_STYLES`), sous les mêmes règles (SY-01) : leurs pièces (le cuir léger de Vessa, esquive ×2 ; le bouclier d'Ilse, garde ×1,6 ; Marek et Rhosk lourds, esquive ×0,3), leur coup puissant (Tobin et Orla dès qu'il est prêt), leur plan ; la protection de Cassius pare.
+- **Les effets d'équipement** de CF1 (`GEAR_FX`) et la Vivacité des pièces à moitié (CF-11).
+- Le rythme et les durées : l'attaque simple charge ×1,35 (moins de compétences, l'attaque simple remplit le temps ; RY-1 gardé), les santés ×1,2.
+
+### 32.3 Le laboratoire
+
+- `sim.mjs` : l'interrupteur `brute` (`BRUTE` ses nombres, `BRUTE_ROLES`, `BRUTE_STYLES`) : les usages par combat et le délai, la faille (`openUntil`), le coup esquivé qui ouvre, la parade, l'interruption, l'accélération et le ralentissement des charges, chaque rôle son automatique (`autoRole` ; `plan: 'general'` l'automatique du modèle proposé ; `late` : passée la moitié d'une santé, rien n'est gardé), les conditions « dans une faille » et « au début ». Sans lui, la copie reste le jeu : `identity.mjs` repassé après le dernier interrupteur, 2 240 duels sur 2 240 et 120 parties sur 120.
+- `lab.mjs` : `bruteOf` (le rôle, les usages selon le niveau, ou selon l'étape pour un rival, le délai, la puissance et la charge, le style d'un rival) ; l'étape d'un combat posée sur ses combattants (les combats du joueur et ceux hors écran).
+- `brute.mjs` : un jeu de règles à niveau égal (les rivaux de chaque étape réglés pour que l'automatique gagne 85 / 65 / 50 % sur les combats de calage, deux passes), puis sur les combats tenus à part : l'automatique, la meilleure tactique unique, la meilleure tactique par rival, le meilleur kit par rival parmi quatorze archétypes, des appuis au hasard (un choix sur quatre, sur deux) ; un choix par rival gardé seulement s'il bat l'automatique de 3 points sur 25 combats de calage au moins, chaque kit dans l'ordre des quatre du jeu.
+- `brute-games.mjs` : la course recalée comme AC-16 (ou sur le planificateur, `--fitPolicy=planner --target=0.5,0.5`), puis sur 200 parties tenues à part : les cinq politiques, une tactique pour tous, un plan par rival (`adapte-tactique`), la référence qui apprend la Feinte, achète Fracas et choisit un kit et un plan par rival (`adapte`), des appuis au hasard.
+- Les jeux de règles : `BU` (les usages seuls), `BC` (les recharges seules, rapide 15 s, moyenne 30 s, longue 50 s, avec rôles, failles et styles), `BF`, `BS`, `BK`, `BK2` (l'Estoc rapide), `BK3` (usages 2, 2, 3, 3, 4), `BK4`, **`BK5` le modèle proposé**.
+
+### 32.4 Les mesures à niveau égal (200 parties de calage, graines 1 à 100 et 301 à 400 ; 200 tenues à part, 101 à 300)
+
+| Poule / tableau / finale (%) | Automatique | Une tactique pour tous | Plan par rival | Kit par rival | Hasard 1 sur 4 | Hasard 1 sur 2 |
+|---|---|---|---|---|---|---|
+| Le jeu d'aujourd'hui (PA) | 85 / 62 / 47 | 94 / 91 / 59 | 98 / 89 / 50 | 93 / 89 / 52 | 81 / 62 / 31 | 80 / 63 / 29 |
+| BC : sans PA, recharges seules, rôles, failles, styles | 85 / 62 / 32 | — | 97 / 94 / 63 | 98 / 90 / 56 | 72 / 69 / 66 | 74 / 75 / 78 |
+| BU : sans PA, usages comptés seuls | 85 / 66 / 49 | — | 95 / 74 / 49 | 94 / 85 / 49 | 58 / 55 / 31 | 51 / 56 / 36 |
+| BS : usages, rôles, failles, styles | 83 / 61 / 39 | — | 89 / 79 / 74 | 92 / 77 / 85 | 32 / 39 / 16 | 24 / 42 / 12 |
+| BK2 : et la garde par les stats, l'équipement, l'Estoc rapide | 89 / 67 / 62 | 96 / 84 / 94 | 98 / 93 / 62 | 96 / 85 / 62 | 31 / 44 / 46 | 28 / 37 / 38 |
+| **BK5 : le modèle proposé** | **81 / 65 / 54** | 75 / 75 / 51 | **99 / 75 / 73** | **83 / 89 / 77** | **67 / 46 / 41** | **60 / 45 / 36** |
+
+- Les recharges seules : le hasard bat l'automatique au tableau et en finale. Les usages comptés : le hasard tombe sous l'automatique.
+- Dans le jeu d'aujourd'hui et dans BK2, une tactique unique pour tous les rivaux bat l'automatique de loin (+9 / +29 / +12 ; +7 / +17 / +32) : c'est un défaut de l'automatique (la Taille éclair gardée pour un instant rare, la Ferveur lancée trop tôt, des usages jamais dépensés), pas une adaptation au rival. Dans BK5, l'automatique joue le plan général et aucune tactique unique ne le dépasse partout ; le plan par rival et le kit par rival le dépassent.
+- Le modèle proposé, avec le kit par rival : 1,3 à 1,7 faille et 0,7 à 1,1 interruption par combat au tableau et en finale, deux ruptures ; Ren lance 6 à 9 coups d'éclat par combat, son rival 4 à 7 ; 41 à 44 coups par minute.
+- Les choix par rival (BK5) : la Feinte et l'Estoc contre Vessa et Rhosk ; Fracas, la Taille éclair, l'Estoc et le Cri contre Cassius ; Fracas et l'Estoc contre Ilse au tableau, Fracas, la Feinte, l'Estoc et la Concentration en finale ; la Peau de fer, le Rempart, l'Estoc et le Cri contre Ilse sur les parties de calage ; Fracas et l'Estoc contre Marek en finale (de 53 % à 88 % sur le calage) ; l'Estoc gardé pour la rupture contre Vessa et Cassius.
+
+### 32.5 Sur parties entières (200 parties tenues à part)
+
+| Titres | Le jeu d'aujourd'hui | BK5, course AC-16 | BK5, course sur le joueur moyen |
+|---|---|---|---|
+| La référence (l'automatique) | 31 % | 33 % | 40 % |
+| La référence, une tactique pour tous | — | 42 % | 56 % |
+| La référence, un plan par rival | 52 % | 54 % | 63 % |
+| La référence qui apprend la Feinte, achète Fracas, un kit et un plan par rival | — | 46 % (demi 96 %) | 56 % |
+| Le planificateur | 18 % | 17 % | 22 % |
+| Le curieux | 21 % | 0 % | 1 % |
+| Le diligent, l'oisif | 0 % | 0 % | 0 % |
+| Des appuis au hasard, 1 sur 4 / 1 sur 2 | 21 à 24 % | 16 % / 9 % | 27 % / 18 % |
+
+- La course de BK5 (AC-16) : `{"norm":{"vessa":1.075,"tobin":1.432,"cassius":1.078,"orla":1.043,"ilse":0.858,"marek":0.95,"rhosk":1.222},"pool":[1,1.075,1.15],"stage":{"1":1.428,"2":1.939}}` ; sur le joueur moyen, l'étape 1 à 1,408, la finale à 1,85.
+- Le rythme : 43,6 coups par minute, la rupture en 28 coups pour Ren et 27 pour les rivaux, 1,7 par combat ; les durées médianes 1 min 13 / 3 min 25 / 2 min 27 (la poule trop courte, la finale un peu courte : à régler au lot 1 par la santé).
+- **[?] Le curieux** : 0 à 2 % dans tous les jeux de règles à usages (21 % aujourd'hui) ; il garde l'épée d'entraînement et ne monte pas ses compétences : le modèle convertit cet écart de build en défaite en finale. Avec les usages 2, 2, 3, 3, 4 et l'automatique d'avant (BK3) : 7 à 13 %. À corriger au lot 1 (la ville qui nourrit le build, la finale recalée).
+- Les étapes intermédiaires (à la course AC-16) : BK la référence 24 %, un plan par rival 28 % ; BK2 31 % et 87 % (l'écart venait surtout du défaut de l'automatique) ; BK3 46 % et 87 %, le hasard 27 % et 16 % ; BK4 31 % (sur le joueur moyen 63 %).
+
+### 32.6 Les décisions que la proposition toucherait
+
+AC-03 (« Les garder : +1 par attaque simple qui touche, les compétences les paient » : retirés, les usages comptés les remplacent) ; DB5-3 (« 5 × le temps de charge », A3 : gardée pour le coup puissant, SY-02 ; pour les compétences, le délai entre deux usages) ; DB5-2 (la garde à −80 % : par les stats, de −30 à −70 %) ; SL1-3 (l'automatique : le plan général) ; SY-08 (gardée, les conditions par rôle) ; AC-16 (A3 : la course calée sur le joueur moyen, si l'opérateur le choisit) ; le § 6.1 du contrat projet (les coups d'éclat comptés et la faille). Gardées : SY-01, SY-02, RY-1, RY-3, SL1-2, AC-07, AC-11.
+
+### 32.7 La proposition publiée
+
+https://claude.ai/artifact/VgiYmopbSiyd2Ks8MfoHzv (`briefs/proposition-combat-brute.html`), publiée le 13/11/2026 avec `{db:{}}`, `decisions` vide à la publication : ce que la proposition prend de La Brute et ce qu'elle y ajoute, le duel, les rivaux, les mesures, la préparation, toutes les idées (priorités 1 à 3), les décisions touchées, la construction en cinq lots ; six cartes de réponse facultatives. Elle remplace la fiche de l'atelier CF1 (§ 31.6).
+
+| Carte | Sujet | Recommandation |
+|---|---|---|
+| PB-1 | Le modèle du duel | le construire |
+| PB-2 | Les usages par combat | 2, 2, 3, 3, 4 selon le niveau |
+| PB-3 | La course | calée sur le joueur moyen |
+| PB-4 | La préparation (priorité 1) | la répétition, le carnet du maître d'armes, le repérage par paliers |
+| PB-5 | Le build à la La Brute (priorité 2) | le choix du vainqueur, les talents, les armes à propriété, les défis de l'arène, après la préparation |
+| PB-6 | La suite | lancer le lot 1 dans une séance à part |
 
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 

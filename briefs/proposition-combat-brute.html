@@ -1,0 +1,479 @@
+<title>Le combat proposé</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* One reading column: the proposal in sections, tables scroll on their own, the answer cards at the end (saved to the `decisions` collection). */
+:root {
+  --bg: #f3f4f6; --surface: #ffffff; --fg: #1d2129; --muted: #5b6270; --line: #d9dde4;
+  --brass: #8a6416; --brass-soft: #f4ead2; --rec: #2f6b3f; --rec-soft: #e3f0e6;
+  --cendre: #c4511d; --voile: #3b5fb0; --ronce: #2f7d45; --astre: #a7801a; --focus: #3b5fb0;
+  --good: #2f6b3f; --bad: #b23a2e;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef; --good: #7cc48e; --bad: #f08a7c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef; --good: #7cc48e; --bad: #f08a7c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px;
+}
+.wrap { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 44px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-weight: 400; font-size: 26px; line-height: 1.2; margin: 0; }
+h3 { font-size: 18px; margin: 0; line-height: 1.3; }
+p, li { max-width: 72ch; }
+p { margin: 0; }
+.lede { color: var(--muted); }
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px; }
+nav.toc a { color: var(--voile); text-decoration: none; }
+nav.toc a:hover { text-decoration: underline; }
+section.part { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 16px; }
+section.part > h2 { border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.callout { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.callout.big p { font-size: 19px; line-height: 1.45; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+ul, ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.pick td { background: color-mix(in srgb, var(--rec) 10%, transparent); font-weight: 600; }
+.good { color: var(--good); font-weight: 700; }
+.bad { color: var(--bad); font-weight: 700; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--brass); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+.idea { display: flex; flex-direction: column; gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.idea:last-child { border-bottom: none; }
+.idea .h { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.idea .h b { font-size: 16px; }
+.prio { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border-radius: 4px; padding: 1px 6px; }
+.p1 { color: var(--rec); background: var(--rec-soft); }
+.p2 { color: var(--voile); background: color-mix(in srgb, var(--voile) 12%, transparent); }
+.p3 { color: var(--muted); background: color-mix(in srgb, var(--muted) 12%, transparent); }
+.src { font-size: 13px; color: var(--muted); }
+.src code, code { font-family: var(--font-mono); font-size: 13px; }
+figure.diagram { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+figure.diagram .dg { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+figure.diagram svg { width: 100%; min-width: 560px; height: auto; display: block; }
+figure.diagram figcaption { font-size: 13px; color: var(--muted); }
+/* the answer cards (the decision sheet's mechanism) */
+.progress { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.bar { flex: 1 1 180px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn { font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; --fam: var(--brass); }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.card .ctx { color: var(--muted); }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt { font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea { font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; background: var(--bg); color: var(--fg); }
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · le combat · 13 novembre 2026</span>
+    <h1>Le combat proposé</h1>
+    <p class="lede">Ta demande : la solution que je juge la meilleure, sans attendre ton aval, avec La Brute comme inspiration principale et notre valeur ajoutée. Voici ma proposition complète : ce que je retiens de La Brute, ce que nous y ajoutons, le duel, les mesures du laboratoire, toutes mes idées et la construction. Tout en bas, six cartes pour me répondre (facultatives).</p>
+    <nav class="toc" aria-label="Sommaire">
+      <a href="#phrase">En une phrase</a><a href="#pourquoi">Pourquoi changer</a><a href="#brute">La Brute</a><a href="#ajout">Notre valeur ajoutée</a><a href="#duel">Le duel</a><a href="#rivaux">Les rivaux</a><a href="#mesures">Les mesures</a><a href="#prepa">La préparation</a><a href="#idees">Toutes les idées</a><a href="#decisions">Les décisions touchées</a><a href="#construction">La construction</a><a href="#reponse">Ta réponse</a>
+    </nav>
+  </header>
+
+  <section class="part" id="phrase">
+    <h2>En une phrase</h2>
+    <div class="callout big">
+      <p><b>Le duel de La Brute, la préparation de la Cité.</b> Le combat se joue seul. Les attaques simples et lourdes, la garde et l'esquive tournent en continu, selon les stats et l'équipement. Les quatre compétences deviennent des <b>coups d'éclat comptés</b> (deux à quatre fois par combat selon leur niveau) qui <b>créent une faille</b> ou <b>en profitent</b>. Ton plan de combat décide du moment de chacune, et il se prépare contre chaque rival, qui a son propre style.</p>
+    </div>
+    <p>Plus de points d'action : les usages comptés jouent ce rôle, mieux. Tu avais raison de vouloir retirer les PA ; c'est la recharge seule qui ne suffisait pas à les remplacer. Les mesures plus bas le montrent.</p>
+  </section>
+
+  <section class="part" id="pourquoi">
+    <h2>Pourquoi le combat d'aujourd'hui ne suffit pas</h2>
+    <ul>
+      <li><b>Appuyer au hasard coûte presque rien.</b> Dans le jeu d'aujourd'hui, des compétences lancées au hasard une fois sur quatre gagnent presque autant que l'automatique : 81 % contre 85 % en poule, 62 % contre 62 % au tableau. Le moment d'une compétence pèse peu.</li>
+      <li><b>Les recharges seules aggravent le problème.</b> Sans PA, avec des recharges rapides, moyennes et longues, le hasard bat l'automatique (au hasard une fois sur deux : 75 % contre 62 % au tableau, 78 % contre 32 % en finale). Retenir une compétence fait perdre de la recharge, donc la lancer dès qu'elle est prête est presque toujours juste : aucun choix de moment.</li>
+      <li><b>La préparation pèse trop peu.</b> Titres sur 200 parties : la référence 31 %, le planificateur 18 %, le diligent et l'oisif 0 %. La course ramène chacun vers les taux visés.</li>
+      <li><b>Les rivaux se ressemblent.</b> Mêmes règles, mêmes réflexes ; seuls leurs nombres changent. Rien ne pousse à adapter son plan à l'adversaire, sauf l'équilibre des nombres.</li>
+    </ul>
+  </section>
+
+  <section class="part" id="brute">
+    <h2>Ce que La Brute fait bien</h2>
+    <div class="two">
+      <div class="box">
+        <h3>Ce que j'en prends</h3>
+        <ul>
+          <li><b>Le combat se regarde.</b> Entièrement automatique, lisible, court, avec des moments qui font rire ou crier.</li>
+          <li><b>Les super-compétences comptées.</b> Elles ne servent qu'un nombre limité de fois par combat : chacune est un événement, le combat change quand elle part.</li>
+          <li><b>Le build par petits choix.</b> À chaque niveau, un choix entre deux bonus (une stat, une arme, une compétence, un animal) : chaque brute devient unique.</li>
+          <li><b>Des armes et des talents qui ont une personnalité.</b> Rapide, lourde, qui bloque, qui désarme ; des talents passifs qui changent la façon de se battre.</li>
+          <li><b>Choisir ses adversaires.</b> On choisit qui affronter parmi plusieurs adversaires de son niveau.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>Ce qui lui manque, et que nous avons</h3>
+        <ul>
+          <li><b>Aucun contrôle sur la manière de se battre.</b> Le joueur ne décide jamais quand une compétence part.</li>
+          <li><b>Aucune information sur l'adversaire</b>, donc aucune raison de préparer un combat plutôt qu'un autre.</li>
+          <li><b>Aucun monde entre les combats</b> : pas de ville, de métier, de rivaux qui se souviennent.</li>
+          <li><b>Le hasard domine</b> les combats serrés ; la préparation ne se voit pas.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="part" id="ajout">
+    <h2>Notre valeur ajoutée, concrètement</h2>
+    <ol>
+      <li><b>Le plan de combat (le gambit).</b> Une condition par compétence (« Feinte : quand il charge un gros coup », « Estoc : dans une faille »), l'ordre des quatre donne la priorité. L'automatique sait jouer chaque rôle sans connaître l'adversaire ; un bon plan adapté au rival fait mieux.</li>
+      <li><b>Le repérage et la répétition.</b> En ville, on apprend le style d'un rival en le regardant s'entraîner. Au terrain d'entraînement, on répète son plan contre son ombre et on lit ses chances. Boucle : repérer, préparer, répéter, ajuster, combattre.</li>
+      <li><b>La ville qui prépare.</b> Les créneaux du jour sont la vraie monnaie : s'entraîner, gagner des pièces, acheter, forger, se renseigner, saboter ou se protéger.</li>
+      <li><b>Des rivaux qui ont un style et une histoire.</b> Chaque rival se bat à sa façon (son arme, ses pièces, son plan) et se souvient de toi.</li>
+      <li><b>Les paris, plus tard.</b> Une cote lisible, la même que celle de la répétition, pour parier sur les combats des autres.</li>
+    </ol>
+  </section>
+
+  <section class="part" id="duel">
+    <h2>Le duel proposé</h2>
+    <h3>Deux couches</h3>
+    <div class="two">
+      <div class="box">
+        <p><b>La couche continue</b> (automatique, les stats et l'équipement décident) : l'attaque simple et son enchaînement, le coup puissant et sa recharge (SY-02), la garde et l'esquive par les stats, la rupture de RY-3. La garde prend de 30 % à 70 % des dégâts selon la Défense contre l'Attaque (50 % à égalité), au lieu des 80 % de DB5-2.</p>
+      </div>
+      <div class="box">
+        <p><b>Les coups d'éclat</b> (tes quatre compétences, décidés par ton plan) : chacune a <b>un nombre d'usages par combat</b> selon son niveau (2, 2, 3, 3, 4 du niveau 1 au niveau 5) et <b>un délai entre deux usages</b>, rapide (8 s), moyen (16 s) ou long (28 s) selon son type : ta « recharge rapide, moyenne, longue ». Plus de PA. Les compétences chargent plus vite qu'aujourd'hui (×0,6, celles qui exploitent ×0,4) : elles sont rares, elles doivent pouvoir saisir l'instant.</p>
+      </div>
+    </div>
+    <h3>La faille</h3>
+    <p>Une <b>faille</b> est un état visible de l'adversaire : pendant quelques secondes, il ne garde plus et n'esquive plus, et il prend 25 % de dégâts en plus. On la crée par une compétence (Fracas, la Feinte sur un gros coup en charge, la Garde de riposte qui pare un gros coup) ou en esquivant un gros coup (2,5 s). La rupture reste la grande faille (10 s, ×1,4). Les compétences qui exploitent (l'Estoc) chargent vite (×0,4) pour tenir dans une faille, frappent double dedans et à 60 % dehors : les lancer au mauvais moment coûte un usage pour presque rien.</p>
+    <figure class="diagram">
+    <div class="dg"><svg viewBox="0 0 720 230" role="img" aria-labelledby="dg-t dg-d">
+      <title id="dg-t">Une faille créée puis exploitée</title>
+      <desc id="dg-d">Marek charge sa Chute de fer. Ren lance la Feinte, qui l'interrompt : Marek est ouvert six secondes, sans garde ni esquive. Ren charge l'Estoc, qui frappe dans la faille au double de sa puissance.</desc>
+      <g font-family="var(--font-body)" font-size="13" fill="var(--fg)">
+        <!-- axis -->
+        <line x1="90" y1="196" x2="700" y2="196" stroke="var(--line)" stroke-width="1.5"/>
+        <g fill="var(--muted)" font-size="12" text-anchor="middle">
+          <text x="90" y="214">0 s</text><text x="240" y="214">3</text><text x="390" y="214">6</text><text x="540" y="214">9</text><text x="690" y="214">12</text>
+        </g>
+        <text x="10" y="58" font-weight="700">Marek</text>
+        <text x="10" y="148" font-weight="700">Ren</text>
+        <!-- Marek's charge, cut -->
+        <rect x="90" y="38" width="195" height="26" rx="3" fill="var(--cendre)" opacity=".85"/>
+        <rect x="285" y="38" width="37" height="26" rx="3" fill="none" stroke="var(--cendre)" stroke-dasharray="4 4"/>
+        <text x="98" y="56" fill="#fff" font-weight="600">charge sa Chute de fer</text>
+        <text x="330" y="56" fill="var(--muted)" font-size="12">… jamais partie</text>
+        <!-- the opening -->
+        <rect x="285" y="72" width="300" height="22" rx="3" fill="var(--astre)" opacity=".28"/>
+        <text x="293" y="88" font-weight="700" fill="var(--astre)">faille 6 s : ni garde ni esquive, +25 %</text>
+        <!-- Ren's Feint -->
+        <rect x="150" y="128" width="135" height="26" rx="3" fill="var(--voile)" opacity=".85"/>
+        <text x="158" y="146" fill="#fff" font-weight="600">Feinte</text>
+        <line x1="285" y1="66" x2="285" y2="128" stroke="var(--voile)" stroke-width="2"/>
+        <text x="292" y="116" fill="var(--voile)" font-size="12" font-weight="600">l'interrompt</text>
+        <!-- Ren's Thrust -->
+        <rect x="289" y="128" width="268" height="26" rx="3" fill="var(--ronce)" opacity=".85"/>
+        <text x="297" y="146" fill="#fff" font-weight="600">Estoc, chargé dans la faille</text>
+        <line x1="557" y1="64" x2="557" y2="128" stroke="var(--ronce)" stroke-width="2"/>
+        <circle cx="557" cy="64" r="6" fill="var(--ronce)"/>
+        <text x="566" y="116" fill="var(--ronce)" font-size="12" font-weight="700">×2, +25 %</text>
+        <text x="90" y="182" fill="var(--muted)" font-size="12">Le plan de Ren : « Feinte : quand il charge un gros coup » · « Estoc : dans une faille ».</text>
+      </g>
+    </svg></div>
+    <figcaption>Une faille créée puis exploitée, aux temps du prototype (Ren à Vivacité 10, compétences au niveau 1 ou 2) : la Feinte coupe la Chute de fer de Marek, l'Estoc part aussitôt et frappe pendant qu'il est ouvert.</figcaption>
+    </figure>
+    <h3>Les douze compétences et leur rôle</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Compétence</th><th>Rôle</th><th>Ce qu'elle fait</th><th>Délai</th></tr></thead>
+      <tbody>
+        <tr><td>Estoc</td><td>exploiter</td><td>×2 dans une faille, une rupture ou sur un adversaire qui charge ; ×0,6 sinon</td><td>long</td></tr>
+        <tr><td>Taille éclair</td><td>punir</td><td>×1,7 sur un adversaire qui charge un gros coup</td><td>rapide</td></tr>
+        <tr><td>Fente</td><td>percer</td><td>traverse la garde et la protection adverse</td><td>rapide</td></tr>
+        <tr><td>Tourbillon</td><td>casser</td><td>inesquivable, remplit la jauge adverse ×1,5</td><td>moyen</td></tr>
+        <tr><td>Fracas</td><td>ouvrir</td><td>ouvre une faille de 8 s</td><td>moyen</td></tr>
+        <tr><td>Feinte</td><td>interrompre</td><td>coupe le gros coup que l'adversaire charge (son usage perdu), faille de 6 s</td><td>rapide</td></tr>
+        <tr><td>Rempart, Peau de fer</td><td>protéger</td><td>réduit les coups subis pendant leur durée</td><td>moyen</td></tr>
+        <tr><td>Garde de riposte</td><td>parer</td><td>fenêtre de 3 s : un gros coup reçu est annulé et son auteur reste ouvert 6 s (pas de contre-coup : AC-07)</td><td>moyen</td></tr>
+        <tr><td>Ferveur</td><td>accélérer</td><td>tes charges ×0,7 pendant 15 s</td><td>long</td></tr>
+        <tr><td>Cri de guerre</td><td>ralentir</td><td>les charges adverses ×1,4 pendant 12 s</td><td>long</td></tr>
+        <tr><td>Concentration</td><td>charger</td><td>ta prochaine action offensive ×2</td><td>long</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Le plan de combat</h3>
+    <p>Une condition par compétence, choisie parmi celles de son rôle ; l'ordre des quatre donne la priorité. Conditions : <i>dès que prête</i>, <i>dans une faille</i>, <i>quand il charge un gros coup</i>, <i>quand il se protège</i>, <i>à la rupture</i>, <i>quand sa jauge passe les deux tiers</i>, <i>pour finir</i> (sous un tiers), <i>quand je suis blessé</i>, <i>au début</i>, <i>quand une offensive peut suivre</i>, <i>jamais</i>. L'<b>automatique</b> joue le meilleur plan général mesuré : l'Estoc dans une faille ou à la rupture, la Taille éclair dès qu'elle est prête, la Ferveur quand tu es blessé, la Feinte sur un gros coup en charge, la protection quand un gros coup arrive, et rien gardé jusqu'au bout. Aucune tactique unique ne le dépasse partout ; un plan adapté au rival, si.</p>
+    <p>La main (SY-08) reste : un appui sur 1 à 4 lance la compétence. Avec des usages comptés, un appui mal placé se paie.</p>
+  </section>
+
+  <section class="part" id="rivaux">
+    <h2>Les sept rivaux et leur style</h2>
+    <p>Les mêmes règles pour tous (SY-01) : le style d'un rival vient de son kit (son arme, ses pièces, ses compétences) et de son plan. Ren peut acheter les mêmes pièces.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Rival</th><th>Style</th><th>Sa menace</th><th>Sa faiblesse</th><th>Ce que le laboratoire a choisi contre lui</th></tr></thead>
+      <tbody>
+        <tr><td>Vessa</td><td>la vive : cuir léger (esquive ×2), garde faible</td><td>sa Fente quand tu charges</td><td>une faille lui retire l'esquive</td><td>la Feinte et l'Estoc (poule)</td></tr>
+        <tr><td>Tobin</td><td>le bagarreur : coups puissants dès que prêts, garde faible</td><td>son Coup sauvage casse la jauge</td><td>il charge souvent, donc il s'expose</td><td>l'automatique suffit</td></tr>
+        <tr><td>Cassius</td><td>le duelliste : esquive et garde, sa protection pare</td><td>sa parade punit tes gros coups</td><td>la Feinte le fait réagir à vide</td><td>l'Estoc gardé pour la rupture, le Rempart dès que prêt (poule)</td></tr>
+        <tr><td>Orla</td><td>la lutteuse : son Épaule ouvre une faille sur toi</td><td>la pression sur ta jauge</td><td>sa charge longue s'interrompt</td><td>l'automatique suffit</td></tr>
+        <tr><td>Ilse</td><td>la paladine : bouclier (garde ×1,6), égide souvent levée</td><td>elle encaisse et finit au Châtiment</td><td>ce qui perce et ce qui casse</td><td>la Peau de fer, le Rempart et le Cri (tableau) ; Fracas, la Feinte, l'Estoc et la Concentration (finale)</td></tr>
+        <tr><td>Marek</td><td>le marteau : patient, sa Chute de fer à la rupture</td><td>un coup qui décide d'un combat</td><td>sa charge lente se coupe, puis il est ouvert</td><td>Fracas et l'Estoc (finale : de 53 % à 88 % sur les parties de calage)</td></tr>
+        <tr><td>Rhosk</td><td>le roc : beaucoup de santé, se protège à sa jauge, ralentit</td><td>il use</td><td>il s'use aussi : tenir, couvrir, finir</td><td>la Feinte et l'Estoc (tableau : de 68 % à 100 % sur les parties de calage)</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="part" id="mesures">
+    <h2>Ce que mesure le laboratoire</h2>
+    <p>Le laboratoire <code>tools/auto-final/</code> rejoue le duel du jeu (copie prouvée identique : 2 240 duels et 120 parties entières sur 120). Chaque jeu de règles est jugé <b>à niveau égal</b> : ses rivaux réglés pour que l'automatique gagne 85 % en poule, 65 % au tableau, 50 % en finale sur des combats de calage ; puis tout se lit sur d'autres combats, tenus à part (200 parties de calage, 200 tenues à part).</p>
+    <div class="scroll"><table>
+      <thead><tr><th>À niveau égal · poule / tableau / finale (% de victoires)</th><th class="n">Automatique</th><th class="n">Une tactique pour tous</th><th class="n">Plan par rival</th><th class="n">Kit par rival</th><th class="n">Hasard 1 sur 4</th><th class="n">Hasard 1 sur 2</th></tr></thead>
+      <tbody>
+        <tr><td>Le jeu d'aujourd'hui (PA)</td><td class="n">85 / 62 / 47</td><td class="n bad">94 / 91 / 59</td><td class="n">98 / 89 / 50</td><td class="n">93 / 89 / 52</td><td class="n bad">81 / 62 / 31</td><td class="n bad">80 / 63 / 29</td></tr>
+        <tr><td>Sans PA, recharges seules, rôles et styles</td><td class="n">85 / 62 / 32</td><td class="n">—</td><td class="n">97 / 94 / 63</td><td class="n">98 / 90 / 56</td><td class="n bad">72 / 69 / 66</td><td class="n bad">74 / 75 / 78</td></tr>
+        <tr><td>Sans PA, usages comptés seuls</td><td class="n">85 / 66 / 49</td><td class="n">—</td><td class="n">95 / 74 / 49</td><td class="n">94 / 85 / 49</td><td class="n">58 / 55 / 31</td><td class="n">51 / 56 / 36</td></tr>
+        <tr><td>Usages, failles, rôles, styles ; l'automatique d'avant</td><td class="n">89 / 67 / 62</td><td class="n bad">96 / 84 / 94</td><td class="n">98 / 93 / 62</td><td class="n">96 / 85 / 62</td><td class="n good">31 / 44 / 46</td><td class="n good">28 / 37 / 38</td></tr>
+        <tr class="pick"><td>Le modèle proposé</td><td class="n">81 / 65 / 54</td><td class="n good">75 / 75 / 51</td><td class="n good">99 / 75 / 73</td><td class="n good">83 / 89 / 77</td><td class="n good">67 / 46 / 41</td><td class="n good">60 / 45 / 36</td></tr>
+      </tbody>
+    </table></div>
+    <ul>
+      <li><b>Les recharges seules ne marchent pas.</b> Le hasard bat l'automatique : retenir une compétence fait perdre de la recharge, aucun moment ne vaut mieux qu'un autre.</li>
+      <li><b>Les usages comptés font compter le moment.</b> Un coup d'éclat gâché ne revient pas : des appuis au hasard perdent de 13 à 21 points face à l'automatique du modèle proposé.</li>
+      <li><b>L'automatique doit jouer le bon plan général.</b> Dans le jeu d'aujourd'hui comme dans un premier prototype, une seule tactique pour tous les rivaux battait l'automatique de loin : c'était un défaut de l'automatique, pas une affaire de rival. Dans le modèle proposé, l'automatique joue ce plan général, et plus aucune tactique unique ne le dépasse partout.</li>
+      <li><b>L'adaptation au rival fait alors la différence</b> : un plan par rival fait passer la poule de 81 % à 99 % et la finale de 54 % à 73 % ; un kit par rival, le tableau de 65 % à 89 % et la finale de 54 % à 77 %.</li>
+      <li><b>Les choix varient d'un rival à l'autre</b> : la Feinte contre Vessa et Rhosk ; Fracas et l'Estoc contre Ilse et contre Marek en finale ; la Peau de fer et le Cri contre Ilse au tableau ; l'Estoc gardé pour la rupture contre Vessa et Cassius. Aucun kit ne domine.</li>
+      <li><b>Les failles existent</b> : avec un kit adapté, une à deux failles et une interruption par combat au tableau et en finale, en plus de deux ruptures ; six à neuf coups d'éclat par combat pour Ren, quatre à sept pour son rival.</li>
+    </ul>
+    <h3>Sur parties entières</h3>
+    <p>La course recalée comme AC-16 (sur la référence, 200 parties de calage), puis 200 parties tenues à part. Le joueur qui adapte reçoit, sur la fiche de match, un plan (et un kit) appris sur les combats de calage, gardé seulement s'il bat l'automatique de 3 points.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Titres (sur 200 parties)</th><th class="n">Le jeu d'aujourd'hui</th><th class="n">Le modèle proposé</th><th class="n">Le modèle, course sur le joueur moyen</th></tr></thead>
+      <tbody>
+        <tr><td>La référence, son plan à l'automatique</td><td class="n">31 %</td><td class="n">33 %</td><td class="n">40 %</td></tr>
+        <tr><td>La référence, une tactique pour tous</td><td class="n">—</td><td class="n">42 %</td><td class="n">56 %</td></tr>
+        <tr class="pick"><td>La référence, un plan par rival</td><td class="n">52 %</td><td class="n">54 %</td><td class="n">63 %</td></tr>
+        <tr><td>La référence qui apprend la Feinte, achète Fracas et choisit un kit par rival</td><td class="n">—</td><td class="n">46 %</td><td class="n">56 %</td></tr>
+        <tr><td>Le planificateur</td><td class="n">18 %</td><td class="n">17 %</td><td class="n">22 %</td></tr>
+        <tr><td>Le curieux</td><td class="n">21 %</td><td class="n bad">0 %</td><td class="n bad">1 %</td></tr>
+        <tr><td>Le diligent, l'oisif</td><td class="n">0 %</td><td class="n">0 %</td><td class="n">0 %</td></tr>
+        <tr><td>La référence qui appuie au hasard, 1 fois sur 4 / sur 2</td><td class="n">21 à 24 %</td><td class="n good">16 % / 9 %</td><td class="n">27 % / 18 %</td></tr>
+      </tbody>
+    </table></div>
+    <ul>
+      <li><b>Le rythme</b> : 43,6 coups par minute ; la rupture en 28 coups pour Ren et 27 pour les rivaux, 1,7 par combat.</li>
+      <li><b>À régler au lot 1</b> : les durées (la poule 1 min 13, trop courte ; le tableau 3 min 25 ; la finale 2 min 27, un peu courte) ; la Ferveur de l'automatique (« quand je suis blessé » seul fait mieux : c'est la tactique unique de la ligne deux) ; le prix d'une compétence nouvelle face au niveau des siennes (le joueur qui apprend la Feinte et achète Fracas gagne 96 % des demi-finales, mais en perd ailleurs).</li>
+      <li><b>Le risque principal : le curieux.</b> Ce joueur passe son temps en ville (vols, marchandage, défis) et garde l'épée d'entraînement jusqu'en finale ; le modèle convertit cet écart de build en défaite en finale (0 % des titres contre 21 % aujourd'hui). Explorer la ville ne doit pas condamner : au lot 1, la ville devra nourrir le build (le choix du vainqueur, les défis de l'arène) et la finale être recalée pour lui.</li>
+    </ul>
+  </section>
+
+  <section class="part" id="prepa">
+    <h2>La préparation qui pèse</h2>
+    <ul>
+      <li><b>Caler la course sur le joueur moyen.</b> Aujourd'hui (AC-16), les rivaux sont réglés sur la référence, un joueur déjà bien préparé : la course ramène chacun vers les taux visés. Calés sur le planificateur à l'équilibre (demi-finale et finale à 50 %), le planificateur gagne 22 % des titres, la référence 40 %, la référence avec un plan par rival 63 %, l'oisif 0 %. Un joueur bien préparé gagne nettement, un joueur moyen est à l'équilibre, un joueur négligent perd : c'est ta note de RY-3, mesurée.</li>
+      <li><b>La boucle de préparation</b> : repérer le rival (son style, puis son plan), choisir ses quatre coups d'éclat et leur plan, répéter contre son ombre et lire ses chances, combattre, lire le carnet du maître d'armes, ajuster pour le suivant.</li>
+      <li><b>Le build à la La Brute</b> : le choix du vainqueur après chaque victoire, des talents et des armes qui ont une personnalité. Chaque partie devient unique, et chaque choix se fait en pensant au prochain rival.</li>
+    </ul>
+  </section>
+
+  <section class="part" id="idees">
+    <h2>Toutes mes idées</h2>
+    <p>Priorité 1 : le cœur de la proposition, à construire d'abord. Priorité 2 : ce qui la complète, juste après. Priorité 3 : plus tard.</p>
+    <div class="box">
+      <h3>Le duel</h3>
+      <div class="idea"><div class="h"><span class="prio p1">priorité 1</span><b>Les coups d'éclat comptés</b></div><p>Deux à quatre usages par combat selon le niveau, et un délai rapide, moyen ou long ; plus de PA. Monter une compétence de niveau donne un usage de plus : la progression se voit dans le combat.</p></div>
+      <div class="idea"><div class="h"><span class="prio p1">priorité 1</span><b>La faille</b></div><p>Un état visible de l'adversaire, créé par Fracas, la Feinte, la Garde de riposte ou une esquive sur un gros coup ; un contour lumineux et un son pour la voir.</p></div>
+      <div class="idea"><div class="h"><span class="prio p1">priorité 1</span><b>Un rôle par compétence</b></div><p>Exploiter, punir, percer, casser, ouvrir, interrompre, protéger, parer, accélérer, ralentir, charger. Le tableau ci-dessus ; les compétences des rivaux ont les leurs.</p></div>
+      <div class="idea"><div class="h"><span class="prio p1">priorité 1</span><b>Le plan de combat par rival</b></div><p>Une condition par compétence ; un plan enregistré pour chaque rival, repris sur la fiche de match quand on le retrouve.</p></div>
+      <div class="idea"><div class="h"><span class="prio p1">priorité 1</span><b>Le style de chaque rival</b></div><p>Son arme, ses pièces, son coup puissant, son plan ; dit par le repérage.</p></div>
+      <div class="idea"><div class="h"><span class="prio p1">priorité 1</span><b>La garde par les stats</b></div><p>De 30 % à 70 % des dégâts selon la Défense contre l'Attaque, au lieu des 80 % de DB5-2 ; l'esquive reste par les stats.</p></div>
+      <div class="idea"><div class="h"><span class="prio p2">priorité 2</span><b>Des armes qui ont une personnalité</b></div><p>Comme dans La Brute : une propriété par famille. L'épée équilibrée, le sabre rapide, la masse qui casse la garde, la lance qui frappe la première, la hache qui profite des failles, la dague dont le dernier coup perce, le bouclier en main gauche. On les achète ou on les forge en ville.</p></div>
+      <div class="idea"><div class="h"><span class="prio p2">priorité 2</span><b>Les talents</b></div><p>Des passifs comme ceux de La Brute, chacun avec sa contrepartie : Peau épaisse, Pieds légers, Sang-froid (rupture subie plus courte), Opportuniste (failles plus longues), Survivant (survit une fois à un coup mortel), Briseur (jauge adverse plus vite), Première frappe.</p></div>
+      <div class="idea"><div class="h"><span class="prio p2">priorité 2</span><b>La mise en scène des coups d'éclat</b></div><p>Le nom en grand, un ralenti court, la caméra qui s'approche ; la faille qui s'allume. Le combat se regarde en accéléré entre les moments forts : les durées décidées restent, le temps regardé raccourcit.</p></div>
+      <div class="idea"><div class="h"><span class="prio p3">priorité 3</span><b>Un compagnon</b></div><p>Le clin d'œil aux animaux de La Brute : un faucon de chasse qui pique une fois par combat sur une condition du plan (interrompre un gros coup).</p></div>
+    </div>
+    <div class="box">
+      <h3>La préparation</h3>
+      <div class="idea"><div class="h"><span class="prio p1">priorité 1</span><b>La répétition</b></div><p>Au terrain d'entraînement, un créneau : trente combats contre l'ombre du rival repéré, avec ton kit et ton plan. Tu lis tes chances et tu revois deux combats. La cote de répétition suit les vrais combats (mesuré au laboratoire, CF1).</p></div>
+      <div class="idea"><div class="h"><span class="prio p1">priorité 1</span><b>Le carnet du maître d'armes</b></div><p>Après chaque combat : ce qui l'a décidé (dégâts par source, failles créées et manquées, coups d'éclat gâchés, interruptions, parades) et un conseil (« Contre Marek, garde la Feinte pour sa Chute de fer : trois Feintes sur quatre sont parties dans le vide »).</p></div>
+      <div class="idea"><div class="h"><span class="prio p1">priorité 1</span><b>Le repérage qui révèle le style puis le plan</b></div><p>Une première observation donne le style du rival ; une deuxième, son plan ; la rumeur, son kit du prochain combat.</p></div>
+      <div class="idea"><div class="h"><span class="prio p1">priorité 1</span><b>La course calée sur le joueur moyen</b></div><p>Les rivaux réglés pour qu'un joueur moyen soit à l'équilibre : un joueur bien préparé gagne alors nettement, un joueur négligent perd (mesure plus haut).</p></div>
+      <div class="idea"><div class="h"><span class="prio p2">priorité 2</span><b>Le choix du vainqueur</b></div><p>Le cœur du build de La Brute : après chaque victoire, une carte à choisir parmi deux ou trois (un point de stat, un niveau de compétence, un talent, une pièce, une bourse), tirées selon la graine de la partie. Chaque partie devient unique ; chaque choix se fait en pensant au prochain rival.</p></div>
+    </div>
+    <div class="box">
+      <h3>La ville et l'économie</h3>
+      <div class="idea"><div class="h"><span class="prio p2">priorité 2</span><b>Les défis de l'arène</b></div><p>Comme le choix d'adversaire de La Brute : chaque jour, trois challengers, leur cote et leur bourse. Un créneau, des pièces et de la renommée ; une réponse de plus à « on gagne mal sa vie ».</p></div>
+      <div class="idea"><div class="h"><span class="prio p2">priorité 2</span><b>La foule et le panache</b></div><p>Un coup d'éclat dans une faille, une interruption ou une parade font gagner de la renommée ; la renommée attire des mécènes. Gagner avec style rapporte plus.</p></div>
+      <div class="idea"><div class="h"><span class="prio p3">priorité 3</span><b>Les paris</b></div><p>Gardés pour plus tard (ECO-5) : sur les combats hors écran, avec la cote de répétition ; le repérage donne un avantage.</p></div>
+      <div class="idea"><div class="h"><span class="prio p3">priorité 3</span><b>La forge des propriétés</b></div><p>La forge améliore la propriété d'une arme (le sabre plus rapide, la masse plus lourde).</p></div>
+    </div>
+    <div class="box">
+      <h3>La rejouabilité</h3>
+      <div class="idea"><div class="h"><span class="prio p3">priorité 3</span><b>Les rivaux progressent aussi</b></div><p>Les mêmes règles pour tous : les rivaux ont leurs propres récompenses de vainqueur, leurs builds évoluent, le repérage reste utile jusqu'à la finale.</p></div>
+      <div class="idea"><div class="h"><span class="prio p3">priorité 3</span><b>Les tournois suivants</b></div><p>Un nouveau tournoi après le titre, les talents gardés, des rivaux plus forts.</p></div>
+      <div class="idea"><div class="h"><span class="prio p3">priorité 3</span><b>Revoir un combat</b></div><p>Depuis le journal : le duel est déterministe, il se rejoue à l'identique.</p></div>
+    </div>
+  </section>
+
+  <section class="part" id="decisions">
+    <h2>Les décisions que cela touche</h2>
+    <p>Tu m'as dit de proposer sans forcément ton aval ; ces décisions restent les tiennes, mot pour mot, avant toute construction.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Décision</th><th>Aujourd'hui</th><th>Avec la proposition</th></tr></thead>
+      <tbody>
+        <tr><td>AC-03 (les PA)</td><td>« Les garder : +1 par attaque simple qui touche, les compétences les paient »</td><td>retirés ; les usages comptés les remplacent</td></tr>
+        <tr><td>DB5-3 (A3)</td><td>« 5 × le temps de charge »</td><td>gardée pour le coup puissant (SY-02) ; pour les compétences, le délai rapide, moyen ou long entre deux usages</td></tr>
+        <tr><td>DB5-2</td><td>la garde à −80 %</td><td>la garde par les stats, de −30 % à −70 % (tu as demandé de la revoir)</td></tr>
+        <tr><td>SL1-3</td><td>« L'automatique garde la plus forte pour la rupture »</td><td>l'automatique par rôle</td></tr>
+        <tr><td>SY-08</td><td>« Une condition par compétence, l'ordre gardé »</td><td>gardée ; les conditions par rôle</td></tr>
+        <tr><td>AC-16 (A3)</td><td>la course calée sur la référence</td><td>calée sur le joueur moyen (si tu le choisis)</td></tr>
+        <tr><td>Le § 6.1 du contrat projet</td><td>amendé par SY-13</td><td>à amender : les coups d'éclat comptés et la faille</td></tr>
+      </tbody>
+    </table></div>
+    <p>Restent telles quelles : SY-01 (les mêmes règles pour tous), SY-02 (le coup puissant et sa recharge), RY-1 (environ 40 coups par minute : l'attaque simple charge un peu plus longtemps), RY-3 (la rupture), SL1-2 (les durées, réglées par la santé), AC-07 (pas de riposte : la parade ouvre sans contre-coup), AC-11 (l'équipement ×2).</p>
+  </section>
+
+  <section class="part" id="construction">
+    <h2>La construction</h2>
+    <ol>
+      <li><b>Lot 1, le duel</b> : les usages, les rôles, la faille, la garde par les stats, les styles des rivaux, l'automatique par rôle ; la course recalée sur parties entières ; les durées et le rythme réglés ; l'équilibre des compétences et des pièces au test de AC-12 ; tests et preuves dans le navigateur.</li>
+      <li><b>Lot 2, ce qui se voit</b> : la page du plan de combat (une condition par compétence, un plan par rival), la fiche de match (les styles, les usages), le HUD (les usages en pastilles, la faille), la relecture de l'arène (interruptions, parades, failles), le tutoriel et le guide.</li>
+      <li><b>Lot 3, la préparation</b> : la répétition, le carnet du maître d'armes, le repérage par paliers. Ton essai en jeu après ce lot.</li>
+      <li><b>Lot 4, le build</b> : le choix du vainqueur, les talents, les armes à propriété.</li>
+      <li><b>Lot 5, l'arène et la foule</b> : les défis de l'arène, le panache ; les paris quand tu le décideras.</li>
+    </ol>
+    <p>Chaque lot dans sa séance, fusionné après ses preuves. Le son et les effets suivent les nouveaux moments (la faille, l'interruption, la parade) avec les recettes déjà approuvées.</p>
+  </section>
+
+  <section class="part" id="reponse">
+    <h2>Ta réponse</h2>
+    <p class="lede">Six cartes, toutes facultatives. Un clic enregistre ton choix ; dis-moi dans la conversation quand c'est fait.</p>
+    <div class="progress" role="status" aria-live="polite">
+      <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+      <span class="count" id="count">0 / 6</span>
+      <span class="status" id="save">Connexion à l'enregistrement…</span>
+      <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+    </div>
+    <div id="cards" style="display:flex;flex-direction:column;gap:14px"></div>
+    <p class="src">Sources : <code>briefs/combat-auto.md</code> § 32 ; journal, Passe CF2 ; laboratoire <code>tools/auto-final/</code> (<code>brute.mjs</code>, <code>brute-games.mjs</code>) ; la fiche de l'atelier CF1 qu'elle remplace.</p>
+  </section>
+</div>
+
+<script>
+// Apostrophes: the typographic ’ inside '…' strings.
+const ITEMS = [
+  { id: 'PB-1', tag: 'le duel', title: 'Le modèle du duel',
+    ctx: 'Les coups d’éclat comptés, la faille, un rôle par compétence, le plan de combat, les styles des rivaux, la garde par les stats ; plus de PA.',
+    rec: 'Le seul modèle mesuré où le moment d’une compétence compte (le hasard s’effondre) et où se préparer contre chaque rival rapporte gros.',
+    opts: ['Construire ce modèle', 'Construire, avec mes réserves (en note)', 'Garder le duel d’aujourd’hui'], recIdx: 0 },
+  { id: 'PB-2', tag: 'les usages', title: 'Combien d’usages par combat',
+    ctx: 'Deux, deux, trois, trois, quatre du niveau 1 au niveau 5 ; ou un, deux, deux, trois, trois (mesuré : le hasard y est plus puni, mais une compétence au niveau 1 ne sert qu’une fois, Fracas puis l’Estoc ne se combinent pas avant le niveau 2, et le curieux qui ne monte pas les siennes tombe à 1 %).',
+    rec: 'Deux au niveau 1 : une compétence apprise sert déjà deux fois, la combinaison « créer une faille puis l’exploiter » marche tout de suite, et monter de niveau donne encore des usages.',
+    opts: ['2, 2, 3, 3, 4 selon le niveau', '1, 2, 2, 3, 3 selon le niveau', 'Autre (en note)'], recIdx: 0 },
+  { id: 'PB-3', tag: 'la course', title: 'Sur quel joueur caler les rivaux',
+    ctx: 'Aujourd’hui (AC-16), les rivaux sont calés sur la référence, un joueur déjà bien préparé. Calés sur le joueur moyen : le planificateur 22 % de titres, la référence 40 %, un plan par rival 63 %, l’oisif 0 %.',
+    rec: 'Ta note de RY-3 : un joueur bien préparé doit gagner nettement. Calée sur le joueur moyen, la course le permet sans toucher la poule.',
+    opts: ['Caler sur le joueur moyen', 'Garder le calage d’aujourd’hui (la référence)'], recIdx: 0 },
+  { id: 'PB-4', tag: 'priorité 1', title: 'La préparation : répétition, carnet, repérage par paliers',
+    ctx: 'Répéter son plan contre l’ombre d’un rival, lire le carnet du maître d’armes après chaque combat, découvrir le style puis le plan d’un rival.',
+    rec: 'C’est notre valeur ajoutée sur La Brute : la boucle repérer, préparer, répéter, ajuster.',
+    opts: ['Toutes', 'Une partie (en note)', 'Plus tard'], recIdx: 0 },
+  { id: 'PB-5', tag: 'priorité 2', title: 'Le build à la La Brute : choix du vainqueur, talents, armes à propriété, défis de l’arène',
+    ctx: 'Une carte à choisir après chaque victoire, des talents passifs, des armes qui ont une personnalité, trois challengers par jour.',
+    rec: 'Juste après le duel et la préparation : ils donnent à chaque partie son identité et une façon de plus de gagner des pièces.',
+    opts: ['Les construire après la préparation', 'Certains tout de suite (en note)', 'Non'], recIdx: 0 },
+  { id: 'PB-6', tag: 'la suite', title: 'Lancer la construction',
+    ctx: 'Lot 1, le duel, dans une séance à part ; tes décisions de cette page consignées mot pour mot avant.',
+    rec: 'Le lot 1 change le duel sans rien changer à l’écran : il se mesure entièrement avant le lot 2.',
+    opts: ['Lancer le lot 1', 'Attendre'], recIdx: 0 },
+];
+const state = {}; let db = null;
+const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k === 'class') n.className = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v); } for (const k of kids) if (k != null) n.append(k); return n; };
+function render() {
+  const root = document.getElementById('cards'); root.replaceChildren();
+  for (const it of ITEMS) {
+    const c = el('article', { class: 'card', id: 'card-' + it.id });
+    c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.id + ' · ' + it.tag), el('h3', {}, it.title)));
+    c.append(el('p', { class: 'ctx' }, it.ctx));
+    c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+    const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.id });
+    it.opts.forEach((label, i) => opts.append(el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) }, el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null)));
+    c.append(opts);
+    const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, une réserve, une condition…' });
+    ta.addEventListener('change', () => saveNote(it.id, ta.value)); let tm = 0; ta.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(() => saveNote(it.id, ta.value), 500); });
+    c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+    root.append(c);
+  }
+  update();
+}
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {}, c = document.getElementById('card-' + it.id); if (!c) continue;
+    c.classList.toggle('decided', !!s.choice); if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id); if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length}`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try { do { writing[id].again = false; const s = state[id] || {}; setSave('Enregistrement…'); await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() }); } while (writing[id].again); setSave('Enregistré'); }
+  catch (e) { setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l’enregistrement, réessaie dans un instant.'); }
+  finally { delete writing[id]; }
+}
+function choose(id, label) { edited[id] = Date.now(); state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label }; update(); write(id); }
+function saveNote(id, v) { if ((state[id]?.note || '') === v) return; edited[id] = Date.now(); state[id] = { ...(state[id] || {}), note: v }; write(id); }
+function summary() { return ['Le combat proposé — mes réponses :', ...ITEMS.map((it) => { const s = state[it.id] || {}; return `- ${it.id} (${it.title}) : ${s.choice || 'sans réponse'}${s.note ? ' — ' + s.note : ''}`; })].join('\n'); }
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+render();
+(async () => {
+  try { db = typeof claude !== 'undefined' ? await claude.use('db') : null; } catch { db = null; }
+  if (!db) { for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100)); try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; } }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l’enregistrement perdue : recharge la page.'));
+})();
+</script>

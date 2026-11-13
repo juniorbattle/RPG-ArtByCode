@@ -36,7 +36,7 @@ export function renOf(e, p = {}) {
 /** the rival of a banked bout at the race in force */
 export function foeOf(e) {
   const f = AD.autoFoe(e.foeId, AD.autoRaceSheet(e.foeId, e.stage, e.round, { preparation: e.prep, hp: e.foeHp }));
-  f.kitId = e.kitOf ?? e.foeId; return f;
+  f.kitId = e.kitOf ?? e.foeId; f.stageAt = e.stage; return f;
 }
 /** replay the bank under the current model (setModel) with a preparation `p(e)` (or one for all): the wins by stage and by rival, and the duels' records */
 export function replay(bank, p = () => ({}), o = {}) {
