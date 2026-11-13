@@ -105,10 +105,11 @@ try {
     const d = s.duelEvent.bind(s); s.duelEvent = (e) => { window.__evs.push({ type: e.type, follow: e.follow, action: e.action, from: e.from, result: e.result, sign: e.sign }); d(e); };
     const st = s.sting.bind(s); s.sting = (id) => { window.__stings.push(id); st(id); };
   });
-  // the duel plays by itself (lot 2), from its start again (the form of the day's sign comes in its first second, journal Passe LC7): twelve seconds of it, then ×2
+  // the duel plays by itself (lot 2), from its start again (the form of the day's sign comes in its first second, journal Passe LC7): thirty seconds of it (twelve
+  // before the rhythm ×3 of journal Passe SL3: Ren's first skill leaves later), then ×2
   // from its key (the attack's), then « Skip » (the dodge's)
   await page.evaluate(() => window.__arena.restart());
-  await wait(12000);
+  await wait(30000);
   const arena = await page.evaluate(() => { const c = window.__sound.crowd; return { bank: window.__sound.bank.size, crowd: !!c, carve: c instanceof BiquadFilterNode ? { type: c.type, hz: c.frequency.value, q: c.Q.value, db: c.gain.value } : null, cues: window.__cues, old: window.__old, evs: window.__evs }; });
   console.log(`   the arena's sounds played: ${JSON.stringify(arena.cues)}`);
   const duel = Object.values(table).filter((e) => e.family !== 'interface').length;

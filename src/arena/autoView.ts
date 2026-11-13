@@ -179,7 +179,8 @@ export class AutoReplay {
   private expire(t: number, tell: boolean): void {
     for (const seat of SEATS) {
       const s = this.s[seat];
-      if (s.broken && t >= s.stunEnd) {
+      // at its end to the billionth (the arena's clock adds its steps: a frame exactly at the end of a 10 s stun read a hair short of it, journal Passe SL3)
+      if (s.broken && t >= s.stunEnd - 1e-9) {
         s.broken = false; s.g = 0; s.gT = s.stunEnd;
         if (tell) this.emit({ type: 'stunEnd', who: seat });
         // Ren's charge, paused by the stun (the duel's rule), goes on: its breath again, without its tier's note (lot 4)

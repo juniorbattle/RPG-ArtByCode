@@ -1107,6 +1107,19 @@ Branche `claude/combat-sym-lot2-017fdf`, non fusionnée. **Le rythme** : mesuré
 
 **Reste** : le rythme appliqué, la course recalée une fois (+7,5 %, AC-15), deux nombres épinglés remesurés, SL1-4 et AC-12 refaits avec la tactique (SL1-5), les preuves du navigateur, la fiche d'essai.
 
+
+## 30. La fiche du rythme relue, la première partie du lot 2 fusionnée (13/11/2026, journal Passe SL4)
+
+La fiche https://claude.ai/artifact/LxbnwW9Q3vq7f8BqcETVk2 relue : RY-1 « ×3 plus lent : environ 40 coups par minute » (pas la recommandation), RY-2 « Étirés avec le reste », RY-3 « Garder 10 s (DB5-4) » avec sa note (décision A3, mot pour mot au journal : la rupture après le même nombre de coups par défaut pour chacun, environ 20 à 25, les dégâts ×1,4 pendant 10 s, des valeurs par défaut que les stats et les compétences modulent), RY-4 « Fusionner la première partie dès ses preuves ». Ce qui s'applique :
+
+- **Le rythme** : `AUTO_CADENCE` = { charge 1,8, power 3,2, gap 3, effect 3 } ; les recharges suivent les charges (DB5-3) ; le premier tirage 1,8 s.
+- **La rupture** : `AUTO_RULES.gauge` = { max 70, blows 22,5, decay 0,16, guardMul 2 }, `brk` = { stun 10, dmg 1,4 } ; un coup d'attaque simple un coup de la jauge, une compétence ou un coup puissant deux (un casseur × son gaugeK), partagés sur ses coups, × 10 / Endurance, la garde ×2, la protection et le renfort (`autoGaugeHit`).
+- **La course** : recalée une fois, la poule à +7,5 % (SL1-1), le tableau ×1,335 et la finale ×1,749 sur 200 parties de calage, tenue à part sur les graines 101 à 300.
+
+Mesuré sur les 200 parties tenues à part : 39 coups par minute ; la rupture en 25 coups pour Ren et 20 pour les rivaux (médianes) ; 1 min 51, 3 min 08, 3 min 50 ; la référence 92 / 93 / 100 en poule, 66 % en demi-finale, 48 % en finale, 31 % de titres. La poule trop facile à ses deux derniers tours tient à la pente A3 de SL1-1 : à soumettre à l'opérateur.
+
+Ensuite, à sa demande, l'atelier du système de combat final, dans une séance neuve : `briefs/atelier-combat-final-brief.md`. Les lots 3 et 4 du § 26.2 attendent sa fiche.
+
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
 Passe AU3, en réponse au chantier n° 1 de la Passe AU2 :

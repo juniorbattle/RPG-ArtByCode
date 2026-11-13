@@ -34,7 +34,7 @@ try {
     const script = await page.evaluate(() => {
       const a = window.__arena.auto, f = a.fighters;
       const acts = (x) => Object.fromEntries([x.light, x.heavy, ...x.skills].filter(Boolean).map((y) => [y.id, { hits: (y.hits ?? [1]).length, ward: y.ward?.dur ?? 0, boost: y.boost?.dur ?? 0 }]));
-      return { log: a.result.log, ids: { ren: f.ren.id, marek: f.marek.id }, acts: { ren: acts(f.ren), marek: acts(f.marek) }, end: a.end };
+      return { log: a.result.log, ids: { ren: f.ren.id, marek: f.marek.id }, acts: { ren: acts(f.ren), marek: acts(f.marek) }, end: a.end, rules: { max: a.rules.gauge.max, decay: a.rules.gauge.decay, stun: a.rules.brk.stun } };
     });
     // the frames: the blows each tells, both bars as laid out
     const frames = await page.evaluate((secs) => {
@@ -45,7 +45,7 @@ try {
       return out;
     }, SECS);
     // the script's gauge after each line, for each seat (index 1 Ren, 3 the opponent in the trace), and its value at a time
-    const L = script.log, seatOf = (who) => (who === script.ids.ren ? 'ren' : 'marek'), K = { ren: 1, marek: 3 }, MAX = 70, DECAY = 0.63;
+    const L = script.log, seatOf = (who) => (who === script.ids.ren ? 'ren' : 'marek'), K = { ren: 1, marek: 3 }, MAX = script.rules.max, DECAY = script.rules.decay, STUN = script.rules.stun; // the page's own rules (journal Passe SL3: the decay of RY-3)
     // a line's trace is written before its blow fills the target's gauge (src/combat/auto.ts): after a blow on that seat, the next line's trace with its decay undone (full
     // at its break); after any other line, its own trace
     const after = (i, k) => {
@@ -61,7 +61,7 @@ try {
     const expected = (seat, t) => {
       let i = -1; for (let j = 0; j < L.length && L[j].t <= t + 1e-9; j++) i = j;
       if (i < 0) return 0;
-      let stunEnd = -1; for (let j = 0; j <= i; j++) if (L[j].ev === 'break' && seatOf(L[j].who) === seat) stunEnd = L[j].t + 10;
+      let stunEnd = -1; for (let j = 0; j <= i; j++) if (L[j].ev === 'break' && seatOf(L[j].who) === seat) stunEnd = L[j].t + STUN;
       if (t < stunEnd - 1e-9) return 100;
       if (stunEnd > L[i].t) return 0;
       return (Math.max(0, after(i, K[seat]) - DECAY * (t - L[i].t)) / MAX) * 100;
