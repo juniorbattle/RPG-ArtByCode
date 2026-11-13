@@ -20,6 +20,10 @@ Amendement du 2026-11-11 (journal, Passe AC4 ; décision A3 de l'opérateur, cho
 sur la fiche de l'atelier de refonte du combat, https://claude.ai/artifact/6ksgfzxv8F3zSHhPhyh4PV ; ses vingt choix suivent la recommandation, le texte
 de la carte est donc le texte ajusté) : au § 6.1, la première phrase est remplacée. Texte d'avant : « Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1 : le temps ne s'arrête pas ; le joueur agit par trois commandes, la garde, l'esquive et l'attaque, l'attaque chargée en la tenant, par paliers, de l'attaque légère aux compétences, l'attaque puissante comptée parmi elles, les compétences payées en points d'action et réglées par leur niveau ; l'adversaire a la priorité quand il attaque, et le joueur se défend alors par la garde ou l'esquive (spécification : briefs/combat-system.md). ». Le reste du texte est
 inchangé ; les notes des amendements précédents gardent le texte de leur jour.
+Amendement du 2026-11-12 (journal, Passe SY2 ; décision A3 de l'opérateur, choix SY-13 « L’amender avec ce texte, ajusté à mes choix (décision A3) »,
+sur la fiche de l'atelier de la seconde refonte du combat, https://claude.ai/artifact/J99g6BKC3Fku2x6ZMvdPXF ; ses quatorze choix suivent la recommandation, le
+texte de la carte est donc le texte ajusté) : au § 6.1, la première phrase est remplacée. Texte d'avant : « Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1, joué par l'ordinateur selon la préparation du joueur : le temps ne s'arrête pas ; chaque combattant choisit une action et la charge sur une ligne de temps, puis elle part, en un coup ou en enchaînement, la Vivacité réglant la charge ; les compétences sont payées en points d'action et réglées par leur niveau ; la garde et l'esquive sont des réactions que donnent la Défense et la Vivacité (spécification : briefs/combat-auto.md). ». Le reste du texte est
+inchangé ; les notes des amendements précédents gardent le texte de leur jour.
 -->
 Cité du Tournoi — PROJECT MASTER CONTRACT
 
@@ -250,7 +254,7 @@ Ils peuvent s’entraîner, acheter, se soigner, espionner, négocier, résoudre
 
 6.1 Forme générale
 
-Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1, joué par l'ordinateur selon la préparation du joueur : le temps ne s'arrête pas ; chaque combattant choisit une action et la charge sur une ligne de temps, puis elle part, en un coup ou en enchaînement, la Vivacité réglant la charge ; les compétences sont payées en points d'action et réglées par leur niveau ; la garde et l'esquive sont des réactions que donnent la Défense et la Vivacité (spécification : briefs/combat-auto.md).
+Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1, joué par l'ordinateur selon la préparation du joueur, avec les mêmes règles pour tous les combattants : le temps ne s'arrête pas ; chaque combattant choisit une action et la charge sur une ligne de temps, puis elle part, en un coup ou en enchaînement, la Vivacité réglant la charge ; l'attaque simple et le coup puissant sont automatiques ; les compétences sont payées en points d'action, réglées par leur niveau, et lancées selon la tactique préparée par le joueur ou à sa main pendant le combat ; la garde et l'esquive sont des réactions que donnent la Défense et la Vivacité ; les écarts de force viennent des statistiques, de l'équipement, de l'entraînement et de la course des rivaux (spécification : briefs/combat-auto.md).
 
 La première priorité de production est de rendre le duel lisible, tactique, rapide à comprendre, suffisamment profond pour valoriser la préparation et spectaculaire sans perdre la lecture des décisions.
 

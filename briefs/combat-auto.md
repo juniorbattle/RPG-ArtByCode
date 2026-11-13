@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée, en attente de l'opérateur (§ 25)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; la construction en quatre lots à venir** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -891,6 +891,52 @@ comme elle le prévoit).
 - L'équilibre des compétences et des armes (SY-06).
 - Le coup d'avance gagne presque tout contre l'automatique des rivaux, qui n'a pas de hasard : une borne, pas un joueur ; à surveiller quand la tactique sera
   construite (une tactique lisible trop forte se mesure au laboratoire).
+
+## 26. Les décisions de la fiche SY1 (12/11/2026, journal Passe SY2)
+
+La fiche https://claude.ai/artifact/J99g6BKC3Fku2x6ZMvdPXF (`briefs/fiche-combat-sym.html`), relue le 12/11/2026 au soir (choix cliqués le 13/11 de 02 h 50 à
+02 h 52 UTC) : **quatorze choix sur quatorze à la recommandation**, aucune note. Les choix mot pour mot et les décisions A3 citées et datées : journal Passe
+SY2. Ce paragraphe dit ce qui s'applique ; là où le § 17 et les §§ 18 à 24 diffèrent, il l'emporte pour la construction à venir. Rien n'est encore construit :
+jusqu'au lot 1 ci-dessous, le jeu garde le duel des lots 1 à 4.
+
+| Carte | Le choix, mot pour mot | Ce qui s'applique |
+|---|---|---|
+| SY-01 | « Les six changements : les mêmes règles pour tous » | les rivaux paient leurs compétences en PA (2 PA), leur combo devient l'enchaînement de leur arme, les mêmes tables pour tous (la charge × 10 / Vivacité, la puissance par la charge, DB5-1), DB5-3 pour tous, plus de traits (AC-05 sans eux), le même automatique pour tous dans l'ordre de leur kit (§ 25.2) ; remplace, pour les rivaux, AC-02 (leurs combos), AC-05 (leurs traits), CB-1 (sans PA) et LC1-2 (la cadence ×0,5) |
+| SY-02 | « Une attaque de base pour tous, avec sa recharge (décision A3 : change CH1, CH-3, CH-4) » | le coup puissant hors des quatre, sans PA, lancé par l'automatique quand l'adversaire ne peut pas se défendre ou que les PA sont pleins, avec sa recharge de DB5-3 (A3) |
+| SY-03 | « ×0,6 pour tous » | toutes les charges et puissances × 0,6, pour Ren et les rivaux (les dégâts par seconde, les recharges avec les charges, la durée des effets gardée) |
+| SY-04 | « Un tirage par coup » | un tirage par coup (le frappeur, le rang de son action, le rang du coup) |
+| SY-05 | « +10 % par tour (décision A3 : change LC1-1) » | la poule à +10 % par tour ; le reste d'AC-16 gardé, ses facteurs recalés sur ces règles (A3) |
+| SY-06 | « Le refaire au premier lot, avec le test de AC-12 » | l'équilibre des compétences et des armes au lot 1 |
+| SY-07 | « Les trois : l’automatique, la tactique, la main » | l'automatique par défaut, la tactique, la main ; deux critères pour l'automatique (au moins aussi bon que les tactiques simples et que des appuis au hasard ; aucune tactique lisible sous lui) ; remplace AC-10 |
+| SY-08 | « Une condition par compétence, l’ordre gardé » | les huit conditions du § 25.5, l'ordre des quatre gardé (AC-09) |
+| SY-09 | « Au prochain choix de Ren, une compétence en attente » | § 25.5 ; rien ne coupe une charge (V2-2) |
+| SY-10 | « Le résultat de la tactique écrit à l’ouverture » | § 25.5 |
+| SY-11 | « Ainsi » | l'automatique des deux côtés hors écran, chaque rival sa tactique (AC-18) |
+| SY-12 | « Ainsi » | une bande de la fiche de match, une leçon au premier combat, le guide complété (TU-11) |
+| SY-13 | « L’amender avec ce texte, ajusté à mes choix (décision A3) » | le § 6.1 du contrat projet amendé le 12/11/2026 (A3) |
+| SY-14 | « Approuvée avec mes choix ; en lots, mon essai après le lot 2 » | la construction ci-dessous |
+
+### 26.1 Les décisions A3
+
+- **Changées** : CH1, CH-3 et CH-4 (le coup puissant, une attaque de base pour tous, avec sa recharge : SY-02) ; LC1-1 (la poule à +10 % par tour : SY-05) ; le
+  § 6.1 du contrat projet (SY-13).
+- **Gardées** : DB5 (la durée), DB5-3 (étendue aux rivaux et au coup puissant), DB5-4 (la rupture), DB7-1 (les cinq stats et leurs formules), DB7-3 et DB11-5,
+  DB7-4 et DB11-6, AC-07 (pas de riposte), AC-11 (l'équipement ×2), AC-16 (la course, son niveau commun en poule, sa Vivacité de poule ; ses facteurs recalés
+  comme elle le prévoit, sa pente changée par SY-05).
+
+### 26.2 Les lots (SY-14)
+
+Chaque lot dans sa séance, dans le jeu par défaut (VD-8), fusionné après ses preuves :
+1. **Les règles communes** dans la simulation (`src/combat/auto.ts`, `autoData.ts`) : les six changements de SY-01, le coup puissant de SY-02, la cadence ×0,6,
+   le tirage par coup ; l'automatique revu pour les deux critères de SY-07 ; l'équilibre des compétences et des armes au test de AC-12 (SY-06) ; la course recalée
+   à +10 % par tour sur parties entières (graines de calage, puis graines tenues à part), visée AC-15. La relecture de l'arène et le tutoriel suivent le script
+   comme aujourd'hui ; leurs preuves relancées.
+2. **La tactique** sur la fiche de match et dans la page des compétences (une condition par compétence, `setTactic`), **la main** dans l'arène (le duel refait
+   depuis l'appui), **la sauvegarde** (le résultat de la tactique écrit à l'ouverture). **L'essai de l'opérateur suit ce lot.**
+3. **Le tutoriel et le guide** (SY-12).
+4. **Le retrait de l'ancien duel** et de ses outils (le lot 5 de la première refonte, § 17.3).
+
+Le prototype du laboratoire (`tools/auto-sym/`) en donne les points de départ ; ses nombres se recalent à la construction.
 
 ---
 
