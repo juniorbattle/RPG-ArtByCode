@@ -406,7 +406,7 @@ export function windowsOf(log: AutoEvent[] | undefined, ids: Record<string, Seat
 
 function actionsOf(x: AutoFighter): Map<string, AutoAction> {
   const m = new Map<string, AutoAction>();
-  for (const a of [x.light, ...(x.combo ? [x.combo] : []), ...x.skills]) m.set(a.id, a);
+  for (const a of [x.light, x.heavy, ...x.skills]) m.set(a.id, a);
   return m;
 }
 

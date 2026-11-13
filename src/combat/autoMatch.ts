@@ -52,10 +52,10 @@ export function autoOutcome(st: GameState, kind: 'bout' | 'challenge' = 'bout', 
 export const autoForms = (b: Pick<AutoBout, 'seed'>): [number, number] => autoFormsOf(b.seed);
 
 /** the chances of a reaction for a fighter defending against another (AC-05; briefs/combat-auto.md § 3, « La fiche de match montre les deux chances »): its
- *  dodge, its guard against a light attack and against a skill seen coming (the duel's own formulas, its traits added, at most 90 %) */
-export function autoReactions(def: Pick<AutoFighter, 'def' | 'viv' | 'dodgeBonus' | 'guardBonus'>, att: Pick<AutoFighter, 'atk' | 'viv'>): { dodge: number; guard: number; guardSkill: number } {
+ *  dodge, its guard against a light attack and against a big action seen coming (the duel's own formulas, the stats alone since SY-01, at most 90 %) */
+export function autoReactions(def: Pick<AutoFighter, 'def' | 'viv'>, att: Pick<AutoFighter, 'atk' | 'viv'>): { dodge: number; guard: number; guardSkill: number } {
   const R = AUTO_RULES.react, ratio = (a: number, b: number) => (2 * a) / Math.max(1e-6, a + b);
-  const dodge = Math.min(1, R.dodge * ratio(def.viv, att.viv) + (def.dodgeBonus ?? 0)), g = R.guard * ratio(def.def, att.atk);
-  return { dodge, guard: Math.min(R.cap, g + (def.guardBonus ?? 0)), guardSkill: Math.min(R.cap, g * R.skillGuard + (def.guardBonus ?? 0)) };
+  const dodge = Math.min(1, R.dodge * ratio(def.viv, att.viv)), g = R.guard * ratio(def.def, att.atk);
+  return { dodge, guard: Math.min(R.cap, g), guardSkill: Math.min(R.cap, g * R.skillGuard) };
 }
 
