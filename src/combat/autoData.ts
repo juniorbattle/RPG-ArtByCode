@@ -17,11 +17,11 @@ export const AUTO_CADENCE = { all: 0.6 };
 export const AUTO_LIGHT = { charge: 1.2, power: POWER.light, gauge: POWER.light * 0.1 };
 /** Ren's weapons' enchaînements (AC-02, « l'arme de Ren »): the hits of the light attack, each one's share of its power and gauge, the gap between them (s) */
 export const AUTO_WEAPONS: Record<string, { hits: readonly number[]; gap: number }> = {
-  'training-sword': { hits: [0.55, 0.55], gap: 0.3 },
-  'imported-blade': { hits: [0.62, 0.62], gap: 0.32 },
-  // the sabre's three cuts lighter than the prototype's 0.42 (its +1 Speed, ×2 with the gear, made it the best weapon against every rival): each weapon the best
-  // against three rivals at least at every stage (the test of AC-12, journal Passe LC1)
-  'duelist-sabre': { hits: [0.23, 0.23, 0.23], gap: 0.22 },
+  // balanced again on the same rules for every fighter (SY-06, the test of AC-12, journal Passe SL1): the training sword and the imported blade heavier, the sabre's
+  // three cuts lighter (0.55, 0.62 and 0.23 before; its +2 Speed and +3 Attack, the gear's, made it the best weapon against nearly every rival)
+  'training-sword': { hits: [0.85, 0.85], gap: 0.3 },
+  'imported-blade': { hits: [0.7, 0.7], gap: 0.32 },
+  'duelist-sabre': { hits: [0.17, 0.17, 0.17], gap: 0.22 },
 };
 
 /** one of Ren's skills on the timeline, at level 1 (the level raises its power or its effect's length by LEVEL_POWER and shortens its charge: skills.ts) */
@@ -52,15 +52,16 @@ export const AUTO_SKILLS: Record<string, AutoSkillDef> = {
   heavy: { family: 'offensive', ap: 0 },
   t1: { family: 'offensive', ap: 2, hits: [0.5, 0.5], gap: 0.25 },
   t2: { family: 'offensive', ap: 2, pierce: true },
-  t3: { family: 'offensive', ap: 3, gaugeK: BREAKER, hits: [0.36, 0.36, 0.36], gap: 0.25 },
-  t4: { family: 'offensive', ap: 4 },
+  // Tourbillon ×1.8 and the Thrust ×0.8 on the same rules (journal Passe SL1: the offensive kits fell to 2 to 21 % of the start kit's level)
+  t3: { family: 'offensive', ap: 3, gaugeK: BREAKER, hits: [0.36, 0.36, 0.36], gap: 0.25, powerK: 1.8 },
+  t4: { family: 'offensive', ap: 4, powerK: 0.8 },
   d1: { family: 'defensive', ap: 2, ward: { dur: 9, dmg: 0.4, gauge: 0.3 }, cover: true },
   s1: { family: 'support', ap: 2, boost: { dur: 12, dmg: 1.8, gauge: 2 } },
-  k_sunder: { family: 'offensive', ap: 2, gaugeK: BREAKER },
+  k_sunder: { family: 'offensive', ap: 2, gaugeK: 2 },
   k_feint: { family: 'offensive', ap: 1, pierce: true },
   k_iron: { family: 'defensive', ap: 2, ward: { dur: 11.2, dmg: 0.3, gauge: 0.15 }, cover: true },
   k_parry: { family: 'defensive', ap: 1, ward: { dur: 6.5, dmg: 0.05, gauge: 0.5 } },
-  k_cry: { family: 'support', ap: 2, boost: { dur: 7.5, dmg: 2.3, gauge: 1.5 } },
+  k_cry: { family: 'support', ap: 2, boost: { dur: 7.5, dmg: 1.9, gauge: 1.5 } },
   k_focus: { family: 'support', ap: 2, boost: { dur: 13, dmg: 1.5, gauge: 4 } },
 };
 /** DB5-3 « 5 × le temps de charge » (A3): a skill comes back this many times its charge time at level 1 after it leaves; the heavy blow too (SY-02) */
@@ -189,9 +190,9 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
  *  every fighter (lot 1 of the second redesign, journal Passe SL1): each rival's pool factor so that the reference player of day 2 beats it 95 times in 100
  *  (isolated duels), the bracket's and the final's on whole games of the reference (seeds 1 to 80) for the semi-final's 65 % and the final's 50 % (AC-15). */
 export const AUTO_RACE = {
-  norm: { vessa: 1.185, tobin: 1.512, cassius: 1.193, orla: 0.855, ilse: 1.02, marek: 0.905, rhosk: 1.115 } as Record<string, number>,
+  norm: { vessa: 1.487, tobin: 1.815, cassius: 1.54, orla: 1.004, ilse: 1.425, marek: 1.206, rhosk: 1.647 } as Record<string, number>,
   pool: [1, 1.1, 1.2] as readonly number[],
-  stage: { 1: 1.228, 2: 1.58 } as Record<1 | 2, number>,
+  stage: { 1: 1.249, 2: 1.561 } as Record<1 | 2, number>,
   prepFrom: 20, prepPer: 25,
 };
 /** a bout's round of the pool by its day: day 2 the first, day 4 the second, day 5 the third (a challenge of the pool by its day) */

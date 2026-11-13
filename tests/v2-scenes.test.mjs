@@ -183,7 +183,8 @@ test('the epilogue: the forecourt on day 10\'s evening, once the champion is cro
   s.flags['scene:final'] = true;
   assert.equal(S.pendingScene(s)?.id, 'epilogue');
   let lines = say(s, 'epilogue');
-  assert.deepEqual(lines.map((l) => l[0]), ['odo', 'marek', 'player']);
+  // Wren's verse again when the hero led the Lanterns' parade (lot L6), as the state played it
+  assert.deepEqual(lines.map((l) => l[0]), ['odo', 'marek', 'player', ...(s.v2?.festival?.leader === 'player' ? ['bard'] : [])]);
   assert.deepEqual(lines.map((l) => l[1]), [T.tx('v2.scene.epilogue.crowned', { name: s.player.name }), T.tx('v2.scene.epilogue.marek.crowned', { name: s.player.name }), T.tx('v2.scene.epilogue.hero.champion')]);
   // the final lost: second
   let f = playTo(10, 'afternoon'); f = at(act(f, LOST), 'forecourt'); f.flags['scene:final'] = true;

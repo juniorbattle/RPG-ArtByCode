@@ -99,14 +99,17 @@ export function gamesOf(pn, seeds) {
     return a;
   } };
   let crowns = 0, finals = 0, cut = 0; const stageWins = {};
+  let skipped = 0;
   for (const s of seeds) {
-    const st = LAB.autoplay(s, wrap, 'Ren', 260, 'auto').state, mine = st.tournament.matches.filter((m) => m.a === 'player' || m.b === 'player');
+    // a policy that chooses an action the game refuses (the curious player in the parade's street, under other bout results) is skipped and counted
+    let st; try { st = LAB.autoplay(s, wrap, 'Ren', 260, 'auto').state; } catch (e) { if (!/refused action/.test(String(e))) throw e; skipped++; continue; }
+    const mine = st.tournament.matches.filter((m) => m.a === 'player' || m.b === 'player');
     if (st.flags.champion === 'player') crowns++;
     if (mine.some((m) => m.stage === 'final')) finals++;
     if (mine.some((m) => m.stage === 'semi')) cut++;
     for (const m of mine) { const k = m.stage ?? `pool-j${m.day}`; (stageWins[k] ??= { w: 0, n: 0 }).n++; if (m.winner === 'player') stageWins[k].w++; }
   }
-  return { pn, n: seeds.length, crowns, finals, cut, stageWins, bouts };
+  return { pn, n: seeds.length - skipped, crowns, finals, cut, stageWins, bouts, skipped };
 }
 const rate = (G, keys) => { let w = 0, n = 0; for (const k of keys) { const v = G.stageWins[k]; if (v) { w += v.w; n += v.n; } } return n ? w / n : NaN; };
 export function gamesLine(G) {

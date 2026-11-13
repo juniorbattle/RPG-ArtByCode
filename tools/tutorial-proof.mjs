@@ -130,7 +130,7 @@ async function firstBout(page, sheet, tag) {
   await page.evaluate(() => { window.__arena.timeScale = 3; });
   const said = [{ id: 'start', t: held.t, text: '' }], t0 = Date.now();
   for (;;) {
-    const s = await page.evaluate(() => { const h = document.querySelector('.tu-duel .pm-h'); return { h: h?.textContent ?? null, text: document.querySelector('.tu-duel .pm-body')?.textContent ?? '', t: window.__arena.auto.t, over: window.__arena.auto.over, result: !!document.querySelector('.pm-big'), lit: !!document.querySelector('.tu-spot.on') }; });
+    const s = await page.evaluate(() => { const h = document.querySelector('.tu-duel .pm-h'); return { h: h?.textContent ?? null, text: document.querySelector('.tu-duel .pm-body')?.textContent ?? '', t: window.__arena?.auto?.t ?? -1, over: window.__arena?.auto?.over ?? null, gone: !window.__arena ? location.href : null, result: !!document.querySelector('.pm-big'), lit: !!document.querySelector('.tu-spot.on') }; });
     if (s.h) {
       const id = TITLE[s.h] ?? s.h;
       if (!said.some((x) => x.id === id && Math.abs(x.t - s.t) < 1e-9)) {
@@ -141,6 +141,7 @@ async function firstBout(page, sheet, tag) {
         await page.keyboard.press('Enter');
       }
     }
+    if (s.gone) { check(false, `the arena left before the result: ${s.gone}`); break; }
     if (s.result || Date.now() - t0 > 240000) break;
     await sleep(100);
   }

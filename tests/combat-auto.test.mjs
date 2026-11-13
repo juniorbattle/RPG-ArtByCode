@@ -59,7 +59,7 @@ test('SY-01, SY-02, SY-03: the same tables for every fighter — the light attac
   // the catalogue's numbers, written here: the light attack 1.2 s and power 6 (DB5-5), the heavy attack 1.7 s at level 1, the Thrust 7.65 s and 120 (DB5-1)
   assert.equal(SK.SKILLS.heavy.charge[0], 1.7); assert.equal(SK.SKILLS.t4.charge[0], 7.65);
   const ren = AD.autoRen(ST.REN_BASE, { loadout: ['t1', 't4', 'd1', 's1'], levels: { heavy: 3 } }, { weapon: 'imported-blade' });
-  assert.deepEqual([ren.light.kind, ren.light.ap, ren.light.hits, ren.light.gap], ['light', 0, [0.62, 0.62], 0.32]);
+  assert.deepEqual([ren.light.kind, ren.light.ap, ren.light.hits, ren.light.gap], ['light', 0, AD.AUTO_WEAPONS['imported-blade'].hits, 0.32]);
   assert.ok(near(ren.light.charge, 1.2 * c) && near(ren.light.power, 6 * c) && near(ren.light.gauge, 0.6 * c), 'the light attack at the cadence');
   // SY-02 (A3): the heavy blow, a base attack outside the four, no AP, its DB5-3 cooldown, at Ren's level of it
   assert.deepEqual([ren.heavy.kind, ren.heavy.ap, ren.heavy.id], ['heavy', 0, 'heavy']);
@@ -68,7 +68,7 @@ test('SY-01, SY-02, SY-03: the same tables for every fighter — the light attac
   assert.ok(!AD.autoRen(ST.REN_BASE, { loadout: ['heavy', 't1', 't4', 's1'], levels: {} }).skills.some((s) => s.id === 'heavy'), 'never one of the four');
   for (const s of ren.skills) {
     assert.ok(near(s.charge, AD.autoCharge(s.id, 1) * c) && near(s.cooldown, 5 * AD.autoCharge(s.id, 1) * c), `${s.id}: its charge and its cooldown at the cadence`);
-    if (s.power) assert.ok(near(s.power, 120 * (AD.autoCharge(s.id, 1) / 7.65) * c), `${s.id}: its power by its charge`);
+    if (s.power) assert.ok(near(s.power, 120 * (AD.autoCharge(s.id, 1) / 7.65) * (AD.AUTO_SKILLS[s.id].powerK ?? 1) * c), `${s.id}: its power by its charge (× its balance, SY-06)`);
   }
   // the rivals: their combo of before made their weapon (its blows at the training sword's total), Ren's light attack's charge and power, the heavy blow, their
   // skills at 2 AP with DB5-3, a skill's power by its charge, Speed 10 for their tables, no trait, no AI of their own
