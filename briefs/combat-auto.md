@@ -1063,6 +1063,39 @@ palier du son, SL1-7 une sauvegarde qui emportait le coup puissant, SL1-8 la ré
 
 ---
 
+## 28. La fiche du lot 1 relue (13/11/2026, journal Passe SL2)
+
+La fiche https://claude.ai/artifact/5HR1Eqhsr3ZKoN81hfWwLb (`briefs/fiche-combat-sym-lot1.html`), relue le 13/11/2026 (choix cliqués de 04 h 21 à 05 h 08 UTC) :
+**sept choix sur huit à la recommandation** ; SL1-2 à l'autre option, avec la note de l'opérateur. Les choix mot pour mot, la note et les décisions A3 citées et
+datées : journal Passe SL2. Ce paragraphe dit ce qui s'applique au lot 2 ; là où les §§ 26 et 27 diffèrent, il l'emporte.
+
+| Carte | Le choix, mot pour mot | Ce qui s'applique |
+|---|---|---|
+| SL1-1 | « +7,5 % par tour (décision A3 : change SY-05) » | la poule à +7,5 % par tour (A3) ; le tableau et la finale recalés sur cette pente |
+| SL1-2 | « La raccourcir (les rivaux de finale, la course recalée) », et la note | les durées médianes de la référence : la poule environ 2 min, le tableau 2 à 4 min, la finale 3 à 4 min au plus (A3, elles précisent DB5) ; un rythme bien moins vif que 118 coups par minute, « une scene de theatre » |
+| SL1-3 | « L’automatique garde la plus forte pour la rupture (au lot 2, la course recalée) » | l'automatique de tous garde sa plus forte offensive pour la rupture |
+| SL1-4 | « Le reprendre au lot 2, avant mon essai » | les tactiques aux signaux mesurées telles que la page les offre ; le second critère de SY-07 tenu avant l'essai |
+| SL1-5 | « Le reprendre au lot 2, avec la tactique » | le test de AC-12 au tableau et en finale repris avec la tactique |
+| SL1-6 | « Sa charge au premier palier (au lot 2) » | la charge du coup puissant de Ren entendue au premier palier, comme une compétence |
+| SL1-7 | « La suivante possédée prend la place (au lot 2) » | une sauvegarde qui emportait le coup puissant : la compétence possédée suivante prend sa place, dans l'ordre de la page |
+| SL1-8 | « Reçu ; le lot 2 ensuite » | le lot 1 reçu ; le lot 2, puis l'essai de l'opérateur (SY-14) |
+
+### 28.1 Le lot 2, dans l'ordre
+
+1. **La durée et le rythme d'abord** (SL1-2, A3). La note de l'opérateur, mot pour mot : « selon ce que tu evoques il faut que tu baises la duree : Les durées
+   médianes de la référence : la poule environ 2min, le tableau 2-4min , la finale 3-4min max. et Le rythme vif : 118 coups par minute, est trop intense c'est a
+   peine si nous pouvons apprecier le combat et faire une action,... apres tout on doit rester attentif a ce qui se passe et voir cela comme une scene de
+   theatre ». Plus court et plus lent à la fois, c'est beaucoup moins de coups par duel : chaque coup pèse plus (la santé ou la puissance), et ce qui se compte
+   en secondes suit la cadence (la jauge et sa décroissance, les PA, les recharges). DB5-3 (5 × la charge) et DB5-4 (« 10 s, ×2, jauge de 70 ») sont des A3,
+   gardées sauf décision de l'opérateur. La note ne chiffre pas le rythme : ses candidats mesurés (coups par minute, temps entre deux coups, silences) lui
+   sont soumis avant de recaler la course.
+2. **L'automatique** de SL1-3 pour tous.
+3. **La course recalée une fois**, sur ces règles : la poule à +7,5 % par tour (SL1-1, A3), le tableau et la finale visés par AC-15, graines de calage puis
+   graines tenues à part.
+4. **La tactique** (SY-08 à SY-10) et ses signaux (SL1-4), **l'équilibre** repris avec elle (SL1-5).
+5. **La main** dans l'arène, **la sauvegarde** (SL1-7), **la charge du coup puissant entendue** (SL1-6).
+6. **L'essai de l'opérateur** (SL1-8, SY-14).
+
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
 Passe AU3, en réponse au chantier n° 1 de la Passe AU2 :
