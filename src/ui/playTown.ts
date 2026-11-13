@@ -15,6 +15,8 @@ import { wayNote } from '../simulation/v2access';
 import { parseWeather } from '../atmosphere/Weather';
 import * as THREE from 'three';
 import { watchPost } from '../simulation/v2watch';
+import { available } from '../simulation/roles';
+import type { Actor } from '../characters/SpriteRenderer';
 import { hailOf } from '../simulation/v2react';
 import { Hails, type HailWalker } from './hails';
 import { keepPlace, tutorialOn } from './tutorial';
@@ -61,6 +63,39 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
     if (wynn && post.place !== 'district') wynn.hidden = true;
     else if (wynn && mara) { wynn.pos.set(mara.pos.x + WYNN_AT[0], 0, mara.pos.z + WYNN_AT[1]); app.actors.face(wynn, new THREE.Vector3(0, 0, 1)); }
   }
+  // the quay's people at their hours (the operator's CO-1 « Dans le mode de jeu seulement (le district libre inchangé) », journal Passe CO3): in a version 2 game the
+  // district's figure of someone away is hidden (the hooded stranger by day, Bram and Tam in the evening, Bram the forge burned: the conversation's own rule,
+  // `available`), a person the burned forge draws twice is drawn once, Tam stands by Mara when the burned forge's layout has no porter, and Fenwick on the
+  // quay the nights he is in the Cité (the townsman's sheet his portrait wears); the free district and « Explore the district » keep their cast
+  const named = new Map<Actor, string>();
+  if (isV2(st)) {
+    const shown = new Set<string>();
+    for (const a of app.actors.actors) {
+      const who = PERSON_OF[a.base ?? a.spec];
+      if (!who || a.hidden) continue;
+      if (shown.has(who) || available(st, who) !== null) { a.hidden = true; continue; }
+      shown.add(who);
+    }
+    const mara = app.actors.actors.find((a) => (a.base ?? a.spec) === 'merchant');
+    // a free spot beside Mara's stall: walkable, and clear of every figure standing there
+    const spot = (offs: Array<[number, number]>): THREE.Vector3 | null => {
+      if (!mara) return null;
+      for (const [dx, dz] of offs) {
+        const x = mara.pos.x + dx, z = mara.pos.z + dz;
+        if (app.actors.walkable(x, z, 0.3) && app.actors.actors.every((o) => o.hidden || (o.pos.x - x) ** 2 + (o.pos.z - z) ** 2 > 0.81)) return new THREE.Vector3(x, 0, z);
+      }
+      return null;
+    };
+    const stand = (spec: string, who: string, offs: Array<[number, number]>) => {
+      const at = spot(offs);
+      if (!at) return;
+      const a = app.actors.spawn(spec, 'stand-idle', at);
+      app.actors.face(a, new THREE.Vector3(0, 0, 1));
+      named.set(a, who);
+    };
+    if (!shown.has('tam') && available(st, 'tam') === null) stand('porter', 'tam', [[-1.5, 0.9], [-2.2, 0.5], [1.7, 1.1], [-1.2, 1.6]]);
+    if (available(st, 'fenwick') === null) stand('crowd3', 'fenwick', [[2.7, 1.3], [-2.9, 1.2], [3.4, 0.7], [2.2, 1.9]]);
+  }
   // the forge is the game's: the DEV switch of the free-roaming district is off in the play mode
   app.setForgeState = () => {};
   app.actors.onInteractForge = null;
@@ -81,7 +116,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
       let best: string | null = null, bd = 2.6 * 2.6;
       for (const a of app.actors.actors) {
         if (a === p || a.hidden) continue;
-        const base = a.base ?? a.spec, who = PERSON_OF[base] ?? (base.startsWith('crowd') ? 'folk' : null);
+        const base = a.base ?? a.spec, who = named.get(a) ?? PERSON_OF[base] ?? (base.startsWith('crowd') ? 'folk' : null);
         if (!who) continue;
         const d = (a.pos.x - p.pos.x) ** 2 + (a.pos.z - p.pos.z) ** 2;
         if (d < bd) { bd = d; best = who; }
@@ -123,7 +158,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   }));
   // a version 2 game's people worth talking to and the plan of the quay (the operator's MK1 sheet, journal Passe MK2): a diamond over the head of whoever has
   // something new, the plan in the top right corner (src/ui/peopleLayer.ts); today's game has neither (MK-10)
-  const people = () => app.actors.actors.filter((a) => !a.hidden && a !== app.actors.player && PERSON_OF[a.base ?? a.spec]).map((a) => ({ who: PERSON_OF[a.base ?? a.spec], pos: a.pos, head: a.height * app.sprites.charScale }));
+  const people = () => app.actors.actors.filter((a) => !a.hidden && a !== app.actors.player && (named.get(a) ?? PERSON_OF[a.base ?? a.spec])).map((a) => ({ who: named.get(a) ?? PERSON_OF[a.base ?? a.spec], pos: a.pos, head: a.height * app.sprites.charScale }));
   const dist = app.district;
   const layer = isV2(st) && dist ? new PeopleLayer(() => st, {
     walk: [WALK],

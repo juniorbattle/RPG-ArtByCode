@@ -120,6 +120,8 @@ export interface GameState {
 
 /** the version 2's state: the skills and their levels, the four brought (lot V2); the lots after it add their parts */
 export interface V2State {
+  /** the coins a short restitution still owes the watch, worked off at 10 a slot (the operator's CO-3, journal Passe CO3); the ledger keeps the name meanwhile */
+  debt?: number;
   /** `order`: the order of priority of the four brought in the duel played by the computer (the operator's AC-09 « le joueur règle ses quatre compétences et
    *  leur ordre », journal Passe AC4; set on the match sheet, lot 2, journal Passe LC3); absent = the automatic's own order (autoDefaultOrder) */
   kit: { loadout: string[]; levels: Record<string, number>; order?: string[] };

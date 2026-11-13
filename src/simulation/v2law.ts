@@ -161,7 +161,13 @@ const muscleHere = (s: GameState): string | null => {
   return !s.v2?.reprisal ? tx('v2.reprisal.none') : s.place !== p.place || !presentAt(p, s.place, s.slot, true) ? tx('avail.notNow', { name: p.name }) : null;
 };
 
-export type V2LawAction = { type: 'restitute' } | { type: 'faceMuscle' } | { type: 'payMuscle' };
+export type V2LawAction = { type: 'restitute' } | { type: 'workDebt' } | { type: 'faceMuscle' } | { type: 'payMuscle' };
+
+/** what a slot of work for the watch pays off (the town's paid jobs, ECO-3 « 10 pièces »: the operator's CO-3 « Un créneau par tranche de 10 pièces manquantes ») */
+export const DEBT_SLOT = 10;
+/** the slots a shortfall takes to work off, the first one spent with the restitution itself */
+export const debtSlots = (short: number): number => Math.max(1, Math.ceil(short / DEBT_SLOT));
+const haleHere = (s: GameState): string | null => (s.place !== 'district' || !presentAt(PEOPLE.hale, s.place, s.slot, true) ? tx('avail.notNow', { name: PEOPLE.hale.name }) : null);
 
 export const V2_LAW_ACTIONS: { [K in V2LawAction['type']]: ActionDef<Extract<V2LawAction, { type: K }>> & { by: string | null } } = {
   // the reprisal (lot L2b): the muscle on the quay at night, faced on the sand (the stands empty) or paid off
@@ -187,18 +193,33 @@ export const V2_LAW_ACTIONS: { [K in V2LawAction['type']]: ActionDef<Extract<V2L
       emit({ kind: 'consequence', id: 'reprisal:paid', cause: 'action:payMuscle', visible: true, text: tx('v2.reprisal.paid', { muscle: GENERICS[MUSCLE].name, name: victimName(by), n: LAW.payOff }) });
     },
   },
+  // a restitution's shortfall worked off at Sergeant Hale's, 10 coins a slot (the operator's CO-3, journal Passe CO3); the last load wipes the name from his ledger
+  workDebt: {
+    by: 'hale',
+    list: (s) => (isV2(s) && s.place === 'district' && (s.v2?.debt ?? 0) > 0 ? [{ type: 'workDebt' }] : []),
+    label: (s) => tx('v2.law.workDebt', { n: s.v2?.debt ?? 0, slot: DEBT_SLOT }),
+    cost: () => 1,
+    check: (s) => (!isV2(s) ? tx('v2.only') : haleHere(s) ?? (!(s.v2?.debt ?? 0) ? tx('v2.law.clean') : null)),
+    apply: (s, _a, _r, emit) => {
+      const left = Math.max(0, (s.v2!.debt ?? 0) - DEBT_SLOT);
+      if (left > 0) { s.v2!.debt = left; emit({ kind: 'action', id: 'debt:worked', cause: 'action:workDebt', visible: true, text: tx('v2.law.debtLeft', { n: left }) }); return; }
+      delete s.v2!.debt; s.v2!.marks = 0;
+      emit({ kind: 'consequence', id: 'debt:done', cause: 'action:workDebt', visible: true, text: tx('v2.law.debtDone') });
+    },
+  },
   restitute: {
     by: 'hale',
-    list: (s) => (isV2(s) && s.place === 'district' && (marksOf(s) > 0 || unsettled(s).length > 0) ? [{ type: 'restitute' }] : []),
+    // (a debt being worked off has its own action: workDebt)
+    list: (s) => (isV2(s) && s.place === 'district' && !s.v2?.debt && (marksOf(s) > 0 || unsettled(s).length > 0) ? [{ type: 'restitute' }] : []),
     label: (s) => {
       const r = restitution(s), short = r.coins > s.player.coins;
-      return tx(short ? 'v2.law.restituteShort' : r.back.length ? 'v2.law.restituteBack' : 'v2.law.restitute', { items: names(r.back), n: short ? s.player.coins : r.coins });
+      return tx(short ? 'v2.law.restituteShort' : r.back.length ? 'v2.law.restituteBack' : 'v2.law.restitute', { items: names(r.back), n: short ? s.player.coins : r.coins, slots: debtSlots(r.coins - s.player.coins) });
     },
-    // a purse too thin: Hale sets the player to haul for the watch, the rest of the slot (the way out is always open)
+    // a purse too thin: Hale sets the player to haul for the watch, one slot for every 10 coins missing, the first one now (the operator's CO-3, journal Passe CO3;
+    // a single slot cleared any shortfall before, a full purse paying all of it); the way out is always open
     cost: (s) => (restitution(s).coins > s.player.coins ? 1 : 0),
     coins: (s) => Math.min(restitution(s).coins, s.player.coins),
-    check: (s) => (!isV2(s) ? tx('v2.only') : s.place !== 'district' || !presentAt(PEOPLE.hale, s.place, s.slot, true) ? tx('avail.notNow', { name: PEOPLE.hale.name })
-      : marksOf(s) <= 0 && !unsettled(s).length ? tx('v2.law.clean') : null),
+    check: (s) => (!isV2(s) ? tx('v2.only') : haleHere(s) ?? (s.v2?.debt ? tx('v2.law.inDebt', { n: s.v2.debt }) : marksOf(s) <= 0 && !unsettled(s).length ? tx('v2.law.clean') : null)),
     apply: (s, _a, _r, emit) => {
       const r = restitution(s), short = r.coins > s.player.coins, paid = Math.min(r.coins, s.player.coins);
       for (const t of unsettled(s)) {
@@ -207,9 +228,11 @@ export const V2_LAW_ACTIONS: { [K in V2LawAction['type']]: ActionDef<Extract<V2L
         // a passer-by's piece goes back to its owner, who holds it again
         if (s.v2!.passed?.[t.from] !== undefined) delete s.v2!.passed[t.from];
       }
-      // the owners paid, no muscle waits any more (lot L2b)
-      s.player.coins -= paid; s.v2!.marks = 0; add(s, 'hale', 5); delete s.v2!.reprisal;
-      emit({ kind: 'consequence', id: 'theft:settled', cause: 'action:restitute', visible: true, text: tx(short ? 'v2.law.settledShort' : 'v2.law.settled', { n: paid }) });
+      // the owners paid, no muscle waits any more (lot L2b); a shortfall beyond the slot spent now stays owed, the ledger keeping the name until it is worked off
+      const left = short ? Math.max(0, r.coins - paid - DEBT_SLOT) : 0;
+      s.player.coins -= paid; add(s, 'hale', 5); delete s.v2!.reprisal;
+      if (left > 0) s.v2!.debt = left; else s.v2!.marks = 0;
+      emit({ kind: 'consequence', id: 'theft:settled', cause: 'action:restitute', visible: true, text: tx(!short ? 'v2.law.settled' : left > 0 ? 'v2.law.settledDebt' : 'v2.law.settledShort', { n: paid, left }) });
     },
   },
 };

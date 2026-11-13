@@ -39,7 +39,9 @@ if (kind === 'challenge') while (s0.slot !== AT[who][1]) step(boutDue() ? { type
 if (kind === 'reprisal') {
   // Mara's goodwill soured by a first catch, then a second at her stall: under the grudge; the night falls, the dawn hires the muscle; the next evening
   step({ type: 'steal', shop: 'mara' }, LOSE);
-  for (const a of [{ type: 'wait' }, { type: 'wait' }, { type: 'wait' }]) step(a);
+  // the second catch on day 3: Wynn of the watch stands by Mara's stall the day of a catch and the next (lot L5, journal Passe EVL9), and the flow stole there
+  // on day 2 since then (found in journal Passe CO3); the day's bout on the way is won
+  while (!(s0.day === 3 && s0.slot === 'morning')) step(boutDue() ? { type: 'fight', outcome: { winner: 'player', playerHp: 120, playerMaxHp: 200, opponentHp: 0, opponentMaxHp: 600, finisher: 'tech' } } : { type: 'wait' });
   step({ type: 'steal', shop: 'mara' }, LOSE);
   while (!(s0.slot === 'evening' && s0.v2.reprisal)) step(s0.slot === 'afternoon' && s0.tournament.matches.some((m) => m.day === s0.day && !m.winner && (m.a === 'player' || m.b === 'player')) ? { type: 'fight', outcome: { winner: 'player', playerHp: 120, playerMaxHp: 200, opponentHp: 0, opponentMaxHp: 600, finisher: 'tech' } } : { type: 'wait' });
   if (s0.place !== 'district') step({ type: 'move', to: 'district' });

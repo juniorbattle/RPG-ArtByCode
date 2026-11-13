@@ -182,7 +182,7 @@ function curiousV2(st: GameState): Action {
   const kit = v2KitOf(st), learnt = Object.values(SKILL_BOOK).filter((k) => k.source === 'challenge' && (kit.levels[k.id] ?? 0) > 0 && !(kit.loadout as string[]).includes(k.id));
   for (const k of learnt) { const i = (kit.loadout as string[]).findIndex((id) => SKILL_BOOK[id]?.source === 'start' && SKILL_BOOK[id]?.family === k.family); if (i >= 0) { const four = [...kit.loadout] as string[]; four[i] = k.id; return { type: 'setLoadout', skills: four }; } }
   // the watch wants a word: settle with Sergeant Hale
-  if (wanted(st)) { const r = at('district', { type: 'restitute' }); if (r) return r; }
+  if (wanted(st)) { const r = at('district', { type: 'restitute' }) ?? at('district', { type: 'workDebt' }); if (r) return r; }
   // lot L3 (EV-10 « Une réponse par lieu »): the forge's signs send it to Hale's watch on the quay, the gear's to Clerk Odo's strongroom on the eve of a bout
   // lot L4 (EV-9): a friend's warning reads as a sign of its chain
   const forgeSigns = ['lamp-oil', 'loiterer', 'friend-warned-forge'].some((f) => st.facts.includes(f)) && st.services.forge === 'open' && !st.facts.includes('saboteur-caught');

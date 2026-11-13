@@ -139,6 +139,22 @@ test('a restitution at Sergeant Hale\'s: the pieces held go back, the others are
   assert.ok(p.ok); assert.equal(p.coins, 3); assert.equal(p.cost, 1);
   const pr = act(poor, { type: 'restitute' });
   assert.equal(pr.state.player.coins, 0); assert.equal(sus(pr.state), 0); assert.notEqual(pr.state.slot, poor.slot, 'a slot hauled');
+  // a bigger shortfall is worked off for the watch, a slot for every 10 coins missing, the first one with the restitution (the operator's CO-3 « Un créneau par
+  // tranche de 10 pièces manquantes », journal Passe CO3): the ledger keeps the name until the last load
+  const owe = structuredClone(st); owe.player.coins = 3; owe.v2.thefts = [{ day: 1, from: 'hilde', item: 'mail-shirt', seen: 'found' }];
+  const ro = G.actions(owe).find((x) => x.action.type === 'restitute');
+  assert.ok(ro.ok); assert.equal(ro.coins, 3); assert.equal(ro.cost, 1); assert.match(ro.label, /(5 in all)/, 'the mail 40 and the fee 5, 42 missing: five slots');
+  let w = act(owe, { type: 'restitute' }).state;
+  assert.equal(w.player.coins, 0); assert.equal(w.v2.debt, 32, 'the first slot works off 10'); assert.equal(sus(w), 3, 'the name stays in the ledger');
+  assert.ok(w.v2.thefts.every((x) => x.settled)); assert.ok(!G.actions(w).some((x) => x.action.type === 'restitute'), 'no second restitution while the debt runs');
+  for (const left of [22, 12, 2]) {
+    w = structuredClone(w); w.slot = 'morning';
+    const o = G.actions(w).find((x) => x.action.type === 'workDebt'); assert.ok(o?.ok && o.cost === 1, `a slot of work (${left + 10} owed)`);
+    w = act(w, { type: 'workDebt' }).state; assert.equal(w.v2.debt, left); assert.equal(sus(w), 3);
+  }
+  w = structuredClone(w); w.slot = 'morning'; w = act(w, { type: 'workDebt' }).state;
+  assert.equal(w.v2.debt, undefined); assert.equal(sus(w), 0, 'the last load wipes the name');
+  w.player.coins = 99; assert.ok(G.actions(w).some((x) => x.action.type === 'shopBuy' && x.action.shop === 'mara' && x.ok), 'Mara sells again');
   // only Sergeant Hale, on the quay
   const away = structuredClone(st); away.place = 'forecourt'; assert.ok(!G.actions(away).some((x) => x.action.type === 'restitute'));
   // he says what his ledger holds

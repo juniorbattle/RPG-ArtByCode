@@ -178,7 +178,8 @@ test('Vessa beaten on day 2 pays Lio\'s room that evening: the taverns tell the 
   assert.deepEqual(st.v2.lie, { who: 'orla', from: 3, until: 4 });
   const word = r.events.find((e) => e.id === 'v2-tavern-tale');
   assert.ok(word && word.visible && word.day === 3 && word.slot === 'morning');
-  assert.match(word.text, /^In the taverns they say Orla Brask is nursing a wound, and is still rusty/);
+  // the rumours speak of training since the operator's CO-7 « Les rumeurs disent « entraînement » » (journal Passe CO3)
+  assert.match(word.text, /^In the taverns they say Orla Brask is nursing a wound, and has trained little/);
   assert.doesNotMatch(word.cause, /Vessa/, 'the news does not name who paid');
   assert.match(I.seenInTown(st, 'vessa'), /paid for every round at Lio's/);
   // day 4's evening: the next one, Cassius, until day 5's bout

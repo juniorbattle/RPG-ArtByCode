@@ -6,6 +6,7 @@ import { PEOPLE, presentAt } from './people';
 import { tx, type TextKey } from './text';
 import { stageMatches, actOf, v2Ranking, type Stage } from '../tournament/v2calendar';
 import { unmaskedHow, paradeOrder, FEST } from '../simulation/v2festival';
+import { anwenBusy } from '../simulation/v2rivals';
 
 /** The version 2's story (lot V6, journal Passe V6; the operator's decision AV-15 « Structure, dialogues et cinématiques »): the ten days' three
  *  acts (src/tournament/v2calendar.ts: the pool and the cut, the semi-finals and the major match, the eve and the final), the rivals' arcs
@@ -234,7 +235,9 @@ export const CUTSCENES: Record<string, Cutscene> = {
     when: (s) => afterSemi(s) && mine(s, 'semi')!.winner !== PLAYER_ID,
     steps: [
       { cam: [-7.6, -0.6], dist: 12, secs: 2 },
-      { say: 'anwen', line: () => tx('v2.scene.semiLost.1') },
+      // busy this evening (a rival hurt in the afternoon's bouts), she says so: her care waits for the morning (the operator's CO-6 « Sa réplique suit son état »,
+      // journal Passe CO3)
+      { say: 'anwen', line: (s) => tx(anwenBusy(s) ? 'v2.scene.semiLost.1busy' : 'v2.scene.semiLost.1') },
       { say: (s) => semiFoe(s), line: (s) => tx(SEMI_LOST[RIVALS[semiFoe(s)]?.temper ?? 'honourable']) },
       { say: 'player', line: () => tx('v2.scene.semiLost.3') },
     ],

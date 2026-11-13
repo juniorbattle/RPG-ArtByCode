@@ -15,7 +15,7 @@ export const KIND_OF: Readonly<Record<string, MarkKind>> = {
   buy: 'item', shopBuy: 'item', sell: 'item', barter: 'item', bargain: 'item', upgradeWeapon: 'item', temper: 'item', buySkill: 'item', heal: 'item', lockGear: 'item', checkGear: 'item',
   work: 'item', restock: 'item', haul: 'item',
   challenge: 'event', spar: 'event', festDeed: 'event', walkBehind: 'event', walkOwn: 'event', keepWatch: 'event', payWatch: 'event', register: 'event', recruit: 'event', rumour: 'event', buyInfo: 'event', listen: 'event',
-  report: 'follow', restitute: 'follow', confront: 'follow', taunt: 'follow', confrontVessa: 'follow', reportRhosk: 'follow', faceMuscle: 'follow', payMuscle: 'follow', askPapers: 'follow', repair: 'follow',
+  report: 'follow', restitute: 'follow', workDebt: 'follow', confront: 'follow', taunt: 'follow', confrontVessa: 'follow', reportRhosk: 'follow', faceMuscle: 'follow', payMuscle: 'follow', askPapers: 'follow', repair: 'follow',
 };
 /** MK-6: watching a rival train (open whenever they do) never marks; the passers-by of the crowd (`folk`) never wear a mark */
 export const NEVER_MARKED = new Set(['talk', 'scout']);
@@ -31,6 +31,7 @@ export function offerKey(st: Pick<GameState, 'day'> & Partial<Pick<GameState, 'f
   if (type === 'heal') return `heal:${st.player?.injury ?? 0}:${st.day}`;
   if (type === 'checkGear') return `checkGear:${st.flags?.[`tampered:${st.day}`] ? st.day : 0}`;
   if (type === 'restitute') return `restitute:${st.v2?.thefts?.length ?? 0}:${st.v2?.marks ?? 0}`;
+  if (type === 'workDebt') return `workDebt:${st.v2?.debt ?? 0}`;
   if (type === 'faceMuscle' || type === 'payMuscle') return `${type}:${st.v2?.reprisal?.by ?? ''}:${st.v2?.reprisal?.until ?? 0}`;
   if (type === 'challenge') return `${type}:${String(a.who)}:${phaseOf(st.day)}`;
   return `${type}:${JSON.stringify(rest)}`;

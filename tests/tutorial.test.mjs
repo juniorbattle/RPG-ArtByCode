@@ -160,7 +160,7 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   assert.match(DT.lessonText('charge', D), new RegExp(`your light attack charges ${AD.AUTO_LIGHT.charge} seconds at your Speed of ${d.ren.viv}`));
   assert.match(DT.lessonText('combo', D), new RegExp(`your light attack strikes ${AD.AUTO_WEAPONS['training-sword'].hits.length} with your weapon`));
   assert.match(DT.lessonText('ap', D), new RegExp(`gives you ${R.ap.light} action point\\. You started this bout with ${R.ap.start} and hold ${R.ap.max} at most`));
-  assert.match(DT.lessonText('ap', D), new RegExp(`comes back ${AD.AUTO_COOLDOWN} times its charge later`));
+  assert.match(DT.lessonText('ap', D), new RegExp(`comes back ${AD.AUTO_COOLDOWN} times its first-level charge after its charge begins`)); // the cooldown as the duel counts it (the operator's CO-4, journal Passe CO3)
   const rr = AM.autoReactions(d.ren, d.foe), fr = AM.autoReactions(d.foe, d.ren);
   assert.match(DT.lessonText('react', D), new RegExp(`${R.react.skillGuard} times as often against a skill or a heavy blow seen coming\\. A guarded blow loses ${pc(R.guardReduce)} % of its damage`));
   assert.match(DT.lessonText('react', D), new RegExp(`you dodge ${pc(rr.dodge)} % of Marek's blows and guard ${pc(rr.guard)} %, ${pc(rr.guardSkill)} % of those seen coming; Marek dodges ${pc(fr.dodge)} % of yours and guards ${pc(fr.guard)} %`));
@@ -273,7 +273,7 @@ test('the guide\'s « The duel » and « Preparing a bout » for the duel played
   const s = v2(), duel = TU.chapterText(s, TU.CHAPTERS.find((c) => c.id === 'duel')), prep = TU.chapterText(s, TU.CHAPTERS.find((c) => c.id === 'prepare'));
   const hits = Object.values(AD.AUTO_WEAPONS).map((w) => w.hits.length);
   assert.match(duel, /^The computer fights your bouts as you prepared them\./);
-  assert.match(duel, new RegExp(`gives ${R.ap.light} action point; you start with ${R.ap.start} and hold ${R.ap.max} at most\\. A skill comes back ${AD.AUTO_COOLDOWN} times its charge`));
+  assert.match(duel, new RegExp(`gives ${R.ap.light} action point; you start with ${R.ap.start} and hold ${R.ap.max} at most\\. A skill comes back ${AD.AUTO_COOLDOWN} times its first-level charge after its charge begins`));
   assert.match(duel, new RegExp(`your light attack ${Math.min(...hits)} to ${Math.max(...hits)} by your weapon`));
   assert.match(duel, new RegExp(`${R.react.skillGuard} times as often against a skill or a heavy blow seen coming; a guarded blow loses ${pc(R.guardReduce)} % of its damage`));
   assert.match(duel, new RegExp(`stunned for ${R.brk.stun} seconds and takes ${R.brk.dmg} times the damage`));
