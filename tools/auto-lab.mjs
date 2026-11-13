@@ -15,11 +15,15 @@
 //   node tools/auto-lab.mjs level [--t0=95] [--targets=65,50] [--fitseeds=1..80] [--seeds=101..160] [--keep-norm] [--out=f]
 //       the race fitted (AC-16): each rival's pool factor on isolated duels against the reference of day 2, the pool's rounds +15 % (LC1-1, A3), the bracket's
 //       and the final's factors on whole games of the reference, printed on held-out seeds; --keep-norm keeps the pool factors and fits the two stages alone
+//   node tools/auto-lab.mjs modes [--seeds=101..300] [--auto=<name>] [--only=a,b]
+//       the ways of deciding Ren's skills (tools/auto-tactics.mjs: the tactics of SY-08, random presses) against the automatic every fighter plays (`--auto` one of
+//       AUTOS: a candidate automatic for every fighter, the rivals' included): the reference player's whole games, Ren's decider replaced (SY-07's two criteria)
 //   every command: --set=<TABLE>.<path>=<value>[,...] changes RULES (AUTO_RULES), SKILLS (AUTO_SKILLS), FOES (AUTO_FOES), RACE (AUTO_RACE), WEAPONS
 //       (AUTO_WEAPONS), LIGHT (AUTO_LIGHT); --race=<file.json> loads a race ({ norm, pool, stage })
 import fs from 'node:fs';
 import path from 'node:path';
 import { createServer } from 'vite';
+import { makeTactics } from './auto-tactics.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
@@ -34,6 +38,20 @@ const AU = await load('/src/combat/auto.ts'), AD = await load('/src/combat/autoD
 const LAB = await load('/src/tournament/lab.ts'), ST = await load('/src/combat/stats.ts'), V2 = await load('/src/simulation/v2.ts');
 const TABLES = { CADENCE: AD.AUTO_CADENCE, RULES: AU.AUTO_RULES, SKILLS: AD.AUTO_SKILLS, FOES: AD.AUTO_FOES, RACE: AD.AUTO_RACE, WEAPONS: AD.AUTO_WEAPONS, LIGHT: AD.AUTO_LIGHT };
 const RIVALS = Object.keys(ST.RIVAL_SHEETS);
+export const TAC = makeTactics(AU);
+/** candidate automatics for every fighter (SY-07): the game's, and tactics of the second workshop played by everyone */
+export const AUTOS = {
+  jeu: AU.autoDecider,
+  rupture: TAC.tactic((x) => x.skills.map((s) => (s.ward || s.boost ? 'auto' : s === TAC.strongest(x) ? 'broken' : 'ready'))),
+  signaux: TAC.tactic(TAC.cueSpec, { full: 'cheap' }),
+  'soutiens-prets': TAC.tactic((x) => x.skills.map((s) => (s.boost ? 'ready' : s.ward ? 'auto' : 'ready'))),
+};
+/** run fn with every fighter's automatic set to `auto` and Ren's to `ren` (the game's DECIDERS), given back after */
+export function withDeciders(auto, ren, fn) {
+  const keep = { ...AU.DECIDERS };
+  AU.DECIDERS.rival = auto; AU.DECIDERS.player = ren ?? auto;
+  try { return fn(); } finally { Object.assign(AU.DECIDERS, keep); }
+}
 
 /** `--set=TABLE.a.b=v,...` (a value may be JSON: `SKILLS.d1.ward={"dur":9,"dmg":0.5,"gauge":0.5}`) */
 export function applySets(spec) {
@@ -172,7 +190,7 @@ function rhythm() {
 /** the preparations of AC-12's table (briefs/combat-auto.md § 16.2) and the weapons */
 export const KITS = {
   'départ': { loadout: ['t1', 't4', 'd1', 's1'] },
-  'puissante': { loadout: ['heavy', 't1', 't4', 's1'] },
+  'soutiens': { loadout: ['k_cry', 'k_focus', 't1', 't4'] },
   'offensives': { loadout: ['t1', 't2', 't3', 't4'] },
   'fracas': { loadout: ['k_sunder', 't1', 't4', 'd1'] },
   'feinte': { loadout: ['k_feint', 't2', 't4', 's1'] },
@@ -239,6 +257,17 @@ function kits() {
   const A = ac12(T); console.log(`  bonnes réponses (à 10 points du meilleur) : ${RIVALS.map((id) => `${id} ${A.good[id].join('+')}`).join(' ; ')}`);
   console.log(`  domine partout (à 3 points du meilleur contre chacun) : ${A.dominates.join(', ') || 'aucun'} ; test ${A.ok ? 'tenu' : 'non tenu'}`);
 }
+function modes() {
+  const seeds = range(arg('seeds', '101..300')), base = AUTOS[arg('auto', 'jeu')], only = arg('only') ? arg('only').split(',') : null, out = {};
+  if (!base) throw new Error(`no automatic ${arg('auto')} (${Object.keys(AUTOS).join(', ')})`);
+  console.log(`l'automatique de tous : ${arg('auto', 'jeu')} ; ${seeds.length} parties de la référence`);
+  for (const [name, m] of Object.entries(TAC.MODES)) {
+    if (only && !only.some((o) => name.includes(o))) continue;
+    const G = withDeciders(base, TAC.deciderOf(m, base), () => gamesOf('reference', seeds));
+    console.log(`  ${name.padEnd(46)} ${gamesLine(G).slice(10, 80)}`); out[name] = G.crowns / G.n;
+  }
+  if (arg('json')) fs.writeFileSync(arg('json'), JSON.stringify(out, null, 1));
+}
 function offscreen() {
   const seeds = range(arg('seeds', '1..40')); let ms = 0, n = 0, up = 0, pairs = 0;
   for (const stage of [0, 1, 2]) {
@@ -262,12 +291,12 @@ function offscreen() {
  *  A3; with `keepNorm` the pool factors are left as they are), then the bracket's and the final's factors on whole games of the reference (calibration seeds) for the semi-final's and the final's targets */
 export function levelFit(t0, targets, fitSeeds, quiet = false, keepNorm = false) {
   if (!keepNorm) for (const id of RIVALS) {
-    let lo = 0.3, hi = 4;
+    let lo = 0.3, hi = 8;
     for (let i = 0; i < 13; i++) { const m = (lo + hi) / 2; AD.AUTO_RACE.norm[id] = m; const r = duelsOf({ day: 2, foes: [id], seeds: range('1..60') })[0]; if (r.w / r.n > t0) lo = m; else hi = m; }
     AD.AUTO_RACE.norm[id] = +((lo + hi) / 2).toFixed(3);
   }
   const bis = (s, key, t, lo, hi) => { for (let i = 0; i < 9; i++) { const m = (lo + hi) / 2; AD.AUTO_RACE.stage[s] = m; if (rate(gamesOf('reference', fitSeeds), [key]) > t) lo = m; else hi = m; } AD.AUTO_RACE.stage[s] = +((lo + hi) / 2).toFixed(3); };
-  bis(1, 'semi', targets[0], 0.6, 3); bis(2, 'final', targets[1], 0.6, 4);
+  bis(1, 'semi', targets[0], 0.6, 5); bis(2, 'final', targets[1], 0.6, 8);
   if (!quiet) console.log(`la course : ${JSON.stringify({ norm: AD.AUTO_RACE.norm, pool: AD.AUTO_RACE.pool, stage: AD.AUTO_RACE.stage })}`);
   return { norm: { ...AD.AUTO_RACE.norm }, pool: [...AD.AUTO_RACE.pool], stage: { ...AD.AUTO_RACE.stage } };
 }
@@ -287,6 +316,7 @@ try {
   else if (cmd === 'kits') kits();
   else if (cmd === 'offscreen') offscreen();
   else if (cmd === 'level') level();
+  else if (cmd === 'modes') modes();
   else if (cmd !== 'lib') console.log('commands: games | refs | rhythm | kits | offscreen | level (see the header)');
 } finally { if (cmd !== 'lib') await server.close(); }
 export { AU, AD, AM, LAB, ST, range, med, q, pct, rate, server };

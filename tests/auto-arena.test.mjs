@@ -108,9 +108,10 @@ test('each blow drawn from before it lands (journal Passe LC4): its run-up read 
       ws.forEach((w, i) => {
         const o = want[s][i], lead = w.impactAt;
         assert.ok(i === 0 || ws[i - 1].t0 <= w.t0, 'in the order they start');
-        assert.ok(Math.abs(w.t0 + lead - o.t) < 1e-9 && lead >= 0.04 - 1e-12, `${foe} ${s} ${o.act} at ${o.t}: its run-up ends on its line (${lead})`);
+        const free = o.t - Math.max(-1e9, ...stun[s].filter(([, b]) => b <= o.t + 1e-9).map(([, b]) => b));
+        assert.ok(Math.abs(w.t0 + lead - o.t) < 1e-9 && lead >= Math.min(0.04, free) - 1e-9, `${foe} ${s} ${o.act} at ${o.t}: its run-up ends on its line (${lead})`);
         assert.equal(w.id, o.act);
-        if (o.first || o.effect) { assert.ok(lead <= 0.6 * o.len + 1e-9 || lead === 0.04, `${o.act}: within 60 % of its charge (${lead} of ${o.len})`); o.effect ? effects++ : firsts++; }
+        if (o.first || o.effect) { assert.ok(lead <= 0.6 * o.len + 1e-9 || lead <= 0.04 + 1e-12, `${o.act}: within 60 % of its charge (${lead} of ${o.len})`); o.effect ? effects++ : firsts++; }
         else { assert.ok(w.follow && lead <= 0.8 * o.gap + 1e-9 && lead <= AV.WIND.nextHit + 1e-9, `${o.act}: an enchaînement's next blow within its gap (${lead} of ${o.gap})`); follows++; }
         for (const [a, b] of stun[s]) assert.ok(!(w.t0 > a + 1e-9 && w.t0 < b - 1e-9), `${foe} ${s} ${o.act}: no run-up begun in its own stun`);
       });
@@ -149,7 +150,7 @@ test('the replay\'s HUD: both charges on the timeline, the gauges as the script 
       const g = ga / AU.AUTO_RULES.gauge.max * 100, gr = h.ren.broken ? 100 : h.ren.gaugePct;
       assert.ok(Math.abs(gr - g) < 0.5 || h.ren.broken, `the gauge at ${e.t}: ${gr} for ${g}`);
     }
-    if (e.ev === 'charge' && e.who === 'ren' && e.act !== 'light' && !h.over) { charged++; assert.ok(h.slots.find((s) => s.id === e.act).charging, `${e.act} lit while charging`); }
+    if (e.ev === 'charge' && e.who === 'ren' && e.act !== 'light' && e.act !== d.ren.heavy.id && !h.over) { charged++; assert.ok(h.slots.find((s) => s.id === e.act).charging, `${e.act} lit while charging`); }
     if (h.slots.some((s) => s.cool > 0)) cooled++;
   });
   assert.ok(charged > 3 && cooled > 0);
@@ -168,9 +169,9 @@ test('the gauge at the blow that fills it (journal Passe LC5\'s note, fixed on t
     const d = duelOf(foe, stage, seed, loadout, order, weapon), r = d.result, rp = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe }), max = AU.AUTO_RULES.gauge.max;
     // the wards and boosts under way at each line, from the script alone
     const eff = [];
-    for (const e of r.log) if (e.ev === 'ward' || e.ev === 'boost') { const f = e.who === d.ren.id ? d.ren : d.foe, a = [f.light, f.combo, ...f.skills].find((x) => x?.id === e.act); eff.push({ who: e.who, kind: e.ev, from: e.t, to: e.t + (a.ward ?? a.boost).dur }); }
+    for (const e of r.log) if (e.ev === 'ward' || e.ev === 'boost') { const f = e.who === d.ren.id ? d.ren : d.foe, a = [f.light, f.heavy, ...f.skills].find((x) => x?.id === e.act); eff.push({ who: e.who, kind: e.ev, from: e.t, to: e.t + (a.ward ?? a.boost).dur }); }
     const on = (who, kind, t) => eff.some((x) => x.who === who && x.kind === kind && x.from <= t && t < x.to);
-    const hitsOf = (who, act) => { const f = who === d.ren.id ? d.ren : d.foe; return ([f.light, f.combo, ...f.skills].find((x) => x?.id === act)?.hits ?? [1]).length; };
+    const hitsOf = (who, act) => { const f = who === d.ren.id ? d.ren : d.foe; return ([f.light, f.heavy, ...f.skills].find((x) => x?.id === act)?.hits ?? [1]).length; };
     const seat = (who) => (who === d.ren.id ? 'ren' : 'marek'), byLine = new Map();
     // each blow's impact, in the order of the script's blows
     const imps = [];
@@ -212,12 +213,12 @@ test('AC-08: the form of the day known before the bout, as the duel draws it; AC
     assert.deepEqual(AU.autoFormsOf(seed), d.result.form);
   }
   // the oracles of briefs/combat-auto.md § 3: the dodge 12 % × 2·Spd / (Spd + Spd'), the guard 35 % × 2·Def / (Def + Atk'), ×2 against a skill seen coming, a
-  // trait added, at most 90 %
-  const me = { def: 12, viv: 10, dodgeBonus: 0.35, guardBonus: 0.05 }, him = { atk: 18, viv: 8 };
+  // the stats alone since SY-01, at most 90 %
+  const me = { def: 12, viv: 10 }, him = { atk: 18, viv: 8 };
   const r = AM.autoReactions(me, him);
-  assert.ok(Math.abs(r.dodge - (0.12 * 20 / 18 + 0.35)) < 1e-9);
-  assert.ok(Math.abs(r.guard - (0.35 * 24 / 30 + 0.05)) < 1e-9);
-  assert.ok(Math.abs(r.guardSkill - (0.35 * 24 / 30 * 2 + 0.05)) < 1e-9);
+  assert.ok(Math.abs(r.dodge - 0.12 * 20 / 18) < 1e-9);
+  assert.ok(Math.abs(r.guard - 0.35 * 24 / 30) < 1e-9);
+  assert.ok(Math.abs(r.guardSkill - 0.35 * 24 / 30 * 2) < 1e-9);
   assert.equal(AM.autoReactions({ def: 40, viv: 10 }, { atk: 5, viv: 10 }).guardSkill, 0.9, 'at most 90 %');
 });
 
@@ -238,7 +239,7 @@ test('AC-09: the order of the four, the player\'s (a minor action of the save) o
   const v = PV.autoOrderView(st, G.v2KitOf(st).loadout);
   assert.deepEqual(v.map((x) => x.id), want);
   assert.deepEqual(v.map((x) => x.ap), want.map((id) => AD.autoSkill(id, 1).ap));
-  assert.deepEqual(v.map((x) => x.charge), want.map((id) => AD.autoSkill(id, 1).charge));
+  assert.deepEqual(v.map((x) => x.charge), want.map((id) => +AD.autoSkill(id, 1).charge.toFixed(2)));
   // today's game has no such action
   assert.equal(G.advance(G.newGame(1842, 'Ren'), { type: 'setOrder', skills: want }).ok, false);
 });

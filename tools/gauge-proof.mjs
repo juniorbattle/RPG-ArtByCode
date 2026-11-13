@@ -33,7 +33,7 @@ try {
     await page.waitForFunction('window.__ready === true || window.__error', { timeout: 300000 });
     const script = await page.evaluate(() => {
       const a = window.__arena.auto, f = a.fighters;
-      const acts = (x) => Object.fromEntries([x.light, x.combo, ...x.skills].filter(Boolean).map((y) => [y.id, { hits: (y.hits ?? [1]).length, ward: y.ward?.dur ?? 0, boost: y.boost?.dur ?? 0 }]));
+      const acts = (x) => Object.fromEntries([x.light, x.heavy, ...x.skills].filter(Boolean).map((y) => [y.id, { hits: (y.hits ?? [1]).length, ward: y.ward?.dur ?? 0, boost: y.boost?.dur ?? 0 }]));
       return { log: a.result.log, ids: { ren: f.ren.id, marek: f.marek.id }, acts: { ren: acts(f.ren), marek: acts(f.marek) }, end: a.end };
     });
     // the frames: the blows each tells, both bars as laid out

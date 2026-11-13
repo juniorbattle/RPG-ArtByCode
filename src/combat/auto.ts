@@ -274,7 +274,9 @@ export const offensive = (a: AutoAction): boolean => !a.ward && !a.boost && a.ki
 /** The automatic's skills (AC-09; the prototype's `autoSmartDecider`, journal Passe AC3), in the order of the fighter's skills (the first that holds):
  *  - a ward when the opponent charges a big action that would leave while the ward is up, or when its own gauge passes two thirds; a ward that covers (`cover`)
  *    also as soon as the AP left after it still pay an offensive skill, unless the opponent is broken;
- *  - a boost when the opponent is broken, or when an offensive skill ready now can follow it (its AP after the boost's);
+ *  - a boost as soon as it is ready (one at a time): the operator's SY-07 asks the automatic to be worth the simple tactics and random presses, and the boost
+ *    held for an offensive skill to follow was below both (journal Passe SL1: the boosts as soon as ready 90 % of titles against 36 %, random presses of the
+ *    supports 69 %, the race unchanged);
  *  - an offensive skill as soon as it can pay it and it is ready;
  *  - else null (the base attacks decide). */
 export function autoSkillChoice(v: AutoView, x: AutoFighter): AutoAction | null {
@@ -293,8 +295,7 @@ export function autoSkillChoice(v: AutoView, x: AutoFighter): AutoAction | null 
     if (s.boost) {
       if (boostTried || active(me.boost, t)) continue;
       boostTried = true;
-      if (foe.broken || x.skills.some((o) => offensive(o) && v.usable(o) && me.ap >= (o.ap ?? 0) + (s.ap ?? 0))) return s;
-      continue;
+      return s;
     }
     return s;
   }

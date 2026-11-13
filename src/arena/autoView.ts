@@ -385,7 +385,8 @@ export function windowsOf(log: AutoEvent[] | undefined, ids: Record<string, Seat
     if (e.ev === 'break') { stunEnd[seat] = e.t + AUTO_RULES.brk.stun; continue; }
     const a = e.act ? acts[seat].get(e.act) : undefined; if (!a) continue;
     const c = charge[seat], len = c ? Math.max(0, c.leave - c.start) : Infinity, free = e.t - stunEnd[seat];
-    const cap = (w: number): number => Math.max(0.04, free > 0 ? Math.min(w, free) : w);
+    // at least 0.04 s, never begun in the striker's own stun (a charge paused by a break can leave a moment after it: the run-up then as short as that)
+    const cap = (w: number): number => (free > 0 ? Math.min(Math.max(0.04, w), free) : Math.max(0.04, w));
     const kind = kindOf(a), id = a.id;
     if (e.ev === 'ward' || e.ev === 'boost') {
       const lead = cap(Math.min(WIND.effect, 0.6 * len));

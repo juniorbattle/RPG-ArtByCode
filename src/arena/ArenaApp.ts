@@ -847,9 +847,9 @@ export class ArenaApp {
 const AUTO_MOMENTS: Record<string, (a: AutoReplay) => number> = {
   start: () => 0.05,
   renCharge: (a) => { const t = a.timeOf((e) => e.who === 'ren' && e.ev === 'charge' && e.act !== 'light'); return t < 0 ? -1 : t + 0.5; },
-  foeCharge: (a) => { const e = a.result.log!.find((x) => x.who !== 'ren' && x.ev === 'charge' && x.act !== 'm_light' && x.act !== 'm_combo' && (x.at ?? 0) - x.t > 1); return e ? (e.t + (e.at ?? e.t)) / 2 : -1; },
+  foeCharge: (a) => { const e = a.result.log!.find((x) => x.who !== 'ren' && x.ev === 'charge' && x.act !== 'm_light' && (x.at ?? 0) - x.t > 1); return e ? (e.t + (e.at ?? e.t)) / 2 : -1; },
   renSkill: (a) => a.timeOf((e) => e.who === 'ren' && e.ev === 'hit' && e.act !== 'light'),
-  foeSkill: (a) => a.timeOf((e) => e.who !== 'ren' && e.ev === 'hit' && e.act !== 'm_light' && e.act !== 'm_combo'),
+  foeSkill: (a) => a.timeOf((e) => e.who !== 'ren' && e.ev === 'hit' && e.act !== 'm_light'),
   ward: (a) => { const t = a.timeOf((e) => e.ev === 'ward' || e.ev === 'boost'); return t < 0 ? -1 : t + 0.1; },
   dodge: (a) => { const t = a.timeOf((e) => e.ev === 'dodged'); return t < 0 ? -1 : t + 0.08; },
   guard: (a) => { const t = a.timeOf((e) => e.ev === 'guarded'); return t < 0 ? -1 : t + 0.08; },

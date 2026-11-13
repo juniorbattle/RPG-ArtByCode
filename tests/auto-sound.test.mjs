@@ -22,7 +22,7 @@ const FX = await load('/src/arena/fx/fxRecipes.ts');
 const FC = await load('/src/audio/formCue.ts');
 
 const RIVALS = Object.keys(ST.RIVAL_SHEETS);
-const LOADOUTS = [['t1', 't4', 'd1', 's1'], ['t3', 'k_sunder', 'k_iron', 'k_cry'], ['t2', 'heavy', 'k_parry', 'k_focus']];
+const LOADOUTS = [['t1', 't4', 'd1', 's1'], ['t3', 'k_sunder', 'k_iron', 'k_cry'], ['t2', 'k_feint', 'k_parry', 'k_focus']];
 const duelOf = (foe, stage, seed, loadout) => {
   const ren = AD.autoRen({ ...ST.REN_BASE, hp: 324, atk: 17, def: 15 }, { loadout, levels: { t1: 2, t2: 1, t3: 1, t4: 1, d1: 1, s1: 1, k_iron: 1, k_parry: 1, k_cry: 1, k_focus: 1, k_sunder: 1, k_feint: 1, heavy: 1 } }, { weapon: 'imported-blade' });
   const f = AD.autoFoe(foe, AD.autoRaceSheet(foe, stage, 1));
@@ -37,7 +37,7 @@ const play = (d) => {
 const DUELS = [];
 for (const [k, foe] of RIVALS.entries()) for (const seed of [1, 2]) DUELS.push(duelOf(foe, seed - 1, seed, LOADOUTS[(k + seed) % LOADOUTS.length]));
 // two duels where Ren is broken while he charges a skill (found by a search over seeds): his breath again at the stun's end
-DUELS.push(duelOf('vessa', 0, 5, LOADOUTS[2]), duelOf('cassius', 1, 17, LOADOUTS[2]));
+DUELS.push(duelOf('tobin', 0, 33, LOADOUTS[2]), duelOf('tobin', 0, 10, LOADOUTS[0]));
 
 test('the replay tells Ren\'s charge of a skill as the charge\'s tier, its release where its action leaves, its breath again after a stun; never his light attack, never a rival', () => {
   let tiers = 0, releases = 0, holds = 0;
@@ -51,7 +51,8 @@ test('the replay tells Ren\'s charge of a skill as the charge\'s tier, its relea
     for (const e of log) {
       if (e.t > koAt) break;
       if (e.who !== d.ren.id) continue;
-      if (e.ev === 'charge') { open.c = e.act === d.ren.light.id ? null : e; if (open.c) want.push({ type: 'chargeTier', t: e.t, idx: ladder.get(e.act) }); continue; }
+      // (his heavy blow, a base attack since SY-02, has no tier: as his light attack)
+      if (e.ev === 'charge') { open.c = e.act === d.ren.light.id || e.act === d.ren.heavy.id ? null : e; if (open.c) want.push({ type: 'chargeTier', t: e.t, idx: ladder.get(e.act) }); continue; }
       if (e.ev === 'break') continue;
       if (open.c) { want.push({ type: 'chargeRelease', t: e.t, idx: ladder.get(open.c.act) }); open.c = null; }
     }
@@ -68,7 +69,7 @@ test('the replay tells Ren\'s charge of a skill as the charge\'s tier, its relea
     const stuns = log.filter((e) => e.ev === 'break' && e.who === d.ren.id && e.t < koAt);
     for (const b of stuns) {
       const before = log.filter((e) => e.who === d.ren.id && e.t <= b.t && e.ev !== 'break'), last = before.reverse().find((e) => e.ev === 'charge' || e.ev === 'hit' || e.ev === 'guarded' || e.ev === 'dodged' || e.ev === 'ward' || e.ev === 'boost');
-      const charging = last?.ev === 'charge' && last.act !== d.ren.light.id, end = b.t + AU.AUTO_RULES.brk.stun, leaves = last ? log.find((e) => e.who === d.ren.id && e.t > last.t && e.ev !== 'charge' && e.ev !== 'break') : null;
+      const charging = last?.ev === 'charge' && last.act !== d.ren.light.id && last.act !== d.ren.heavy.id, end = b.t + AU.AUTO_RULES.brk.stun, leaves = last ? log.find((e) => e.who === d.ren.id && e.t > last.t && e.ev !== 'charge' && e.ev !== 'break') : null;
       const hold = evs.find((e) => e.type === 'chargeHold' && Math.abs(e.t - end) <= rp.D.dt + 1e-9);
       if (charging && leaves && leaves.t > end + rp.D.dt && end < koAt) { assert.ok(hold && hold.idx === ladder.get(last.act), `${d.foe.id}: the breath again at ${end}`); holds++; }
       else assert.ok(!hold || charging, `${d.foe.id}: no breath after a stun out of a charge`);
@@ -161,17 +162,17 @@ test('the music\'s rule F on this duel: the lead aside on the opponent\'s sequen
     // the oracle, from the script: the intervals where the opponent charges an offensive action other than its light attack and its combo (to its first blow),
     // and where Ren charges a skill (to the line it leaves on); the stuns; the first blow that leaves a fighter under 30 %
     const log = d.result.log, koAt = d.result.t, ivs = { seq: [], ch: [], stun: [] };
-    const light = new Set([d.foe.light.id, d.foe.combo?.id, d.ren.light.id]), big = (who, act) => { const f = who === d.ren.id ? d.ren : d.foe, a = [f.light, f.combo, ...f.skills].find((x) => x?.id === act); return a && !light.has(act) && !a.ward && !a.boost; };
+    const light = new Set([d.foe.light.id, d.ren.light.id]), big = (who, act) => { const f = who === d.ren.id ? d.ren : d.foe, a = [f.light, f.heavy, ...f.skills].find((x) => x?.id === act); return a && !light.has(act) && !a.ward && !a.boost; };
     const open = {}; let lowAt = Infinity;
     for (const e of log) {
       if (e.ev === 'charge') { open[e.who] = e; continue; }
       if (e.ev === 'break') { ivs.stun.push([e.t, e.t + AU.AUTO_RULES.brk.stun]); continue; }
       const c = open[e.who];
-      if (c) { if (e.who === d.foe.id && big(e.who, c.act)) ivs.seq.push([c.t, e.t]); if (e.who === d.ren.id && c.act !== d.ren.light.id) ivs.ch.push([c.t, e.t]); open[e.who] = null; }
+      if (c) { if (e.who === d.foe.id && big(e.who, c.act)) ivs.seq.push([c.t, e.t]); if (e.who === d.ren.id && c.act !== d.ren.light.id && c.act !== d.ren.heavy.id) ivs.ch.push([c.t, e.t]); open[e.who] = null; }
       if (e.hp !== undefined && lowAt === Infinity) { const to = e.who === d.ren.id ? 'marek' : 'ren'; if (e.hp / maxHp[to] < P.LOW_HP) lowAt = e.t; }
     }
     // an action still charged at the K.O. holds its moment to the end
-    for (const [who, c] of Object.entries(open)) if (c) { if (who === d.foe.id && big(who, c.act)) ivs.seq.push([c.t, koAt]); if (who === d.ren.id && c.act !== d.ren.light.id) ivs.ch.push([c.t, koAt]); }
+    for (const [who, c] of Object.entries(open)) if (c) { if (who === d.foe.id && big(who, c.act)) ivs.seq.push([c.t, koAt]); if (who === d.ren.id && c.act !== d.ren.light.id && c.act !== d.ren.heavy.id) ivs.ch.push([c.t, koAt]); }
     const inside = (list, t) => list.some(([a, b]) => t > a + 0.02 && t < b - 0.02);
     let m = P.CALM, k = 0;
     const sorted = evs;

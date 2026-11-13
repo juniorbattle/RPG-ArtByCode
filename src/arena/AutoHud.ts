@@ -206,7 +206,6 @@ export class AutoHud {
 /** an action's name on the cards and the foot (the page's language): Ren's light attack and his skills, a rival's blows and skills */
 export function autoActionName(id: string, _t?: unknown): string {
   if (id === 'light' || id === 'm_light') return tx('auto.light');
-  if (id === 'm_combo') return tx('auto.combo');
   if (id === 'm_heavy') return tx('auto.heavy');
   const foe = FOE_SKILLS[id];
   return foe ? word(foe.name) : skillName(id);

@@ -147,7 +147,7 @@ async function firstBout(page, sheet, tag) {
   console.log(`   said in the bout: ${said.map((x) => `${x.id} ${x.t.toFixed(2)}`).join(' | ')}`);
   check(new Set(said.map((x) => x.id)).size === said.length, 'no lesson said twice');
   // against the script
-  const duel = await page.evaluate(() => { const a = window.__arena.auto; return { log: a.result.log, ids: { ren: a.fighters.ren.id, renLight: a.fighters.ren.light.id, light: [a.fighters.ren.light.id, a.fighters.marek.light.id, a.fighters.marek.combo?.id].filter(Boolean) }, dt: a.D.dt }; });
+  const duel = await page.evaluate(() => { const a = window.__arena.auto; return { log: a.result.log, ids: { ren: a.fighters.ren.id, renLight: a.fighters.ren.light.id, light: [a.fighters.ren.light.id, a.fighters.marek.light.id].filter(Boolean) }, dt: a.D.dt }; });
   const want = oracle(duel.log, duel.ids);
   check(JSON.stringify(said.map((x) => x.id).sort()) === JSON.stringify(Object.keys(want).sort()), `the lessons the bout reaches before its K.O.: ${Object.keys(want).join(', ')}`);
   const off = said.filter((x) => x.id !== 'start' && !(x.t >= want[x.id] - 1e-9 && x.t - want[x.id] <= duel.dt + 1e-6));

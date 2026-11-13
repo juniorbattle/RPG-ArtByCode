@@ -157,7 +157,7 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   assert.ok(!('tut.duel.priority.body' in EN) && !('tut.duel.riposte.body' in EN));
   const d = AV.sceneAutoDuel('marek', 1337), D = lessonDuel(d);
   assert.match(DT.lessonText('start', D), new RegExp(`You use your ${d.ren.skills.length} skills in your order`));
-  assert.match(DT.lessonText('charge', D), new RegExp(`your light attack charges ${AD.AUTO_LIGHT.charge} seconds at your Speed of ${d.ren.viv}`));
+  assert.match(DT.lessonText('charge', D), new RegExp(`your light attack charges ${+(AD.AUTO_LIGHT.charge * AD.AUTO_CADENCE.all).toFixed(2)} seconds at your Speed of ${d.ren.viv}`));
   assert.match(DT.lessonText('combo', D), new RegExp(`your light attack strikes ${AD.AUTO_WEAPONS['training-sword'].hits.length} with your weapon`));
   assert.match(DT.lessonText('ap', D), new RegExp(`gives you ${R.ap.light} action point\\. You started this bout with ${R.ap.start} and hold ${R.ap.max} at most`));
   assert.match(DT.lessonText('ap', D), new RegExp(`comes back ${AD.AUTO_COOLDOWN} times its first-level charge after its charge begins`)); // the cooldown as the duel counts it (the operator's CO-4, journal Passe CO3)
@@ -173,14 +173,14 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   // the numbers follow the bout, not constants: a Ren at Speed 8 with the sabre and an AP of his gear
   const ren = AD.autoRen({ ...d.ren, hp: 300, viv: 8 }, { loadout: ['t1', 't4', 'd1', 's1'], levels: {} }, { weapon: 'duelist-sabre', apStart: 1 });
   const D2 = { ...D, ren };
-  assert.match(DT.lessonText('charge', D2), new RegExp(`charges ${+(AD.AUTO_LIGHT.charge * 10 / 8).toFixed(2)} seconds at your Speed of 8`));
+  assert.match(DT.lessonText('charge', D2), new RegExp(`charges ${+(AD.AUTO_LIGHT.charge * AD.AUTO_CADENCE.all * 10 / 8).toFixed(2)} seconds at your Speed of 8`));
   assert.match(DT.lessonText('combo', D2), new RegExp(`strikes ${AD.AUTO_WEAPONS['duelist-sabre'].hits.length} with your weapon`));
   assert.match(DT.lessonText('ap', D2), new RegExp(`You started this bout with ${R.ap.start + 1}`));
   // in French: the decimal comma, the article meeting the name (« des coups d’Orla »)
   const o = AV.sceneAutoDuel('orla', 7), DO = lessonDuel(o, { ren: 'Ren', marek: 'Orla' });
   T.useLanguage('fr', FR);
   try {
-    assert.match(DT.lessonText('charge', D2), /se charge en 1,5 secondes à votre Vivacité de 8/);
+    assert.match(DT.lessonText('charge', D2), /se charge en 0,9 secondes à votre Vivacité de 8/);
     assert.match(DT.lessonText('react', DO), /des coups d’Orla et en gardez/);
     for (const id of DT.LESSONS) assert.doesNotMatch(DT.lessonText(id, DO), /[{}]|\b(the|your|and)\b/, id);
   } finally { T.useLanguage('en'); }
@@ -190,7 +190,7 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
  *  that lands, a blow that is not its action's first, a guard or a dodge, a skill or a heavy blow landing, a target's gauge a third full at a blow, a break, Ren
  *  charging a skill; the clock's lesson at SPEED_AT; none at the K.O.'s blow or after it */
 function oracle(d) {
-  const log = d.result.log, light = new Set([d.ren.light.id, d.foe.light.id, d.foe.combo?.id]), first = { start: 0 }, fresh = {};
+  const log = d.result.log, light = new Set([d.ren.light.id, d.foe.light.id]), first = { start: 0 }, fresh = {};
   // a target's gauge just after a blow, from the script alone: the next line's trace (written before its own blow fills anything) with its decay undone, full at
   // that fighter's break or while it is broken (lot 4, journal Passe LC6: the HUD shows the gauge at the blow, no longer one line late)
   const after = (i, k) => { const e = log[i], n = log[i + 1]; if (e.s[k] >= R.gauge.max) return R.gauge.max; if (!n) return 0; if (n.ev === 'break' && n.s[k] >= R.gauge.max) return R.gauge.max; return n.s[k] > 0 ? n.s[k] + R.gauge.decay * (n.t - e.t) : 0; };
