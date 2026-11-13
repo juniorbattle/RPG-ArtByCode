@@ -144,7 +144,20 @@ export function deserialize(text: string): GameState {
   // a version 2 game saved before the heavy attack became a skill (journal Passe CH1): it owns it at level 1, as a new game does; the default
   // game has no such kit and is read as it was
   if (st.v2?.kit && !(st.v2.kit.levels.heavy > 0)) st.v2.kit.levels.heavy = 1;
+  if (st.v2?.kit) heavyOutOfFour(st.v2.kit);
   return st;
+}
+
+/** a version 2 game saved while the heavy attack could be one of the four (journal Passe CH1, before lot 1 of the second redesign made it a base attack of every
+ *  fighter, SY-02): the next skill owned, in the skills page's order after the heavy attack, takes its place in the four and in their order (the operator's SL1-7
+ *  « La suivante possédée prend la place (au lot 2) », journal Passe SL2) */
+export function heavyOutOfFour(kit: { loadout: string[]; levels: Record<string, number>; order?: string[] }): void {
+  const at = kit.loadout.indexOf('heavy');
+  if (at < 0) return;
+  const owned = Object.keys(kit.levels).filter((k) => kit.levels[k] > 0), h = owned.indexOf('heavy');
+  const next = [...owned.slice(h + 1), ...owned.slice(0, Math.max(0, h))].find((id) => id !== 'heavy' && !kit.loadout.includes(id));
+  if (next) kit.loadout[at] = next; else kit.loadout.splice(at, 1);
+  if (kit.order) { const o = kit.order.indexOf('heavy'); if (o >= 0) { if (next && !kit.order.includes(next)) kit.order[o] = next; else kit.order.splice(o, 1); } }
 }
 
 export function hash(st: GameState): string { return fnv64(canonical(st)); }

@@ -263,7 +263,7 @@ export class Sound {
     // the player's two commands of the duel played by the computer (lot 4, journal Passe LC6): ×2 and « Skip » give the interface's click (the HUD's buttons
     // give it by themselves: `quiet`); « Skip » takes the music down with its black curtain, as a page's sound goes down with its own (SA-15), the K.O. reached
     // under the black then heard with its jingle
-    if (e.type === 'speed' || e.type === 'skip') {
+    if (e.type === 'speed' || e.type === 'skip' || e.type === 'press') {
       if (!e.quiet) this.play('click');
       if (e.type === 'skip') { const l = this.layered; if (l) { l.set.stop(Math.max(0.05, Number(e.secs) || 0.22)); this.layered = null; } if (this.hold) clearTimeout(this.hold.timer); this.hold = null; }
       return;

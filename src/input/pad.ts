@@ -80,7 +80,9 @@ export function tabTo<T>(pages: readonly T[], shown: T | null, dir: -1 | 1): T |
 
 /** the version 2's duel (MN-5): X or RT attack (held: the charge), B or LT guard (held), A dodge, Start pause, View the scene page's restart;
  *  the triggers let a charge and the guard be held together while the thumb stays on the dodge. Today's V2_PAD (X, B, A) is kept whole in it */
-export const DUEL: Partial<Record<Btn, string>> = { [BTN.X]: 'attack', [BTN.RT]: 'attack', [BTN.B]: 'guard', [BTN.LT]: 'guard', [BTN.A]: 'dodge', [BTN.START]: 'pause', [BTN.VIEW]: 'reset', [BTN.Y]: 'settings' };
+export const DUEL: Partial<Record<Btn, string>> = { [BTN.X]: 'attack', [BTN.RT]: 'attack', [BTN.B]: 'guard', [BTN.LT]: 'guard', [BTN.A]: 'dodge', [BTN.START]: 'pause', [BTN.VIEW]: 'reset', [BTN.Y]: 'settings',
+  // the hand (lot 2 of the second redesign, journal Passe SL3; § 25.5 « la croix de la manette »): the D-pad's up, right, down, left the first to the fourth skill of the order
+  [BTN.UP]: 'skill1', [BTN.RIGHT]: 'skill2', [BTN.DOWN]: 'skill3', [BTN.LEFT]: 'skill4' };
 /** the duel's commands held down while their button is (any of their buttons) */
 export const HELD = new Set(['attack', 'guard']);
 
@@ -165,6 +167,7 @@ export function bindButton(act: string, where: CapPlace): Btn | 'hide' | null {
     case 'up': return BTN.UP; case 'down': return BTN.DOWN; case 'left': return BTN.LEFT; case 'right': return BTN.RIGHT;
     case 'run': return BTN.B; case 'talk': return BTN.A; case 'list': return BTN.Y; case 'map': return BTN.VIEW;
     case 'attack': return BTN.X; case 'guard': return BTN.B; case 'dodge': return BTN.A; case 'pause': return BTN.START;
+    case 'skill1': return BTN.UP; case 'skill2': return BTN.RIGHT; case 'skill3': return BTN.DOWN; case 'skill4': return BTN.LEFT;
     case 'mute': return 'hide';
     default: return where === 'menu' ? 'hide' : null;
   }

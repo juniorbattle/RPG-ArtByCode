@@ -157,7 +157,7 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   assert.ok(!('tut.duel.priority.body' in EN) && !('tut.duel.riposte.body' in EN));
   const d = AV.sceneAutoDuel('marek', 1337), D = lessonDuel(d);
   assert.match(DT.lessonText('start', D), new RegExp(`You use your ${d.ren.skills.length} skills in your order`));
-  assert.match(DT.lessonText('charge', D), new RegExp(`your light attack charges ${+(AD.AUTO_LIGHT.charge * AD.AUTO_CADENCE.all).toFixed(2)} seconds at your Speed of ${d.ren.viv}`));
+  assert.match(DT.lessonText('charge', D), new RegExp(`your light attack charges ${+(AD.AUTO_LIGHT.charge * AD.AUTO_CADENCE.charge).toFixed(2)} seconds at your Speed of ${d.ren.viv}`));
   assert.match(DT.lessonText('combo', D), new RegExp(`your light attack strikes ${AD.AUTO_WEAPONS['training-sword'].hits.length} with your weapon`));
   assert.match(DT.lessonText('ap', D), new RegExp(`gives you ${R.ap.light} action point\\. You started this bout with ${R.ap.start} and hold ${R.ap.max} at most`));
   assert.match(DT.lessonText('ap', D), new RegExp(`comes back ${AD.AUTO_COOLDOWN} times its first-level charge after its charge begins`)); // the cooldown as the duel counts it (the operator's CO-4, journal Passe CO3)
@@ -173,7 +173,7 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   // the numbers follow the bout, not constants: a Ren at Speed 8 with the sabre and an AP of his gear
   const ren = AD.autoRen({ ...d.ren, hp: 300, viv: 8 }, { loadout: ['t1', 't4', 'd1', 's1'], levels: {} }, { weapon: 'duelist-sabre', apStart: 1 });
   const D2 = { ...D, ren };
-  assert.match(DT.lessonText('charge', D2), new RegExp(`charges ${+(AD.AUTO_LIGHT.charge * AD.AUTO_CADENCE.all * 10 / 8).toFixed(2)} seconds at your Speed of 8`));
+  assert.match(DT.lessonText('charge', D2), new RegExp(`charges ${+(AD.AUTO_LIGHT.charge * AD.AUTO_CADENCE.charge * 10 / 8).toFixed(2)} seconds at your Speed of 8`));
   assert.match(DT.lessonText('combo', D2), new RegExp(`strikes ${AD.AUTO_WEAPONS['duelist-sabre'].hits.length} with your weapon`));
   assert.match(DT.lessonText('ap', D2), new RegExp(`You started this bout with ${R.ap.start + 1}`));
   // in French: the decimal comma, the article meeting the name (« des coups d’Orla »)

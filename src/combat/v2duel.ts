@@ -95,7 +95,7 @@ export const V2_RIPOSTE = { after: 3, delay: 0.3 };
  *  from the start since it became a skill (journal Passe CH1), at level 1, after the four (the skills page lists them in this order; the operator's CH-4 « Les quatre d’aujourd’hui, la
  *  puissante à côté », journal Passe CH2) */
 /** `order`: the four's order of priority in the duel played by the computer (AC-09; src/combat/autoData.ts autoRen), absent = the automatic's own */
-export interface V2Kit { loadout: DynActionId[]; levels: Record<string, number>; order?: string[] }
+export interface V2Kit { loadout: DynActionId[]; levels: Record<string, number>; order?: string[]; tactic?: Record<string, string> }
 export const V2_START_KIT: V2Kit = { loadout: ['t1', 't4', 'd1', 's1'], levels: { t1: 1, t4: 1, d1: 1, s1: 1, heavy: 1 } };
 
 export interface V2Duel { data: DynData; tiers: ChargeTier[] }

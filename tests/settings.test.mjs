@@ -145,12 +145,15 @@ test('the player\'s keys (journal Passe RM2): the starting keys are today\'s, a 
   assert.deepEqual(['up', 'left', 'down', 'right', 'run', 'talk', 'list', 'map'].map((a) => label(Q, a)), [['w', 'ArrowUp'], ['a', 'ArrowLeft'], ['s', 'ArrowDown'], ['d', 'ArrowRight'], ['Shift', null], ['e', ' '], ['q', null], ['m', null]]);
   assert.deepEqual(['up', 'left', 'list', 'map'].map((a) => label(A, a)), [['z', 'ArrowUp'], ['q', 'ArrowLeft'], ['a', null], ['m', null]]);
   assert.deepEqual(['journal', 'board', 'skills', 'gear', 'settings', 'guide', 'mute'].map((a) => Q[a][0].k).join(''), 'jtkgvhn');
-  assert.deepEqual(['attack', 'guard', 'dodge', 'pause'].map((a) => label(Q, a)), [['j', '1'], ['k', 'b'], ['l', 'a'], [' ', null]]);
-  // a key read by its place: both Shifts are one, a keypad digit is its digit (the AZERTY top row's « 1 » attacks: it types « & »)
+  // the attack's second key, 1, given to the hand's four on 1 to 4 (lot 2 of the second redesign, journal Passe SL3: briefs/combat-auto.md § 25.5)
+  assert.deepEqual(['attack', 'guard', 'dodge', 'pause'].map((a) => label(Q, a)), [['j', null], ['k', 'b'], ['l', 'a'], [' ', null]]);
+  assert.deepEqual(['skill1', 'skill2', 'skill3', 'skill4'].map((a) => label(Q, a)), [['1', null], ['2', null], ['3', null], ['4', null]]);
+  assert.deepEqual(['skill1', 'skill4'].map((a) => label(A, a)), [['1', null], ['4', null]]);
+  // a key read by its place: both Shifts are one, a keypad digit is its digit (the AZERTY top row's « 1 » presses the first skill: it types « & »)
   assert.equal(KY.normCode('ShiftRight', 'Shift'), 'Shift');
   assert.equal(KY.normCode('Numpad1', '1'), 'Digit1');
-  assert.deepEqual(KY.actsOfId(KY.keyId({ code: 'Digit1', key: '&' }), 'duel', A), ['attack']);
-  assert.deepEqual(KY.actsOfId(KY.keyId({ code: 'Numpad1', key: '1' }), 'duel', Q), ['attack']);
+  assert.deepEqual(KY.actsOfId(KY.keyId({ code: 'Digit1', key: '&' }), 'duel', A), ['skill1']);
+  assert.deepEqual(KY.actsOfId(KY.keyId({ code: 'Numpad1', key: '1' }), 'duel', Q), ['skill1']);
   assert.deepEqual(KY.actsOfId(KY.keyId({ code: 'KeyW', key: 'W' }), 'walk', Q), ['up'], 'Shift held changes nothing');
   // mute is heard walking and in the duel; J journals walking and attacks in the duel (two moments, one key: as today)
   assert.deepEqual(KY.actsOfId('KeyN', 'duel', Q), ['mute']);
@@ -161,7 +164,7 @@ test('the player\'s keys (journal Passe RM2): the starting keys are today\'s, a 
   assert.deepEqual(r.swaps, [{ act: 'run', slot: 0, to: slot('KeyE', 'e') }]);
   // the duel's attack on K: the guard takes J; walking, K stays the skills'
   r = KY.rebind(Q, 'attack', 0, slot('KeyK', 'k'));
-  assert.deepEqual([label(r.table, 'attack'), label(r.table, 'guard'), label(r.table, 'skills')], [['k', '1'], ['j', 'b'], ['k', null]]);
+  assert.deepEqual([label(r.table, 'attack'), label(r.table, 'guard'), label(r.table, 'skills')], [['k', null], ['j', 'b'], ['k', null]]);
   // a key free in the moment: nothing swaps; the action's other slot holding it: the two slots trade
   r = KY.rebind(Q, 'map', 0, slot('KeyF', 'f')); assert.deepEqual([r.swaps, label(r.table, 'map')], [[], ['f', null]]);
   r = KY.rebind(Q, 'talk', 0, slot('Space', ' ')); assert.deepEqual(label(r.table, 'talk'), [' ', 'e']);

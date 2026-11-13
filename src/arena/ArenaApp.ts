@@ -28,7 +28,7 @@ import { DYN_PRESETS, runDynScript } from './DynPresets';
 import { arenaRules, dynClip, dynClipFrame, dynKeys, dynPad, fxOn, tuneDyn, v2Rules, type ArenaRules } from './dynamicView';
 import { AutoReplay, sceneAutoDuel, type ReplayEvent } from './autoView';
 import { AutoHud, AUTO_TEXTS_EN, AUTO_TEXTS_FR, autoActionName, type AutoTexts } from './AutoHud';
-import type { AutoFighter, AutoResult } from '../combat/auto';
+import { autoDuel, type AutoCommand, type AutoFighter, type AutoResult } from '../combat/auto';
 import { FloorUI } from './FloorUI';
 import { chargeHudModel, makeV2Duel, runV2Script, V2_PAD, V2_PRESETS } from './v2Arena';
 import { CHARGE_TEXTS_EN, CHARGE_TEXTS_FR } from './DynamicHud';
@@ -72,7 +72,9 @@ export interface ArenaMatch {
   data?: CombatData | DynData; rules?: ArenaRules; foe: string; assist: Assist; texts: ArenaTexts | DynTexts | AutoTexts;
   /** the duel played by the computer (`rules: 'auto'`, every version 2 bout since lot 2, journal Passe LC3): its result with its script, its two fighters, the
    *  fighters' names on the cards */
-  auto?: { result: AutoResult; ren: AutoFighter; foe: AutoFighter; names: { ren: string; marek: string } };
+  auto?: { result: AutoResult; ren: AutoFighter; foe: AutoFighter; names: { ren: string; marek: string }; seed?: number };
+  /** the duel played by the computer: a press of the hand (SY-09), its time and skill, after the duel was replayed with it (playArena keeps the presses in sight) */
+  onPress?: (p: AutoCommand) => void;
   /** the version 2's charge tiers (with `rules: 'v2'`, src/combat/v2duel.ts, journal Passe V1) */
   tiers?: ChargeTier[];
   /** the band's piece of the bout (src/audio/plan.ts `boutPiece`, journal Passe SN10): the duel, the rival or the finale by the tournament's stage */
@@ -137,6 +139,9 @@ export class ArenaApp {
   readonly charge: ChargedDuel | null = null;
   /** the duel played by the computer (`auto`: a version 2 game's bout, or the arena's own page): its script played on the arena's clock */
   readonly auto: AutoReplay | null = null;
+  /** the duel played by the computer's seed (the hand replays the duel with it) and the presses so far */
+  private autoSeed: number | null = null;
+  readonly presses: AutoCommand[] = [];
   /** ×2 (AC-13): the duel's clock twice as fast while the player asks it */
   speed = 1;
   lib!: MaterialLibrary;
@@ -213,6 +218,7 @@ export class ArenaApp {
         const dev = import.meta.env.DEV ? { weapon: opts.params.get('weapon'), loadout: opts.params.get('kit')?.split(',').filter(Boolean) } : {};
         const a = opts.match?.auto ?? sceneAutoDuel(this.foe, (parseInt(opts.params.get('duelseed') ?? '1337', 10) >>> 0) || 1337, dev);
         this.auto = new AutoReplay(a.result, { ren: a.ren, marek: a.foe }, opts.match?.auto?.names ?? { ren: 'Ren', marek: this.foe[0].toUpperCase() + this.foe.slice(1) }); this.sim = this.auto as unknown as DuelSim;
+        this.autoSeed = a.seed ?? null;
         maxHp = { ren: this.auto.f.ren.maxHp, marek: this.auto.f.marek.maxHp };
       } else {
         const v = makeV2Duel(opts.params, opts.match ? { data: opts.match.data as DynData, tiers: opts.match.tiers } : undefined, this.foe); this.dyn = v.dyn; this.charge = v.charge; this.sim = (v.charge ?? v.dyn) as unknown as DuelSim;
@@ -411,6 +417,7 @@ export class ArenaApp {
       else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; this.hud?.still(false); }
       else if (id === 'settings') this.openSettings();
       else if (id === 'reset') { if (!this.opts.match) this.restart(); }
+      else if (/^skill[1-4]$/.test(id)) this.press(+id.slice(5) - 1, from === 'hud');
       return;
     }
     if (id === 'guard') { s.setGuard('ren', down); return; }
@@ -422,6 +429,24 @@ export class ArenaApp {
     else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; this.hud?.still(false); }
     else if (id === 'settings') this.openSettings();
     else s.command('ren', id);
+  }
+
+  /** The hand (the operator's SY-09 « Au prochain choix de Ren, une compétence en attente », journal Passe SY2; briefs/combat-auto.md § 25.5): the `i`-th skill of Ren's
+   *  order pressed now (the keys 1 to 4 of the remapping, the D-pad, a click on its line of the HUD) leaves at his next choice once its AP and its cooldown allow
+   *  it; a later press replaces one still waiting. The duel is replayed with the presses so far (one draw per blow: the lines already played stay) and the replay
+   *  goes on from now on the new script; « Skip » plays the rest by the tactic with the presses made. Nothing while a lesson is read or after the K.O. */
+  press(i: number, quiet = false): boolean {
+    const a = this.auto;
+    if (!a || a.over || this.lesson || this.skipFade || this.autoSeed === null || this.settingsOpen) return false;
+    const sk = a.fighters.ren.skills[i];
+    if (!sk) return false;
+    // after the last line played (its time written to the hundredth: a choice it shows took place before this press)
+    const t = +(Math.max(a.t, a.lastLineT() + 0.006) + 1e-6).toFixed(6), p: AutoCommand = { t, skill: sk.id };
+    this.presses.push(p);
+    a.replace(autoDuel(a.fighters.ren, a.fighters.marek, this.autoSeed, { log: true, trace: true, commands: this.presses }), p);
+    this.snd?.duelEvent({ type: 'press', quiet });
+    this.opts.match?.onPress?.(p);
+    return true;
   }
 
   /** the settings page over a paused duel of the version 2 (the operator's RG-2 « Depuis la pause du duel aussi », journal Passe RG2): Esc, the gamepad's

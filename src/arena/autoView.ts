@@ -69,7 +69,7 @@ export interface AutoHudModel {
   t: number; over: boolean; winner: Seat | null;
   ren: AutoGauge; marek: AutoGauge;
   /** Ren's four skills in his order: its AP, its cooldown's seconds left (DB5-3), whether it is the one charging */
-  slots: Array<{ id: string; ap: number; family: string; cool: number; coolPct: number; charging: boolean; payable: boolean }>;
+  slots: Array<{ id: string; ap: number; family: string; cool: number; coolPct: number; charging: boolean; payable: boolean; waiting: boolean }>;
 }
 
 export class AutoReplay {
@@ -78,8 +78,10 @@ export class AutoReplay {
   t = 0;
   over = false;
   readonly f: Record<Seat, AutoSide>;
-  readonly end: number;
-  readonly winner: Seat;
+  end: number;
+  winner: Seat;
+  /** the hand's press waiting for Ren's next choice (SY-09): its time and skill, until the script shows Ren charging it; the HUD marks its line */
+  pressed: { t: number; skill: string } | null = null;
   private s: Record<Seat, State>;
   private i = 0;
   private out: ReplayEvent[] = [];
@@ -89,15 +91,15 @@ export class AutoReplay {
   /** the form's sign told, by fighter (once a bout; passed over by « Skip » and a moment sought) */
   private formTold: Partial<Record<Seat, boolean>> = {};
   /** each fighter's blows and effects, and its reactions to the other's, in the order they start (`windowsOf`) */
-  readonly wins: Record<Seat, AutoWindow[]>;
-  readonly reacts: Record<Seat, AutoWindow[]>;
+  wins: Record<Seat, AutoWindow[]>;
+  reacts: Record<Seat, AutoWindow[]>;
   /** the charge's ladder as the duel of before built it (src/combat/charge.ts): the light attack at 0, then Ren's four skills by their charge time, the shortest
    *  first; `tiers` its length. Ren charging a skill tells its tier (`chargeTier`), so that the charge's sounds and effects of lot S3 and FX play at the level
    *  they played when that skill was released (src/audio/sfx.ts, src/arena/fx/fxRecipes.ts: `chargeLevel`), and the music's rule F hears « la charge » */
   readonly tiers: number;
   private ladder = new Map<string, number>();
 
-  constructor(readonly result: AutoResult, readonly fighters: { ren: AutoFighter; marek: AutoFighter }, names: Record<Seat, string> = { ren: 'Ren', marek: 'Marek' }) {
+  constructor(public result: AutoResult, readonly fighters: { ren: AutoFighter; marek: AutoFighter }, names: Record<Seat, string> = { ren: 'Ren', marek: 'Marek' }) {
     this.D = { dt: 1 / 120, fighters: { ren: { name: names.ren }, marek: { name: names.marek } } };
     if (!result.log) throw new Error('the arena plays a duel\'s script: autoDuel(..., { log: true, trace: true })');
     [...fighters.ren.skills].map((a, k) => ({ a, k })).sort((x, y) => x.a.charge - y.a.charge || x.k - y.k).forEach(({ a }, r) => this.ladder.set(a.id, r + 1));
@@ -194,6 +196,7 @@ export class AutoReplay {
       case 'charge': {
         if (!a) throw new Error(`no action ${e.act} for ${e.who}`);
         s.charge = { id: a.id, kind: kindOf(a), family: familyOf(a), start: e.t, leave: e.at ?? e.t };
+        if (seat === 'ren' && this.pressed && a.id === this.pressed.skill && e.t >= this.pressed.t - 0.01) this.pressed = null;
         if (a.cooldown) s.cd[a.id] = { until: e.t + a.cooldown, dur: a.cooldown };
         // the opponent charging a big action: its sequence, for the music's layers (the lead steps aside, the tension rises: rule F)
         if (seat === 'marek' && kindOf(a) !== 'light' && !a.ward && !a.boost) { s.seq = true; if (tell) this.emit({ type: 'sequenceStart', who: seat, len: 1 }); }
@@ -346,11 +349,29 @@ export class AutoReplay {
       t: this.t, over: this.over, winner: this.over ? this.winner : null, ren: g('ren'), marek: g('marek'),
       slots: this.fighters.ren.skills.map((a) => {
         const cd = ren.cd[a.id], cool = cd ? Math.max(0, cd.until - this.t) : 0;
-        return { id: a.id, ap: a.ap ?? 0, family: familyOf(a) ?? 'offensive', cool, coolPct: cd ? pct(cool, cd.dur) : 0, charging: ren.charge?.id === a.id, payable: (a.ap ?? 0) <= ren.side.ap };
+        return { id: a.id, ap: a.ap ?? 0, family: familyOf(a) ?? 'offensive', cool, coolPct: cd ? pct(cool, cd.dur) : 0, charging: ren.charge?.id === a.id, payable: (a.ap ?? 0) <= ren.side.ap, waiting: this.pressed?.skill === a.id && !this.over };
       }),
     };
   }
 
+  /** the time of the last line of the script played */
+  lastLineT(): number { return this.i > 0 ? this.result.log![this.i - 1].t : 0; }
+  /** the hand (the operator's SY-09 « Au prochain choix de Ren, une compétence en attente », journal Passe SY2): the duel replayed from a press with the presses so far
+   *  (src/combat/auto.ts `o.commands`). One draw per blow keeps every line already played (checked here): the script from now on is the new one, its end, its winner
+   *  and its blows' windows with it; a line played that differs (never seen) replays the duel to now without its sounds. True when the lines played are kept */
+  replace(r: AutoResult, pressed: { t: number; skill: string } | null): boolean {
+    const a = this.result.log!, b = r.log;
+    if (!b) throw new Error('the arena plays a duel’s script: autoDuel(..., { log: true, trace: true })');
+    let same = true;
+    for (let k = 0; k < this.i && same; k++) { const x = a[k], y = b[k]; same = !!y && x.t === y.t && x.ev === y.ev && x.who === y.who && x.act === y.act && x.dmg === y.dmg && x.hp === y.hp; }
+    this.result = r; this.end = r.t;
+    const w = r.winner ?? (r.hp[0] / r.maxHp[0] >= r.hp[1] / r.maxHp[1] ? 0 : 1);
+    this.winner = w === 0 ? 'ren' : 'marek';
+    ({ wins: this.wins, reacts: this.reacts } = windowsOf(r.log ?? undefined, this.ids, this.acts));
+    if (!same) this.seek(this.t);
+    this.pressed = pressed;
+    return same;
+  }
   /** the time of the first line of the script that matches (a scripted moment of the captures), or -1 */
   timeOf(match: (e: AutoEvent) => boolean): number { const e = this.result.log!.find(match); return e ? e.t : -1; }
   /** the duel at `t` (a scripted moment): replayed from the start without its sounds and effects; its `reset` is told (the HUD and the effects clear what
@@ -415,10 +436,10 @@ function actionsOf(x: AutoFighter): Map<string, AutoAction> {
 /** the arena's own page (`?scene=arena`, outside a game): Ren of a new game (his start, the four of the start kit at level 1, the training sword) against
  *  the pool's Marek (or `foe`, a rival's sheet in its own duel; DEV a generic fighter), a fixed seed; `seed` another duel; DEV `o` another weapon or four skills
  *  (the proofs of the gauge's enchaînements, journal Passe LC7) */
-export function sceneAutoDuel(foe = 'marek', seed = 1337, o: { weapon?: string | null; loadout?: readonly string[] } = {}): { result: AutoResult; ren: AutoFighter; foe: AutoFighter } {
+export function sceneAutoDuel(foe = 'marek', seed = 1337, o: { weapon?: string | null; loadout?: readonly string[] } = {}): { result: AutoResult; ren: AutoFighter; foe: AutoFighter; seed: number } {
   const loadout = o.loadout?.length ? [...o.loadout] : V2_START_KIT.loadout;
   const ren = autoRen({ ...REN_BASE }, { loadout, levels: o.loadout?.length ? Object.fromEntries(loadout.map((id) => [id, 1])) : V2_START_KIT.levels }, o.weapon ? { weapon: o.weapon } : {});
   const g = GENERICS[foe];
   const f = g ? autoFoe(foe, autoGenericSheet(g.profile, g, 0, 0), { kitOf: g.profile }) : autoFoe(foe, autoRaceSheet(foe, 0, 0));
-  return { result: autoDuel(ren, f, seed, { log: true, trace: true }), ren, foe: f };
+  return { result: autoDuel(ren, f, seed, { log: true, trace: true }), ren, foe: f, seed };
 }

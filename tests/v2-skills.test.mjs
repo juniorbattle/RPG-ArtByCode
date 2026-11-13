@@ -50,11 +50,12 @@ test('a version 2 game starts with today\'s four skills at level 1, the heavy at
   const old = structuredClone(st); delete old.v2.kit.levels.heavy;
   assert.equal(G.deserialize(G.serialize(old)).v2.kit.levels.heavy, 1);
   const d0 = G.namedState('day1-morning'); assert.equal(G.serialize(G.deserialize(G.serialize(d0))), G.serialize(d0));
-  // the heavy attack is drilled as the other skills owned from the start, up to level 3; it may be brought among the four
+  // the heavy attack is drilled as the other skills owned from the start, up to level 3; a base attack of every fighter since SY-02 (A3), never one of the four
+  // (the operator's SL1-7, journal Passe SL2: an old save's gives its place to the next skill owned, tests/auto-hand.test.mjs)
   const at = { ...structuredClone(st), place: 'training' };
   assert.ok(G.actions(at).some((o) => o.action.type === 'drillSkill' && o.action.skill === 'heavy' && o.ok));
   assert.deepEqual(act(at, { type: 'drillSkill', skill: 'heavy' }).v2.kit.levels.heavy, 2);
-  assert.deepEqual(act(st, { type: 'setLoadout', skills: ['heavy', 't1', 'd1', 's1'] }).v2.kit.loadout, ['heavy', 't1', 'd1', 's1']);
+  refused(st, { type: 'setLoadout', skills: ['heavy', 't1', 'd1', 's1'] }, /not one of the four/);
   for (const name of Object.keys(G.NAMED_STATES).filter((n) => !G.NAMED_STATES[n].v2)) {
     const d = G.namedState(name);
     assert.equal(d.v2, undefined, name);

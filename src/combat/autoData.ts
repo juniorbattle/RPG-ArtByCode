@@ -1,4 +1,4 @@
-import { autoDuel, type AutoAction, type AutoBrain, type AutoEffect, type AutoFamily, type AutoFighter, type AutoResult } from './auto';
+import { autoDuel, type AutoAction, type AutoBrain, type AutoCond, type AutoEffect, type AutoFamily, type AutoFighter, type AutoResult } from './auto';
 import { POWER, RIVAL_SHEETS, type FighterStats, type Stage } from './stats';
 import { LEVEL_POWER, SKILLS, clampLevel, type Times } from './skills';
 
@@ -10,9 +10,10 @@ import { LEVEL_POWER, SKILLS, clampLevel, type Times } from './skills';
 
 // ------------------------------------------------------------------------------------------------------------------------------- the common tables
 
-/** the common cadence (the operator's SY-03 « ×0,6 pour tous », journal Passe SY2): every charge, power and gauge × all, Ren's and the rivals'; the damage and
- *  the gauge a second kept, the cooldowns with the charges, the effects' length kept */
-export const AUTO_CADENCE = { all: 0.6 };
+/** the common cadence, Ren's and the rivals' (the operator's SY-03 « ×0,6 pour tous », journal Passe SY2): every charge × `charge` (the cooldowns with them,
+ *  DB5-3), every power and gauge × `power` (a blow's weight), an enchaînement's gaps × `gap`, a ward's or a boost's length × `effect`; SY-03 = 0.6 / 0.6 / 1 / 1
+ *  (the damage and the gauge a second kept) */
+export const AUTO_CADENCE = { charge: 0.6, power: 0.6, gap: 1, effect: 1 };
 /** the light attack: 1.2 s of charge at Speed 10, its power 6 (DB5-5), a tenth of it to the gauge; +1 AP when it lands (AC-03) */
 export const AUTO_LIGHT = { charge: 1.2, power: POWER.light, gauge: POWER.light * 0.1 };
 /** Ren's weapons' enchaînements (AC-02, « l'arme de Ren »): the hits of the light attack, each one's share of its power and gauge, the gap between them (s) */
@@ -82,16 +83,16 @@ export function autoPower(id: string, level: number): number {
 export function autoSkill(id: string, level: number, effect = 1): AutoAction {
   const d = AUTO_SKILLS[id];
   if (!d) throw new Error(`no skill "${id}" in the catalogue`);
-  const lv = clampLevel(level), k = LEVEL_POWER[lv - 1], c = AUTO_CADENCE.all;
+  const lv = clampLevel(level), k = LEVEL_POWER[lv - 1], C = AUTO_CADENCE, c = C.charge;
   const a: AutoAction = { id, kind: id === 'heavy' ? 'heavy' : 'skill', family: d.family, charge: autoCharge(id, lv) * c, ap: d.ap, cooldown: AUTO_COOLDOWN * autoCharge(id, 1) * c };
   if (id === 'heavy') a.heavy = true;
-  const eff = (e: AutoEffect): AutoEffect => ({ dur: +(e.dur * k * effect).toFixed(2), dmg: e.dmg, gauge: e.gauge });
+  const eff = (e: AutoEffect): AutoEffect => ({ dur: +(e.dur * k * effect * C.effect).toFixed(2), dmg: e.dmg, gauge: e.gauge });
   if (d.ward) { a.ward = eff(d.ward); if (d.cover) a.cover = true; }
   else if (d.boost) a.boost = eff(d.boost);
   else {
-    a.power = autoPower(id, lv) * c; a.gauge = a.power * GAUGE_SKILL * (d.gaugeK ?? 1);
+    a.power = autoPower(id, lv) * C.power; a.gauge = a.power * GAUGE_SKILL * (d.gaugeK ?? 1);
     if (d.pierce) a.pierce = true;
-    if (d.hits) { a.hits = d.hits; a.gap = d.gap; }
+    if (d.hits) { a.hits = d.hits; a.gap = (d.gap ?? 0.3) * C.gap; }
   }
   return a;
 }
@@ -102,8 +103,8 @@ export function autoHeavy(level = 1, id = 'heavy'): AutoAction {
 }
 /** a light attack with a weapon's enchaînement, at the cadence (Ren's weapons, or a rival's: AUTO_FOES) */
 export function autoLight(weapon?: string | null, id = 'light', w = AUTO_WEAPONS[weapon ?? ''] ?? AUTO_WEAPONS['training-sword']): AutoAction {
-  const c = AUTO_CADENCE.all;
-  return { id, kind: 'light', charge: AUTO_LIGHT.charge * c, power: AUTO_LIGHT.power * c, gauge: AUTO_LIGHT.gauge * c, ap: 0, hits: w.hits, gap: w.gap };
+  const C = AUTO_CADENCE;
+  return { id, kind: 'light', charge: AUTO_LIGHT.charge * C.charge, power: AUTO_LIGHT.power * C.power, gauge: AUTO_LIGHT.gauge * C.power, ap: 0, hits: w.hits, gap: w.gap * C.gap };
 }
 
 /** a fighter's order when its player has set none (AC-09): the wards and the boosts first (their own conditions decide when they hold), then the offensive
@@ -114,7 +115,7 @@ export function autoDefaultOrder(loadout: readonly string[], levels: Record<stri
   return [...loadout.filter((id) => fam(id) === 'defensive'), ...loadout.filter((id) => fam(id) === 'support'), ...off];
 }
 
-export interface AutoKit { loadout: readonly string[]; levels: Record<string, number>; order?: readonly string[] }
+export interface AutoKit { loadout: readonly string[]; levels: Record<string, number>; order?: readonly string[]; tactic?: Readonly<Record<string, string>> }
 /** the order the automatic follows (AC-09): the player's (kit.order, set on the match sheet), a skill brought since taking their place after the others; else
  *  its own (autoDefaultOrder); never the heavy attack, a base attack since SY-02 */
 export function autoOrderOf(kit: AutoKit): string[] {
@@ -127,12 +128,28 @@ export function autoOrderOf(kit: AutoKit): string[] {
  *  drill); what a state adds on top (the injury's share of his health, the AP of his gear and a friend, the night's tampering, his gear's share on the effects'
  *  length) */
 export function autoRen(stats: FighterStats, kit: AutoKit, o: { weapon?: string | null; hpShare?: number; apStart?: number; taken?: number; effect?: number; brain?: AutoBrain } = {}): AutoFighter {
-  const order = autoOrderOf(kit);
+  const order = autoOrderOf(kit), tactic = autoTacticOf(kit, order);
   return {
     id: 'ren', side: 'ren', hp: stats.hp * (o.hpShare ?? 1), atk: stats.atk, def: stats.def, end: stats.end, viv: stats.viv, tempo: 10,
     apStart: o.apStart ?? 0, taken: o.taken ?? 1, light: autoLight(o.weapon), heavy: autoHeavy(kit.levels.heavy ?? 1),
-    skills: order.map((id) => autoSkill(id, kit.levels[id] ?? 1, o.effect ?? 1)), brain: o.brain ?? 'player',
+    skills: order.map((id) => autoSkill(id, kit.levels[id] ?? 1, o.effect ?? 1)), brain: o.brain ?? 'player', ...(tactic ? { tactic } : {}),
   };
+}
+/** the conditions a skill of each family may carry in a tactic (SY-08: the page offers these, the automatic's first) */
+export const AUTO_CONDS_OF: Record<AutoFamily, readonly AutoCond[]> = {
+  defensive: ['auto', 'ready', 'incoming', 'gauge', 'hurt', 'never'],
+  support: ['auto', 'ready', 'follow', 'broken', 'finish', 'hurt', 'never'],
+  offensive: ['auto', 'ready', 'broken', 'incoming', 'finish', 'hurt', 'never'],
+};
+/** a skill's condition in a kit's tactic (`kit.tactic`, set on the match sheet: setTactic); 'auto' when it has none or one its family does not take */
+export function autoCondOf(kit: Pick<AutoKit, 'tactic'>, id: string): AutoCond {
+  const c = kit.tactic?.[id] as AutoCond | undefined, fam = AUTO_SKILLS[id]?.family;
+  return c && fam && AUTO_CONDS_OF[fam].includes(c) ? c : 'auto';
+}
+/** the tactic of Ren's four in their order, or undefined when every line is the automatic's (the fighter as before the tactic) */
+export function autoTacticOf(kit: Pick<AutoKit, 'tactic'>, order: readonly string[]): AutoCond[] | undefined {
+  const t = order.map((id) => autoCondOf(kit, id));
+  return t.some((c) => c !== 'auto') ? t : undefined;
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------- the rivals
@@ -161,12 +178,12 @@ export const AUTO_FOES: Record<string, AutoFoeDef> = {
 /** a rival's actions on the common tables: its light attack with its weapon, its heavy blow, its skills (2 AP each, DB5-3, at the cadence) in its order (the
  *  wards, the boosts, then the offensive skills from the strongest) */
 export function autoFoeActions(kitOf: string): Pick<AutoFighter, 'light' | 'heavy' | 'skills'> {
-  const K = AUTO_FOES[kitOf] ?? AUTO_FOES.marek, c = AUTO_CADENCE.all;
+  const K = AUTO_FOES[kitOf] ?? AUTO_FOES.marek, C = AUTO_CADENCE, c = C.charge;
   const skills = K.skills.map((s): AutoAction => {
     const a: AutoAction = { id: s.id, kind: 'skill', family: s.family, charge: s.charge * c, ap: AUTO_FOE_AP, cooldown: AUTO_COOLDOWN * s.charge * c };
-    if (s.ward) a.ward = { ...s.ward };
-    else if (s.boost) a.boost = { ...s.boost };
-    else { a.power = POWER.thrust * (s.charge / autoCharge('t4', 1)) * c; a.gauge = a.power * GAUGE_SKILL * (s.gaugeK ?? 1); }
+    if (s.ward) a.ward = { ...s.ward, dur: +(s.ward.dur * C.effect).toFixed(2) };
+    else if (s.boost) a.boost = { ...s.boost, dur: +(s.boost.dur * C.effect).toFixed(2) };
+    else { a.power = POWER.thrust * (s.charge / autoCharge('t4', 1)) * C.power; a.gauge = a.power * GAUGE_SKILL * (s.gaugeK ?? 1); }
     return a;
   });
   const off = skills.filter((s) => !s.ward && !s.boost).map((s, i) => ({ s, i })).sort((a, b) => (b.s.power ?? 0) - (a.s.power ?? 0) || a.i - b.i).map((z) => z.s);

@@ -13,13 +13,17 @@ export type KeyLayout = 'qwerty' | 'azerty';
 export type Act =
   | 'up' | 'left' | 'down' | 'right' | 'run' | 'talk' | 'list' | 'map'
   | 'journal' | 'board' | 'skills' | 'gear' | 'settings' | 'guide' | 'mute'
-  | 'attack' | 'guard' | 'dodge' | 'pause';
+  | 'attack' | 'guard' | 'dodge' | 'pause' | 'skill1' | 'skill2' | 'skill3' | 'skill4';
 /** where an action is heard: walking about (the town, the squares, Explore, with the list and the pages' shortcuts) or the duel */
 export type Moment = 'walk' | 'duel';
 
 /** the actions in the order the settings page shows them */
 export const WALK_ACTS: readonly Act[] = ['up', 'down', 'left', 'right', 'run', 'talk', 'list', 'map', 'journal', 'board', 'skills', 'gear', 'settings', 'guide', 'mute'];
-export const DUEL_ACTS: readonly Act[] = ['attack', 'guard', 'dodge', 'pause'];
+/** the duel's: ×2, the guard of the duel of before, « Skip », the pause, and the hand's four skills (the operator's SY-09 « Au prochain choix de Ren, une compétence en
+ *  attente », journal Passe SY2: the first to the fourth of the four in their order) */
+export const DUEL_ACTS: readonly Act[] = ['attack', 'guard', 'dodge', 'pause', 'skill1', 'skill2', 'skill3', 'skill4'];
+/** the hand's actions, the first skill of the order to the fourth */
+export const HAND_ACTS: readonly Act[] = ['skill1', 'skill2', 'skill3', 'skill4'];
 export const ACTS: readonly Act[] = [...WALK_ACTS, ...DUEL_ACTS];
 /** mute is heard everywhere: walking and in the duel */
 export const momentsOf = (a: Act): readonly Moment[] => (a === 'mute' ? ['walk', 'duel'] : (DUEL_ACTS as readonly Act[]).includes(a) ? ['duel'] : ['walk']);
@@ -41,7 +45,10 @@ const QWERTY: KeyTable = {
   run: [s('Shift', 'Shift'), null], talk: [s('KeyE', 'e'), s('Space', ' ')], list: [s('KeyQ', 'q'), null], map: [s('KeyM', 'm'), null],
   journal: [s('KeyJ', 'j'), null], board: [s('KeyT', 't'), null], skills: [s('KeyK', 'k'), null], gear: [s('KeyG', 'g'), null],
   settings: [s('KeyV', 'v'), null], guide: [s('KeyH', 'h'), null], mute: [s('KeyN', 'n'), null],
-  attack: [s('KeyJ', 'j'), s('Digit1', '1')], guard: [s('KeyK', 'k'), s('KeyB', 'b')], dodge: [s('KeyL', 'l'), s('KeyA', 'a')], pause: [s('Space', ' '), null],
+  // the hand's four on the top row's 1 to 4 (lot 2 of the second redesign, journal Passe SL3; § 25.5 « 1 à 4 au clavier »): the attack's second key, 1, of the
+  // three-button duel of before, gives its place (in one moment a key serves one action, RM-4)
+  attack: [s('KeyJ', 'j'), null], guard: [s('KeyK', 'k'), s('KeyB', 'b')], dodge: [s('KeyL', 'l'), s('KeyA', 'a')], pause: [s('Space', ' '), null],
+  skill1: [s('Digit1', '1'), null], skill2: [s('Digit2', '2'), null], skill3: [s('Digit3', '3'), null], skill4: [s('Digit4', '4'), null],
 };
 /** today's keys on AZERTY (journal Passe RG3, RG-7): Z Q S D walk, A opens the list, M is where AZERTY prints it, the duel's A where AZERTY prints it */
 const AZERTY: KeyTable = {

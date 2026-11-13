@@ -54,21 +54,22 @@ test('the port: the same duels as the second workshop\'s copy (one draw per blow
 // ------------------------------------------------------------------------------------------------- 2. the tables against the decisions
 
 test('SY-01, SY-02, SY-03: the same tables for every fighter — the light attack, the heavy blow, the skills, Speed 10, the common cadence ×0.6, no traits', () => {
-  const c = 0.6;
-  assert.equal(AD.AUTO_CADENCE.all, c, 'SY-03 « ×0,6 pour tous »');
+  // SY-03 « ×0,6 pour tous »: every charge and power × 0.6, an enchaînement's gaps and the effects as the catalogue's
+  const C = AD.AUTO_CADENCE, c = C.charge, w = C.power;
+  assert.deepEqual({ ...C }, { charge: 0.6, power: 0.6, gap: 1, effect: 1 });
   // the catalogue's numbers, written here: the light attack 1.2 s and power 6 (DB5-5), the heavy attack 1.7 s at level 1, the Thrust 7.65 s and 120 (DB5-1)
   assert.equal(SK.SKILLS.heavy.charge[0], 1.7); assert.equal(SK.SKILLS.t4.charge[0], 7.65);
   const ren = AD.autoRen(ST.REN_BASE, { loadout: ['t1', 't4', 'd1', 's1'], levels: { heavy: 3 } }, { weapon: 'imported-blade' });
-  assert.deepEqual([ren.light.kind, ren.light.ap, ren.light.hits, ren.light.gap], ['light', 0, AD.AUTO_WEAPONS['imported-blade'].hits, 0.32]);
-  assert.ok(near(ren.light.charge, 1.2 * c) && near(ren.light.power, 6 * c) && near(ren.light.gauge, 0.6 * c), 'the light attack at the cadence');
+  assert.deepEqual([ren.light.kind, ren.light.ap, ren.light.hits, ren.light.gap], ['light', 0, AD.AUTO_WEAPONS['imported-blade'].hits, 0.32 * C.gap]);
+  assert.ok(near(ren.light.charge, 1.2 * c) && near(ren.light.power, 6 * w) && near(ren.light.gauge, 0.6 * w), 'the light attack at the cadence');
   // SY-02 (A3): the heavy blow, a base attack outside the four, no AP, its DB5-3 cooldown, at Ren's level of it
   assert.deepEqual([ren.heavy.kind, ren.heavy.ap, ren.heavy.id], ['heavy', 0, 'heavy']);
   assert.ok(near(ren.heavy.charge, SK.SKILLS.heavy.charge[2] * c) && near(ren.heavy.cooldown, 5 * 1.7 * c), 'its charge at its level, its cooldown 5 × its first-level charge');
-  assert.ok(near(ren.heavy.power, 120 * (1.7 / 7.65) * 1.2 * c), 'its power by its charge (DB5-1), × its level, × the cadence');
+  assert.ok(near(ren.heavy.power, 120 * (1.7 / 7.65) * 1.2 * w), 'its power by its charge (DB5-1), × its level, × the cadence');
   assert.ok(!AD.autoRen(ST.REN_BASE, { loadout: ['heavy', 't1', 't4', 's1'], levels: {} }).skills.some((s) => s.id === 'heavy'), 'never one of the four');
   for (const s of ren.skills) {
     assert.ok(near(s.charge, AD.autoCharge(s.id, 1) * c) && near(s.cooldown, 5 * AD.autoCharge(s.id, 1) * c), `${s.id}: its charge and its cooldown at the cadence`);
-    if (s.power) assert.ok(near(s.power, 120 * (AD.autoCharge(s.id, 1) / 7.65) * (AD.AUTO_SKILLS[s.id].powerK ?? 1) * c), `${s.id}: its power by its charge (× its balance, SY-06)`);
+    if (s.power) assert.ok(near(s.power, 120 * (AD.autoCharge(s.id, 1) / 7.65) * (AD.AUTO_SKILLS[s.id].powerK ?? 1) * w), `${s.id}: its power by its charge (× its balance, SY-06)`);
   }
   // the rivals: their combo of before made their weapon (its blows at the training sword's total), Ren's light attack's charge and power, the heavy blow, their
   // skills at 2 AP with DB5-3, a skill's power by its charge, Speed 10 for their tables, no trait, no AI of their own
@@ -77,13 +78,13 @@ test('SY-01, SY-02, SY-03: the same tables for every fighter — the light attac
     assert.equal(f.tempo, 10, `${id}: Speed 10 for its tables`);
     for (const k of ['combo', 'ai', 'dodgeBonus', 'guardBonus']) assert.equal(f[k], undefined, `${id}: no ${k}`);
     assert.deepEqual([f.light.kind, f.light.hits.length], ['light', n], `${id}: its light attack`);
-    assert.ok(near(f.light.charge, 1.2 * c) && near(f.light.power, 6 * c), `${id}: Ren's light attack's charge and power`);
+    assert.ok(near(f.light.charge, 1.2 * c) && near(f.light.power, 6 * w), `${id}: Ren's light attack's charge and power`);
     assert.ok(near(f.light.hits.reduce((a, b) => a + b, 0), 1.1, 1e-3), `${id}: its weapon's blows at 1.1`);
     assert.deepEqual([f.heavy.kind, f.heavy.ap], ['heavy', 0]);
     assert.ok(near(f.heavy.charge, 1.7 * c) && near(f.heavy.cooldown, 5 * 1.7 * c), `${id}: the heavy blow at level 1, DB5-3`);
     for (const s of f.skills) {
       assert.equal(s.ap, 2, `${id} ${s.id}: 2 AP`); assert.ok(near(s.cooldown, 5 * s.charge), `${id} ${s.id}: DB5-3`);
-      if (s.power) assert.ok(near(s.power, 120 * (s.charge / c / 7.65) * c), `${id} ${s.id}: its power by its charge`);
+      if (s.power) assert.ok(near(s.power, 120 * (s.charge / c / 7.65) * w), `${id} ${s.id}: its power by its charge`);
     }
     // its order: the wards, the boosts, then the offensive skills from the strongest
     const fam = f.skills.map((s) => (s.ward ? 0 : s.boost ? 1 : 2));
@@ -159,7 +160,7 @@ test('SY-04: one draw per blow — a reaction’s draw keyed by the striker, its
   // a choice changes only what follows from it: the same fighter with one skill more, used at its first choice only; the reactions to its actions from its
   // second on are the same draws (the rank of each action and hit is the same)
   const sk = act({ id: 'sk', kind: 'skill', charge: 0.5, ap: 0, cooldown: 1e9, hits: [0.5, 0.5] });
-  const a = duel(fighter({ light: act({ hits: [0.5, 0.5], charge: 0.5 }) }), dummy(), seed, R), b = duel(fighter({ light: act({ hits: [0.5, 0.5], charge: 0.5 }), skills: [sk] }), dummy(), seed, R);
+  const a = duel(fighter({ light: act({ hits: [0.5, 0.5], charge: 0.5 }) }), dummy(), seed, R), b = duel(fighter({ light: act({ hits: [0.5, 0.5], charge: 0.5 }), skills: [sk], tactic: ['ready'] }), dummy(), seed, R);
   const reactions = (x) => x.log.filter((e) => e.who === 'a' && e.ev !== 'charge').map((e) => `${e.ev}:${e.t}`);
   assert.equal(b.log.find((e) => e.who === 'a' && e.ev === 'charge').act, 'sk', 'the skill at the first choice');
   assert.deepEqual(reactions(a).slice(2), reactions(b).slice(2), 'the same reactions from the second action on');
@@ -198,7 +199,7 @@ test('AC-03: the AP — 1 at the start, +1 a light attack that lands (hit or gua
 });
 
 test('DB5-3 (A3): a skill comes back 5 × its charge time at level 1 after its charge begins, the heavy blow too (SY-02)', () => {
-  for (const id of Object.keys(AD.AUTO_SKILLS)) assert.ok(near(AD.autoSkill(id, 3).cooldown, 5 * AD.autoCharge(id, 1) * AD.AUTO_CADENCE.all), id);
+  for (const id of Object.keys(AD.AUTO_SKILLS)) assert.ok(near(AD.autoSkill(id, 3).cooldown, 5 * AD.autoCharge(id, 1) * AD.AUTO_CADENCE.charge), id);
   const sk = act({ id: 'sk', kind: 'skill', cooldown: 10, charge: 1 });
   const starts = AU.autoDuel(fighter({ skills: [sk] }), dummy(), 2, { rules: rules({ maxT: 60 }), log: true }).log.filter((e) => e.act === 'sk' && e.ev === 'charge').map((e) => e.t);
   assert.ok(starts.length >= 4);
@@ -269,12 +270,13 @@ test('AC-09: the automatic\'s skills in the fighter\'s order — the first that 
   assert.deepEqual(AD.autoRen(ST.REN_BASE, { loadout: ['t1', 't4', 'd1', 's1'], levels: {}, order: ['t4', 'd1', 't1', 's1'] }).skills.map((s) => s.id), ['t4', 'd1', 't1', 's1']);
   const ward = sk('d1', { ap: 2, charge: 3, ward: { dur: 9, dmg: 0.5, gauge: 0.5 } }), boost = sk('s1', { ap: 3, boost: { dur: 12, dmg: 1.5, gauge: 1.5 } });
   const big = { act: { kind: 'skill' }, at: 15 }, soon = { act: { kind: 'heavy' }, at: 12 }, small = { act: { kind: 'light' }, at: 15 };
-  assert.equal(AU.autoSkillChoice(view({ me: { ap: 2 }, foe: big }), x([ward, t1])).id, 'd1', 'the blow lands after the ward is up');
-  assert.equal(AU.autoSkillChoice(view({ me: { ap: 2 }, foe: soon }), x([ward, t1])).id, 't1', 'too late for the ward');
-  assert.equal(AU.autoSkillChoice(view({ me: { ap: 2, g: 47 }, foe: small }), x([ward, t1])).id, 'd1', 'past two thirds of 70');
-  assert.equal(AU.autoSkillChoice(view({ me: { ap: 5 }, foe: small }), x([boost, t1])).id, 's1', 'a boost a skill can follow');
-  assert.equal(AU.autoSkillChoice(view({ me: { ap: 3 }, foe: small }), x([boost, t1])).id, 's1', 'a boost as soon as it is ready (SY-07), even when no skill could follow');
-  assert.equal(AU.autoSkillChoice(view({ me: { ap: 5, boost: { until: 20 } }, foe: small }), x([boost, t1])).id, 't1', 'one boost at a time');
+  // (t4, the strongest, kept for the break: SL1-3, tests/auto-hand.test.mjs; t1 the offensive skill that goes when it can)
+  assert.equal(AU.autoSkillChoice(view({ me: { ap: 2 }, foe: big }), x([ward, t1, t4])).id, 'd1', 'the blow lands after the ward is up');
+  assert.equal(AU.autoSkillChoice(view({ me: { ap: 2 }, foe: soon }), x([ward, t1, t4])).id, 't1', 'too late for the ward');
+  assert.equal(AU.autoSkillChoice(view({ me: { ap: 2, g: 47 }, foe: small }), x([ward, t1, t4])).id, 'd1', 'past two thirds of 70');
+  assert.equal(AU.autoSkillChoice(view({ me: { ap: 5 }, foe: small }), x([boost, t1, t4])).id, 's1', 'a boost a skill can follow');
+  assert.equal(AU.autoSkillChoice(view({ me: { ap: 3 }, foe: small }), x([boost, t1, t4])).id, 's1', 'a boost as soon as it is ready (SY-07), even when no skill could follow');
+  assert.equal(AU.autoSkillChoice(view({ me: { ap: 5, boost: { until: 20 } }, foe: small }), x([boost, t1, t4])).id, 't1', 'one boost at a time');
 });
 
 test('SY-02 (A3): the heavy blow — when the opponent cannot defend when it lands, or the AP are full; its cooldown; else the light attack', () => {

@@ -75,6 +75,7 @@ const ACT_LABEL: Record<Act, TextKey> = {
   up: 'set.keys.up', down: 'set.keys.down', left: 'set.keys.left', right: 'set.keys.right', run: 'set.keys.run', talk: 'set.keys.talk', list: 'set.keys.here', map: 'set.keys.map',
   journal: 'set.keys.journal', board: 'set.keys.board', skills: 'set.keys.skills', gear: 'set.keys.gear', settings: 'set.keys.settingsPage', guide: 'set.keys.guide', mute: 'set.keys.mute',
   attack: 'set.keys.attack', guard: 'set.keys.guard', dodge: 'set.keys.dodge', pause: 'set.keys.pause',
+  skill1: 'set.keys.skill1', skill2: 'set.keys.skill2', skill3: 'set.keys.skill3', skill4: 'set.keys.skill4',
 };
 const SECTION_KEY: Record<SettingsSection, [TextKey, TextKey]> = {
   graphics: ['set.graphics', 'set.graphics.sub'], sound: ['set.sound', 'set.sound.sub'], controls: ['set.controls', 'set.controls.sub'], language: ['set.language', 'set.language.sub'],
@@ -260,6 +261,8 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
       // the duel played by the computer (journal Passe LC3; LC3-8 « Garder ainsi ; renommer au lot 5 », renamed in Passe CO1 at the operator's « corriger cela
       // en priorite »): the attack's key gives ×2, the dodge's « Skip », the guard's nothing (its line left out, as the guide's « Keys » chapter leaves it out)
       table(own('attack', cap(fam, BTN.X, BTN.RT)) + own('dodge', cap(fam, BTN.A)) + own('pause', cap(fam, BTN.START))
+        // the hand (lot 2 of the second redesign): the four of the order, on the D-pad
+        + own('skill1', cap(fam, BTN.UP)) + own('skill2', cap(fam, BTN.RIGHT)) + own('skill3', cap(fam, BTN.DOWN)) + own('skill4', cap(fam, BTN.LEFT))
         + fixed('set.keys.settings', key(fixedName('Esc')), cap(fam, BTN.Y))),
     );
     // « Default keys »: the shown keyboard's starting keys back (RM-5)

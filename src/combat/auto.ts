@@ -65,6 +65,8 @@ export interface AutoFighter {
   heavy: AutoAction;
   /** its skills in its order of priority (AC-09: Ren's four in the player's order; a rival's own) */
   skills: AutoAction[];
+  /** its tactic (SY-08): one condition per skill of `skills`, in their order; absent = the automatic's ('auto' on every line) */
+  tactic?: readonly AutoCond[];
   brain: AutoBrain;
 }
 
@@ -148,13 +150,15 @@ export interface AutoView {
   rand(): number;
 }
 export type AutoDecider = (v: AutoView, x: AutoFighter) => AutoAction;
+/** a press of the player's hand: at the duel's time `t` (s), one of the first fighter's skills */
+export interface AutoCommand { t: number; skill: string }
 
 /**
  * One duel. `seed` keys every draw (the reactions, the initiative, a decider's draws) and, from its own stream, the forms of the day. `o.log` keeps the script,
  * `o.trace` each of its events' state (the arena reads it); `o.rules` another set of rules (the laboratory); `o.deciders` replaces a brain's automatic (a
- * tactic, the laboratory).
+ * tactic, the laboratory); `o.commands` the player's presses (the hand, SY-09): the first fighter's skills pressed during the duel.
  */
-export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rules?: AutoRules; log?: boolean; trace?: boolean; deciders?: Partial<Record<AutoBrain, AutoDecider>> } = {}): AutoResult {
+export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rules?: AutoRules; log?: boolean; trace?: boolean; deciders?: Partial<Record<AutoBrain, AutoDecider>>; commands?: readonly AutoCommand[] } = {}): AutoResult {
   const R = o.rules ?? AUTO_RULES, s0 = seed >>> 0 || 1, log: AutoEvent[] | null = o.log ? [] : null;
   /** a line of the script, with both fighters' state just after it when traced */
   const put = (e: AutoEvent): void => { if (o.trace) e.s = [F[0].ap, +gaugeNow(F[0]).toFixed(2), F[1].ap, +gaugeNow(F[1]).toFixed(2)]; log!.push(e); };
@@ -175,7 +179,22 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
   };
   const usable = (f: AutoSide, a: AutoAction): boolean => (a.ap ?? 0) <= f.ap && (!a.cooldown || (f.cd[a.id] ?? 0) <= t + 1e-9);
   const view = (f: AutoSide): AutoView => { let c = 0; const d = f.dec; return { t, me: f, foe: other(f), rules: R, usable: (a) => usable(f, a), gauge: gaugeNow, chargeOf: (g, a) => a.charge * speed(g), rand: () => autoDraw(s0, f.i, d, c++, DRAW.decide) }; };
-  const decide = (f: AutoSide): AutoAction => { const a = (o.deciders?.[f.x.brain] ?? DECIDERS[f.x.brain])(view(f), f.x); f.dec++; return a; };
+  // the hand (the operator's SY-09 « Au prochain choix de Ren, une compétence en attente », journal Passe SY2): a skill pressed leaves at the first fighter's next
+  // choice once its AP and its cooldown allow it, waiting until they do; one waits at a time, a later press replacing it; the tactic decides the rest. Nothing
+  // before a press changes (one draw per blow, SY-04): the arena replays the duel from the press with the presses so far
+  const cmds = [...(o.commands ?? [])].sort((a, b) => a.t - b.t);
+  let cmdDone = -1;
+  const pressed = (f: AutoSide): AutoAction | null => {
+    if (f.i !== 0 || !cmds.length) return null;
+    let k = -1;
+    for (let j = 0; j < cmds.length && cmds[j].t <= t + 1e-9; j++) k = j;
+    if (k <= cmdDone) return null;
+    const a = f.x.skills.find((s) => s.id === cmds[k].skill);
+    if (!a) { cmdDone = k; return null; }
+    if (!usable(f, a)) return null;
+    cmdDone = k; return a;
+  };
+  const decide = (f: AutoSide): AutoAction => { const p = pressed(f), a = p ?? (o.deciders?.[f.x.brain] ?? DECIDERS[f.x.brain])(view(f), f.x); f.dec++; return a; };
 
   function start(f: AutoSide, a: AutoAction): void {
     settle(f);
@@ -271,35 +290,89 @@ export function autoFormsOf(seed: number, R: Pick<AutoRules, 'form'> = AUTO_RULE
 const active = (e: { until: number } | null, t: number): boolean => !!e && e.until > t;
 export const offensive = (a: AutoAction): boolean => !a.ward && !a.boost && a.kind === 'skill';
 
+/** a fighter's strongest offensive skill (its power; the first of its order on a tie), the one its automatic keeps for the break (SL1-3) */
+export function strongestOf(x: AutoFighter): AutoAction | null {
+  let best: AutoAction | null = null;
+  for (const s of x.skills) if (offensive(s) && (s.power ?? 0) > (best?.power ?? -1)) best = s;
+  return best;
+}
+/** the opponent is broken long enough for this action to land before it stands up again */
+export const brokenFor = (v: AutoView, a: AutoAction): boolean => v.foe.broken && v.foe.stunEnd - v.t >= v.chargeOf(v.me, a);
+
 /** The automatic's skills (AC-09; the prototype's `autoSmartDecider`, journal Passe AC3), in the order of the fighter's skills (the first that holds):
  *  - a ward when the opponent charges a big action that would leave while the ward is up, or when its own gauge passes two thirds; a ward that covers (`cover`)
  *    also as soon as the AP left after it still pay an offensive skill, unless the opponent is broken;
  *  - a boost as soon as it is ready (one at a time): the operator's SY-07 asks the automatic to be worth the simple tactics and random presses, and the boost
  *    held for an offensive skill to follow was below both (journal Passe SL1: the boosts as soon as ready 90 % of titles against 36 %, random presses of the
  *    supports 69 %, the race unchanged);
- *  - an offensive skill as soon as it can pay it and it is ready;
+ *  - an offensive skill as soon as it can pay it and it is ready, but the strongest kept for the break (the operator's SL1-3 « L’automatique garde la plus
+ *    forte pour la rupture (au lot 2, la course recalée) », journal Passe SL2): it leaves when the opponent is broken long enough for it to land, or, the AP
+ *    full and nothing else held, rather than lose them (the tactic the workshop measured: tools/auto-lab.mjs AUTOS.rupture);
  *  - else null (the base attacks decide). */
 export function autoSkillChoice(v: AutoView, x: AutoFighter): AutoAction | null {
-  const { me, foe, t } = v, g = v.gauge(me), foeLeft = foe.act ? foe.at - t : 0, foeBig = !!foe.act && foe.act.kind !== 'light';
-  let wardTried = false, boostTried = false;
-  for (const s of x.skills) {
-    if (!v.usable(s)) continue;
+  return tacticChoice(v, x, null);
+}
+
+/** The conditions of a tactic (the operator's SY-08 « Une condition par compétence, l’ordre gardé », journal Passe SY2; briefs/combat-auto.md § 25.5): each of
+ *  the four skills carries one, the order of the four stays the priority. 'auto' the automatic's own rule for that skill (a new game's tactic: every line
+ *  'auto'); the others each read only what the arena shows (the bars of charge, the gauges, the health, the AP). */
+export type AutoCond = 'auto' | 'ready' | 'broken' | 'incoming' | 'gauge' | 'hurt' | 'finish' | 'follow' | 'never';
+export const AUTO_CONDS: readonly AutoCond[] = ['auto', 'ready', 'broken', 'incoming', 'gauge', 'hurt', 'finish', 'follow', 'never'];
+/** whether a condition other than 'auto' holds for a skill now */
+export function condHolds(c: AutoCond, v: AutoView, x: AutoFighter, s: AutoAction): boolean {
+  const { me, foe, t } = v;
+  switch (c) {
+    case 'ready': return true;
+    // the opponent broken long enough for it to land
+    case 'broken': return brokenFor(v, s);
+    // the opponent charging a big action: a ward up before it lands and still up when it does; any other skill leaving before it (it strikes him exposed)
+    case 'incoming': {
+      if (!foe.act || foe.act.kind === 'light') return false;
+      const land = t + v.chargeOf(me, s);
+      return s.ward ? foe.at > land && foe.at < land + s.ward.dur : foe.at >= land;
+    }
+    case 'gauge': return v.gauge(me) >= (2 / 3) * v.rules.gauge.max;
+    case 'hurt': return me.hp / me.maxHp < 0.5;
+    case 'finish': return foe.hp / foe.maxHp < 1 / 3;
+    // an offensive skill can follow it (its AP left after this one, its cooldown ready)
+    case 'follow': return x.skills.some((o) => o !== s && offensive(o) && v.usable(o) && me.ap >= (o.ap ?? 0) + (s.ap ?? 0));
+    default: return false;
+  }
+}
+/** The skill a fighter charges now by its tactic (`conds`, one per skill in its order; null or a missing line = 'auto'), the first whose condition holds and
+ *  that it can pay (its AP, its cooldown), one ward and one boost at a time; else null (the base attacks decide). The automatic's rules ('auto'):
+ *  - a ward when the opponent charges a big action that would leave while the ward is up, or when its own gauge passes two thirds; a ward that covers (`cover`)
+ *    also as soon as the AP left after it still pay an offensive skill, unless the opponent is broken; the first ward it could raise is the one it weighs;
+ *  - a boost as soon as it is ready: the operator's SY-07 asks the automatic to be worth the simple tactics and random presses, and the boost held for an
+ *    offensive skill to follow was below both (journal Passe SL1: the boosts as soon as ready 90 % of titles against 36 %, random presses of the supports 69 %);
+ *  - an offensive skill as soon as it can pay it and it is ready, but the strongest kept for the break (the operator's SL1-3 « L’automatique garde la plus
+ *    forte pour la rupture (au lot 2, la course recalée) », journal Passe SL2): it leaves when the opponent is broken long enough for it to land, or, the AP
+ *    full and nothing else held, rather than lose them (the tactic the workshop measured: tools/auto-lab.mjs AUTOS.rupture). */
+export function tacticChoice(v: AutoView, x: AutoFighter, conds: readonly AutoCond[] | null | undefined): AutoAction | null {
+  const { me, foe, t } = v, top = strongestOf(x);
+  let wardTried = false;
+  for (let i = 0; i < x.skills.length; i++) {
+    const s = x.skills[i], c = conds?.[i] ?? 'auto';
+    if (c === 'never' || !v.usable(s)) continue;
     if (s.ward) {
-      // the first ward it could raise is the one it weighs (one ward at a time)
-      if (wardTried || active(me.ward, t)) continue;
+      if (active(me.ward, t)) continue;
+      if (c !== 'auto') { if (condHolds(c, v, x, s)) return s; continue; }
+      if (wardTried) continue;
       wardTried = true;
-      if ((foeBig && foeLeft > v.chargeOf(me, s)) || g >= (2 / 3) * v.rules.gauge.max) return s;
+      const foeLeft = foe.act ? foe.at - t : 0, foeBig = !!foe.act && foe.act.kind !== 'light';
+      if ((foeBig && foeLeft > v.chargeOf(me, s)) || v.gauge(me) >= (2 / 3) * v.rules.gauge.max) return s;
       if (s.cover && !foe.broken && x.skills.some((o) => offensive(o) && me.ap >= (s.ap ?? 0) + (o.ap ?? 0))) return s;
       continue;
     }
     if (s.boost) {
-      if (boostTried || active(me.boost, t)) continue;
-      boostTried = true;
-      return s;
+      if (active(me.boost, t)) continue;
+      if (c === 'auto' || condHolds(c, v, x, s)) return s;
+      continue;
     }
-    return s;
+    if (c === 'auto' ? s !== top || brokenFor(v, s) : condHolds(c, v, x, s)) return s;
   }
-  return null;
+  // the AP full: the strongest rather than lose them, when its line is the automatic's
+  return top && (conds?.[x.skills.indexOf(top)] ?? 'auto') === 'auto' && me.ap >= v.rules.ap.max && v.usable(top) ? top : null;
 }
 /** The heavy blow's rule (SY-02, A3: « une attaque de base pour tous, avec sa recharge »): when the opponent cannot defend when it lands (broken for at least its
  *  charge, or charging an action that exposes it past that time), or when the AP are full and no skill can go; its cooldown ready */
@@ -311,7 +384,8 @@ export function heavyWhen(v: AutoView, x: AutoFighter): boolean {
   if (foe.act && foe.act.kind !== 'light' && foe.at >= land) return true;
   return me.ap >= v.rules.ap.max;
 }
-/** The automatic every fighter plays (SY-01): its skills (autoSkillChoice), else its heavy blow (heavyWhen), else its light attack, which gains the AP. */
-export const autoDecider: AutoDecider = (v, x) => autoSkillChoice(v, x) ?? (heavyWhen(v, x) ? x.heavy : x.light);
+/** The automatic every fighter plays (SY-01), by its tactic (SY-08; a fighter without one, every line 'auto'): its skills (tacticChoice), else its heavy blow
+ *  (heavyWhen), else its light attack, which gains the AP. */
+export const autoDecider: AutoDecider = (v, x) => tacticChoice(v, x, x.tactic) ?? (heavyWhen(v, x) ? x.heavy : x.light);
 
 export const DECIDERS: Record<AutoBrain, AutoDecider> = { player: autoDecider, rival: autoDecider };

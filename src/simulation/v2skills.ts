@@ -4,8 +4,10 @@ import type { ActionDef } from './actions';
 import { isV2, v2KitOf } from './v2';
 import { LATE_TEACHER, SKILL_BOOK, taughtBy } from '../combat/skillbook';
 import { MAX_LEVEL, chargeTime } from '../combat/skills';
-import { joined, skillName, tx } from '../narrative/text';
+import { joined, skillName, tx, type TextKey } from '../narrative/text';
 import { sandRefusal } from './v2rivals';
+import { AUTO_CONDS_OF, AUTO_SKILLS } from '../combat/autoData';
+import type { AutoCond } from '../combat/auto';
 
 /** The skills of a version 2 game (lot V2, C4; the operator's decision AV-9 « Achat, entraînement et défi », journal Passe V2): the skills the
  *  player owns and their levels (`s.v2.kit.levels`, AV-8), the four brought to a duel (`s.v2.kit.loadout`), and the three ways to obtain one:
@@ -49,11 +51,18 @@ export function skillPrice(s: GameState, id: string): number {
   return Math.round(p * (s.player.reputation >= 40 ? 0.9 : 1) * (s.flags[`lesson:${s.day}`] ? 0.8 : 1));
 }
 
+/** a tactic's condition in words (the match sheet, the skills page, the journal) */
+export const COND_TEXT: Record<AutoCond, TextKey> = {
+  auto: 'auto.cond.auto', ready: 'auto.cond.ready', broken: 'auto.cond.broken', incoming: 'auto.cond.incoming', gauge: 'auto.cond.gauge',
+  hurt: 'auto.cond.hurt', finish: 'auto.cond.finish', follow: 'auto.cond.follow', never: 'auto.cond.never',
+};
+
 export type V2SkillAction =
   | { type: 'buySkill'; skill: string }
   | { type: 'drillSkill'; skill: string }
   | { type: 'setLoadout'; skills: string[] }
-  | { type: 'setOrder'; skills: string[] };
+  | { type: 'setOrder'; skills: string[] }
+  | { type: 'setTactic'; skill: string; cond: string };
 
 // the skills are taught and drilled at the training ground (lot V5)
 const atForecourt = (s: GameState) => s.place === 'training';
@@ -96,6 +105,8 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
     check: (s, a) => {
       if (!isV2(s)) return tx('v2.only');
       if (!Array.isArray(a.skills) || a.skills.length !== 4 || new Set(a.skills).size !== 4) return tx('v2.loadout.four');
+      // the heavy attack, a base attack of every fighter since SY-02 (A3): never one of the four (SL1-7)
+      if (a.skills.includes('heavy')) return tx('v2.loadout.heavy');
       for (const id of a.skills) if (!owns(s, id)) return tx('v2.loadout.notOwned', { skill: SKILL_BOOK[id] ? skillName(id) : id });
       return null;
     },
@@ -116,5 +127,27 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
       return null;
     },
     apply: (s, a, _r, emit) => { v2State(s).kit.order = [...a.skills]; emit({ kind: 'action', id: 'order', cause: 'action:setOrder', visible: false, text: tx('v2.order.log', { skills: joined(a.skills.map(skillName)) }) }); },
+  },
+  /** the tactic (the operator's SY-08 « Une condition par compétence, l’ordre gardé », journal Passe SY2): one of the four brought takes a condition (src/combat/auto.ts
+   *  AutoCond), set on the match sheet and the skills page as the order is, a minor action; 'auto' gives the skill back to the automatic's own rule. The tactic decides
+   *  the duel, so it is part of the game (its fingerprint) */
+  setTactic: {
+    by: null,
+    list: () => [],
+    label: () => tx('v2.tactic.label'),
+    cost: () => 0,
+    check: (s, a) => {
+      if (!isV2(s)) return tx('v2.only');
+      if (!(v2KitOf(s).loadout as string[]).includes(a.skill)) return tx('v2.tactic.notBrought');
+      const fam = AUTO_SKILLS[a.skill]?.family;
+      if (!fam || !AUTO_CONDS_OF[fam].includes(a.cond as never)) return tx('v2.tactic.cond');
+      return null;
+    },
+    apply: (s, a, _r, emit) => {
+      const k = v2State(s).kit, t = { ...(k.tactic ?? {}) };
+      if (a.cond === 'auto') delete t[a.skill]; else t[a.skill] = a.cond;
+      if (Object.keys(t).length) k.tactic = t; else delete k.tactic;
+      emit({ kind: 'action', id: 'tactic', cause: 'action:setTactic', visible: false, text: tx('v2.tactic.log', { skill: skillName(a.skill), cond: tx(COND_TEXT[a.cond as AutoCond]) }) });
+    },
   },
 };

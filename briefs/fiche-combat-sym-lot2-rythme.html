@@ -1,0 +1,546 @@
+<title>Rythme du duel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.mt { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.mt th, .mt td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.mt th { color: var(--muted); font-weight: 600; }
+.mt td + td, .mt th + th { text-align: right; white-space: nowrap; }
+.mtw { overflow-x: auto; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.vids { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.shot video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--line); border-radius: 6px; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions du responsable · 13/11/2026</span>
+    <h1>Fiche d'arbitrages — le rythme du duel</h1>
+    <p class="lede">Ta note sur SL1-2, mot pour mot : « selon ce que tu evoques il faut que tu baises la duree : Les durées médianes de la référence : la poule environ 2min, le tableau 2-4min , la finale 3-4min max. et Le rythme vif : 118 coups par minute, est trop intense c'est a peine si nous pouvons apprecier le combat et faire une action,... apres tout on doit rester attentif a ce qui se passe et voir cela comme une scene de theatre ». Tes durées sont décidées (A3, journal Passe SL2) ; le rythme, tu ne l’as pas chiffré. J’ai mesuré quatre rythmes plus lents qu’aujourd’hui, tes durées tenues à chacun, et filmé le même combat à chacun. Rien du jeu n’est changé avant ton choix ; la course se recale une seule fois ensuite (lot 2 de la seconde refonte, briefs/combat-auto.md § 28.1).</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne dans les documents du projet, puis j'enchaîne sur la suite décidée.</p>
+    <p class="src">Sources : JOURNAL.md, Passes SL1, SL2, SL3 ; briefs/combat-auto.md (§ 27, § 28) ; les mesures : tools/auto-lab.mjs (rythme, parties entières), la page DEV de l’arène avec autotempo et tools/duel-clip.mjs (les films, sans le son).</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+const GROUPS = [
+ {
+  "id": "rythme",
+  "title": "Le rythme",
+  "sub": "Mesuré sur 60 parties entières du joueur de référence (graines 101 à 160), avec l’automatique de SL1-3 (la plus forte gardée pour la rupture), avant le recalage de la course. Chaque candidat ralentit tout le temps du duel du même facteur et alourdit chaque coup pour que la poule dure 2 min.",
+  "fam": "var(--astre)",
+  "items": [
+   {
+    "id": "RY-1",
+    "tag": "SL1-2 · le rythme",
+    "title": "Combien de coups par minute",
+    "ctx": "Aujourd’hui (la cadence ×0,6 de SY-03) : 120 coups par minute, 0,32 s entre deux coups, Ren choisit une action toutes les 1,1 s. Un candidat ralentit du même facteur les charges (donc les recharges, 5 fois la charge : DB5-3 gardée), les coups d’un enchaînement, les protections et les soutiens (ils couvrent ainsi les mêmes actions), et la jauge se vide d’autant moins vite (autant de ruptures par combat). Chaque coup pèse plus, ×2,4 à ×5,3, pour tenir tes durées ; les PV ne changent pas (Ren 300, ×2 en combat). La deuxième ligne montre qu’on peut raccourcir sans ralentir : le rythme reste alors à 121. Les films : le même combat (Ren contre Marek, les mêmes tirages), ses 30 premières secondes, sans le son.",
+    "tables": [
+     [
+      [
+       "Rythme",
+       "Coups / min",
+       "Entre deux coups",
+       "Ren choisit toutes les",
+       "Silences > 3 s",
+       "Plus long silence",
+       "Coups par combat",
+       "Compétences de Ren"
+      ],
+      [
+       "Aujourd’hui",
+       "120",
+       "0,32 s",
+       "1,1 s",
+       "9 %",
+       "4,2 s",
+       "479",
+       "50"
+      ],
+      [
+       "Le même, plus court",
+       "121",
+       "0,32 s",
+       "1,1 s",
+       "7 %",
+       "3,8 s",
+       "313",
+       "31"
+      ],
+      [
+       "×1,5 plus lent",
+       "81",
+       "0,48 s",
+       "1,7 s",
+       "25 %",
+       "5,4 s",
+       "200",
+       "20"
+      ],
+      [
+       "×2 plus lent",
+       "61",
+       "0,64 s",
+       "2,2 s",
+       "28 %",
+       "6,3 s",
+       "148",
+       "14"
+      ],
+      [
+       "×2,5 plus lent",
+       "49",
+       "0,80 s",
+       "2,8 s",
+       "33 %",
+       "7,9 s",
+       "120",
+       "11"
+      ],
+      [
+       "×3 plus lent",
+       "40",
+       "0,96 s",
+       "3,4 s",
+       "44 %",
+       "9,5 s",
+       "93",
+       "8"
+      ]
+     ],
+     [
+      [
+       "Rythme",
+       "Attaque simple",
+       "Coup puissant (recharge)",
+       "Taille éclair (recharge)",
+       "Estoc (recharge)",
+       "Poule / tableau / finale"
+      ],
+      [
+       "Aujourd’hui",
+       "0,72 s",
+       "1,0 s (5 s)",
+       "2,0 s (10 s)",
+       "4,6 s (23 s)",
+       "2:57 / 4:50 / 5:51"
+      ],
+      [
+       "×1,5 plus lent",
+       "1,1 s",
+       "1,5 s (8 s)",
+       "3,1 s (15 s)",
+       "6,9 s (34 s)",
+       "1:58 / 3:05 / 3:16"
+      ],
+      [
+       "×2 plus lent",
+       "1,4 s",
+       "2,0 s (10 s)",
+       "4,1 s (20 s)",
+       "9,2 s (46 s)",
+       "2:02 / 3:05 / 3:21"
+      ],
+      [
+       "×2,5 plus lent",
+       "1,8 s",
+       "2,6 s (13 s)",
+       "5,1 s (26 s)",
+       "11,5 s (57 s)",
+       "2:02 / 2:57 / 3:35"
+      ],
+      [
+       "×3 plus lent",
+       "2,2 s",
+       "3,1 s (15 s)",
+       "6,1 s (31 s)",
+       "13,8 s (69 s)",
+       "1:57 / 2:45 / 3:17"
+      ]
+     ]
+    ],
+    "videos": [
+     [
+      "clips/rythme-x1.mp4",
+      "Aujourd’hui (120 coups par minute)",
+      "clips/rythme-x1.jpg"
+     ],
+     [
+      "clips/rythme-x1-5.mp4",
+      "×1,5 plus lent (81)",
+      "clips/rythme-x1-5.jpg"
+     ],
+     [
+      "clips/rythme-x2.mp4",
+      "×2 plus lent (61, recommandé)",
+      "clips/rythme-x2.jpg"
+     ],
+     [
+      "clips/rythme-x2-5.mp4",
+      "×2,5 plus lent (49)",
+      "clips/rythme-x2-5.jpg"
+     ],
+     [
+      "clips/rythme-x3.mp4",
+      "×3 plus lent (40)",
+      "clips/rythme-x3.jpg"
+     ]
+    ],
+    "rec": "×2 : la moitié des coups d’aujourd’hui (61 par minute). Ren choisit toutes les 2,2 s : on voit chaque choix partir, et la main du lot 2 a le temps d’agir ; chaque coup d’un enchaînement se lit. Le prix : un peu plus du quart du temps sans coup pendant plus de 3 s, les barres de charge se remplissant sur les cartes ; à ×2,5 un tiers, à ×3 près de la moitié. ×1,5 (81 par minute) est proche des 72 que tu jugeais convenables au lot 2 de la première refonte (LC3-2), avant ta note du théâtre.",
+    "opts": [
+     "×1,5 plus lent : environ 80 coups par minute",
+     "×2 plus lent : environ 60 coups par minute",
+     "×2,5 plus lent : environ 50 coups par minute",
+     "×3 plus lent : environ 40 coups par minute"
+    ],
+    "recIdx": 1,
+    "src": "tools/auto-lab.mjs (rhythmOf), mesures de la Passe SL3 ; src/combat/autoData.ts (AUTO_CADENCE) ; src/lab/autoTempo.ts"
+   },
+   {
+    "id": "RY-2",
+    "tag": "enchaînements",
+    "title": "Les coups d’un enchaînement : étirés ou vifs",
+    "ctx": "L’attaque simple frappe deux ou trois coups selon l’arme, et quelques compétences aussi (Taille éclair, Tourbillon). Les candidats les étirent avec le reste (à ×2, 0,64 s entre deux coups d’un même enchaînement). Les garder vifs (0,32 s, le « un-deux » d’aujourd’hui) donne plus de coups par minute, mais les actions restent aussi longues : un peu plus de silences entre elles.",
+    "tables": [
+     [
+      [
+       "À ×2",
+       "Coups / min",
+       "Entre deux coups",
+       "Silences > 3 s",
+       "Plus long silence"
+      ],
+      [
+       "Étirés (0,64 s)",
+       "61",
+       "0,64 s",
+       "28 %",
+       "6,3 s"
+      ],
+      [
+       "Vifs (0,32 s)",
+       "67",
+       "0,33 s",
+       "32 %",
+       "6,5 s"
+      ]
+     ]
+    ],
+    "videos": [
+     [
+      "clips/rythme-x2.mp4",
+      "×2, étirés",
+      "clips/rythme-x2.jpg"
+     ],
+     [
+      "clips/rythme-x2-vifs.mp4",
+      "×2, vifs",
+      "clips/rythme-x2-vifs.jpg"
+     ]
+    ],
+    "rec": "Étirés avec le reste : chaque coup se lit, c’est la scène que tu décris.",
+    "opts": [
+     "Étirés avec le reste",
+     "Vifs comme aujourd’hui"
+    ],
+    "recIdx": 0,
+    "src": "src/combat/autoData.ts (AUTO_CADENCE.gap, AUTO_WEAPONS)"
+   }
+  ]
+ },
+ {
+  "id": "reste",
+  "title": "Ce qui ne suit pas le rythme, et la suite",
+  "sub": "Une règle A3 que le rythme ne touche pas, et la manière de livrer.",
+  "fam": "var(--cendre)",
+  "items": [
+   {
+    "id": "RY-3",
+    "tag": "DB5-4 · A3",
+    "title": "La rupture garde ses 10 s",
+    "ctx": "Ta règle DB5-4 « 10 s, ×2, jauge de 70 » (A3) ne suit pas le rythme. La jauge se vidant d’autant moins vite, il y a autant de ruptures par combat qu’aujourd’hui (à ×2, 1,3 pour l’adversaire et 0,4 pour Ren ; aujourd’hui 1,4 et 0,3), mais l’étourdissement de 10 s pèse plus dans un combat de 2 min : 8 % du combat au lieu de 6 %. Mesuré à côté : à 7 s, les durées et les ruptures bougent peu (40 % de titres contre 38 % à ×2, avant le recalage).",
+    "rec": "La garder telle quelle : c’est ta décision, et la course recalée en tient compte.",
+    "opts": [
+     "Garder 10 s (DB5-4)",
+     "La raccourcir avec le combat (décision A3 : change DB5-4)"
+    ],
+    "recIdx": 0,
+    "src": "src/combat/auto.ts (AUTO_RULES.brk) ; journal Passe DB5"
+   },
+   {
+    "id": "RY-4",
+    "tag": "la suite",
+    "title": "Après ton choix",
+    "ctx": "Le rythme choisi appliqué au duel du jeu (Ren, les rivaux, les combats hors écran) avec l’automatique de SL1-3, puis la course recalée une seule fois : la poule à +7,5 % par tour (SL1-1), le tableau et la finale visés par AC-15 (65 % et 50 %), tes durées tenues (si la finale passait 4 min, ses rivaux plus vifs et moins solides à force égale : ton « les rivaux de finale »). Ensuite la tactique (une condition par compétence), la main dans l’arène et la sauvegarde ; ton essai après le lot 2 (SY-14).",
+    "rec": "Fusionner cette première partie dès ses preuves, pour que le jeu ait tout de suite son nouveau rythme ; la suite du lot 2 sur la même lancée.",
+    "opts": [
+     "Fusionner la première partie dès ses preuves",
+     "Tout fusionner à la fin du lot 2"
+    ],
+    "recIdx": 0,
+    "src": "briefs/combat-auto.md § 28.1 ; tools/auto-lab.mjs level"
+   }
+  ]
+ }
+];
+
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  for (const T of it.tables ?? (it.table ? [it.table] : [])) { const tb = el('table', { class: 'mt' }); T.forEach((row, i) => { const tr = el('tr'); for (const cell of row) tr.append(el(i ? 'td' : 'th', {}, cell)); tb.append(tr); }); c.append(el('div', { class: 'mtw' }, tb)); }
+  if (it.videos) {
+    const grid = el('div', { class: 'shots vids' });
+    for (const [src, cap, poster] of it.videos) grid.append(el('figure', { class: 'shot' }, el('video', { src, poster, controls: '', muted: '', playsinline: '', preload: 'metadata', 'aria-label': cap }), el('figcaption', {}, cap)));
+    c.append(grid);
+  }
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

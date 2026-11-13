@@ -98,7 +98,8 @@ test('the keys each button presses (MN-3, MN-4, MN-6), as the sheet\'s tables sa
 test('the duel (MN-5): X or RT attack, B or LT guard, both held; A dodge, Start pause; today\'s V2_PAD kept whole', () => {
   const D = P.DUEL;
   // Y opens the settings over a paused duel (the operator's RG-2 « Depuis la pause du duel aussi », journal Passe RG2)
-  assert.deepEqual({ ...D }, { [STD.X]: 'attack', [STD.RT]: 'attack', [STD.B]: 'guard', [STD.LT]: 'guard', [STD.A]: 'dodge', [STD.START]: 'pause', [STD.VIEW]: 'reset', [STD.Y]: 'settings' });
+  // the D-pad the hand's four (lot 2 of the second redesign, journal Passe SL3: briefs/combat-auto.md § 25.5 « la croix de la manette »)
+  assert.deepEqual({ ...D }, { [STD.X]: 'attack', [STD.RT]: 'attack', [STD.B]: 'guard', [STD.LT]: 'guard', [STD.A]: 'dodge', [STD.START]: 'pause', [STD.VIEW]: 'reset', [STD.Y]: 'settings', [STD.UP]: 'skill1', [STD.RIGHT]: 'skill2', [STD.DOWN]: 'skill3', [STD.LEFT]: 'skill4' });
   for (const [b, id] of Object.entries(V2_PAD)) assert.equal(D[b], id, `V2_PAD ${b}`);
   // the keyboard's held keys stay the held commands
   assert.deepEqual([...new Set(Object.values({ j: V2_KEYS.j, k: V2_KEYS.k }))].sort(), [...P.HELD].sort());

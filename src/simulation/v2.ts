@@ -43,5 +43,5 @@ export function newGameV2(get: (k: string) => string | null): boolean {
  *  today's four skills at level 1, V2_START_KIT) */
 export function v2KitOf(s: Pick<GameState, 'flags' | 'v2'>): V2Kit {
   const k = s.v2?.kit;
-  return k ? { loadout: [...k.loadout] as V2Kit['loadout'], levels: { ...k.levels }, ...(k.order ? { order: [...k.order] } : {}) } : { loadout: [...V2_START_KIT.loadout], levels: { ...V2_START_KIT.levels } };
+  return k ? { loadout: [...k.loadout] as V2Kit['loadout'], levels: { ...k.levels }, ...(k.order ? { order: [...k.order] } : {}), ...(k.tactic ? { tactic: { ...k.tactic } } : {}) } : { loadout: [...V2_START_KIT.loadout], levels: { ...V2_START_KIT.levels } };
 }
