@@ -30,10 +30,11 @@ if (process.argv[1].endsWith('final.mjs')) {
     if (L.arg('race')) { race = JSON.parse(fs.readFileSync(L.arg('race'), 'utf8')); Object.assign(AD.AUTO_RACE, race); AD.AUTO_RACE.pool = race.pool; }
     else race = fitRace({ calSeeds: cal, pool: L.arg('pool', '1,1.075,1.15').split(',').map(Number), quiet: true });
     out.race = race;
+    if (L.arg('out')) fs.writeFileSync(L.arg('out'), JSON.stringify(out, null, 1));
     console.log(`${V.about}\n  la course : ${JSON.stringify(race)}`);
     const table = L.arg('table') ? JSON.parse(fs.readFileSync(L.arg('table'), 'utf8')) : null;
     const pols = ['reference', 'planner', 'curious', 'diligent', 'idle'];
-    out.games = judge(pols, held, { rhythm: true });
+    out.games = L.arg('only') ? {} : judge(pols, held, { rhythm: true });
     if (table) {
       L.setKitChooser(chooserOf(table, true));
       Object.assign(out.games, judge([{ ...L.LAB.POLICIES.reference, name: 'adapte-tactique' }], held));

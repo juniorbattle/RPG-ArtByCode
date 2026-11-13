@@ -20,11 +20,15 @@ export function adaptive({ name = 'adaptive', base = 'reference', learns = [], b
     choose: (st) => {
       const a = P.choose(st);
       if (st.day < from || st.slot === 'evening') return a;
-      if (a.type === 'drillSkill' || a.type === 'work') {
-        for (const k of learns) if (!owned(st, k)) { const d = { type: 'drillSkill', skill: k }; if (st.place === 'training' ? has(st, d) : has({ ...st, place: 'training' }, d) && has(st, { type: 'move', to: 'training' })) return st.place === 'training' ? d : { type: 'move', to: 'training' }; }
-        for (const k of buys) if (!owned(st, k)) { const b = { type: 'buySkill', skill: k }, there = { ...st, place: 'training' }; if (has(there, b) && st.player.coins >= (SKB.SKILL_BOOK[k]?.price ?? 45) + reserve) return st.place === 'training' ? b : has(st, { type: 'move', to: 'training' }) ? { type: 'move', to: 'training' } : a; }
-      }
-      return a;
+      // what it wants at the training ground (a skill to learn, then one to buy), and only in place of a drill, a job or a walk (moves take no time: at the
+      // training ground it does it at once, so that the reference's walk elsewhere never ping-pongs with this one)
+      const there = st.place === 'training' ? st : { ...st, place: 'training' };
+      let want = null;
+      for (const k of learns) if (!want && !owned(st, k)) { const d = { type: 'drillSkill', skill: k }; if (has(there, d)) want = d; }
+      for (const k of buys) if (!want && !owned(st, k)) { const b = { type: 'buySkill', skill: k }; if (has(there, b) && st.player.coins >= (SKB.SKILL_BOOK[k]?.price ?? 45) + reserve) want = b; }
+      if (!want || !['drillSkill', 'work', 'move'].includes(a.type)) return a;
+      if (st.place === 'training') return want;
+      return has(st, { type: 'move', to: 'training' }) ? { type: 'move', to: 'training' } : a;
     },
   };
 }

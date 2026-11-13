@@ -39,8 +39,8 @@ export const BOOST_NEXT = { s1: true, m_resolve: true, m_grit: true };
 export const GEAR_FX = {
   // the sabre's last cut goes through the guard; its cuts fill the gauge less
   'duelist-sabre': { lastPierce: true, gauge: 0.7 },
-  // the imported blade's blows fill the gauge more; its light attack charges longer
-  'imported-blade': { gauge: 1.25, lightCharge: 1.1 },
+  // the imported blade's blows fill the gauge more (×1.1); its light attack charges longer
+  'imported-blade': { gauge: 1.1, lightCharge: 1.1 },
   // the padded jack: a guarded blow fills one's gauge as an unguarded one (DB9's ×2 gone)
   'padded-jack': { guardGauge: 1 },
   // the mail: the light blows' damage −20 %; the dodge halved
@@ -177,7 +177,10 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
       f.g = gaugeNow(f); f.gT = t;
     };
     const noAp = cfg.ap === 'none', apMax = cfg.ap === 'game' ? cfg.apMax ?? R.ap.max : R.ap.max;
-    const usable = (f, a) => (noAp || (a.ap ?? 0) <= f.ap) && (!a.cooldown || (f.cd[a.id] ?? 0) <= t + 1e-9);
+    // cfg.charges k: a skill keeps up to k uses ready, recharged one at a time (the 'full' clock: one more use ready each cooldown; at the start one ready)
+    const K = cfg.charges ?? 1;
+    // cfg.breath G: after a skill leaves its charge, no other skill of that fighter before G s (a shared breath: the skills compete for the moments)
+    const usable = (f, a) => (noAp || (a.ap ?? 0) <= f.ap) && (!cfg.breath || a.kind !== 'skill' || (f.breathAt ?? -1e9) <= t + 1e-9) && (!a.cooldown || (K > 1 && a.kind === 'skill' ? (f.cd[a.id] ?? (K - 1) * a.cooldown * (f.gfx.cd ?? 1)) - t <= (K - 1) * a.cooldown * (f.gfx.cd ?? 1) + 1e-9 : (f.cd[a.id] ?? 0) <= t + 1e-9));
     const view = (f) => { let c = 0; const d = f.dec; return { t, me: f, foe: other(f), rules: R, cfg, usable: (a) => usable(f, a), gauge: gaugeNow, chargeOf: (g, a) => chargeFor(g, a), rand: () => autoDraw(s0, f.i, d, c++, DRAW.decide) }; };
     const chargeFor = (f, a) => a.charge * speed(f) * (a.kind === 'light' ? f.gfx.lightCharge ?? 1 : 1);
     const cmds = [...(o.commands ?? [])].sort((a, b) => a.t - b.t);
@@ -197,7 +200,8 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
     function start(f, a) {
       settle(f);
       if (a.ap && !noAp) f.ap -= a.ap;
-      if (a.cooldown) f.cd[a.id] = t + a.cooldown * (f.gfx.cd ?? 1);
+      if (cfg.breath && a.kind === 'skill') f.breathAt = t + cfg.breath;
+      if (a.cooldown) { const C = a.cooldown * (f.gfx.cd ?? 1); f.cd[a.id] = K > 1 && a.kind === 'skill' ? Math.max(f.cd[a.id] ?? (K - 1) * C, t) + C : t + C; }
       let ch = chargeFor(f, a);
       if (f.gfx.firstFast && f.n.acts === 0) ch = 0;
       f.act = a; f.at = t + ch; f.n.acts++;
@@ -298,7 +302,7 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
   function gearOf(x, cfg) {
     const out = {};
     if (!cfg.gearFx || !x.gear) return out;
-    const G = cfg.gearTable ?? GEAR_FX;
+    const G = cfg.gearTable || GEAR_FX;
     for (const id of [x.gear.weapon, x.gear.armour, ...(x.gear.acc ?? [])]) {
       const e = id && G[id];
       if (!e) continue;

@@ -54,13 +54,14 @@ export const kitOf = (x) => x.kitId ?? KIT_OF[x.skills.find((s) => s.id.startsWi
 let MODEL = null;
 export const model = () => MODEL;
 /** play every duel of the game by the copy under `cfg` (null: the game's own duel) */
-export function setModel(cfg) {
+export function setModel(cfg, o = {}) {
   MODEL = cfg;
-  globalThis.__finalDuel = cfg ? (a, game) => SIM.duel(prep(a[0], cfg), prep(a[1], cfg), a[2], a[3] ?? {}, cfg) : undefined;
+  // o.player: a decider for Ren in his own bouts (a laboratory's way of deciding: a tactic for every rival, random presses)
+  globalThis.__finalDuel = cfg ? (a, game) => SIM.duel(prep(a[0], cfg), prep(a[1], cfg), a[2], o.player && a[0].id === 'ren' ? { ...(a[3] ?? {}), deciders: { player: o.player(cfg) } } : a[3] ?? {}, cfg) : undefined;
 }
 /** a fighter under a configuration: its actions re-tagged (terrain, parry, next), its cooldowns by `cd`, a rival's tactic by its style; GAME leaves it as it is */
 export function prep(x, cfg) {
-  if (cfg === GAME || (cfg.cd === 'game' && !cfg.terrain && !cfg.parry && cfg.boost !== 'next' && !cfg.styles && !cfg.retag)) return x;
+  if (cfg === GAME || (cfg.cd === 'game' && !cfg.terrain && !cfg.parry && cfg.boost !== 'next' && !cfg.styles && !cfg.retag && !cfg.vivK && !cfg.powerOf)) return x;
   const lv = (a) => (x.kitLevels?.[a.id] ?? 1);
   const re = (a) => {
     const b = { ...a };
@@ -68,6 +69,7 @@ export function prep(x, cfg) {
     if (cfg.parry && a.ward && (cfg.parryOf ? cfg.parryOf[a.id] : true)) b.parry = true;
     if (cfg.boost === 'next' && a.boost && (cfg.nextOf ?? BOOST_NEXT)[a.id]) { b.next = true; if (cfg.nextBoost) b.boost = { ...a.boost, ...cfg.nextBoost }; }
     if (cfg.retag) Object.assign(b, cfg.retag(b, x) ?? {});
+    if (cfg.powerOf?.[a.id] && b.power) b.power *= cfg.powerOf[a.id];
     if (a.cooldown || a.kind === 'heavy') {
       if (cfg.cd === 'level') b.cooldown = 5 * a.charge;
       else if (cfg.cd === 'tiers') { const c = CD_CLASS[a.id] ?? 'M'; b.cooldown = cfg.tiers[c] * (1 - (cfg.cdLevel ?? 0) * (lv(a) - 1)); }
@@ -75,6 +77,8 @@ export function prep(x, cfg) {
     return b;
   };
   const y = { ...x, light: re(x.light), heavy: re(x.heavy), skills: x.skills.map(re) };
+  // the Speed points of the pieces Ren wears × vivK (the gear's table: AC-11 doubled them)
+  if (cfg.vivK && x.gear) y.viv = x.viv - (1 - cfg.vivK) * [x.gear.weapon, x.gear.armour, ...(x.gear.acc ?? [])].reduce((n, id) => n + (id ? GE.GEAR[id]?.fx?.viv ?? 0 : 0), 0);
   if (cfg.styles && x.brain === 'rival') {
     const k = kitOf(x), S = (cfg.styleTable ?? STYLE_TACTIC)[k];
     if (S) y.tactic = y.skills.map((s) => S[s.id] ?? 'auto');
