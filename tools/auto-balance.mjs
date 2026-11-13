@@ -31,7 +31,15 @@ const KNOBS = [
   ['SKILLS.s1.boost.dmg', [1.3, 1.5, 1.8, 2.1]], ['SKILLS.k_cry.boost.dmg', [1.6, 1.9, 2.3, 2.7]], ['SKILLS.k_focus.boost.dmg', [1.2, 1.5, 1.8]],
   ['WEAPONS.training-sword.hits', ['[0.55,0.55]', '[0.65,0.65]', '[0.75,0.75]', '[0.85,0.85]']],
   ['WEAPONS.imported-blade.hits', ['[0.62,0.62]', '[0.7,0.7]', '[0.78,0.78]']],
-  ['WEAPONS.duelist-sabre.hits', ['[0.17,0.17,0.17]', '[0.2,0.2,0.2]', '[0.23,0.23,0.23]', '[0.27,0.27,0.27]']],
+  ['WEAPONS.duelist-sabre.hits', ['[0.15,0.15,0.15]', '[0.17,0.17,0.17]', '[0.19,0.19,0.19]', '[0.2,0.2,0.2]', '[0.23,0.23,0.23]', '[0.27,0.27,0.27]']],
+  // a second set (--more): the AP, the effects' lengths, the breakers, the weapons' finer steps
+  ...(process.argv.includes('--more') ? [
+    ['SKILLS.t4.ap', [3, 4]], ['SKILLS.t3.ap', [2, 3]], ['SKILLS.d1.ap', [1, 2]], ['SKILLS.s1.ap', [2, 3]], ['SKILLS.k_iron.ap', [2, 3]],
+    ['SKILLS.d1.ward.dur', [6, 7.5, 9, 12]], ['SKILLS.s1.boost.dur', [8, 10, 12, 15]], ['SKILLS.k_iron.ward.dur', [8, 11.2, 14]],
+    ['SKILLS.t3.gaugeK', [1, 1.5, 2]], ['SKILLS.k_sunder.gaugeK', [1, 1.5, 2, 2.5]],
+    ['WEAPONS.training-sword.hits', ['[0.8,0.8]', '[0.85,0.85]', '[0.9,0.9]', '[0.95,0.95]']], ['WEAPONS.imported-blade.hits', ['[0.66,0.66]', '[0.7,0.7]', '[0.74,0.74]']],
+    ['WEAPONS.duelist-sabre.gap', [0.15, 0.22, 0.3]],
+  ] : []),
 ];
 const get = (path) => { const p = path.split('.'), T = { SKILLS: LAB.AD.AUTO_SKILLS, WEAPONS: LAB.AD.AUTO_WEAPONS }; let o = T[p[0]]; for (const k of p.slice(1)) o = o?.[k]; return o; };
 try {

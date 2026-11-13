@@ -30,7 +30,8 @@ test('what a skill does is the duel\'s own: every skill at every level, the gear
   for (const gear of GEARS) for (const id of Object.keys(SB.SKILL_BOOK)) for (let level = 1; level <= SK.MAX_LEVEL; level++) {
     const s = structuredClone(st); Object.assign(s.v2.gear, gear); s.v2.kit.levels[id] = level;
     if (!s.v2.kit.loadout.includes(id)) s.v2.kit.loadout = [id, ...s.v2.kit.loadout.slice(1)];
-    const b = AM.autoBoutOf(s), a = b.ren.skills.find((x) => x.id === id), f = P.skillFigures(s, id, level), e = a.ward ?? a.boost;
+    // the heavy attack: a base attack of every fighter since SY-02 (journal Passe SY2), never one of the four: the bout's heavy blow
+    const b = AM.autoBoutOf(s), a = id === 'heavy' ? b.ren.heavy : b.ren.skills.find((x) => x.id === id), f = P.skillFigures(s, id, level), e = a.ward ?? a.boost;
     assert.ok(a, `${id} brought`);
     const k = (2 * b.ren.atk) / (b.ren.atk + b.foe.def);
     assert.equal(f.ap, a.ap ?? 0, `${id} ${level}`);

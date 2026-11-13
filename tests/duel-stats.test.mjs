@@ -216,7 +216,7 @@ test('the pages read the stats (DB7-7): the gear page Ren\'s five, the skills pa
   assert.deepEqual([n.atk, n.def, n.end, n.viv], [x.atk, x.def, x.end, x.viv]);
   assert.deepEqual(P.STAT_IDS.slice(0, 5), ['hp', 'atk', 'def', 'end', 'viv']);
   // the duel played by the computer's power since lot 2 (journal Passe LC3): its own table (src/combat/autoData.ts)
-  for (let lv = 1; lv <= 5; lv++) assert.equal(P.skillFigures(st, 't4', lv).power, +AD.autoPower('t4', lv).toFixed(1));
+  for (let lv = 1; lv <= 5; lv++) assert.equal(P.skillFigures(st, 't4', lv).power, +(AD.autoPower('t4', lv) * AD.AUTO_CADENCE.all).toFixed(1)); // at the common cadence (SY-03)
   assert.equal(P.skillFigures(st, 'd1', 1).power, 0, 'a ward has no power');
   // the match sheet: both fighters as the duel builds them (src/combat/autoMatch.ts autoBoutOf), side by side
   assert.match(src('src/ui/townUi.ts'), /const b = autoBoutOf\(s\), vs = b \? this\.autoVsHtml\(b\.ren, b\.foe, autoForms\(b\), r\.name\) : '';/);
