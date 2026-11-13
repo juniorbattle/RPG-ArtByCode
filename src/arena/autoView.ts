@@ -272,7 +272,8 @@ export class AutoReplay {
     for (const seat of SEATS) {
       const s = this.s[seat], f = s.side, c = s.charge;
       if (f.state === 'down' || (this.over && this.koT >= 0 && seat !== this.winner)) { f.state = 'down'; f.anim = { name: 'ko', t: t - this.koT, dur: 0.9 }; f.act = null; continue; }
-      if (s.broken && t < s.stunEnd) { f.state = 'stunned'; f.anim = { name: 'recover', t: t - (s.stunEnd - AUTO_RULES.brk.stun), dur: AUTO_RULES.brk.stun, stunned: true }; f.act = null; continue; }
+      // (a line is played up to 1e-9 s before the clock reaches it: the stun's clip never starts below 0, which drew no frame, journal Passe SL1)
+      if (s.broken && t < s.stunEnd) { f.state = 'stunned'; f.anim = { name: 'recover', t: Math.max(0, t - (s.stunEnd - AUTO_RULES.brk.stun)), dur: AUTO_RULES.brk.stun, stunned: true }; f.act = null; continue; }
       // its blow or effect up to its impact (a blow lands drawn), else a reaction (a dodge, a block; a flinch only while it strikes nothing), else the blow's
       // follow-through: each drawn from its window, its run-up begun before it lands
       const r = this.at(this.reacts[seat], t), strike = this.at(this.wins[seat], t), landing = !!strike && t - strike.t0 <= strike.impactAt + 0.04;

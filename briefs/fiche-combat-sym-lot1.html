@@ -1,0 +1,333 @@
+<title>Combat SY lot 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.mt { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.mt th, .mt td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.mt th { color: var(--muted); font-weight: 600; }
+.mt td + td, .mt th + th { text-align: right; white-space: nowrap; }
+.mtw { overflow-x: auto; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions du responsable · 13/11/2026</span>
+    <h1>Fiche d'arbitrages — le lot 1 de la seconde refonte : les règles communes</h1>
+    <p class="lede">Le lot 1 de la seconde refonte du combat est construit dans le jeu par défaut (journal Passe SL1) : les mêmes règles pour Ren et les rivaux, le coup puissant de base avec sa recharge, la cadence ×0,6, un tirage par coup, l’automatique revu, l’équilibre des compétences et des armes, la course recalée à +10 % par tour. Le duel du jeu rend le modèle de l’atelier (168 duels sur 168 identiques) ; 653 tests et les preuves dans le navigateur passent. Ce qui suit, ce sont les points que le lot n’a pas pu trancher seul : huit décisions, dont une A3 marquée. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne dans les documents du projet, puis j'enchaîne sur la suite décidée.</p>
+    <p class="src">Sources : JOURNAL.md, Passes SY1, SY2, SL1 ; briefs/combat-auto.md (§ 25 à § 27) ; tools/auto-lab.mjs, tools/auto-tactics.mjs, tools/auto-balance.mjs (les mesures) ; src/combat/auto.ts, autoData.ts.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+const GROUPS = [
+  { id: 'course', title: 'La course et la durée', sub: 'La course recalée sur les mêmes règles, comme AC-16 le prévoit : chaque rival à son facteur de poule (la référence du jour 2 le bat 95 % du temps), la pente de la poule, les facteurs du tableau et de la finale sur parties entières (graines de calage 1 à 80), puis 200 parties tenues à part (graines 101 à 300).', fam: 'var(--ronce)', items: [
+    { id: 'SL1-1', tag: 'SY-05 · A3', title: 'La pente de la poule : +10 % manque la visée du dernier tour',
+      ctx: 'Tu as choisi « +10 % par tour (décision A3 : change LC1-1) ». Construite sur les mêmes règles, la poule devient plus dure que la visée de AC-15 au dernier tour : la référence le gagne 59 fois sur 100 au lieu de 75, et prend 22 % des titres. J’ai mesuré deux pentes plus douces, les facteurs du tableau et de la finale recalés pour chacune, sur les mêmes parties tenues à part. À +7,5 %, chaque étape tombe à cinq points au plus de sa visée.',
+      table: [['Pente de la poule', 'Titres (réf.)', 'j2 / j4 / j5', 'Demi', 'Finale', 'Le planificateur', 'Le curieux'], ['Visée AC-15', '—', '95 / 85 / 75', '65 %', '50 %', '—', '—'], ['+10 % (ton choix, dans le jeu)', '22 %', '97 / 80 / 59', '62 %', '41 %', '20 %', '8 %'], ['+7,5 %', '29 %', '97 / 85 / 80', '68 %', '45 %', '28 %', '11 %'], ['+5 %', '29 %', '97 / 91 / 95', '66 %', '45 %', '18 %', '8 %']],
+      rec: '+7,5 % par tour : la seule pente mesurée qui tient chaque visée de AC-15 à cinq points près, et un titre sur trois et demi pour la référence. C’est une décision A3 (elle change SY-05) ; garder +10 % laisse le jeu tel qu’il est construit.',
+      opts: ['+7,5 % par tour (décision A3 : change SY-05)', 'Garder +10 % par tour', '+5 % par tour (décision A3 : change SY-05)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 27.5 ; journal Passe SL1 ; src/combat/autoData.ts (AUTO_RACE) ; tools/auto-lab.mjs level' },
+    { id: 'SL1-2', tag: 'DB5', title: 'La durée de la finale : 5 min 34 s médianes',
+      ctx: 'Ta règle DB5 : « je veux qu’un combat basique dure en 2 et 5 min. +5 min peut etre exceptionnellement des combats epiques ». Les durées médianes de la référence : la poule 2 min 57 s, le tableau 4 min 47 s, la finale 5 min 34 s (5 min 47 s à +7,5 %). Une partie n’a qu’une finale ; contre Rhosk elle va jusqu’à 7 min. Le rythme, lui, est vif : 118 coups par minute, 11 % du temps en silences de plus de 3 s (10,5 % au lot 2).',
+      rec: 'Bien ainsi : la finale est le combat épique que DB5 permet, une fois par partie. La raccourcir demande de changer la santé ou la force des rivaux de finale et de recaler la course.',
+      opts: ['Bien ainsi : la finale est le combat épique', 'La raccourcir (les rivaux de finale, la course recalée)', 'Juger à mon essai'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 27.5, § 27.6 ; tools/auto-lab.mjs rhythm' },
+  ]},
+  { id: 'decider', title: 'Les façons de décider (SY-07)', sub: 'Tes deux critères pour l’automatique : au moins aussi bon que les tactiques simples et que des appuis au hasard ; aucune tactique lisible sous lui. Mesurés sur 200 parties de la référence (graines 101 à 300), la décision de Ren seule remplacée, les rivaux à l’automatique du jeu.', fam: 'var(--astre)', items: [
+    { id: 'SL1-3', tag: 'critère 1', title: 'Deux tactiques simples dépassent l’automatique',
+      ctx: 'L’automatique du lot : un soutien dès qu’il est prêt, une protection quand un gros coup arrive, une offensive dès qu’il peut la payer (avant l’équilibre, il faisait 90 % de titres, contre 36 % pour celui de l’atelier et 64 % pour des appuis au hasard). Après l’équilibre et la course, il bat les appuis au hasard et les mauvais choix, mais deux tactiques simples le dépassent de six à sept points. La raison, mesurée sur 60 duels du jour 4 : l’automatique dépense ses PA sur l’Estoc (t4), le plus cher et le plus faible, quand la Taille éclair (t1) recharge ; « la plus forte gardée pour la rupture » ne lance presque jamais t4 (3 fois contre 24) et lance t1 plus souvent.',
+      table: [['Façon de décider (Ren)', 'Titres', 'j2 / j4 / j5', 'Demi', 'Finale'], ['L’automatique du lot', '22 %', '97 / 80 / 59', '62 %', '41 %'], ['Tactique : la plus forte gardée pour la rupture', '29 %', '100 / 82 / 67', '71 %', '46 %'], ['Tactique : la plus forte gardée pour finir', '28 %', '98 / 80 / 64', '70 %', '47 %'], ['Appuis au hasard (1 sur 4, soutiens seuls : 12 %)', '7 %', '99 / 73 / 38', '49 %', '17 %'], ['Tactique : les protections dès qu’elles sont prêtes', '2 %', '99 / 78 / 27', '45 %', '4 %'], ['Tactique : les soutiens jamais', '0 %', '71 / 20 / 2', '0 %', '—']],
+      rec: 'L’automatique garde sa plus forte offensive pour la rupture : mesuré comme automatique de tous (les rivaux aussi, la course pas encore recalée pour lui), la référence prend 41 % des titres et aucune façon de décider mesurée ne le dépasse (pour finir 39 %, les soutiens dès que prêts 36 %, aux signaux 0 à 36 %, des appuis au hasard 15 à 34 %). Il tient ton premier critère ; il se construit au lot 2 avec la course recalée.',
+      opts: ['L’automatique garde la plus forte pour la rupture (au lot 2, la course recalée)', 'Garder l’automatique du lot ; la tactique du lot 2 laisse mieux faire', 'Revoir l’Estoc au lot 2, avec AC-12'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 27.3 ; tools/auto-lab.mjs modes ; tools/auto-tactics.mjs' },
+    { id: 'SL1-4', tag: 'critère 2', title: 'Les tactiques aux signaux sont sous l’automatique',
+      ctx: 'Une tactique « aux signaux » lance ses offensives quand l’adversaire est rompu assez longtemps, ou quand il charge un gros coup qui partira après la compétence (les signaux que l’arène montre). Elles font 0 à 11 % de titres, contre 22 % pour l’automatique : les signaux sont rares, la compétence bon marché attend et perd ses passages, et la règle « à PA pleins » de ces tactiques lance alors la plus chère (t4 lancée 183 fois contre 24 pour l’automatique, t1 166 fois contre 406). Ton second critère ne tient pas. La tactique elle-même se construit au lot 2 (une condition par compétence, SY-08) : ses conditions y seront écrites telles que la page les offre.',
+      table: [['Tactique aux signaux', 'Titres', 'j2 / j4 / j5'], ['À PA pleins, la moins chère', '11 %', '100 / 90 / 72'], ['À PA pleins, la première', '0 %', '72 / 25 / 8'], ['Aux signaux seulement', '0 %', '73 / 67 / 26']],
+      rec: 'Le reprendre au lot 2 : mesurer les conditions telles que la page de la tactique les offrira, et tenir le second critère avant ton essai. Rien ne change maintenant.',
+      opts: ['Le reprendre au lot 2, avant mon essai', 'Accepter : suivre les signaux est un choix qui coûte', 'À reprendre (en note)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 27.3, § 25.5 ; tools/auto-tactics.mjs' },
+  ]},
+  { id: 'equilibre', title: 'L’équilibre des compétences et des armes (SY-06)', sub: 'Le test de AC-12 : chaque rival a au moins deux bonnes réponses (à 10 points de la meilleure), aucun kit ne domine partout (à 3 points du meilleur contre chacun), chaque arme est la meilleure contre au moins trois rivaux. Chaque rival à son niveau : le kit de départ gagne 85 / 65 / 50 % contre lui en poule, au tableau, en finale.', fam: 'var(--voile)', items: [
+    { id: 'SL1-5', tag: 'AC-12', title: 'Le test tient en poule, pas au tableau ni en finale',
+      ctx: 'Une recherche sur les seules données des compétences et des armes (les règles décidées gardées) a retenu : l’épée d’entraînement 2 × 0,85 (0,55), la lame importée 2 × 0,70 (0,62), le sabre du duelliste 3 × 0,17 (0,23) ; Tourbillon ×1,8 de puissance, Estoc ×0,8 ; Fracas ×2 à la jauge ; Cri de guerre ×1,9 aux dégâts (2,3). Sur des graines tenues à part : en poule, chaque rival a deux ou trois bonnes réponses et rien ne domine ; au tableau, Cassius et Marek n’en ont qu’une (le kit défensif) ; en finale, Vessa n’en a qu’une (la feinte), les autres le départ et le défensif, et les kits offensifs tombent sous 30 % contre six rivaux sur sept. La tactique du lot 2 changera ce que chaque kit vaut.',
+      table: [['Étape', 'Bonnes réponses', 'Domine partout', 'Test'], ['Poule (jour 4)', 'deux ou trois pour chaque rival', 'aucun', 'tenu'], ['Tableau (jour 6)', 'Cassius et Marek : une (défensif)', 'aucun', 'non tenu'], ['Finale (jour 10)', 'Vessa : une (feinte) ; les autres : départ, défensif', 'aucun', 'non tenu']],
+      rec: 'Le reprendre au lot 2, avec la tactique : une recherche faite maintenant serait à refaire dès que la tactique change la valeur des kits.',
+      opts: ['Le reprendre au lot 2, avec la tactique', 'Une seconde recherche maintenant, avant le lot 2', 'Bien ainsi'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 27.4 ; tools/auto-balance.mjs ; tools/auto-lab.mjs kits --norm=rival' },
+  ]},
+  { id: 'reste', title: 'Ce que le lot laisse, et la suite', sub: 'Deux détails sans effet sur les règles, et la réception du lot.', fam: 'var(--cendre)', items: [
+    { id: 'SL1-6', tag: 'son', title: 'La charge du coup puissant de Ren ne s’entend pas',
+      ctx: 'Au lot 4, la charge d’une compétence de Ren s’entend comme un palier de la charge d’avant (sa note, son souffle). Le coup puissant n’est plus une compétence : sa charge passe sans note, seul son coup s’entend (le coup puissant des effets et du son d’aujourd’hui).',
+      rec: 'Sa charge entendue au premier palier, comme une compétence : le joueur l’entend venir comme les autres. Au lot 2.',
+      opts: ['Sa charge au premier palier (au lot 2)', 'Rien à sa charge : seul son coup s’entend'], recIdx: 0,
+      src: 'src/arena/autoView.ts (tierOf) ; src/audio/sfx.ts ; journal Passe LC6' },
+    { id: 'SL1-7', tag: 'sauvegarde', title: 'Une sauvegarde qui emportait le coup puissant parmi les quatre',
+      ctx: 'Une partie nouvelle n’emporte pas le coup puissant (CH-4). Une sauvegarde dont le joueur l’avait mis parmi les quatre n’a plus que trois compétences : le coup puissant est hors des quatre et part de lui-même. Aujourd’hui la place reste vide.',
+      rec: 'La compétence possédée suivante prend la place, dans l’ordre de la page des compétences : rien n’est perdu pour le joueur. Au lot 2, avec la page.',
+      opts: ['La suivante possédée prend la place (au lot 2)', 'La place reste vide jusqu’à son choix'], recIdx: 0,
+      src: 'src/combat/autoData.ts (autoOrderOf) ; journal Passe CH2' },
+    { id: 'SL1-8', tag: 'réception', title: 'La réception du lot 1 et la suite',
+      ctx: 'Construit et prouvé dans le jeu par défaut : les mêmes règles pour tous (SY-01), le coup puissant de base avec sa recharge (SY-02), la cadence ×0,6 (SY-03), un tirage par coup (SY-04), l’automatique revu, l’équilibre et la course recalés. Le duel du jeu rend le modèle de l’atelier, 168 duels sur 168 identiques. Les preuves : 653 tests ; l’arène pour les sept rivaux, la jauge image par image, le tutoriel, le son, les flux de jeu, de défi, de représailles et du sable, dans le navigateur. Ensuite, le lot 2 : la tactique sur la fiche de match, la main dans l’arène, la sauvegarde ; ton essai le suit.',
+      rec: 'Reçu ; le lot 2 ensuite, ton essai après lui (SY-14).',
+      opts: ['Reçu ; le lot 2 ensuite', 'Reçu, mais mon essai d’abord, avant le lot 2', 'À reprendre (en note)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 26.2, § 27 ; journal Passe SL1' },
+  ]},
+];
+
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.table) { const tb = el('table', { class: 'mt' }); it.table.forEach((row, i) => { const tr = el('tr'); for (const cell of row) tr.append(el(i ? 'td' : 'th', {}, cell)); tb.append(tr); }); c.append(el('div', { class: 'mtw' }, tb)); }
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

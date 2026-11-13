@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; la construction en quatre lots à venir** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; les lots 2 à 4 à venir** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -897,7 +897,7 @@ comme elle le prévoit).
 La fiche https://claude.ai/artifact/J99g6BKC3Fku2x6ZMvdPXF (`briefs/fiche-combat-sym.html`), relue le 12/11/2026 au soir (choix cliqués le 13/11 de 02 h 50 à
 02 h 52 UTC) : **quatorze choix sur quatorze à la recommandation**, aucune note. Les choix mot pour mot et les décisions A3 citées et datées : journal Passe
 SY2. Ce paragraphe dit ce qui s'applique ; là où le § 17 et les §§ 18 à 24 diffèrent, il l'emporte pour la construction à venir. Rien n'est encore construit :
-jusqu'au lot 1 ci-dessous, le jeu garde le duel des lots 1 à 4.
+jusqu'au lot 1 ci-dessous, le jeu garde le duel des lots 1 à 4 (le lot 1 construit : § 27).
 
 | Carte | Le choix, mot pour mot | Ce qui s'applique |
 |---|---|---|
@@ -937,6 +937,129 @@ Chaque lot dans sa séance, dans le jeu par défaut (VD-8), fusionné après ses
 4. **Le retrait de l'ancien duel** et de ses outils (le lot 5 de la première refonte, § 17.3).
 
 Le prototype du laboratoire (`tools/auto-sym/`) en donne les points de départ ; ses nombres se recalent à la construction.
+
+## 27. Le lot 1 de la seconde refonte construit : les règles communes (13/11/2026, journal Passe SL1)
+
+Dans le jeu par défaut (VD-8), branche `claude/combat-sym-lot1`. Ce qui s'applique depuis ce lot ; le § 26 reste la décision, ce paragraphe dit ce qui est
+construit et mesuré. Les points sans décision sont sur la fiche du lot (§ 27.7).
+
+### 27.1 Ce qui est construit
+
+- `src/combat/auto.ts` : la même boucle pour tous (SY-01). `AutoFighter` n'a plus de combo, d'IA à poids ni de traits ; chaque combattant a son attaque simple,
+  son **coup puissant de base** (`heavy`, SY-02 : hors des quatre, sans PA, avec sa recharge de DB5-3) et ses compétences. **Un tirage par coup** (SY-04,
+  `autoDraw` : la graine du duel, le frappeur, le rang de son action, le rang du coup dans l'action, le but : l'esquive, la garde, l'initiative, le choix) :
+  un coup garde ses tirages quoi qu'il arrive avant lui. **Un seul automatique** (`autoDecider`, `DECIDERS.player === DECIDERS.rival`) : ses compétences
+  (`autoSkillChoice`), sinon son coup puissant (`heavyWhen` : l'adversaire rompu assez longtemps pour qu'il arrive, ou en charge d'une grosse action qui
+  l'expose jusque-là, ou les PA pleins), sinon l'attaque simple, qui rapporte les PA.
+- `src/combat/autoData.ts` : **la cadence ×0,6 pour tous** (`AUTO_CADENCE.all`, SY-03 : les charges, les puissances et les jauges ; les recharges suivent les
+  charges ; la durée des effets gardée) ; `autoHeavy` (le coup puissant du catalogue, au niveau de l'exercice du sable pour Ren, 1 pour les rivaux) ; les
+  rivaux : leur combo devenu leur arme (`AUTO_FOES.weapon`, ses coups au total de l'épée d'entraînement), la Vivacité 10 de leurs tables, leurs compétences à
+  2 PA avec DB5-3, la puissance par la charge comme celles de Ren, leur ordre (protections, soutiens, offensives de la plus forte) ; plus de traits.
+- `src/combat/autoMatch.ts` : la garde et l'esquive tirées des seules stats (AC-05 sans traits).
+- La relecture de l'arène (`src/arena/autoView.ts`), le HUD (`AutoHud.ts`) et les textes suivent le script comme avant : le coup puissant hors des quatre
+  cases, plus de ligne « combo » du rival ; l'élan d'un coup tient dans le temps libre devant lui (`free`), jamais dans l'étourdissement de son frappeur. Les
+  phrases du guide et du tutoriel disent que les rivaux suivent les mêmes règles, le soutien dès qu'il est prêt et le coup puissant quand l'adversaire ne
+  peut pas se défendre ou que les PA sont pleins (anglais et français).
+- Le laboratoire : `tools/auto-lab.mjs` (`modes`, `--auto=` un autre automatique pour tous, `kits --norm=rival`, `level`), `tools/auto-tactics.mjs` (les
+  tactiques d'une condition par compétence et les appuis au hasard, sur l'automatique du jeu), `tools/auto-balance.mjs` (la recherche de l'équilibre au test de
+  AC-12) ; `tools/auto-sym/` reste le laboratoire de l'atelier, juste contre le jeu d'avant ce lot (`d8b7a9f`).
+
+### 27.2 L'identité avec le modèle de l'atelier
+
+Avant l'automatique revu, le duel du jeu rend le modèle « mêmes règles » mesuré en Passe SY1 (cadence ×0,6, coup puissant rechargé, `tools/auto-sym/sim.mjs`) :
+**168 combattants sur 168 et 168 duels sur 168 identiques, événement par événement** ; `tests/combat-auto.test.mjs` garde ce portage (le modèle de l'atelier
+tourne à côté, sur les mêmes tables).
+
+### 27.3 L'automatique (SY-07)
+
+Sur la course d'avant le recalage, 200 parties de la référence (graines 101 à 300), la décision de Ren seule remplacée : l'automatique de l'atelier (le
+soutien gardé jusqu'à ce qu'une offensive puisse suivre) 36 % de titres ; les soutiens dès qu'ils sont prêts 90 % ; des appuis au hasard 64 à 65 % (69 % sur
+les seuls soutiens) ; aux signaux 54 à 79 %. Quatre automatiques candidats joués par tous : seul « les soutiens dès qu'ils sont prêts » n'avait aucune façon
+de décider au-dessus de lui. **Retenu : un soutien dès qu'il est prêt** (un à la fois), les protections et les offensives comme avant.
+
+Après l'équilibre et la course recalée (les mêmes 200 parties, l'automatique de tous celui du jeu) :
+
+| Façon de décider (Ren) | Titres | j2 / j4 / j5 | Demi | 3e | Finale |
+|---|---|---|---|---|---|
+| l'automatique | 22 % | 97 / 80 / 59 | 62 % | 86 % | 41 % |
+| tactique : la plus forte gardée pour la rupture | 29 % | 100 / 82 / 67 | 71 % | 84 % | 46 % |
+| tactique : la plus forte gardée pour finir | 28 % | 98 / 80 / 64 | 70 % | 88 % | 47 % |
+| tactique : aux signaux, la moins chère à PA pleins | 11 % | 100 / 90 / 72 | 50 % | 80 % | 22 % |
+| tactique : aux signaux, la première à PA pleins | 0 % | 72 / 25 / 8 | 17 % | 40 % | 0 % |
+| tactique : aux signaux seulement | 0 % | 73 / 67 / 26 | 21 % | 52 % | — |
+| tactique : les protections dès qu'elles sont prêtes | 2 % | 99 / 78 / 27 | 45 % | 54 % | 4 % |
+| tactique : les soutiens jamais | 0 % | 71 / 20 / 2 | 0 % | 13 % | — |
+| appuis au hasard, un choix sur quatre / sur deux | 7 / 5 % | 99 / 73-77 / 37-38 | 40-49 % | 65 % | 15-17 % |
+| appuis au hasard, soutiens seuls / offensives seules | 12 / 6 % | 97-98 / 56-82 / 35-49 | 33-57 % | 48-77 % | 24-27 % |
+
+**Lecture.** Le premier critère tient contre les appuis au hasard et les mauvais choix (protections dès que prêtes, soutiens jamais) ; deux tactiques simples
+le dépassent de six à sept points (garder la plus forte pour la rupture ou pour finir). Le second ne tient pas : les tactiques aux signaux sont sous lui. La
+cause, mesurée sur 60 duels isolés du jour 4 (le kit t1, t4, d1, s1) : les signaux sont rares, la compétence bon marché (t1) gardée perd ses passages, et
+« à PA pleins » lance alors la plus chère et la plus faible (t4 : 183 fois contre 24 pour l'automatique, t1 166 contre 406) ; « la plus forte à la rupture »
+gagne surtout en ne lançant presque jamais t4 (3 fois).
+
+« La plus forte gardée pour la rupture » mesurée comme automatique de tous (les rivaux aussi ; la course pas recalée pour lui) : la référence 41 % de titres, et aucune
+façon de décider mesurée au-dessus (pour finir 39 %, les soutiens dès que prêts 36 %, aux signaux 0, 3 et 36 %, les protections dès que prêtes 19 %, des appuis
+au hasard 15 à 34 %) : le premier critère tiendrait, pas le second. La suite : la fiche du lot (§ 27.7).
+
+### 27.4 L'équilibre des compétences et des armes (SY-06, AC-12)
+
+Recherche par coordonnées sur les seules données des compétences et des armes (`tools/auto-balance.mjs`, graines de calage 1 à 40), chaque rival à son
+niveau (le kit de départ à 85 / 65 / 50 % contre lui), le test de AC-12 (chaque rival au moins deux bonnes réponses à 10 points de la meilleure ; aucun kit à 3
+points du meilleur contre tous ; chaque arme la meilleure contre trois rivaux au moins). Retenu : l'épée d'entraînement deux coups de 0,85 (0,55 avant), la
+lame importée deux de 0,70 (0,62), le sabre du duelliste trois de 0,17 (0,23) ; Tourbillon (t3) ×1,8 de puissance, Estoc (t4) ×0,8 ; Fracas (k_sunder) ×2 à la
+jauge ; Cri de guerre (k_cry) ×1,9 aux dégâts (2,3). Sur des graines tenues à part (60) :
+
+| Étape (la référence du jour) | Bonnes réponses | Domine partout | Test |
+|---|---|---|---|
+| poule (jour 4) | deux ou trois pour chaque rival | aucun | **tenu** |
+| tableau (jour 6) | Cassius et Marek une seule (défensif) ; les autres deux ou trois | aucun | non tenu |
+| finale (jour 10) | Vessa une seule (feinte) ; les autres deux (départ, défensif) | aucun | non tenu |
+
+En finale, les kits autres que le départ et le défensif tombent sous 30 % contre six rivaux sur sept (tous sauf Vessa). Les armes, en poule : la lame
+importée la meilleure (à 3 points) contre six rivaux, le sabre contre trois (Tobin, Cassius, Orla), l'épée contre un (Orla) ; le test de AC-12 juge les kits.
+
+### 27.5 La course (SY-05, A3)
+
+AC-16 recalée sur ces règles : le facteur de poule de chaque rival pour que la référence du jour 2 le batte 95 % du temps sur duels isolés, **la poule à +10 %
+par tour** (A3), les facteurs du tableau et de la finale sur parties entières (graines de calage 1 à 80) pour la demi-finale et la finale visées. Les facteurs :
+Vessa 1,487, Tobin 1,815, Cassius 1,54, Orla 1,004, Ilse 1,425, Marek 1,206, Rhosk 1,647 ; la poule 1 / 1,1 / 1,2 ; le tableau ×1,249, la finale ×1,561
+(`AUTO_RACE`). Sur 200 parties tenues à part (graines 101 à 300) :
+
+| Joueur | Titres | j2 / j4 / j5 | Demi | 3e | Finale | Durées poule / tableau / finale |
+|---|---|---|---|---|---|---|
+| la référence (AC-14) | 22 % | 97 / 80 / 59 | 62 % | 86 % | 41 % (104) | 177 / 287 / 334 s |
+| le planificateur | 20 % | 97 / 80 / 58 | 45 % | 84 % | 51 % (77) | 177 / 278 / 326 s |
+| visée AC-15 | — | 95 / 85 / 75 | 65 % | — | 50 % | DB5 : 2 à 5 min |
+
+À +10 % par tour, le dernier tour de poule manque sa visée de seize points (59 contre 75) : la pente rend la poule plus dure que AC-15 ne le veut. Deux pentes
+mesurées à côté, les facteurs du tableau et de la finale recalés pour chacune, les mêmes graines tenues à part :
+
+| Pente de poule | Titres (réf.) | j2 / j4 / j5 | Demi | 3e | Finale | Le planificateur | Le curieux |
+|---|---|---|---|---|---|---|---|
+| +10 % (A3, dans le jeu) | 22 % | 97 / 80 / 59 | 62 % | 86 % | 41 % | 20 % | 8 % |
+| +7,5 % (tableau ×1,232, finale ×1,576) | 29 % | 97 / 85 / 80 | 68 % | 88 % | 45 % | 28 % | 11 % |
+| +5 % (tableau et finale recalés) | 29 % | 97 / 91 / 95 | 66 % | 79 % | 45 % | 18 % | 8 % |
+
+### 27.6 Le rythme
+
+La référence du jour 4 contre les sept rivaux (140 duels) : durée médiane 236 s (Orla 170 s, Rhosk 330 s), 118 coups par minute, 0,32 s entre deux coups
+(p90 1,13), le plus long silence médian 4,7 s (au plus 5,3), 11,3 % du temps en silences de plus de 3 s (10,5 % au lot 2), 3,7 s entre deux grosses actions ;
+sans aucun événement au plus 4,4 s. Le jour 10 : 314 s médianes (Rhosk 435 s), 122 coups par minute, 10,0 % en silences de plus de 3 s.
+
+### 27.7 Les preuves et la fiche du lot
+
+`npm run typecheck`, `npm test` (653 sur 653), `npm run build`, `npm run art:validate`. Dans le navigateur, sur les données finales : `tools/auto-arena-proof.mjs`
+pour les sept rivaux (chaque pas en images cuites ; l'animation de l'étourdissement ne commence plus sous 0, ce qui laissait une image −1 chez Tobin et Ilse),
+`tools/gauge-proof.mjs`, `tools/tutorial-proof.mjs`, `tools/audio/hooks-proof.mjs`, `tools/play-flow.mjs` (une partie qui attend gagne le jour 2 avec la
+graine 1842 et perd avec la graine 1, l'inverse avant), `tools/challenge-flow.mjs` (défi et représailles), `tools/rivals-flow.mjs sand` (la graine 6 de nouveau
+pour le sable de Rhosk). Les blessures d'une partie mesurées à nouveau (`tests/v2-injury.test.mjs` : 0,56 pour le joueur préparé et pour l'oisif, 0,32 pour la
+référence).
+
+La fiche du lot : https://claude.ai/artifact/5HR1Eqhsr3ZKoN81hfWwLb (`briefs/fiche-combat-sym-lot1.html`), huit cartes : SL1-1 la pente de la poule (A3 : +7,5 %
+recommandé), SL1-2 la durée de la finale, SL1-3 l'automatique et les deux tactiques qui le dépassent (la plus forte gardée pour la rupture recommandée, au
+lot 2), SL1-4 les tactiques aux signaux (au lot 2), SL1-5 l'équilibre au tableau et en finale (au lot 2), SL1-6 la charge du coup puissant de Ren au premier
+palier du son, SL1-7 une sauvegarde qui emportait le coup puissant, SL1-8 la réception et la suite. Jusqu'à sa relecture, le jeu garde ce que ce lot construit.
 
 ---
 

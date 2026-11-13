@@ -2,7 +2,7 @@
 // bout, the arena page loaded from the save (the address the town would go to: window.__go, read with ?noreload=1), the bout decided by
 // scripted inputs on window.__arena in today's game (win: the opponent brought down by a technique; lose: the player struck by heavy blows); a version 2
 // game's bout is the duel played by the computer (journal Passe LC3): the state decides it, so <win|lose> is the result the tool expects (a new game that
-// only waits wins on day 2 with seed 1 and loses with seed 1842), the duel skipped (« Skip ») and its outcome checked against Node's own; the result
+// only waits wins on day 2 with seed 1842 and loses with seed 1 since the same rules for every fighter, journal Passe SL1; the reverse before), the duel skipped (« Skip ») and its outcome checked against Node's own; the result
 // screen's button, then the town page loaded again from the save. At the end the browser's state is replayed in Node (src/simulation, the
 // same actions and the outcome the arena handed in) and both fingerprints must match.
 //   node tools/play-flow.mjs <outDir> <win|lose> [seed] [day=2|3]   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs;
