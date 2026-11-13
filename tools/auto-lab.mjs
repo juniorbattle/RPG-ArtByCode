@@ -36,7 +36,7 @@ const server = await createServer({ root: ROOT, configFile: false, logLevel: 'er
 const load = (f) => server.ssrLoadModule(f);
 const AU = await load('/src/combat/auto.ts'), AD = await load('/src/combat/autoData.ts'), AM = await load('/src/combat/autoMatch.ts');
 const LAB = await load('/src/tournament/lab.ts'), ST = await load('/src/combat/stats.ts'), V2 = await load('/src/simulation/v2.ts');
-const TABLES = { CADENCE: AD.AUTO_CADENCE, RULES: AU.AUTO_RULES, SKILLS: AD.AUTO_SKILLS, FOES: AD.AUTO_FOES, RACE: AD.AUTO_RACE, WEAPONS: AD.AUTO_WEAPONS, LIGHT: AD.AUTO_LIGHT };
+const TABLES = { CADENCE: AD.AUTO_CADENCE, RULES: AU.AUTO_RULES, SKILLS: AD.AUTO_SKILLS, FOES: AD.AUTO_FOES, RACE: AD.AUTO_RACE, WEAPONS: AD.AUTO_WEAPONS, LIGHT: AD.AUTO_LIGHT, BRUTE: AD.AUTO_BRUTE, ROLES: AD.AUTO_ROLES, STYLES: AD.AUTO_STYLES, GEARFX: AD.AUTO_GEAR_FX };
 const RIVALS = Object.keys(ST.RIVAL_SHEETS);
 export const TAC = makeTactics(AU);
 /** candidate automatics for every fighter (SY-07): the game's, and tactics of the second workshop played by everyone */
@@ -123,7 +123,7 @@ export function refsOf(seeds, pn = 'reference') {
   const P = LAB.POLICIES[pn], rows = [];
   const wrap = { name: pn, skill: P.skill, choose: (st) => {
     const a = P.choose(st);
-    if (a.type === 'fight') { const b = AM.autoBoutOf(st, 'bout'); rows.push({ day: st.day, stage: b.stage, foe: b.foeId, ren: b.ren, weapon: st.v2?.gear?.weapon ?? 'training-sword', levels: V2.v2KitOf(st).levels, loadout: V2.v2KitOf(st).loadout, prep: st.competitors[b.foeId]?.preparation ?? 20, apStart: b.ren.apStart, taken: b.ren.taken }); }
+    if (a.type === 'fight') { const b = AM.autoBoutOf(st, 'bout'); rows.push({ day: st.day, stage: b.stage, foe: b.foeId, ren: b.ren, weapon: st.v2?.gear?.weapon ?? 'training-sword', levels: V2.v2KitOf(st).levels, loadout: V2.v2KitOf(st).loadout, prep: st.competitors[b.foeId]?.preparation ?? 20, armour: st.v2?.gear?.armour ?? '-', acc: (st.v2?.gear?.acc ?? []).filter(Boolean).join('+') || '-', taken: b.ren.taken }); }
     return a;
   } };
   for (const s of seeds) LAB.autoplay(s, wrap, 'Ren', 260, 'auto');
@@ -131,8 +131,9 @@ export function refsOf(seeds, pn = 'reference') {
   for (const x of rows) (byDay[x.day] ??= []).push(x);
   const out = {};
   for (const [d, R] of Object.entries(byDay)) {
+    const top = (a) => { const c = {}; for (const v of a) c[v] = (c[v] ?? 0) + 1; return Object.entries(c).sort((x, y) => y[1] - x[1]).map(([k, v]) => `${k} ${v}`).slice(0, 2).join(', '); };
     const m = (f) => +med(R.map(f)).toFixed(2), wc = {}; for (const x of R) wc[x.weapon] = (wc[x.weapon] ?? 0) + 1;
-    out[d] = { n: R.length, stage: R[0].stage, hp: m((x) => x.ren.hp), atk: m((x) => x.ren.atk), def: m((x) => x.ren.def), end: m((x) => x.ren.end), viv: m((x) => x.ren.viv), apStart: m((x) => x.apStart), weapon: Object.entries(wc).sort((a, b) => b[1] - a[1])[0][0], t1: m((x) => x.levels.t1 ?? 1), t4: m((x) => x.levels.t4 ?? 1), prep: m((x) => x.prep), foes: Object.entries(R.reduce((c, x) => ((c[x.foe] = (c[x.foe] ?? 0) + 1), c), {})).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' ') };
+    out[d] = { n: R.length, stage: R[0].stage, hp: m((x) => x.ren.hp), atk: m((x) => x.ren.atk), def: m((x) => x.ren.def), end: m((x) => x.ren.end), viv: m((x) => x.ren.viv), armour: top(R.map((x) => x.armour)), acc: top(R.map((x) => x.acc)), weapon: Object.entries(wc).sort((a, b) => b[1] - a[1])[0][0], t1: m((x) => x.levels.t1 ?? 1), t4: m((x) => x.levels.t4 ?? 1), kit: top(R.map((x) => x.loadout.join('.'))), prep: m((x) => x.prep), foes: Object.entries(R.reduce((c, x) => ((c[x.foe] = (c[x.foe] ?? 0) + 1), c), {})).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' ') };
   }
   return out;
 }
@@ -162,7 +163,8 @@ export function duelsOf({ day = 4, loadout = ['t1', 't4', 'd1', 's1'], weapon, f
   for (const id of foes) {
     const o = { id, w: 0, n: 0, t: [], rh: [] };
     for (const s of seeds) {
-      const A = AD.autoRen(R, { loadout, levels: lv }, { weapon: R.weapon }), B = AD.autoFoe(id, AD.autoRaceSheet(id, st, rd, { preparation: R.prep }));
+      // the weapon worn: its effects (AUTO_GEAR_FX) and its Speed points counted at AUTO_PIECE_VIV, as a bout builds Ren (the model « La Brute », PB-1)
+      const A = AD.autoRen(R, { loadout, levels: lv }, { weapon: R.weapon, gear: [R.weapon], pieceViv: GE.GEAR[R.weapon]?.fx?.viv ?? 0 }), B = AD.autoFoe(id, AD.autoRaceSheet(id, st, rd, { preparation: R.prep }), { stage: st });
       const r = AU.autoDuel(A, B, 7000 + s * 131 + st * 7 + rd, { log });
       o.n++; if (AU.autoWinner(r) === 0) o.w++; o.t.push(r.t); if (log) o.rh.push(rhythmOf(r));
     }
@@ -183,7 +185,7 @@ function games() {
 }
 function refs() {
   const R = refsOf(range(arg('seeds', '1..40')), arg('policy', 'reference'));
-  for (const [d, v] of Object.entries(R)) console.log(`jour ${d} (étape ${v.stage}, ${v.n}) : PV ${v.hp} Atq ${v.atk} Déf ${v.def} End ${v.end} Viv ${v.viv} PA+ ${v.apStart} ${v.weapon} Taille éclair niv. ${v.t1} Estoc niv. ${v.t4} ; prépa adv. ${v.prep} ; ${v.foes}`);
+  for (const [d, v] of Object.entries(R)) console.log(`jour ${d} (étape ${v.stage}, ${v.n}) : PV ${v.hp} Atq ${v.atk} Déf ${v.def} End ${v.end} Viv ${v.viv} ${v.weapon} ; armure ${v.armour} ; accessoires ${v.acc} ; Taille éclair niv. ${v.t1} Estoc niv. ${v.t4} ; ${v.kit} ; prépa adv. ${v.prep} ; ${v.foes}`);
 }
 function rhythm() {
   const day = +arg('day', '4'), rows = duelsOf({ day, seeds: range(arg('seeds', '1..20')), log: true });
@@ -311,9 +313,70 @@ function level() {
   for (const pn of ['reference', 'planner', 'curious', 'diligent', 'idle']) console.log('  ' + gamesLine(gamesOf(pn, range(arg('seeds', '101..160')))));
 }
 
+// ------------------------------------------------------------------------------------------------------------------------------- the race of PB-3
+/** the bouts (not the challenges) of a policy's whole games, kept as what builds them (Ren as the bout built him, the seed, the opponent's preparation and
+ *  health share): a rival is rebuilt from the race in force at each duel (the laboratory's bank, tools/auto-final/bank.mjs) */
+export function captureBank(seeds, pn = 'planner') {
+  const P = LAB.POLICIES[pn], out = [];
+  const wrap = { name: pn, skill: P.skill, choose: (st) => {
+    const a = P.choose(st);
+    if (a.type === 'fight') { const b = AM.autoBoutOf(st, 'bout'), c = st.competitors[b.foeId]; out.push({ seed: b.seed, day: st.day, stage: b.stage, round: b.round, foeId: b.foeId, ren: b.ren, prep: c?.preparation ?? 20, foeHp: c ? POOL.rivalMods(c).hp : 1 }); }
+    return a;
+  } };
+  for (const s of seeds) { try { LAB.autoplay(s, wrap, 'Ren', 260, 'auto'); } catch (e) { if (!/refused action/.test(String(e))) throw e; } }
+  return out;
+}
+const POOL = await load('/src/tournament/pool.ts');
+/** each rival's pool factor: the bank's day-2 Rens beat it `t0` of the time (each rival against every day-2 Ren, the opponent's preparation kept) */
+export function fitPool(bank2, t0 = 0.95) {
+  const norm = {};
+  for (const id of RIVALS) {
+    let lo = 0.3, hi = 8;
+    for (let i = 0; i < 13; i++) {
+      const m = (lo + hi) / 2; AD.AUTO_RACE.norm[id] = m; let w = 0;
+      for (const e of bank2) { const r = AU.autoDuel(e.ren, AD.autoFoe(id, AD.autoRaceSheet(id, 0, 0, { preparation: e.prep, hp: e.foeHp }), { stage: 0 }), e.seed); if (AU.autoWinner(r) === 0) w++; }
+      if (w / bank2.length > t0) lo = m; else hi = m;
+    }
+    norm[id] = AD.AUTO_RACE.norm[id] = +((lo + hi) / 2).toFixed(3);
+  }
+  return norm;
+}
+/** The race fitted as the operator's PB-3 « Caler sur le joueur moyen » asks (decision A3 of 13/11/2026, journal Passe CF3, changing AC-16; the laboratory's
+ *  brute-games.mjs --fitPolicy=planner --target=0.5,0.5): each rival's pool factor so that the planner's day-2 Ren beats it 95 times in 100 (the bouts of 120
+ *  calibration games), the pool's slope of SL1-1 (A3: +7.5 % a round), then the bracket's and the final's factors on the planner's whole games (the calibration
+ *  seeds) for a semi-final and a final at 50 % */
+export function fitRace({ calSeeds, pn = 'planner', pool = [1, 1.075, 1.15], targets = [0.5, 0.5], steps = 8, quiet = false }) {
+  AD.AUTO_RACE.pool = [...pool];
+  const bank2 = captureBank(calSeeds.slice(0, 120), pn).filter((e) => e.day === 2);
+  fitPool(bank2);
+  if (!quiet) console.error(`  poule : ${JSON.stringify(AD.AUTO_RACE.norm)} (${bank2.length} combats du jour 2)`);
+  const bis = (s, key, t, lo, hi) => { for (let i = 0; i < steps; i++) { const m = (lo + hi) / 2; AD.AUTO_RACE.stage[s] = m; const r = rate(gamesOf(pn, calSeeds), [key]); if (r > t) lo = m; else hi = m; if (!quiet) console.error(`  étape ${s} ×${m.toFixed(3)} : ${(100 * r).toFixed(0)} %`); } AD.AUTO_RACE.stage[s] = +((lo + hi) / 2).toFixed(3); };
+  bis(1, 'semi', targets[0], 0.7, 3.2); bis(2, 'final', targets[1], 0.7, 4.5);
+  return { norm: { ...AD.AUTO_RACE.norm }, pool: [...AD.AUTO_RACE.pool], stage: { ...AD.AUTO_RACE.stage } };
+}
+const seedList = (s) => String(s).split(',').flatMap((p) => range(p));
+function fit() {
+  const race = fitRace({ calSeeds: seedList(arg('cal', '1..100,301..400')), pn: arg('policy', 'planner'), targets: arg('targets', '50,50').split(',').map((x) => +x / 100) });
+  console.log(`la course : ${JSON.stringify(race)}`);
+  if (arg('out')) fs.writeFileSync(arg('out'), JSON.stringify(race, null, 1));
+  if (arg('held')) judge();
+}
+/** every policy's whole games on held-out seeds: the stages, the titles, the durations, the rhythm */
+function judge() {
+  const seeds = seedList(arg('held', '101..300')), out = {};
+  for (const pn of arg('policies', 'reference,planner,curious,diligent,idle').split(',')) {
+    const G = gamesOf(pn, seeds); console.log(gamesLine(G));
+    const R = G.bouts.filter((b) => b.kind === 'bout').map((b) => b.rhythm); console.log(`          rythme : ${rhythmLine(rhythmSummary(R))}`);
+    out[pn] = { titles: G.crowns / G.n, stageWins: G.stageWins, rhythm: rhythmSummary(R), dur: [0, 1, 2].map((s) => med(G.bouts.filter((b) => b.kind === 'bout' && b.stage === s).map((b) => b.t))) };
+  }
+  if (arg('json')) fs.writeFileSync(arg('json'), JSON.stringify(out, null, 1));
+}
+
 const cmd = process.argv[2];
 try {
   if (cmd === 'games') games();
+  else if (cmd === 'fit') fit();
+  else if (cmd === 'judge') judge();
   else if (cmd === 'refs') refs();
   else if (cmd === 'rhythm') rhythm();
   else if (cmd === 'kits') kits();

@@ -1,4 +1,4 @@
-import { AUTO_RULES, autoDuel, autoGaugeHit, type AutoAction, type AutoEvent, type AutoFighter, type AutoResult } from '../combat/auto';
+import { AUTO_RULES, autoDuel, type AutoAction, type AutoEvent, type AutoFighter, type AutoResult } from '../combat/auto';
 import { autoFoe, autoRaceSheet, autoRen } from '../combat/autoData';
 import { REN_BASE } from '../combat/stats';
 import { V2_START_KIT } from '../combat/v2duel';
@@ -7,10 +7,11 @@ import { autoGenericSheet } from '../combat/autoData';
 
 /** The arena's side of the duel played by the computer (lot 2 of briefs/combat-auto.md § 17.3, journal Passe LC3): the duel is decided before the arena opens
  *  (src/combat/auto.ts, the game's own result), the arena plays its script. `AutoReplay` reads the script (`log`, with each event's state, `trace`) on the
- *  arena's clock and shows it as the presentation reads a duel (ArenaApp's `DuelSim`: each fighter's health, AP, state and animation, the events of today's
+ *  arena's clock and shows it as the presentation reads a duel (ArenaApp's `DuelSim`: each fighter's health, state and animation, the events of today's
  *  duels: `impact`, `break`, `stun`, `effect`, `ko`), so that the approved combat sheets, the effects, the stands and the sound follow it without a new image;
- *  plus what the HUD of this duel shows (both charges on the timeline, both gauges, Ren's AP and four skills with their cooldowns). Pure: the tests run it in
- *  Node and check that it ends on the duel's own result. */
+ *  plus what the HUD of this duel shows (both charges on the timeline, both gauges, Ren's four skills with their gaps). The model « La Brute » (PB-1, journal
+ *  Passe CF3) has no AP: the presentation's `ap` stays 0 (lot 1: nothing new on screen; its uses, openings, parries and interruptions are lot 2's). Pure: the
+ *  tests run it in Node and check that it ends on the duel's own result. */
 
 export type Seat = 'ren' | 'marek';
 /** the animation the presentation reads (DynamicSim's names: strike, heavy, skillOff, skillDef, skillSup, dodge, block, hit, recover, ko, ready) */
@@ -47,12 +48,12 @@ export interface AutoWindow { name: string; t0: number; impactAt: number; dur: n
 
 interface State {
   side: AutoSide; charge: AutoCharge | null;
-  g: number; gT: number; broken: boolean; stunEnd: number;
+  g: number; gT: number; broken: boolean; stunEnd: number; stunDur: number;
   /** a ward or a boost under way: until when, its length, what it does to the gauge (the ward on the gauge one takes, the boost on the gauge one gives) */
-  ward: { until: number; dur: number; gauge: number } | null; boost: { until: number; dur: number; gauge: number } | null;
-  /** the last ward and boost raised (a traced blow says whether they weighed on it: `AutoEvent.fx`) */
-  lastWard?: { gauge: number }; lastBoost?: { gauge: number };
+  ward: { until: number; dur: number; gauge: number } | null; boost: { until: number; dur: number; gauge: number; load?: boolean } | null;
   cd: Record<string, { until: number; dur: number }>;
+  /** each skill's uses spent (its charges), against its uses per duel */
+  used: Record<string, number>;
   /** the opponent's sequence (a big action charged) told to the sound's layers (sequenceStart / sequenceEnd) */
   seq: boolean;
   /** Ren charging a skill: its tier on the ladder of his four (`AutoReplay.tierOf`, 0 none), told as the charge's tier (lot 4, journal Passe LC6) */
@@ -62,16 +63,16 @@ interface State {
 /** the HUD's reading of one fighter */
 export interface AutoGauge {
   hp: number; maxHp: number; hpPct: number; ap: number;
-  /** the gauge toward a break (0-100 % of DB5-4's 70), full while broken; the stun's seconds left */
-  gaugePct: number; broken: boolean; stunLeft: number;
+  /** the gauge toward a break (0-100 % of DB5-4's 70), full while broken; the stun's seconds left and its length */
+  gaugePct: number; broken: boolean; stunLeft: number; stunDur: number;
   ward: number; boost: number;
   charge: { id: string; kind: string; family: string | null; pct: number; left: number } | null;
 }
 export interface AutoHudModel {
   t: number; over: boolean; winner: Seat | null;
   ren: AutoGauge; marek: AutoGauge;
-  /** Ren's four skills in his order: its AP, its cooldown's seconds left (DB5-3), whether it is the one charging */
-  slots: Array<{ id: string; ap: number; family: string; cool: number; coolPct: number; charging: boolean; payable: boolean; waiting: boolean }>;
+  /** Ren's four skills in his order: its gap's seconds left, whether it is the one charging, whether a use is left (`usable`) */
+  slots: Array<{ id: string; family: string; cool: number; coolPct: number; charging: boolean; usable: boolean; waiting: boolean }>;
 }
 
 export class AutoReplay {
@@ -124,9 +125,10 @@ export class AutoReplay {
     this.t = 0; this.i = 0; this.over = false; this.koT = -1; this.out = []; this.formTold = {};
     SEATS.forEach((seat, k) => {
       const x = this.fighters[seat], maxHp = this.result.maxHp[k];
-      const side: AutoSide = { hp: maxHp, maxHp, ap: AUTO_RULES.ap.start + (x.apStart ?? 0), state: 'idle', stateT: 0, guarding: false, anim: { name: 'ready', t: 0, dur: 1, loop: true }, act: null };
+      void x;
+      const side: AutoSide = { hp: maxHp, maxHp, ap: 0, state: 'idle', stateT: 0, guarding: false, anim: { name: 'ready', t: 0, dur: 1, loop: true }, act: null };
       this.f[seat] = side;
-      this.s[seat] = { side, charge: null, g: 0, gT: 0, broken: false, stunEnd: 0, ward: null, boost: null, cd: {}, seq: false, tier: 0 };
+      this.s[seat] = { side, charge: null, g: 0, gT: 0, broken: false, stunEnd: 0, stunDur: AUTO_RULES.brk.stun, ward: null, boost: null, cd: {}, used: {}, seq: false, tier: 0 };
     });
     this.out.push({ type: 'reset' });
     this.refresh();
@@ -194,15 +196,16 @@ export class AutoReplay {
   private emit(e: ReplayEvent): void { this.out.push({ ...e, t: this.t }); }
 
   private apply(e: AutoEvent, tell: boolean): void {
-    const seat = this.ids[e.who], s = this.s[seat], other: Seat = seat === 'ren' ? 'marek' : 'ren', o = this.s[other], apWas = s.side.ap;
-    if (e.s) { this.s.ren.side.ap = e.s[0]; this.s.ren.g = e.s[1]; this.s.ren.gT = e.t; this.s.marek.side.ap = e.s[2]; this.s.marek.g = e.s[3]; this.s.marek.gT = e.t; }
+    const seat = this.ids[e.who], s = this.s[seat], other: Seat = seat === 'ren' ? 'marek' : 'ren', o = this.s[other];
+    if (e.s) { this.s.ren.g = e.s[0]; this.s.ren.gT = e.t; this.s.marek.g = e.s[1]; this.s.marek.gT = e.t; }
     const a = e.act ? this.acts[seat].get(e.act) : undefined;
     switch (e.ev) {
       case 'charge': {
         if (!a) throw new Error(`no action ${e.act} for ${e.who}`);
         s.charge = { id: a.id, kind: kindOf(a), family: familyOf(a), start: e.t, leave: e.at ?? e.t };
         if (seat === 'ren' && this.pressed && a.id === this.pressed.skill && e.t >= this.pressed.t - 0.01) this.pressed = null;
-        if (a.cooldown) s.cd[a.id] = { until: e.t + a.cooldown, dur: a.cooldown };
+        if (a.cooldown) s.cd[a.id] = { until: e.t + a.cooldown * (this.fighters[seat].gfx?.cd ?? 1), dur: a.cooldown * (this.fighters[seat].gfx?.cd ?? 1) };
+        if (a.kind === 'skill') s.used[a.id] = (s.used[a.id] ?? 0) + 1;
         // the opponent charging a big action: its sequence, for the music's layers (the lead steps aside, the tension rises: rule F)
         if (seat === 'marek' && kindOf(a) !== 'light' && !a.ward && !a.boost) { s.seq = true; if (tell) this.emit({ type: 'sequenceStart', who: seat, len: 1 }); }
         if (tell) this.emit({ type: 'commandStart', who: seat, action: a.id, kind: kindOf(a), prep: Math.max(0, (e.at ?? e.t) - e.t), impactAt: 0, reactable: false, seqIdx: 0, seqLen: 0 });
@@ -215,7 +218,7 @@ export class AutoReplay {
       case 'ward': case 'boost': {
         if (!a) break;
         const eff = a.ward ?? a.boost!, k = { until: e.t + eff.dur, dur: eff.dur, gauge: eff.gauge };
-        if (e.ev === 'ward') s.ward = s.lastWard = k; else s.boost = s.lastBoost = k;
+        if (e.ev === 'ward') s.ward = k; else s.boost = { ...k, ...(a.role === 'load' ? { load: true } : {}) };
         s.charge = null;
         this.release(seat, tell);
         if (tell) this.emit({ type: 'effect', who: seat, action: a.id, family: e.ev === 'ward' ? 'defensive' : 'support', dur: eff.dur });
@@ -228,28 +231,30 @@ export class AutoReplay {
         s.charge = null;
         if (first) this.release(seat, tell);
         if (first && s.seq) { s.seq = false; if (tell) this.emit({ type: 'sequenceEnd', who: seat }); }
+        // a load is spent by the first offensive action that leaves (the duel's rule): its card goes
+        if (first && kind !== 'light' && s.boost?.load) { s.boost = null; if (tell) this.emit({ type: 'boostEnd', who: seat }); }
         if (e.hp !== undefined) o.side.hp = e.hp;
-        // the gauge this blow fills, as the duel fills it right after writing the blow's line (its trace is the gauge before it: src/combat/auto.ts, hitOnce): the
-        // HUD shows it at the blow, not one line later (journal Passe LC5's note, fixed in lot 4 on the presentation's side; the duel and its script unchanged)
-        if (e.ev !== 'dodged' && !o.broken && (e.hp ?? 1) > 0) {
-          const share = (a.hits ?? [1])[(e.hit ?? 1) - 1] ?? 1, end = this.fighters[other].end;
-          // the ward and the boost the duel weighed on this blow (its trace says so; the script's rounded times alone, without it)
-          const bz = e.fx !== undefined ? (e.fx & 2 ? s.lastBoost : null) : s.boost, wz = e.fx !== undefined ? (e.fx & 1 ? o.lastWard : null) : o.ward;
-          const add = autoGaugeHit(a, share, end) * (e.ev === 'guarded' ? AUTO_RULES.gauge.guardMul : 1) * (bz ? bz.gauge : 1) * (wz ? wz.gauge : 1);
-          o.g = Math.min(AUTO_RULES.gauge.max, Math.max(0, o.g - AUTO_RULES.gauge.decay * (e.t - o.gT)) + add); o.gT = e.t;
-        }
+        // the gauge this blow fills: the duel writes it on the blow's line (`g`, traced), so the HUD shows it at the blow (journal Passe LC5's note; lot 4 computed
+        // it here, the model's gear and loads now in it)
+        if (e.g !== undefined && e.ev !== 'dodged' && !o.broken) { o.g = e.g; o.gT = e.t; }
         const dmg = e.dmg ?? 0;
         if (tell && e.ev === 'dodged' && other === 'ren') this.emit({ type: 'reactStart', who: other, kind: 'dodge', cost: 0, early: false });
-        // `follow`: an enchaînement's next blow (not its action's first); `apGain`: the AP its striker gained by it (a light attack that lands, once per
-        // action); the first duel's tutorial reads them (lot 3, src/ui/duelTutorial.ts), the arena, the effects, the stands and the sound do not
-        if (tell) this.emit({ type: 'impact', from: seat, to: other, action: a.id, kind, result: e.ev === 'hit' ? 'hit' : e.ev, damage: dmg, mitigated: 0, hp: o.side.hp, resist: o.g, follow: !first, apGain: Math.max(0, s.side.ap - apWas) });
+        // `follow`: an enchaînement's next blow (not its action's first); the first duel's tutorial reads it (lot 3, src/ui/duelTutorial.ts), the arena, the
+        // effects, the stands and the sound do not; no AP since PB-1 (`apGain` 0)
+        if (tell) this.emit({ type: 'impact', from: seat, to: other, action: a.id, kind, result: e.ev === 'hit' ? 'hit' : e.ev, damage: dmg, mitigated: 0, hp: o.side.hp, resist: o.g, follow: !first, apGain: 0 });
         if (e.hp !== undefined && e.hp <= 0) this.ko(other, true);
         break;
       }
       case 'break': {
-        s.broken = true; s.stunEnd = e.t + AUTO_RULES.brk.stun;
+        s.stunDur = e.dur ?? AUTO_RULES.brk.stun; s.broken = true; s.stunEnd = e.t + s.stunDur;
         // its charge is paused the stun's length (the duel's own rule): its leave, already in the script, comes later
-        if (tell) { this.emit({ type: 'break', who: seat }); this.emit({ type: 'stun', who: seat, dur: AUTO_RULES.brk.stun, why: 'break' }); }
+        if (tell) { this.emit({ type: 'break', who: seat }); this.emit({ type: 'stun', who: seat, dur: s.stunDur, why: 'break' }); }
+        break;
+      }
+      // an interruption cuts the action the other fighter charged; a parry takes the other's blow (lot 2 shows them): its charge ends there, without a blow
+      case 'interrupt': case 'parry': {
+        if (o.charge) { o.charge = null; this.release(other, tell); }
+        if (o.seq) { o.seq = false; if (tell) this.emit({ type: 'sequenceEnd', who: other }); }
         break;
       }
     }
@@ -284,7 +289,7 @@ export class AutoReplay {
       const s = this.s[seat], f = s.side, c = s.charge;
       if (f.state === 'down' || (this.over && this.koT >= 0 && seat !== this.winner)) { f.state = 'down'; f.anim = { name: 'ko', t: t - this.koT, dur: 0.9 }; f.act = null; continue; }
       // (a line is played up to 1e-9 s before the clock reaches it: the stun's clip never starts below 0, which drew no frame, journal Passe SL1)
-      if (s.broken && t < s.stunEnd) { f.state = 'stunned'; f.anim = { name: 'recover', t: Math.max(0, t - (s.stunEnd - AUTO_RULES.brk.stun)), dur: AUTO_RULES.brk.stun, stunned: true }; f.act = null; continue; }
+      if (s.broken && t < s.stunEnd) { f.state = 'stunned'; f.anim = { name: 'recover', t: Math.max(0, t - (s.stunEnd - s.stunDur)), dur: s.stunDur, stunned: true }; f.act = null; continue; }
       // its blow or effect up to its impact (a blow lands drawn), else a reaction (a dodge, a block; a flinch only while it strikes nothing), else the blow's
       // follow-through: each drawn from its window, its run-up begun before it lands
       const r = this.at(this.reacts[seat], t), strike = this.at(this.wins[seat], t), landing = !!strike && t - strike.t0 <= strike.impactAt + 0.04;
@@ -305,8 +310,15 @@ export class AutoReplay {
         continue;
       }
       f.state = 'idle'; f.act = null;
-      f.anim = { name: seat === 'marek' || f.ap >= 2 ? 'ready' : 'idle', t, dur: 1, loop: true };
+      // Ren on his guard while one of his skills can leave (a use left, its gap run out: the AP of before were « a skill paid »), else at rest
+      f.anim = { name: seat === 'marek' || this.skillReady(t) ? 'ready' : 'idle', t, dur: 1, loop: true };
     }
+  }
+
+  /** one of Ren's skills can leave now: a use left, its gap run out */
+  private skillReady(t: number): boolean {
+    const s = this.s.ren;
+    return this.fighters.ren.skills.some((a) => (s.used[a.id] ?? 0) < (a.uses ?? Infinity) && !(s.cd[a.id] && s.cd[a.id].until > t));
   }
 
   /** the latest window begun by `t`, while it lasts */
@@ -346,7 +358,7 @@ export class AutoReplay {
       const gauge = s.broken && this.t < s.stunEnd ? max : Math.max(0, s.g - AUTO_RULES.gauge.decay * (this.t - s.gT));
       return {
         hp: Math.max(0, Math.ceil(f.hp)), maxHp: f.maxHp, hpPct: pct(f.hp, f.maxHp), ap: f.ap,
-        gaugePct: pct(gauge, max), broken: s.broken && this.t < s.stunEnd, stunLeft: s.broken ? Math.max(0, s.stunEnd - this.t) : 0,
+        gaugePct: pct(gauge, max), broken: s.broken && this.t < s.stunEnd, stunLeft: s.broken ? Math.max(0, s.stunEnd - this.t) : 0, stunDur: s.stunDur,
         ward: s.ward ? Math.max(0, s.ward.until - this.t) : 0, boost: s.boost ? Math.max(0, s.boost.until - this.t) : 0,
         // a stun pauses the charge: the card says the stun, not a charge that does not move
         charge: c && !this.over && !(s.broken && this.t < s.stunEnd) ? { id: c.id, kind: c.kind, family: c.family, pct: pct(this.t - c.start, c.leave - c.start), left: Math.max(0, c.leave - this.t) } : null,
@@ -357,7 +369,7 @@ export class AutoReplay {
       t: this.t, over: this.over, winner: this.over ? this.winner : null, ren: g('ren'), marek: g('marek'),
       slots: this.fighters.ren.skills.map((a) => {
         const cd = ren.cd[a.id], cool = cd ? Math.max(0, cd.until - this.t) : 0;
-        return { id: a.id, ap: a.ap ?? 0, family: familyOf(a) ?? 'offensive', cool, coolPct: cd ? pct(cool, cd.dur) : 0, charging: ren.charge?.id === a.id, payable: (a.ap ?? 0) <= ren.side.ap, waiting: this.pressed?.skill === a.id && !this.over };
+        return { id: a.id, family: familyOf(a) ?? 'offensive', cool, coolPct: cd ? pct(cool, cd.dur) : 0, charging: ren.charge?.id === a.id, usable: (ren.used[a.id] ?? 0) < (a.uses ?? Infinity), waiting: this.pressed?.skill === a.id && !this.over };
       }),
     };
   }
@@ -412,7 +424,9 @@ export function windowsOf(log: AutoEvent[] | undefined, ids: Record<string, Seat
     const seat = ids[e.who]; if (!seat) continue;
     const other: Seat = seat === 'ren' ? 'marek' : 'ren';
     if (e.ev === 'charge') { charge[seat] = { start: e.t, leave: e.at ?? e.t }; continue; }
-    if (e.ev === 'break') { stunEnd[seat] = e.t + AUTO_RULES.brk.stun; continue; }
+    if (e.ev === 'break') { stunEnd[seat] = e.t + (e.dur ?? AUTO_RULES.brk.stun); continue; }
+    // a charge cut by an interruption (its fighter the other's) or a blow parried: no blow drawn for it
+    if (e.ev === 'interrupt' || e.ev === 'parry') { charge[seat === 'ren' ? 'marek' : 'ren'] = null; continue; }
     const a = e.act ? acts[seat].get(e.act) : undefined; if (!a) continue;
     const c = charge[seat], len = c ? Math.max(0, c.leave - c.start) : Infinity, free = e.t - stunEnd[seat];
     // at least 0.04 s, never begun in the striker's own stun (a charge paused by a break can leave a moment after it: the run-up then as short as that)

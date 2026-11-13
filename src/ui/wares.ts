@@ -84,7 +84,7 @@ function goodsLine(s: GameState, o: ActionOption): Line {
   if (a.type === 'buySkill') {
     const k = SKILL_BOOK[a.skill], act = skillAction(a.skill);
     return { ...base, plain: true, name: skillName(a.skill), sub: bare(tx(k.family === 'offensive' ? 'v2.family.offensive' : k.family === 'defensive' ? 'v2.family.defensive' : 'v2.family.support')), verb: tx('ui.wares.learn', { n: o.coins ?? 0 }),
-      about: tx('ui.wares.skill', { ap: tx('v2.skills.ap', { ap: act.apCost ?? 0 }), charge: chargeTime(a.skill, 1) }) };
+      about: tx('ui.wares.skill', { charge: chargeTime(a.skill, 1) }) };
   }
   // a passer-by's piece (lot L2a): bought at their price
   if (a.type === 'barter' && !a.arg) {

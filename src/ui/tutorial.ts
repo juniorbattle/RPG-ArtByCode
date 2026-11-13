@@ -280,7 +280,7 @@ export function chapterText(s: GameState, c: Chapter): string {
     // its numbers the duel's own (src/combat/auto.ts AUTO_RULES, src/combat/autoData.ts: the cooldown, the weapons' chains of blows)
     case 'duel': {
       const R = AUTO_RULES, hits = Object.values(AUTO_WEAPONS).map((w) => w.hits.length);
-      return tx(c.body, { gain: R.ap.light, start: R.ap.start, max: R.ap.max, cool: AUTO_COOLDOWN, lo: Math.min(...hits), hi: Math.max(...hits), times: R.react.skillGuard, reduce: pct(R.guardReduce), stun: R.brk.stun, dmg: R.brk.dmg, form: pct(R.form) });
+      return tx(c.body, { cool: AUTO_COOLDOWN, lo: Math.min(...hits), hi: Math.max(...hits), times: R.react.skillGuard, glo: pct(R.guard.lo), ghi: pct(R.guard.hi), stun: R.brk.stun, dmg: R.brk.dmg, form: pct(R.form) });
     }
     case 'renown': return tx(c.body, { hale: nameOf('hale'), parade: Math.max(...daysOfKind('free')) });
     case 'time': return tx(c.body, { slot: tx('ui.oneSlot') });
@@ -325,10 +325,10 @@ function figure(s: GameState, fig: Fig, here: () => string | null): string {
     const t = fameTier(s);
     return `<div class="tu-row" aria-hidden="true"><div class="num"><b>${s.player.reputation}</b><small>${tx('ui.reputation')}</small></div>${(Object.keys(FAME_WORD) as FameTier[]).map((k) => `<div class="${k === t ? 'now' : ''}"><b>${tx(FAME_WORD[k])}</b><small>${k === t ? tx('tut.fig.you') : '&nbsp;'}</small></div>`).join('')}</div>`;
   }
-  // the duel played by the computer (journal Passe LC5): the player's order of the four as the duel will follow it, each with its AP and its charge at Ren's
-  // Speed, as the match sheet and the skills page show it (autoOrderView), then the light attack
+  // the duel played by the computer (journal Passe LC5): the player's order of the four as the duel will follow it, each with its charge at Ren's Speed, as the
+  // match sheet and the skills page show it (autoOrderView), then the light attack
   if (fig === 'order' && s.v2) {
-    const rows = autoOrderView(s, [...v2KitOf(s).loadout]).map((o, i) => `<div><span>${i + 1}. ${esc(skillName(o.id))}</span><b>${tx('v2.skills.ap', { ap: o.ap })} · ${num(o.charge)} s</b></div>`).join('');
+    const rows = autoOrderView(s, [...v2KitOf(s).loadout]).map((o, i) => `<div><span>${i + 1}. ${esc(skillName(o.id))}</span><b>${num(o.charge)} s</b></div>`).join('');
     return `<div class="tu-odds tu-order"><p class="pm-sub">${tx('ui.order.title')}</p>${rows}<div><span>${esc(tx('ui.skill.light'))}</span><b>${tx('ui.order.else')}</b></div></div>`;
   }
   return '';

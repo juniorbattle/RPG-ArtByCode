@@ -12,10 +12,10 @@ import { MAX_LEVEL } from '../combat/skills';
 import { v2DuelData, type V2Duel, type V2Kit } from '../combat/v2duel';
 import { hitFactor, skillPower } from '../combat/stats';
 import { Rng } from '../core/rng';
-import { AUTO_RULES, autoGaugeHit, type AutoFighter } from '../combat/auto';
+import { AUTO_RULES, autoGaugeHit, type AutoFighter, type AutoRole } from '../combat/auto';
 import { autoFoe, autoOrderOf, autoRaceSheet, autoRen, autoSkill } from '../combat/autoData';
 import { autoBoutOf } from '../combat/autoMatch';
-import { v2Stats } from './v2gear';
+import { piecesViv, v2Stats, wornPieces } from './v2gear';
 import { RIVALS_CHALLENGE_DAY } from './v2town';
 
 /** What a purchase or a change of gear would change (the operator's choice UM7-3 « Lot à part : héros, détail, comparaison », journal Passe UM9): no
@@ -40,7 +40,7 @@ export function duelStats(s: GameState): Stats {
   // AUTO_RULES.hpScale, journal Passe CO1: the gear page said 300 under « In a bout » where the match sheet and the duel say 600)
   if (isV2(s)) {
     const m = v2Mods(s), st = v2Stats(s);
-    return { hp: Math.round(st.hp * (m.hp ?? 1) * AUTO_RULES.hpScale), atk: st.atk, def: st.def, end: st.end, viv: st.viv, ap: AUTO_RULES.ap.start + (m.ap ?? 0), effect: m.effect * 100 };
+    return { hp: Math.round(st.hp * (m.hp ?? 1) * AUTO_RULES.hpScale), atk: st.atk, def: st.def, end: st.end, viv: st.viv, effect: m.effect * 100 };
   }
   const m = playerMods(s), d = s.flags.combat === 'dynamic' ? dynDuelData(DYN_PROFILES.marek, { ...NAMES, player: m }) : duelData(PROFILES.marek, { ...NAMES, player: m });
   return { hp: d.fighters.ren.maxHp, blow: d.actions.heavy.damage };
@@ -55,7 +55,10 @@ function skillDuel(s: GameState, loadout: string[], levels: Record<string, numbe
 }
 
 export interface SkillFigures {
+  /** its AP (today's game's duel; 0 in a version 2 game since PB-1: no AP) */
   ap: number;
+  /** its role in the duel played by the computer (PB-1); absent in today's game */
+  role?: AutoRole;
   /** an offensive skill's power before the stats (the operator's DB7-7, journal Passe DB8: src/combat/stats.ts skillPower; 0 for a ward or a boost) */
   power: number;
   /** what the blow does, gear and level in it: its damage and what it adds to the gauge (every blow of a skill that strikes several, journal Passe CO2) */
@@ -77,7 +80,7 @@ function autoPair(s: GameState): { ren: AutoFighter; foe: AutoFighter } {
   const b = matchSheetFor(s) ? autoBoutOf(s) : null;
   if (b) return { ren: b.ren, foe: b.foe };
   const m = v2Mods(s);
-  return { ren: autoRen(v2Stats(s), v2KitOf(s), { weapon: s.v2?.gear?.weapon, hpShare: m.hp, apStart: m.ap ?? 0, effect: m.effect }), foe: autoFoe('marek', autoRaceSheet('marek', 0, 0)) };
+  return { ren: autoRen(v2Stats(s), v2KitOf(s), { weapon: s.v2?.gear?.weapon, hpShare: m.hp, effect: m.effect, gear: wornPieces(s), pieceViv: piecesViv(s) }), foe: autoFoe('marek', autoRaceSheet('marek', 0, 0)) };
 }
 
 /** what a skill does in a bout at a level (journal Passe UM11): no rule of its own either, the numbers are the duel's. A version 2 game's are the duel played by
@@ -90,7 +93,7 @@ export function skillFigures(s: GameState, id: string, level: number): SkillFigu
     // power, Tourbillon's three of 0.36 are 1.08 of it (journal Passe CO2)
     const off = !e, hits = a.hits ?? [1], k = hitFactor(ren.atk, foe.def);
     return {
-      ap: a.ap ?? 0, power: off ? +(a.power ?? 0).toFixed(1) : 0, hits: off ? hits.length : 0,
+      ap: 0, role: a.role, power: off ? +(a.power ?? 0).toFixed(1) : 0, hits: off ? hits.length : 0,
       damage: off ? hits.reduce((n, sh) => n + Math.max(1, Math.round((a.power ?? 0) * sh * k)), 0) : 0,
       gauge: off ? +hits.reduce((n, sh) => n + autoGaugeHit(a, sh, foe.end), 0).toFixed(1) : 0, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2),
       dur: e?.dur ?? 0, ward: a.ward ? { damage: a.ward.dmg, resist: a.ward.gauge } : null, boost: a.boost ? { damage: a.boost.dmg, resist: a.boost.gauge } : null, pierce: !!a.pierce,
@@ -108,11 +111,11 @@ export function chargeLadder(s: GameState, ids: string[]): ChargeTier[] {
   return skillDuel(s, full, k.levels).tiers.filter((t) => t.id === 'light' || ids.includes(t.id));
 }
 
-/** the order the automatic follows with these four (AC-09), each with its AP and its charge at Ren's Speed, then the light attack: what the match sheet and the
- *  skills' page show (lot 2, journal Passe LC3); a choice of fewer than four is shown as it stands */
-export function autoOrderView(s: GameState, ids: string[]): Array<{ id: string; ap: number; charge: number }> {
+/** the order the automatic follows with these four (AC-09), each with its charge at Ren's Speed, then the light attack: what the match sheet and the skills' page
+ *  show (lot 2, journal Passe LC3); a choice of fewer than four is shown as it stands */
+export function autoOrderView(s: GameState, ids: string[]): Array<{ id: string; charge: number }> {
   const k = v2KitOf(s), { ren } = autoPair(s), order = autoOrderOf({ loadout: ids, levels: k.levels, order: k.order });
-  return order.map((id) => { const a = autoSkill(id, k.levels[id] ?? 1); return { id, ap: a.ap ?? 0, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2) }; });
+  return order.map((id) => { const a = autoSkill(id, k.levels[id] ?? 1); return { id, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2) }; });
 }
 
 /** the level a skill can still reach and how: drilling up to its cap, then only the fighter who teaches it; a skill only a rival out of the title teaches

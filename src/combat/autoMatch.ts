@@ -1,7 +1,7 @@
 import type { GameState } from '../simulation/state';
 import type { DuelOutcome } from '../tournament/pool';
 import { rivalMods } from '../tournament/pool';
-import { v2Mods, v2Stats } from '../simulation/v2gear';
+import { piecesViv, v2Mods, v2Stats, wornPieces } from '../simulation/v2gear';
 import { v2KitOf } from '../simulation/v2';
 import { GENERICS } from '../narrative/generics';
 import { AUTO_RULES, autoDuel, autoFormsOf, autoWinner, type AutoFighter, type AutoResult } from './auto';
@@ -31,10 +31,10 @@ export function autoBoutOf(st: GameState, kind: 'bout' | 'challenge' = 'bout'): 
   const sh = autoSheetOf(st, kind);
   if (!sh) return null;
   const o = sh.sides[1].fighters[0], stage = sh.stage ?? 0, round = stage === 0 ? autoRound(st.day) : 0, mods = v2Mods(st), g = GENERICS[o.id];
-  const ren = autoRen(autoRenStats(st), v2KitOf(st), { weapon: st.v2?.gear?.weapon, hpShare: mods.hp, apStart: mods.ap ?? 0, taken: mods.taken, effect: mods.effect });
+  const ren = autoRen(autoRenStats(st), v2KitOf(st), { weapon: st.v2?.gear?.weapon, hpShare: mods.hp, taken: mods.taken, effect: mods.effect, gear: wornPieces(st), pieceViv: piecesViv(st) });
   const c = st.competitors[o.id];
-  const foe = g ? autoFoe(o.id, autoGenericSheet(g.profile, g, stage, round), { kitOf: g.profile })
-    : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c?.preparation, hp: c ? rivalMods(c).hp : 1 }));
+  const foe = g ? autoFoe(o.id, autoGenericSheet(g.profile, g, stage, round), { kitOf: g.profile, stage })
+    : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c?.preparation, hp: c ? rivalMods(c).hp : 1 }), { stage });
   return { ren, foe, foeId: o.id, seed: (sh.seed ^ 0x5bd1e995) >>> 0, stage, round, prep: g || !c ? 0 : autoPrepPoints(c.preparation) };
 }
 
@@ -52,10 +52,12 @@ export function autoOutcome(st: GameState, kind: 'bout' | 'challenge' = 'bout', 
 export const autoForms = (b: Pick<AutoBout, 'seed'>): [number, number] => autoFormsOf(b.seed);
 
 /** the chances of a reaction for a fighter defending against another (AC-05; briefs/combat-auto.md § 3, « La fiche de match montre les deux chances »): its
- *  dodge, its guard against a light attack and against a big action seen coming (the duel's own formulas, the stats alone since SY-01, at most 90 %) */
-export function autoReactions(def: Pick<AutoFighter, 'def' | 'viv'>, att: Pick<AutoFighter, 'atk' | 'viv'>): { dodge: number; guard: number; guardSkill: number } {
-  const R = AUTO_RULES.react, ratio = (a: number, b: number) => (2 * a) / Math.max(1e-6, a + b);
-  const dodge = Math.min(1, R.dodge * ratio(def.viv, att.viv)), g = R.guard * ratio(def.def, att.atk);
-  return { dodge, guard: Math.min(R.cap, g), guardSkill: Math.min(R.cap, g * R.skillGuard) };
+ *  dodge, its guard against a light attack and against a big action seen coming (the duel's own formulas: the stats, a rival's style and the gear's effects,
+ *  at most 90 %), and the share its guard takes off this attacker's blows (PB-1: 30 to 70 % by its Defence against the Attack) */
+export function autoReactions(def: Pick<AutoFighter, 'def' | 'viv'> & Partial<Pick<AutoFighter, 'style' | 'gfx'>>, att: Pick<AutoFighter, 'atk' | 'viv'>): { dodge: number; guard: number; guardSkill: number; reduce: number } {
+  const R = AUTO_RULES, ratio = (a: number, b: number) => (2 * a) / Math.max(1e-6, a + b);
+  const dodge = Math.min(1, R.react.dodge * ratio(def.viv, att.viv) * (def.gfx?.dodge ?? 1) * (def.style?.dodge ?? 1));
+  const g = R.react.guard * ratio(def.def, att.atk) * (def.gfx?.guardChance ?? 1) * (def.style?.guard ?? 1);
+  return { dodge, guard: Math.min(R.react.cap, g), guardSkill: Math.min(R.react.cap, g * R.react.skillGuard), reduce: Math.min(R.guard.hi, Math.max(R.guard.lo, R.guard.base * ratio(def.def, att.atk))) };
 }
 

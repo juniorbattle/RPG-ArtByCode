@@ -1,12 +1,15 @@
-import { autoDuel, type AutoAction, type AutoBrain, type AutoCond, type AutoEffect, type AutoFamily, type AutoFighter, type AutoResult } from './auto';
+import { AUTO_RULES, autoDuel, type AutoAction, type AutoBrain, type AutoCond, type AutoEffect, type AutoFamily, type AutoFighter, type AutoGearFx, type AutoResult, type AutoRole, type AutoStyle } from './auto';
 import { POWER, RIVAL_SHEETS, type FighterStats, type Stage } from './stats';
 import { LEVEL_POWER, SKILLS, clampLevel, type Times } from './skills';
 
 /** The duel played by the computer: its own data (lot 1 of the first redesign, briefs/combat-auto.md § 17.3; the same tables for every fighter since lot 1 of
  *  the second, § 26, journal Passes SY1 / SY2). The fighters of the duel of before (src/combat/v2duel.ts, profiles.ts, dynamic.ts) are left as they are for
  *  `?duel=charge`. Every fighter, Ren as a rival (the operator's SY-01 « Les six changements : les mêmes règles pour tous »): a light attack (1.2 s at Speed
- *  10, its weapon's enchaînement), a heavy blow (the catalogue's heavy attack, SY-02, A3), its skills (a skill's power by its charge, DB5-1; its AP; its DB5-3
- *  cooldown), every charge × 10 / its Speed and the common cadence (SY-03). A rival's identity is its kit (its weapon, its skills, its order) and its sheet. Pure. */
+ *  10, its weapon's enchaînement), a heavy blow (the catalogue's heavy attack, SY-02, A3, its DB5-3 cooldown), its skills (a skill's power by its charge,
+ *  DB5-1), every charge × 10 / its Speed and the common cadence (SY-03); since the model « La Brute » (the operator's PB-1 « Construire ce modèle », decision A3
+ *  of 13/11/2026, journal Passe CF3; the laboratory's BK5) no AP: each skill a role, its uses per duel by its level and a gap between two (AUTO_BRUTE,
+ *  AUTO_ROLES), each rival a style (AUTO_STYLES), the gear's effects (AUTO_GEAR_FX). A rival's identity is its kit (its weapon, its skills, its order), its
+ *  style and its sheet. Pure. */
 
 // ------------------------------------------------------------------------------------------------------------------------------- the common tables
 
@@ -29,8 +32,6 @@ export const AUTO_WEAPONS: Record<string, { hits: readonly number[]; gap: number
 /** one of Ren's skills on the timeline, at level 1 (the level raises its power or its effect's length by LEVEL_POWER and shortens its charge: skills.ts) */
 export interface AutoSkillDef {
   family: AutoFamily;
-  /** its AP */
-  ap: number;
   /** an offensive skill's power at level 1 against the Thrust's 120 by its charge time (DB5-1: « les autres au prorata de leur temps de charge ») × powerK */
   powerK?: number;
   /** what its power adds to the gauge (the skills more than the light: DB-5); a breaker (Tourbillon, Fracas) × 1.5 */
@@ -41,8 +42,6 @@ export interface AutoSkillDef {
   /** a ward's or a boost's effect at level 1 */
   ward?: AutoEffect;
   boost?: AutoEffect;
-  /** a ward the automatic raises to cover, not only against a blow seen coming (AutoAction.cover) */
-  cover?: boolean;
   /** its charge times by level when they are not the catalogue's */
   charge?: Times;
 }
@@ -52,23 +51,118 @@ const GAUGE_SKILL = 2, BREAKER = 1.5;
  *  (its numbers; never one of the four). Balanced to the test of AC-12 (the operator's « Équilibrer avec ce test : chaque adversaire a ses réponses, rien ne
  *  domine », journal Passes AC4 / LC1) */
 export const AUTO_SKILLS: Record<string, AutoSkillDef> = {
-  heavy: { family: 'offensive', ap: 0 },
-  t1: { family: 'offensive', ap: 2, hits: [0.5, 0.5], gap: 0.25 },
-  t2: { family: 'offensive', ap: 2, pierce: true },
+  heavy: { family: 'offensive' },
+  t1: { family: 'offensive', hits: [0.5, 0.5], gap: 0.25 },
+  t2: { family: 'offensive', pierce: true },
   // Tourbillon ×1.8 and the Thrust ×0.8 on the same rules (journal Passe SL1: the offensive kits fell to 2 to 21 % of the start kit's level)
-  t3: { family: 'offensive', ap: 3, gaugeK: BREAKER, hits: [0.36, 0.36, 0.36], gap: 0.25, powerK: 1.8 },
-  t4: { family: 'offensive', ap: 4, powerK: 0.8 },
-  d1: { family: 'defensive', ap: 2, ward: { dur: 9, dmg: 0.4, gauge: 0.3 }, cover: true },
-  s1: { family: 'support', ap: 2, boost: { dur: 12, dmg: 1.8, gauge: 2 } },
-  k_sunder: { family: 'offensive', ap: 2, gaugeK: 2 },
-  k_feint: { family: 'offensive', ap: 1, pierce: true },
-  k_iron: { family: 'defensive', ap: 2, ward: { dur: 11.2, dmg: 0.3, gauge: 0.15 }, cover: true },
-  k_parry: { family: 'defensive', ap: 1, ward: { dur: 6.5, dmg: 0.05, gauge: 0.5 } },
-  k_cry: { family: 'support', ap: 2, boost: { dur: 7.5, dmg: 1.9, gauge: 1.5 } },
-  k_focus: { family: 'support', ap: 2, boost: { dur: 13, dmg: 1.5, gauge: 4 } },
+  t3: { family: 'offensive', gaugeK: BREAKER, hits: [0.36, 0.36, 0.36], gap: 0.25, powerK: 1.8 },
+  t4: { family: 'offensive', powerK: 0.8 },
+  d1: { family: 'defensive', ward: { dur: 9, dmg: 0.4, gauge: 0.3 } },
+  s1: { family: 'support', boost: { dur: 12, dmg: 1.8, gauge: 2 } },
+  k_sunder: { family: 'offensive', gaugeK: 2 },
+  k_feint: { family: 'offensive', pierce: true },
+  k_iron: { family: 'defensive', ward: { dur: 11.2, dmg: 0.3, gauge: 0.15 } },
+  k_parry: { family: 'defensive', ward: { dur: 6.5, dmg: 0.05, gauge: 0.5 } },
+  k_cry: { family: 'support', boost: { dur: 7.5, dmg: 1.9, gauge: 1.5 } },
+  k_focus: { family: 'support', boost: { dur: 13, dmg: 1.5, gauge: 4 } },
 };
-/** DB5-3 « 5 × le temps de charge » (A3): a skill comes back this many times its charge time at level 1 after it leaves; the heavy blow too (SY-02) */
+/** DB5-3 « 5 × le temps de charge » (A3): the heavy blow comes back this many times its charge time at level 1 after its charge begins (SY-02); the skills since
+ *  PB-1 their gap between two uses (AUTO_BRUTE.gap) */
 export const AUTO_COOLDOWN = 5;
+
+// ------------------------------------------------------------------------------------------------------------------------------- the model « La Brute »
+
+/** The model's numbers on the skills (the operator's PB-1 « Construire ce modèle » and PB-2 « 2, 2, 3, 3, 4 selon le niveau », journal Passe CF3; the
+ *  laboratory's BRUTE of BK5, briefs/combat-auto.md § 32.2): a skill's uses per duel by its level (1 to 5); the gap between two uses by its class, fast,
+ *  medium or long (the operator's « la recharge sera rapide,moyen,longue »); every skill's charge × (rare now, they come out faster), the exploits' × more
+ *  (they hold in an opening); every offensive skill's power × (fewer uses, each heavier); a rival's skills' level at the pool, the bracket, the final. */
+export const AUTO_BRUTE = {
+  uses: [2, 2, 3, 3, 4] as readonly number[],
+  gap: { R: 8, M: 16, L: 28 },
+  charge: 0.6, roleCharge: { exploit: 0.66 } as Partial<Record<AutoRole, number>>,
+  usePower: 1.2,
+  rivalLevel: [1, 2, 3] as readonly number[],
+};
+/** each skill's role, its gap's class and what it does besides (Ren's catalogue and the rivals' own; the laboratory's BRUTE_ROLES) */
+export const AUTO_ROLES: Record<string, { role: AutoRole; gap: keyof typeof AUTO_BRUTE.gap; undodge?: boolean; pierce?: boolean; pierceWard?: boolean }> = {
+  t1: { role: 'punish', gap: 'R' }, t2: { role: 'pierce', gap: 'R', pierceWard: true }, t3: { role: 'breaker', gap: 'M', undodge: true }, t4: { role: 'exploit', gap: 'L' },
+  d1: { role: 'ward', gap: 'M' }, s1: { role: 'haste', gap: 'L' },
+  k_sunder: { role: 'opener', gap: 'M' }, k_feint: { role: 'interrupt', gap: 'R', pierce: true }, k_iron: { role: 'ward', gap: 'M' }, k_parry: { role: 'parry', gap: 'M' },
+  k_cry: { role: 'slow', gap: 'L' }, k_focus: { role: 'load', gap: 'L' },
+  m_lunge: { role: 'punish', gap: 'R' }, m_tempo: { role: 'haste', gap: 'L' }, m_brace: { role: 'ward', gap: 'M' },
+  m_wild: { role: 'breaker', gap: 'M' }, m_grit: { role: 'load', gap: 'L' },
+  m_riposte: { role: 'pierce', gap: 'R', pierceWard: true }, m_gild: { role: 'load', gap: 'L' },
+  m_shoulder: { role: 'opener', gap: 'M' },
+  m_smite: { role: 'exploit', gap: 'L' }, m_aegis: { role: 'ward', gap: 'M' }, m_prayer: { role: 'load', gap: 'L' },
+  m_ironfall: { role: 'exploit', gap: 'L' }, m_bulwark: { role: 'ward', gap: 'M' }, m_resolve: { role: 'load', gap: 'L' },
+  m_cleave: { role: 'breaker', gap: 'M', undodge: true }, m_roar: { role: 'slow', gap: 'L' }, m_hide: { role: 'ward', gap: 'M' },
+};
+/** each rival's style under the same rules (PB-1; the laboratory's BRUTE_STYLES): its guard and dodge × (its kit's pieces: a shield, light leathers), its heavy
+ *  blow ('ready' a brawler's, else when the opponent cannot defend), the conditions of its skills by id ('auto' its role's automatic); Cassius's brace parries */
+export const AUTO_STYLES: Record<string, AutoStyle & { tactic: Record<string, AutoCond>; parry?: readonly string[] }> = {
+  vessa: { dodge: 2, guard: 0.5, tactic: { m_tempo: 'ready', m_lunge: 'auto', m_brace: 'incoming' } },
+  tobin: { dodge: 0.8, guard: 0.4, heavy: 'ready', tactic: { m_grit: 'follow', m_wild: 'ready' } },
+  cassius: { dodge: 1.3, guard: 1.2, parry: ['m_brace'], tactic: { m_brace: 'incoming', m_riposte: 'auto', m_gild: 'follow' } },
+  orla: { dodge: 0.6, guard: 1, heavy: 'ready', tactic: { m_shoulder: 'ready', m_brace: 'incoming' } },
+  ilse: { dodge: 0.5, guard: 1.6, tactic: { m_aegis: 'ready', m_smite: 'auto', m_prayer: 'follow' } },
+  marek: { dodge: 0.3, guard: 1.3, tactic: { m_resolve: 'follow', m_ironfall: 'auto', m_bulwark: 'incoming' } },
+  rhosk: { dodge: 0.3, guard: 0.8, tactic: { m_hide: 'gauge', m_roar: 'ready', m_cleave: 'ready' } },
+};
+/** the gear's effects on top of its points (PB-1, the laboratory's GEAR_FX, briefs/combat-auto.md § 31.4), each with its counterpart */
+export const AUTO_GEAR_FX: Record<string, AutoGearFx> = {
+  // the sabre's last cut goes through the guard; its cuts fill the gauge less
+  'duelist-sabre': { lastPierce: true, gauge: 0.7 },
+  // the imported blade's blows fill the gauge more (×1.1); its light attack charges longer
+  'imported-blade': { gauge: 1.1, lightCharge: 1.1 },
+  // the padded jack: a guarded blow fills one's gauge as an unguarded one (DB9's ×2 gone)
+  'padded-jack': { guardGauge: 1 },
+  // the mail: the light blows' damage −20 %; the dodge halved
+  'mail-shirt': { lightTaken: 0.8, dodge: 0.5 },
+  'knight-hauberk': { lightTaken: 0.8, dodge: 0.5 },
+  // the dock leathers: the dodge ×1.3; the guard ×0.85
+  'dock-leathers': { dodge: 1.3, guardChance: 0.85 },
+  // the iron ring: one's break shorter (−30 %)
+  'iron-ring': { stun: 0.7 },
+  // the lucky ribbon and the champion's token (their AP of before): the cooldowns and gaps −15 % and −10 %
+  'lucky-ribbon': { cd: 0.85 },
+  'champion-token': { cd: 0.9 },
+  // the swift boots: the first charge of the duel at once
+  'swift-boots': { firstFast: true },
+};
+/** the Speed points of the pieces Ren wears count this share in the duel (PB-1's model, the laboratory's vivK: CF1's « la Vivacité des pièces à moitié »;
+ *  at full Speed the sabre and the boots were the best piece of their slot against nearly every rival) */
+export const AUTO_PIECE_VIV = 0.5;
+
+/** the effects of the pieces worn, merged in their order (the weapon, the armour, the accessories): a number multiplied, a flag set */
+export function autoGearFx(pieces: readonly (string | null | undefined)[]): AutoGearFx {
+  const out: Record<string, number | boolean> = {};
+  for (const id of pieces) {
+    const e = id ? AUTO_GEAR_FX[id] : undefined;
+    if (!e) continue;
+    for (const [k, v] of Object.entries(e)) out[k] = typeof v === 'number' && typeof out[k] === 'number' ? (out[k] as number) * v : v;
+  }
+  return out as AutoGearFx;
+}
+
+/** a skill under the model (PB-1): its role, its uses at its level (a rival's by its stage), its gap, its power and charge; a parry's ward (a 3 s window that
+ *  takes a big blow); a support's effect its role's (the haste, the slow, the load) */
+export function autoBrute(a: AutoAction, level: number, o: { parry?: boolean } = {}): AutoAction {
+  const R = AUTO_ROLES[a.id];
+  if (!R) throw new Error(`no role for the skill "${a.id}"`);
+  const role: AutoRole = o.parry ? 'parry' : R.role, B = AUTO_BRUTE, U = AUTO_RULES;
+  const b: AutoAction = { ...a, role, uses: B.uses[clampLevel(level) - 1], cooldown: B.gap[R.gap] };
+  if (R.undodge) b.undodge = true;
+  if (R.pierce) b.pierce = true;
+  if (R.pierceWard) b.pierceWard = true;
+  if (b.power) b.power *= B.usePower;
+  b.charge = a.charge * B.charge * (B.roleCharge[role] ?? 1);
+  if (role === 'parry') b.ward = { ...(a.ward ?? { gauge: 0.5 }), dur: U.parry.dur, dmg: 0.05 };
+  // what the arena and the pages say of a support (the duel reads its role): the haste and the slow on the charges, the load on the next offensive action
+  if (role === 'haste') b.boost = { dur: U.haste.dur, dmg: 1, gauge: 1 };
+  else if (role === 'slow') b.boost = { dur: U.slow.dur, dmg: 1, gauge: 1 };
+  else if (role === 'load') b.boost = { dur: U.load.dur, dmg: U.load.dmg, gauge: U.load.gauge };
+  return b;
+}
 
 /** a skill's charge time at a level, before the cadence (the catalogue's unless the duel gives its own) */
 export function autoCharge(id: string, level: number): number {
@@ -81,32 +175,33 @@ export function autoPower(id: string, level: number): number {
   return POWER.thrust * (autoCharge(id, 1) / autoCharge('t4', 1)) * (AUTO_SKILLS[id].powerK ?? 1) * LEVEL_POWER[clampLevel(level) - 1];
 }
 
-/** one of Ren's skills as an action, at its level and the cadence; `effect` his gear's share on a ward's or a boost's length (the fervour charm) */
+/** one of Ren's skills as an action, at its level and the cadence, under the model (autoBrute; the heavy attack a base attack, its DB5-3 cooldown); `effect`
+ *  his gear's share on a ward's length (the fervour charm) */
 export function autoSkill(id: string, level: number, effect = 1): AutoAction {
   const d = AUTO_SKILLS[id];
   if (!d) throw new Error(`no skill "${id}" in the catalogue`);
   const lv = clampLevel(level), k = LEVEL_POWER[lv - 1], C = AUTO_CADENCE, c = C.charge;
-  const a: AutoAction = { id, kind: id === 'heavy' ? 'heavy' : 'skill', family: d.family, charge: autoCharge(id, lv) * c, ap: d.ap, cooldown: AUTO_COOLDOWN * autoCharge(id, 1) * c };
+  const a: AutoAction = { id, kind: id === 'heavy' ? 'heavy' : 'skill', family: d.family, charge: autoCharge(id, lv) * c, cooldown: AUTO_COOLDOWN * autoCharge(id, 1) * c };
   if (id === 'heavy') a.heavy = true;
   const eff = (e: AutoEffect): AutoEffect => ({ dur: +(e.dur * k * effect * C.effect).toFixed(2), dmg: e.dmg, gauge: e.gauge });
-  if (d.ward) { a.ward = eff(d.ward); if (d.cover) a.cover = true; }
+  if (d.ward) a.ward = eff(d.ward);
   else if (d.boost) a.boost = eff(d.boost);
   else {
     a.power = autoPower(id, lv) * C.power; a.gauge = GAUGE_SKILL * (d.gaugeK ?? 1);
     if (d.pierce) a.pierce = true;
     if (d.hits) { a.hits = d.hits; a.gap = (d.gap ?? 0.3) * C.gap; }
   }
-  return a;
+  return id === 'heavy' ? a : autoBrute(a, lv);
 }
-/** a fighter's heavy blow (SY-02, A3: « une attaque de base pour tous, avec sa recharge »): the catalogue's heavy attack at a level, no AP, its DB5-3 cooldown;
- *  `id` its name on the timeline (Ren's 'heavy', a rival's 'm_heavy') */
+/** a fighter's heavy blow (SY-02, A3: « une attaque de base pour tous, avec sa recharge »): the catalogue's heavy attack at a level, its DB5-3 cooldown; `id` its
+ *  name on the timeline (Ren's 'heavy', a rival's 'm_heavy') */
 export function autoHeavy(level = 1, id = 'heavy'): AutoAction {
-  return { ...autoSkill('heavy', level), id, kind: 'heavy', heavy: true, ap: 0 };
+  return { ...autoSkill('heavy', level), id, kind: 'heavy', heavy: true };
 }
 /** a light attack with a weapon's enchaînement, at the cadence (Ren's weapons, or a rival's: AUTO_FOES) */
 export function autoLight(weapon?: string | null, id = 'light', w = AUTO_WEAPONS[weapon ?? ''] ?? AUTO_WEAPONS['training-sword']): AutoAction {
   const C = AUTO_CADENCE;
-  return { id, kind: 'light', charge: AUTO_LIGHT.charge * C.charge, power: AUTO_LIGHT.power * C.power, gauge: AUTO_LIGHT.gauge, ap: 0, hits: w.hits, gap: w.gap * C.gap };
+  return { id, kind: 'light', charge: AUTO_LIGHT.charge * C.charge, power: AUTO_LIGHT.power * C.power, gauge: AUTO_LIGHT.gauge, hits: w.hits, gap: w.gap * C.gap };
 }
 
 /** a fighter's order when its player has set none (AC-09): the wards and the boosts first (their own conditions decide when they hold), then the offensive
@@ -127,14 +222,15 @@ export function autoOrderOf(kit: AutoKit): string[] {
   return order;
 }
 /** Ren as a fighter: his stats (for the bout: his gear, his training, his vigour), his skills in his order, his weapon, his heavy blow at its level (the sand's
- *  drill); what a state adds on top (the injury's share of his health, the AP of his gear and a friend, the night's tampering, his gear's share on the effects'
- *  length) */
-export function autoRen(stats: FighterStats, kit: AutoKit, o: { weapon?: string | null; hpShare?: number; apStart?: number; taken?: number; effect?: number; brain?: AutoBrain } = {}): AutoFighter {
+ *  drill); what a state adds on top (the injury's share of his health, the night's tampering, his gear's share on a ward's length); the pieces he wears
+ *  (`gear`: their effects, AUTO_GEAR_FX) and their Speed points (`pieceViv`: counted at AUTO_PIECE_VIV in the duel) */
+export function autoRen(stats: FighterStats, kit: AutoKit, o: { weapon?: string | null; hpShare?: number; taken?: number; effect?: number; brain?: AutoBrain; gear?: readonly (string | null | undefined)[]; pieceViv?: number } = {}): AutoFighter {
   const order = autoOrderOf(kit), tactic = autoTacticOf(kit, order);
   return {
-    id: 'ren', side: 'ren', hp: stats.hp * (o.hpShare ?? 1), atk: stats.atk, def: stats.def, end: stats.end, viv: stats.viv, tempo: 10,
-    apStart: o.apStart ?? 0, taken: o.taken ?? 1, light: autoLight(o.weapon), heavy: autoHeavy(kit.levels.heavy ?? 1),
+    id: 'ren', side: 'ren', hp: stats.hp * (o.hpShare ?? 1), atk: stats.atk, def: stats.def, end: stats.end, viv: o.pieceViv ? stats.viv - (1 - AUTO_PIECE_VIV) * o.pieceViv : stats.viv, tempo: 10,
+    taken: o.taken ?? 1, light: autoLight(o.weapon), heavy: autoHeavy(kit.levels.heavy ?? 1),
     skills: order.map((id) => autoSkill(id, kit.levels[id] ?? 1, o.effect ?? 1)), brain: o.brain ?? 'player', ...(tactic ? { tactic } : {}),
+    ...(o.gear ? { gfx: autoGearFx(o.gear) } : {}),
   };
 }
 /** the conditions a skill of each family may carry in a tactic (SY-08: the page offers these, the automatic's first) */
@@ -161,8 +257,6 @@ export function autoTacticOf(kit: Pick<AutoKit, 'tactic'>, order: readonly strin
 export interface AutoFoeSkill { id: string; family: AutoFamily; charge: number; ward?: AutoEffect; boost?: AutoEffect; gaugeK?: number }
 /** a rival's kit (SY-01): its weapon (its combo of before made its light attack's enchaînement, its blows at the training sword's total, 2 × 0.55) and its skills */
 export interface AutoFoeDef { weapon: { hits: readonly number[]; gap: number }; skills: AutoFoeSkill[] }
-/** a rival's skills cost 2 AP, as Ren's Rempart and Ferveur (SY-01) */
-export const AUTO_FOE_AP = 2;
 const offS = (id: string, charge: number, gaugeK = 1): AutoFoeSkill => ({ id, family: 'offensive', charge, ...(gaugeK !== 1 ? { gaugeK } : {}) });
 const wardS = (id: string, dur: number): AutoFoeSkill => ({ id, family: 'defensive', charge: 2.5, ward: { dur, dmg: 0.6, gauge: 0.5 } });
 const boostS = (id: string, dur: number): AutoFoeSkill => ({ id, family: 'support', charge: 2.5, boost: { dur, dmg: 1.25, gauge: 1.4 } });
@@ -177,26 +271,29 @@ export const AUTO_FOES: Record<string, AutoFoeDef> = {
   rhosk: { weapon: weaponOf(3, 0.38), skills: [offS('m_cleave', 4.4, 2), boostS('m_roar', 8), wardS('m_hide', 7)] },
 };
 
-/** a rival's actions on the common tables: its light attack with its weapon, its heavy blow, its skills (2 AP each, DB5-3, at the cadence) in its order (the
- *  wards, the boosts, then the offensive skills from the strongest) */
-export function autoFoeActions(kitOf: string): Pick<AutoFighter, 'light' | 'heavy' | 'skills'> {
-  const K = AUTO_FOES[kitOf] ?? AUTO_FOES.marek, C = AUTO_CADENCE, c = C.charge;
+/** a rival's skills' level at a stage (PB-1: 1, 2, 3 at the pool, the bracket, the final) */
+export const autoRivalLevel = (stage: Stage): number => AUTO_BRUTE.rivalLevel[stage] ?? 1;
+/** a rival's actions on the common tables: its light attack with its weapon, its heavy blow, its skills (at the cadence, under the model at the stage's level:
+ *  autoBrute) in its order (the wards, the supports, then the offensive skills from the strongest) */
+export function autoFoeActions(kitOf: string, stage: Stage = 0): Pick<AutoFighter, 'light' | 'heavy' | 'skills'> {
+  const K = AUTO_FOES[kitOf] ?? AUTO_FOES.marek, C = AUTO_CADENCE, c = C.charge, parry = AUTO_STYLES[AUTO_FOES[kitOf] ? kitOf : 'marek']?.parry ?? [];
   const skills = K.skills.map((s): AutoAction => {
-    const a: AutoAction = { id: s.id, kind: 'skill', family: s.family, charge: s.charge * c, ap: AUTO_FOE_AP, cooldown: AUTO_COOLDOWN * s.charge * c };
+    const a: AutoAction = { id: s.id, kind: 'skill', family: s.family, charge: s.charge * c, cooldown: AUTO_COOLDOWN * s.charge * c };
     if (s.ward) a.ward = { ...s.ward, dur: +(s.ward.dur * C.effect).toFixed(2) };
     else if (s.boost) a.boost = { ...s.boost, dur: +(s.boost.dur * C.effect).toFixed(2) };
     else { a.power = POWER.thrust * (s.charge / autoCharge('t4', 1)) * C.power; a.gauge = GAUGE_SKILL * (s.gaugeK ?? 1); }
-    return a;
+    return autoBrute(a, autoRivalLevel(stage), { parry: parry.includes(s.id) });
   });
   const off = skills.filter((s) => !s.ward && !s.boost).map((s, i) => ({ s, i })).sort((a, b) => (b.s.power ?? 0) - (a.s.power ?? 0) || a.i - b.i).map((z) => z.s);
   return { light: autoLight(null, 'm_light', K.weapon), heavy: autoHeavy(1, 'm_heavy'), skills: [...skills.filter((s) => s.ward), ...skills.filter((s) => s.boost), ...off] };
 }
 
-/** a rival or a generic fighter as a fighter: its sheet for the bout (autoRaceSheet), its kit (`kitOf`: its own, a generic fighter's rival's), Speed 10 for its
- *  tables as every fighter's (SY-01) */
-export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; brain?: AutoBrain; side?: 'ren' | 'foe' } = {}): AutoFighter {
-  const kitOf = o.kitOf ?? (AUTO_FOES[id] ? id : 'marek');
-  return { id, side: o.side ?? 'foe', hp: sheet.hp, atk: sheet.atk, def: sheet.def, end: sheet.end, viv: sheet.viv, tempo: 10, apStart: 0, taken: 1, ...autoFoeActions(kitOf), brain: o.brain ?? 'rival' };
+/** a rival or a generic fighter as a fighter: its sheet for the bout (autoRaceSheet), its kit (`kitOf`: its own, a generic fighter's rival's) at the bout's stage
+ *  (its skills' uses), its kit's style (AUTO_STYLES: its reactions, its heavy blow, its plan), Speed 10 for its tables as every fighter's (SY-01) */
+export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; brain?: AutoBrain; side?: 'ren' | 'foe'; stage?: Stage } = {}): AutoFighter {
+  const kitOf = o.kitOf ?? (AUTO_FOES[id] ? id : 'marek'), acts = autoFoeActions(kitOf, o.stage ?? 0), S = AUTO_STYLES[AUTO_FOES[kitOf] ? kitOf : 'marek'];
+  const style: AutoStyle | undefined = S ? { dodge: S.dodge, guard: S.guard, ...(S.heavy ? { heavy: S.heavy } : {}) } : undefined;
+  return { id, side: o.side ?? 'foe', hp: sheet.hp, atk: sheet.atk, def: sheet.def, end: sheet.end, viv: sheet.viv, tempo: 10, taken: 1, ...acts, brain: o.brain ?? 'rival', ...(S ? { style, tactic: acts.skills.map((s) => S.tactic[s.id] ?? 'auto') } : {}) };
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------- the race
@@ -240,6 +337,6 @@ export function autoGenericSheet(profile: string, share: { hp: number; damage: n
  *  côtés », SY-11; TOURNAMENT § 6: « du même modèle de stats/règles »): both rivals at the bout's stage and round, their preparation in Attack points, an
  *  injury's share of their health. */
 export function autoOffscreen(a: string, b: string, o: { stage: Stage; round?: number; seed: number; a?: { preparation?: number; hp?: number }; b?: { preparation?: number; hp?: number } }): AutoResult {
-  const A = autoFoe(a, autoRaceSheet(a, o.stage, o.round ?? 0, o.a ?? {}), { side: 'ren' }), B = autoFoe(b, autoRaceSheet(b, o.stage, o.round ?? 0, o.b ?? {}));
+  const A = autoFoe(a, autoRaceSheet(a, o.stage, o.round ?? 0, o.a ?? {}), { side: 'ren', stage: o.stage }), B = autoFoe(b, autoRaceSheet(b, o.stage, o.round ?? 0, o.b ?? {}), { stage: o.stage });
   return autoDuel(A, B, o.seed);
 }

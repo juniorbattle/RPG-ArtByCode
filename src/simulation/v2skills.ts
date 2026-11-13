@@ -54,7 +54,8 @@ export function skillPrice(s: GameState, id: string): number {
 /** a tactic's condition in words (the match sheet, the skills page, the journal) */
 export const COND_TEXT: Record<AutoCond, TextKey> = {
   auto: 'auto.cond.auto', ready: 'auto.cond.ready', broken: 'auto.cond.broken', incoming: 'auto.cond.incoming', gauge: 'auto.cond.gauge',
-  hurt: 'auto.cond.hurt', finish: 'auto.cond.finish', follow: 'auto.cond.follow', never: 'auto.cond.never',
+  hurt: 'auto.cond.hurt', finish: 'auto.cond.finish', follow: 'auto.cond.follow', open: 'auto.cond.open', start: 'auto.cond.start', foeGauge: 'auto.cond.foeGauge',
+  warded: 'auto.cond.warded', never: 'auto.cond.never',
 };
 
 export type V2SkillAction =

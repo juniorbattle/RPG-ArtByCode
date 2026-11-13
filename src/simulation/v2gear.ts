@@ -27,6 +27,10 @@ export function gearOf(s: GameState): V2Gear {
   return s.v2.gear;
 }
 const gearView = (s: GameState): V2Gear => s.v2?.gear ?? START_GEAR;
+/** the pieces Ren wears (the weapon, the armour, the two accessories): the duel reads their effects on top of their points (src/combat/autoData.ts AUTO_GEAR_FX) */
+export function wornPieces(s: GameState): Array<string | null> { const g = gearView(s); return [g.weapon, g.armour, ...g.acc]; }
+/** the Speed points of the pieces worn (the gear's own table, AC-11's doubled points): the duel counts them at AUTO_PIECE_VIV (PB-1) */
+export function piecesViv(s: GameState): number { return wornPieces(s).reduce((n, id) => n + (id ? GEAR[id]?.fx?.viv ?? 0 : 0), 0); }
 
 /** the weapon's tier as the duel reads it: its own, and the Wyrmsteel temper of the steel cargo (one more), at most MAX_WEAPON_TIER */
 export function weaponTier(s: GameState): number {

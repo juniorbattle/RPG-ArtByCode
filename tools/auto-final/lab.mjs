@@ -54,7 +54,9 @@ export const mean = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length :
 
 /** the rival kit a fighter fights with (its first skill of its own names it; a generic fighter its rival's) */
 const KIT_OF = Object.fromEntries(Object.entries(AD.AUTO_FOES).map(([k, K]) => [K.skills[0].id, k]));
-export const kitOf = (x) => x.kitId ?? KIT_OF[x.skills.find((s) => s.id.startsWith('m_'))?.id] ?? (x.side === 'ren' && x.id === 'ren' ? null : 'marek');
+// (corrected in journal Passe BL1: the first rival skill of a fighter in its order is a ward or a support for every rival; read by the first skill of a kit
+// found among its skills, so that an off-screen bout, whose fighters carry no kitId, fights each rival in its own style, not Marek's)
+export const kitOf = (x) => x.kitId ?? x.skills.map((s) => KIT_OF[s.id]).find(Boolean) ?? (x.side === 'ren' && x.id === 'ren' ? null : 'marek');
 
 // ------------------------------------------------------------------------------------------------------------------------------- the model
 let MODEL = null;

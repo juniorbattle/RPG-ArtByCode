@@ -6,8 +6,8 @@ import { v2KitOf } from '../simulation/v2';
 import { RIVALS } from '../narrative/roster';
 import { num, skillName, tx } from '../narrative/text';
 import { SKILL_BOOK } from '../combat/skillbook';
-import { AUTO_CONDS_OF, AUTO_SKILLS, autoCondOf, autoPower } from '../combat/autoData';
-import type { AutoCond } from '../combat/auto';
+import { AUTO_CONDS_OF, AUTO_ROLES, AUTO_SKILLS, autoCondOf } from '../combat/autoData';
+import { AUTO_RULES, type AutoCond, type AutoRole } from '../combat/auto';
 import { COND_TEXT } from '../simulation/v2skills';
 import { figHtml, statsHtml } from './wares';
 import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
@@ -15,8 +15,8 @@ import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './st
 /** The skills, and the match sheet that chooses them (journal Passe UM11, the audit of Passe UM10; the structure of the gear's page, journal Passe UM9): on the
  *  right the skills owned, a square marking the four brought, and for the line selected what the skill does and what its next level gives; on the left the
  *  hero or the opponent, and the order in which the automatic uses these four in the duel played by the computer (AC-09, lot 2, journal Passe LC3), each with
- *  its AP and its charge, then the light attack; the player's left and right keys (the pad's D-pad) move the skill selected earlier or later. The numbers are
- *  the duel's (src/simulation/preview.ts). */
+ *  its charge, then the light attack; the player's left and right keys (the pad's D-pad) move the skill selected earlier or later. The numbers are the duel's
+ *  (src/simulation/preview.ts). The model « La Brute » (PB-1, journal Passe CF3) has no AP: lot 1 shows none, its uses and roles are lot 2's. */
 
 const FAMILY = { offensive: 'v2.family.offensive', defensive: 'v2.family.defensive', support: 'v2.family.support' } as const;
 const pct = (k: number): number => Math.round(Math.abs(k - 1) * 100);
@@ -25,6 +25,11 @@ const cap = (t: string): string => t[0].toUpperCase() + t.slice(1);
 /** what the skill does, in a sentence made of its numbers */
 function doesWhat(f: SkillFigures): string {
   const both = (a: string, b: string): string => (a && b ? tx('ui.skill.both', { a, b }) : a || b);
+  // a support says its role's effect (PB-1: the haste and the slow on the charges, the load on the next offensive action), a parry its window
+  if (f.role === 'haste') return tx('ui.skill.haste', { dur: f.dur, pct: pct(AUTO_RULES.haste.k) });
+  if (f.role === 'slow') return tx('ui.skill.slow', { dur: f.dur, pct: pct(AUTO_RULES.slow.k) });
+  if (f.role === 'load' && f.boost) return tx('ui.skill.load', { dur: f.dur, what: both(tx('ui.skill.moreHit', { pct: pct(f.boost.damage) }), f.boost.resist !== 1 ? tx('ui.skill.moreGauge', { pct: pct(f.boost.resist) }) : '') });
+  if (f.role === 'parry') return tx('ui.skill.parry', { dur: f.dur, open: AUTO_RULES.parry.open });
   if (f.ward) return tx('ui.skill.ward', { dur: f.dur, what: both(f.ward.damage !== 1 ? tx('ui.skill.lessHit', { pct: pct(f.ward.damage) }) : '', f.ward.resist !== 1 ? tx('ui.skill.lessGauge', { pct: pct(f.ward.resist) }) : '') });
   if (f.boost) return tx('ui.skill.boost', { dur: f.dur, what: both(f.boost.damage !== 1 ? tx('ui.skill.moreHit', { pct: pct(f.boost.damage) }) : '', f.boost.resist !== 1 ? tx('ui.skill.moreGauge', { pct: pct(f.boost.resist) }) : '') });
   // a skill that strikes several blows says so, their damage added up as the duel adds it (journal Passe CO2)
@@ -46,23 +51,21 @@ function cmpHtml(now: SkillFigures, next: SkillFigures | null, level: number): s
 
 /** a skill's condition in the tactic (SY-08, lot 2 of the second redesign, journal Passe SL3) */
 const condOf = (s: GameState, id: string): AutoCond => autoCondOf(v2KitOf(s), id);
-/** the strongest offensive skill of the four brought (the one the automatic keeps for the break, SL1-3) */
-function strongestOf(s: GameState, ids: string[]): string | null {
-  const lv = v2KitOf(s).levels; let best: string | null = null, p = -1;
-  for (const id of ids) if (AUTO_SKILLS[id]?.family === 'offensive') { const q = autoPower(id, lv[id] ?? 1); if (q > p) { p = q; best = id; } }
-  return best;
-}
-/** when a skill leaves, said in a sentence: its condition, the automatic's own rule spelt out for its family */
-function whenText(s: GameState, id: string, four: string[]): string {
+/** the automatic's rule for each role (PB-1, src/combat/auto.ts autoRole), spelt out */
+const AUTO_TEXT: Record<AutoRole, 'ui.skill.autoOff' | 'ui.skill.autoExploit' | 'ui.skill.autoOpener' | 'ui.skill.autoInterrupt' | 'ui.skill.autoWard' | 'ui.skill.autoParry' | 'ui.skill.autoHaste' | 'ui.skill.autoSlow' | 'ui.skill.autoLoad'> = {
+  exploit: 'ui.skill.autoExploit', punish: 'ui.skill.autoOff', pierce: 'ui.skill.autoOff', breaker: 'ui.skill.autoOff', opener: 'ui.skill.autoOpener', interrupt: 'ui.skill.autoInterrupt',
+  ward: 'ui.skill.autoWard', parry: 'ui.skill.autoParry', haste: 'ui.skill.autoHaste', slow: 'ui.skill.autoSlow', load: 'ui.skill.autoLoad',
+};
+/** when a skill leaves, said in a sentence: its condition, the automatic's own rule spelt out for its role */
+function whenText(s: GameState, id: string): string {
   const c = condOf(s, id);
   if (c !== 'auto') return tx('ui.skill.leaves', { cond: tx(COND_TEXT[c]) });
-  const fam = AUTO_SKILLS[id]?.family;
-  return tx(fam === 'defensive' ? 'ui.skill.autoWard' : fam === 'support' ? 'ui.skill.autoBoost' : strongestOf(s, four) === id ? 'ui.skill.autoTop' : 'ui.skill.autoOff');
+  return tx(AUTO_TEXT[AUTO_ROLES[id]?.role ?? 'punish']);
 }
 
 /** the order of the duel played by the computer: the four in the automatic's order with their conditions (the tactic), then the light attack */
 function orderHtml(s: GameState, ids: string[]): string {
-  return autoOrderView(s, ids).map((t, i) => `<div class="row"><small>${tx('v2.skills.ap', { ap: t.ap })} · ${num(t.charge)} s · ${esc(tx(COND_TEXT[condOf(s, t.id)]))}</small><b>${i + 1}. ${esc(skillName(t.id))}</b></div>`).join('')
+  return autoOrderView(s, ids).map((t, i) => `<div class="row"><small>${num(t.charge)} s · ${esc(tx(COND_TEXT[condOf(s, t.id)]))}</small><b>${i + 1}. ${esc(skillName(t.id))}</b></div>`).join('')
     + `<div class="row"><small>${tx('ui.order.else')}</small><b>${esc(tx('ui.skill.light'))}</b></div>`;
 }
 
@@ -95,15 +98,15 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     (card.querySelector('.pm-purse b') as HTMLElement).textContent = String(chosen.size);
     const ladder = card.querySelector('.pm-ladder'), wide = card.querySelector('.pm-ladder2');
     if (ladder) ladder.innerHTML = `<p class="pm-sub">${tx('ui.order.title')}</p>${orderHtml(host.state(), four())}`;
-    if (wide) wide.innerHTML = `<p class="ttl">${tx('ui.order.title')}</p>${autoOrderView(host.state(), four()).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${tx('v2.skills.ap', { ap: t.ap })} · ${num(t.charge)} s<br>${esc(tx(COND_TEXT[condOf(host.state(), t.id)]))}</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
+    if (wide) wide.innerHTML = `<p class="ttl">${tx('ui.order.title')}</p>${autoOrderView(host.state(), four()).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${num(t.charge)} s<br>${esc(tx(COND_TEXT[condOf(host.state(), t.id)]))}</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
     if (go) go.disabled = chosen.size !== 4;
     const lv = kit.levels[now], st = host.state(), f = skillFigures(st, now, lv), up = nextLevel(st, now), k = SKILL_BOOK[now];
     const said = !up ? tx('ui.skill.top') : up.by === 'drill' ? tx('ui.skill.drill', { level: up.level })
       : up.fromDay ? tx('ui.skill.challengeLate', { name: RIVALS[up.teacher!].name, day: up.fromDay }) : tx('ui.skill.challenge', { name: RIVALS[up.teacher!].name });
     const on = chosen.has(now), movable = on && chosen.size === 4;
     // the tactic (SY-08): when a skill brought leaves, its condition chosen with C (the pad's Y)
-    const when = on ? `<p class="ab pm-when">${esc(whenText(st, now, four()))}</p>` : '';
-    detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))} · ${tx('v2.skills.level', { level: lv })} · ${tx('v2.skills.ap', { ap: f.ap })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, now, up.level) : null, up?.level ?? lv)}<p class="what">${esc(said)}</p>${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}`;
+    const when = on ? `<p class="ab pm-when">${esc(whenText(st, now))}</p>` : '';
+    detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))} · ${tx('v2.skills.level', { level: lv })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, now, up.level) : null, up?.level ?? lv)}<p class="what">${esc(said)}</p>${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}`;
     fit();
     fillFoot(foot, footBtn('Space', tx(on ? 'ui.skill.leave' : 'ui.skill.bring'), toggle), on ? footBtn('C', tx('ui.skill.when'), cycle) : null, movable ? moveBtn('left') : null, movable ? moveBtn('right') : null, go, close);
   };
@@ -159,7 +162,7 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   };
   for (const id of owned) {
     const lv = kit.levels[id], k = SKILL_BOOK[id];
-    const b = pickRow(`<i class="pm-check"></i><span>${esc(skillName(id))}<span class="why">${tx('v2.skills.level', { level: lv })} · ${tx(FAMILY[k?.family ?? 'offensive'])}</span></span><span class="cost">${tx('v2.skills.ap', { ap: skillFigures(s, id, lv).ap })}</span>`, { select: () => { now = id; full = false; paint(); }, press: toggle });
+    const b = pickRow(`<i class="pm-check"></i><span>${esc(skillName(id))}<span class="why">${tx('v2.skills.level', { level: lv })} · ${tx(FAMILY[k?.family ?? 'offensive'])}</span></span><span class="cost"></span>`, { select: () => { now = id; full = false; paint(); }, press: toggle });
     b.setAttribute('aria-pressed', String(chosen.has(id)));
     list.appendChild(b);
   }

@@ -19,10 +19,10 @@ import { firstSlot } from '../settings/keys';
 
 export interface AutoTexts extends DynTexts {
   speed: string; speedSub: string; speedOn: string; skip: string; skipSub: string;
-  charging: (name: string) => string; order: string; secs: (n: number) => string; noAp: string; waiting: string;
+  charging: (name: string) => string; order: string; secs: (n: number) => string; waiting: string;
 }
-const EN_EXTRA = { speed: '×2', speedSub: 'twice as fast', speedOn: 'back to ×1', skip: 'Skip', skipSub: 'to the result', charging: (n: string) => `Charging ${n}`, order: 'Your order', secs: (n: number) => `${n} s`, noAp: 'AP missing', waiting: 'At your next choice' };
-const FR_EXTRA = { speed: '×2', speedSub: 'deux fois plus vite', speedOn: 'retour à ×1', skip: 'Passer', skipSub: 'au résultat', charging: (n: string) => `Charge : ${n}`, order: 'Votre ordre', secs: (n: number) => `${n} s`, noAp: 'PA manquants', waiting: 'À votre prochain choix' };
+const EN_EXTRA = { speed: '×2', speedSub: 'twice as fast', speedOn: 'back to ×1', skip: 'Skip', skipSub: 'to the result', charging: (n: string) => `Charging ${n}`, order: 'Your order', secs: (n: number) => `${n} s`, waiting: 'At your next choice' };
+const FR_EXTRA = { speed: '×2', speedSub: 'deux fois plus vite', speedOn: 'retour à ×1', skip: 'Passer', skipSub: 'au résultat', charging: (n: string) => `Charge : ${n}`, order: 'Votre ordre', secs: (n: number) => `${n} s`, waiting: 'À votre prochain choix' };
 export const AUTO_TEXTS_EN: AutoTexts = { ...DYN_TEXTS_EN, ...EN_EXTRA, restart: 'An official bout cannot be restarted' };
 export const AUTO_TEXTS_FR: AutoTexts = { ...DYN_TEXTS_FR_GAME, ...FR_EXTRA };
 
@@ -85,11 +85,10 @@ export class AutoHud {
       if (!document.getElementById(id)) { const st = document.createElement('style'); st.id = id; st.textContent = css; document.head.appendChild(st); }
     }
     this.el = document.createElement('div'); this.el.id = 'arena-hud'; this.el.classList.add('dyn', 'auto');
-    const diamonds = (n: number) => `<q>${'<i></i>'.repeat(n)}</q>`;
     const M = replay.hud();
-    const slots = M.slots.map((s, i) => `<button class="ah-b slot wide" type="button" tabindex="-1" data-slot="${s.id}" aria-label="${i + 1}. ${this.name(s.id)}"><span class="ord">${bindCap(`skill${i + 1}` as 'skill1')}</span><b>${this.name(s.id)}</b><em>${diamonds(s.ap)} <span class="fam">${t.families[s.family] ?? ''}</span><span class="cdn"></span></em><i class="pg"></i><i class="cdv"></i></button>`).join('');
+    const slots = M.slots.map((s, i) => `<button class="ah-b slot wide" type="button" tabindex="-1" data-slot="${s.id}" aria-label="${i + 1}. ${this.name(s.id)}"><span class="ord">${bindCap(`skill${i + 1}` as 'skill1')}</span><b>${this.name(s.id)}</b><em><span class="fam">${t.families[s.family] ?? ''}</span><span class="cdn"></span></em><i class="pg"></i><i class="cdv"></i></button>`).join('');
     const ctl = (id: 'speed' | 'skip', act: 'attack' | 'dodge', label: string, sub: string) => `<button class="ah-b ctl wide" type="button" data-act="${id}" aria-label="${label} (${actName(act)})">${bindCap(act)}<b>${label}</b><em>${sub}</em></button>`;
-    const card = (who: Seat, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}" aria-label="${names[who]}, ${sub}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${names[who]}<em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(names[who])}" aria-valuemin="0" aria-valuemax="${M[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div>${who === 'ren' ? `<div class="ah-pips" aria-label="${t.apLabel}">` + '<b></b>'.repeat(5) + '</div>' : ''}<div class="ah-ch off" aria-live="off"><span></span><div class="ah-cb"><i></i></div></div><div class="ah-tags"><b class="wd"></b><b class="bs"></b></div><div class="ah-state"></div></div></div>`;
+    const card = (who: Seat, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}" aria-label="${names[who]}, ${sub}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${names[who]}<em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(names[who])}" aria-valuemin="0" aria-valuemax="${M[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div><div class="ah-ch off" aria-live="off"><span></span><div class="ah-cb"><i></i></div></div><div class="ah-tags"><b class="wd"></b><b class="bs"></b></div><div class="ah-state"></div></div></div>`;
     this.el.setAttribute('aria-label', t.subtitle);
     this.el.innerHTML = `<div class="top"></div><div class="bot"></div>
       ${card('ren', 'l', t.subRen)}${card('marek', 'r', t.subMarek)}
@@ -136,7 +135,7 @@ export class AutoHud {
     this.set(`hpt${id}`, g.hp, () => { root.querySelector('.ah-nm em')!.textContent = `${g.hp} / ${g.maxHp}`; });
     const rs = root.querySelector('.ah-rs')!, gp = Math.round(g.gaugePct);
     this.set(`rs${id}`, gp, () => { (rs.querySelector('i') as HTMLElement).style.width = `${gp}%`; rs.setAttribute('aria-valuenow', String(gp)); });
-    const stun = g.broken ? Math.round(100 - (100 * g.stunLeft) / 10) : 0;
+    const stun = g.broken ? Math.round(100 - (100 * g.stunLeft) / Math.max(0.01, g.stunDur)) : 0;
     this.set(`rss${id}`, stun, () => { (rs.querySelector('s') as HTMLElement).style.width = `${stun}%`; });
     this.cls(`rsb${id}`, rs, 'brk', g.broken);
     const label = g.broken ? t.brokenTag(Math.ceil(g.stunLeft)) : t.breakBar;
@@ -163,18 +162,14 @@ export class AutoHud {
     this.cls('hud', this.el, 'off', !visible);
     this.card('ren', M.ren, M.ren.broken ? t.stunned : over && M.winner === 'marek' ? t.down : '');
     this.card('marek', M.marek, M.marek.broken ? t.stunned : over && M.winner === 'ren' ? t.down : '');
-    this.el.querySelectorAll('#ah-ren .ah-pips b').forEach((u, k) => {
-      const on = k < M.ren.ap;
-      this.set(`pip${k}`, on, () => { u.classList.toggle('on', on); if (on) { u.classList.remove('gain'); void (u as HTMLElement).offsetWidth; u.classList.add('gain'); } });
-    });
     for (const s of M.slots) {
       const b = this.btn.get(`slot:${s.id}`); if (!b) continue;
       this.cls(`c${s.id}`, b, 'charging', s.charging);
       this.cls(`k${s.id}`, b, 'cooling', s.cool > 0 && !s.charging);
-      this.cls(`a${s.id}`, b, 'noap', !s.payable && s.cool <= 0 && !s.charging);
+      this.cls(`a${s.id}`, b, 'noap', !s.usable && s.cool <= 0 && !s.charging);
       this.cls(`w${s.id}`, b, 'waiting', s.waiting);
       const cd = s.cool > 0 && !s.charging ? Math.ceil(s.cool) : 0;
-      this.set(`cd${s.id}|${s.waiting}`, cd, () => { (b.querySelector('em .cdn') as HTMLElement).textContent = cd ? t.secs(cd) : ''; b.title = s.waiting ? t.waiting : cd ? t.secs(cd) : !s.payable ? t.noAp : ''; });
+      this.set(`cd${s.id}|${s.waiting}`, cd, () => { (b.querySelector('em .cdn') as HTMLElement).textContent = cd ? t.secs(cd) : ''; b.title = s.waiting ? t.waiting : cd ? t.secs(cd) : ''; });
       const cw = cd ? Math.round(s.coolPct) : 0;
       this.set(`cw${s.id}`, cw, () => { (b.querySelector('.cdv') as HTMLElement).style.width = `${cw}%`; });
       const pg = s.charging && M.ren.charge ? Math.round(M.ren.charge.pct) : 0;

@@ -1,6 +1,5 @@
 import { tx, type TextKey } from '../narrative/text';
 import { AUTO_RULES, type AutoFighter } from '../combat/auto';
-import { AUTO_COOLDOWN } from '../combat/autoData';
 import { autoReactions } from '../combat/autoMatch';
 import { el, fillFoot, footBtn } from './style';
 import { rich, spotlight, tutorialOn, tutorialStyle } from './tutorial';
@@ -9,20 +8,20 @@ import { rich, spotlight, tutorialOn, tutorialStyle } from './tutorial';
  *  TU4 for the three-button duel of before), written again for the duel played by the computer (lot 3 of briefs/combat-auto.md § 17.3, journal Passe LC5): in a
  *  version 2 game's bout the replay of the duel's script is held the first time each thing comes up in it, and a band at the foot of the screen says it, the
  *  element of the HUD it speaks of lit as the tour lights its own (TU-2, TU-9). The moments: the duel that plays itself and the order of the four (the bout's
- *  start), a skill charged and its bar, a chain of blows, an action point gained, a guard or a dodge, a skill or a heavy blow landing (the form of the day), a
+ *  start), a skill charged and its bar, a chain of blows, a guard or a dodge, a skill or a heavy blow landing (the form of the day), a
  *  gauge a third full, a break, ×2 and « Skip » (once the bout has run a while). Every number is the duel's own (src/combat/auto.ts, autoData.ts, the bout's
  *  two fighters and their forms; TU-6). Enter (A) takes the bout up again, Esc (B) skips the lessons left. Each lesson once in this browser (TU-9), its memory
  *  beside the tutorial's (never the save); the guide's « The duel » teaches them again at the next bout (TU-7). A browser driven by a tool keeps the bout
  *  without them unless the address asks for it (`tutorial=1`). Fades only (TU-10; the reduced motion is the game's setting, RG-5). */
 
-export type LessonId = 'start' | 'charge' | 'combo' | 'ap' | 'react' | 'form' | 'gauge' | 'break' | 'speed';
+/** (the lesson of the action points, lot 3's « ap », left with them: the model « La Brute » has none, PB-1) */
+export type LessonId = 'start' | 'charge' | 'combo' | 'react' | 'form' | 'gauge' | 'break' | 'speed';
 /** an event of the duel's replay (src/arena/autoView.ts: `commandStart`, `impact`, `break`, `ko`...) */
 export type DuelEvent = { type: string } & Record<string, unknown>;
 const LESSON: Record<LessonId, { title: TextKey; body: TextKey; lit?: (e?: DuelEvent) => string }> = {
   start: { title: 'tut.duel.start.title', body: 'tut.duel.start.body', lit: () => '#ah-bar .ah-b.slot' },
   charge: { title: 'tut.duel.charge.title', body: 'tut.duel.charge.body', lit: () => '#ah-ren .ah-ch' },
   combo: { title: 'tut.duel.combo.title', body: 'tut.duel.combo.body' },
-  ap: { title: 'tut.duel.ap.title', body: 'tut.duel.ap.body', lit: () => '#ah-ren .ah-pips' },
   react: { title: 'tut.duel.react.title', body: 'tut.duel.react.body' },
   form: { title: 'tut.duel.form.title', body: 'tut.duel.form.body' },
   gauge: { title: 'tut.duel.gauge.title', body: 'tut.duel.gauge.body', lit: (e) => `#ah-${e?.to === 'ren' ? 'ren' : 'marek'} .ah-rs` },
@@ -59,10 +58,9 @@ export function lessonText(id: LessonId, d: LessonDuel): string {
     // Ren's light attack's charge at his Speed (DB7-1: × 10 / Speed)
     case 'charge': return tx(k, { light: +((d.ren.light.charge * d.ren.tempo) / Math.max(1, d.ren.viv)).toFixed(2), viv: +d.ren.viv.toFixed(1) });
     case 'combo': return tx(k, { n: d.ren.light.hits?.length ?? 1 });
-    case 'ap': return tx(k, { gain: R.ap.light, start: R.ap.start + (d.ren.apStart ?? 0), max: R.ap.max, cool: AUTO_COOLDOWN });
     case 'react': {
       const rr = autoReactions(d.ren, d.foe), fr = autoReactions(d.foe, d.ren);
-      return tx(k, { times: R.react.skillGuard, reduce: pct(R.guardReduce), foe, rd: pct(rr.dodge), rg: pct(rr.guard), rgs: pct(rr.guardSkill), fd: pct(fr.dodge), fg: pct(fr.guard) });
+      return tx(k, { times: R.react.skillGuard, rr: pct(rr.reduce), fr: pct(fr.reduce), foe, rd: pct(rr.dodge), rg: pct(rr.guard), rgs: pct(rr.guardSkill), fd: pct(fr.dodge), fg: pct(fr.guard) });
     }
     case 'form': return tx(k, { max: pct(R.form), you: signed(d.form[0]), them: signed(d.form[1]), foe });
     case 'gauge': return tx(k, { mul: R.gauge.guardMul });
@@ -77,7 +75,6 @@ export function lessonsOf(e: DuelEvent): LessonId[] {
   // Ren charges a skill (its bar in the accent, its slot lit at the foot)
   if (e.type === 'commandStart' && e.who === 'ren' && e.kind !== 'light') out.push('charge');
   else if (e.type === 'impact') {
-    if (e.from === 'ren' && Number(e.apGain) > 0) out.push('ap');
     if (e.follow === true) out.push('combo');
     if (e.result === 'guarded' || e.result === 'dodged') out.push('react');
     // a skill or a heavy blow that lands: the biggest number of the bout so far, the form in it
