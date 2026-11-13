@@ -4,7 +4,8 @@
 //     bouts) plays the workshop's copy (sim.mjs) under a configuration; without the hook, the game's own;
 //   - `autoBoutOf` (src/combat/autoMatch.ts) asks `globalThis.__finalKit` for the kit Ren brings (the match sheet's choices of a laboratory policy that
 //     adapts to its rival) and leaves on the fighters what the copy reads (Ren's gear and levels, the rival's kit).
-// Node only; nothing in src/ reads it.
+// Node only; nothing in src/ reads it. Since lot 1 of the model « La Brute » (journal Passe BL1) the game plays the model itself: these transforms read the game of
+// main bd636ef (the commit before the port), so the laboratory is valid against that commit only; tools/auto-final/port-identity.mjs runs it there.
 import fs from 'node:fs';
 import path from 'node:path';
 import { createServer } from 'vite';

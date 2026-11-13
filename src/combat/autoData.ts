@@ -59,7 +59,8 @@ export const AUTO_SKILLS: Record<string, AutoSkillDef> = {
   t4: { family: 'offensive', powerK: 0.8 },
   d1: { family: 'defensive', ward: { dur: 9, dmg: 0.4, gauge: 0.3 } },
   s1: { family: 'support', boost: { dur: 12, dmg: 1.8, gauge: 2 } },
-  k_sunder: { family: 'offensive', gaugeK: 2 },
+  // Sunder ×0.6 at AC-12's test under the model (journal Passe BL1: with the Thrust in an opening it was the best kit against nearly every rival, dominating the final)
+  k_sunder: { family: 'offensive', gaugeK: 2, powerK: 0.6 },
   k_feint: { family: 'offensive', pierce: true },
   k_iron: { family: 'defensive', ward: { dur: 11.2, dmg: 0.3, gauge: 0.15 } },
   k_parry: { family: 'defensive', ward: { dur: 6.5, dmg: 0.05, gauge: 0.5 } },
@@ -302,14 +303,15 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
  *  Passe AC4): each rival keeps the shape of its sheet (DB7-5's RIVAL_SHEETS), brought to a common level in the pool (`norm`: its health, Attack, Defence and
  *  Endurance × the same factor; its pool Speed kept the whole tournament), then a share more each round of the pool (`pool`: the rounds of days 2, 4, 5; +7.5 % a
  *  round, the operator's SL1-1 « +7,5 % par tour (décision A3 : change SY-05) », journal Passe SL2) and a lot at each stage of the final phase (`stage`: the bracket,
- *  the final); its preparation as visible Attack points, +1 per `prepPer` over `prepFrom` (AC-17). Fitted once on the rules of lot 2 (journal Passe SL3: the
- *  rhythm ×3 and the break of RY-3, SL1-3's automatic): each rival's pool factor so that the reference player of day 2 beats it 95 times in 100 (isolated duels),
- *  the bracket's and the final's on 200 whole games of the reference (seeds 1 to 100 and 301 to 400; 80 seeds left the semi-final 16 points off on held-out ones)
- *  for the semi-final's 65 % and the final's 50 % (AC-15), held out on seeds 101 to 300. */
+ *  the final); its preparation as visible Attack points, +1 per `prepPer` over `prepFrom` (AC-17). Fitted on the player of the middle since the model « La Brute »
+ *  (the operator's PB-3 « Caler sur le joueur moyen », decision A3 of 13/11/2026 changing AC-16, journal Passe CF3; fitted in journal Passe BL1, tools/auto-lab.mjs
+ *  fit): each rival's pool factor so that the planner's Ren of day 2 beats it 95 times in 100 (the bouts of 120 calibration games), the pool's slope of SL1-1, the
+ *  bracket's and the final's factors on 200 whole games of the planner (seeds 1 to 100 and 301 to 400) for a semi-final and a final at 50 %, held out on seeds
+ *  101 to 300 (the planner's semi-final 58 %, final 48 %). */
 export const AUTO_RACE = {
-  norm: { vessa: 1.248, tobin: 1.721, cassius: 1.114, orla: 0.985, ilse: 1.184, marek: 1.092, rhosk: 1.62 } as Record<string, number>,
+  norm: { vessa: 1.255, tobin: 1.469, cassius: 1.231, orla: 1.155, ilse: 1.071, marek: 1.023, rhosk: 1.252 } as Record<string, number>,
   pool: [1, 1.075, 1.15] as readonly number[],
-  stage: { 1: 1.335, 2: 1.749 } as Record<1 | 2, number>,
+  stage: { 1: 1.203, 2: 1.524 } as Record<1 | 2, number>,
   prepFrom: 20, prepPer: 25,
 };
 /** a bout's round of the pool by its day: day 2 the first, day 4 the second, day 5 the third (a challenge of the pool by its day) */

@@ -39,19 +39,19 @@ test('what a skill does is the duel\'s own: every skill at every level, the gear
     const hits = a.hits ?? [1];
     assert.equal(f.hits, e ? 0 : hits.length, `${id} hits`);
     assert.equal(f.damage, e ? 0 : hits.reduce((n, sh) => n + Math.max(1, Math.round(a.power * sh * k)), 0)); assert.equal(f.gauge, e ? 0 : +((70 / 22.5) * a.gauge * hits.reduce((n, sh) => n + sh, 0) * 10 / b.foe.end).toFixed(1)); // RY-3: a skill's blows (journal Passe SL3)
-    assert.equal(f.charge, +(a.charge * 10 / b.ren.viv).toFixed(2)); assert.equal(f.dur, e?.dur ?? 0);
+    assert.equal(f.charge, +(a.charge * (10 / b.ren.viv)).toFixed(2)); assert.equal(f.dur, e?.dur ?? 0);
     assert.deepEqual(f.ward, a.ward ? { damage: a.ward.dmg, resist: a.ward.gauge } : null); assert.deepEqual(f.boost, a.boost ? { damage: a.boost.dmg, resist: a.boost.gauge } : null); assert.equal(f.pierce, !!a.pierce);
   }
 });
 
 test('the order the page shows is the duel\'s: the four in the order the automatic follows; a level up never weakens a skill', () => {
-  // the duel played by the computer since lot 2 (journal Passe LC3): the order of its Ren (AC-09), each with its AP and its charge at his Speed
+  // the duel played by the computer since lot 2 (journal Passe LC3): the order of its Ren (AC-09), each with its charge at his Speed (no AP since PB-1)
   const st = G.makeV2(G.namedState('day2-afternoon'));
   for (const gear of GEARS) for (const order of [undefined, ['t1', 'd1', 't4', 's1']]) {
     const s = structuredClone(st); Object.assign(s.v2.gear, gear); if (order) s.v2.kit.order = order;
     const b = AM.autoBoutOf(s), v = P.autoOrderView(s, s.v2.kit.loadout);
     assert.deepEqual(v.map((x) => x.id), b.ren.skills.map((x) => x.id));
-    assert.deepEqual(v.map((x) => x.charge), b.ren.skills.map((x) => +(x.charge * 10 / b.ren.viv).toFixed(2)));
+    assert.deepEqual(v.map((x) => x.charge), b.ren.skills.map((x) => +(x.charge * (10 / b.ren.viv)).toFixed(2)));
   }
   // three chosen of four: the three, in the automatic's order
   assert.deepEqual(P.autoOrderView(st, st.v2.kit.loadout.slice(0, 3)).map((x) => x.id), AD.autoDefaultOrder(st.v2.kit.loadout.slice(0, 3), st.v2.kit.levels));

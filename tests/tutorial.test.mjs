@@ -150,7 +150,9 @@ const FOES = ['marek', 'vessa', 'orla', 'cassius', 'ilse', 'rhosk', 'tobin'];
 const lessonDuel = (d, names = { ren: 'Ren', marek: 'Marek' }) => ({ ren: d.ren, foe: d.foe, form: d.result.form, names });
 
 test('the first duel\'s lessons: one per first of the duel played by the computer, their numbers the bout\'s own (TU-11, TU-6)', () => {
-  assert.deepEqual(DT.LESSONS, ['start', 'charge', 'combo', 'ap', 'react', 'form', 'gauge', 'break', 'speed']);
+  // (the action points' lesson left with them: the model « La Brute » has none, PB-1, journal Passe BL1)
+  assert.deepEqual(DT.LESSONS, ['start', 'charge', 'combo', 'react', 'form', 'gauge', 'break', 'speed']);
+  assert.ok(!('tut.duel.ap.body' in EN));
   for (const k of tutKeys.filter((x) => /^tut\.duel\./.test(x))) assert.doesNotMatch(EN[k], /\d/, `${k} writes a number`);
   for (const id of DT.LESSONS) assert.ok(`tut.duel.${id}.title` in EN && `tut.duel.${id}.body` in EN, id);
   // the old duel's lessons are gone with it (no priority of the opponent, no riposte: AC-07, A3)
@@ -159,23 +161,21 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   assert.match(DT.lessonText('start', D), new RegExp(`You use your ${d.ren.skills.length} skills in your order`));
   assert.match(DT.lessonText('charge', D), new RegExp(`your light attack charges ${+(AD.AUTO_LIGHT.charge * AD.AUTO_CADENCE.charge).toFixed(2)} seconds at your Speed of ${d.ren.viv}`));
   assert.match(DT.lessonText('combo', D), new RegExp(`your light attack strikes ${AD.AUTO_WEAPONS['training-sword'].hits.length} with your weapon`));
-  assert.match(DT.lessonText('ap', D), new RegExp(`gives you ${R.ap.light} action point\\. You started this bout with ${R.ap.start} and hold ${R.ap.max} at most`));
-  assert.match(DT.lessonText('ap', D), new RegExp(`comes back ${AD.AUTO_COOLDOWN} times its first-level charge after its charge begins`)); // the cooldown as the duel counts it (the operator's CO-4, journal Passe CO3)
   const rr = AM.autoReactions(d.ren, d.foe), fr = AM.autoReactions(d.foe, d.ren);
-  assert.match(DT.lessonText('react', D), new RegExp(`${R.react.skillGuard} times as often against a skill or a heavy blow seen coming\\. A guarded blow loses ${pc(R.guardReduce)} % of its damage`));
-  assert.match(DT.lessonText('react', D), new RegExp(`you dodge ${pc(rr.dodge)} % of Marek's blows and guard ${pc(rr.guard)} %, ${pc(rr.guardSkill)} % of those seen coming; Marek dodges ${pc(fr.dodge)} % of yours and guards ${pc(fr.guard)} %`));
+  // the guard by the stats (PB-1: 30 to 70 % by the Defence against the Attack), each side's for this bout
+  assert.match(DT.lessonText('react', D), new RegExp(`${R.react.skillGuard} times as often against a skill or a heavy blow seen coming\\. A guarded blow loses part of its damage, by Defence against Attack: here your guard takes ${pc(rr.reduce)} % off Marek’s blows, theirs ${pc(fr.reduce)} % off yours`));
+  assert.match(DT.lessonText('react', D), new RegExp(`you dodge ${pc(rr.dodge)} % of Marek’s blows and guard ${pc(rr.guard)} %, ${pc(rr.guardSkill)} % of those seen coming; Marek dodges ${pc(fr.dodge)} % of yours and guards ${pc(fr.guard)} %`));
   const sg = (f) => `${f >= 1 ? '\\+' : '−'}${Math.round(Math.abs(f - 1) * 100)}`;
   assert.match(DT.lessonText('form', D), new RegExp(`up to ${pc(R.form)} % either way: today ${sg(d.result.form[0])} % for you, ${sg(d.result.form[1])} % for Marek`));
   assert.match(DT.lessonText('gauge', D), new RegExp(`fills the guarder's ${R.gauge.guardMul} times as much`));
   assert.match(DT.lessonText('break', D), new RegExp(`stunned for ${R.brk.stun} seconds, and takes ${R.brk.dmg} times the damage`));
   // ×2 and « Skip » on the attack's and the dodge's keys (LC3-8), the duel's caps
   assert.match(TU.rich(DT.lessonText('speed', D)), /<kbd data-bind="attack" data-cap="arena">J<\/kbd> plays it twice as fast, and back; <kbd data-bind="dodge" data-cap="arena">L<\/kbd> skips to the result/);
-  // the numbers follow the bout, not constants: a Ren at Speed 8 with the sabre and an AP of his gear
-  const ren = AD.autoRen({ ...d.ren, hp: 300, viv: 8 }, { loadout: ['t1', 't4', 'd1', 's1'], levels: {} }, { weapon: 'duelist-sabre', apStart: 1 });
+  // the numbers follow the bout, not constants: a Ren at Speed 8 with the sabre
+  const ren = AD.autoRen({ ...d.ren, hp: 300, viv: 8 }, { loadout: ['t1', 't4', 'd1', 's1'], levels: {} }, { weapon: 'duelist-sabre' });
   const D2 = { ...D, ren };
   assert.match(DT.lessonText('charge', D2), new RegExp(`charges ${+(AD.AUTO_LIGHT.charge * AD.AUTO_CADENCE.charge * 10 / 8).toFixed(2)} seconds at your Speed of 8`));
   assert.match(DT.lessonText('combo', D2), new RegExp(`strikes ${AD.AUTO_WEAPONS['duelist-sabre'].hits.length} with your weapon`));
-  assert.match(DT.lessonText('ap', D2), new RegExp(`You started this bout with ${R.ap.start + 1}`));
   // in French: the decimal comma, the article meeting the name (« des coups d’Orla »)
   const o = AV.sceneAutoDuel('orla', 7), DO = lessonDuel(o, { ren: 'Ren', marek: 'Orla' });
   T.useLanguage('fr', FR);
@@ -186,13 +186,14 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   } finally { T.useLanguage('en'); }
 });
 
-/** the first time each lesson opens in a duel, from the script alone (its lines and their trace), independent of the replay's events: Ren's first light attack
- *  that lands, a blow that is not its action's first, a guard or a dodge, a skill or a heavy blow landing, a target's gauge a third full at a blow, a break, Ren
+/** the first time each lesson opens in a duel, from the script alone (its lines and their trace), independent of the replay's events: a blow that is not its
+ *  action's first, a guard or a dodge, a skill or a heavy blow landing, a target's gauge a third full at a blow, a break, Ren
  *  charging a skill; the clock's lesson at SPEED_AT; none at the K.O.'s blow or after it */
 function oracle(d) {
   const log = d.result.log, light = new Set([d.ren.light.id, d.foe.light.id]), first = { start: 0 }, fresh = {};
   // a target's gauge just after a blow, from the script alone: the next line's trace (written before its own blow fills anything) with its decay undone, full at
   // that fighter's break or while it is broken (lot 4, journal Passe LC6: the HUD shows the gauge at the blow, no longer one line late)
+  // (k: 0 the first fighter, 1 the second: the trace's `s` holds both gauges since PB-1)
   const after = (i, k) => { const e = log[i], n = log[i + 1]; if (e.s[k] >= R.gauge.max) return R.gauge.max; if (!n) return 0; if (n.ev === 'break' && n.s[k] >= R.gauge.max) return R.gauge.max; return n.s[k] > 0 ? n.s[k] + R.gauge.decay * (n.t - e.t) : 0; };
   const put = (id, t) => { if (!(id in first)) first[id] = t; };
   const koAt = log.find((e) => e.hp !== undefined && e.hp <= 0)?.t ?? Infinity;
@@ -200,13 +201,12 @@ function oracle(d) {
     if (e.t >= koAt) break;
     if (e.ev === 'charge') { fresh[e.who] = true; if (e.who === d.ren.id && e.act !== d.ren.light.id) put('charge', e.t); continue; }
     if (e.ev === 'break') { put('break', e.t); continue; }
-    if (e.ev === 'ward' || e.ev === 'boost') { fresh[e.who] = false; continue; }
+    if (e.ev === 'ward' || e.ev === 'boost' || e.ev === 'parry' || e.ev === 'interrupt') { if (e.ev === 'ward' || e.ev === 'boost') fresh[e.who] = false; continue; }
     const follow = !fresh[e.who]; fresh[e.who] = false;
-    if (e.who === d.ren.id && e.act === d.ren.light.id && e.ev !== 'dodged') put('ap', e.t);
     if (follow) put('combo', e.t);
     if (e.ev !== 'hit') put('react', e.t);
     if (e.ev === 'hit' && !light.has(e.act)) put('form', e.t);
-    if (e.ev !== 'dodged' && after(i, e.who === d.ren.id ? 3 : 1) >= R.gauge.max / 3) put('gauge', e.t);
+    if (e.ev !== 'dodged' && after(i, e.who === d.ren.id ? 1 : 0) >= R.gauge.max / 3) put('gauge', e.t);
   }
   if (DT.SPEED_AT < koAt) put('speed', DT.SPEED_AT);
   return first;
@@ -234,15 +234,14 @@ test('each lesson opens on the line of the script that opens it, at the arena\'s
     // each opens once in a bout whatever the events after it (the coach keeps what it said)
     assert.ok(Object.keys(count).length >= 4, `${foe} ${seed}: lessons reached`);
   }
-  assert.ok(n >= 7 * 3 * 7, `lessons checked: ${n}`);
-  // the replay's impact says what the lessons read: its blow's place in its action, the AP its striker gained
+  assert.ok(n >= 7 * 3 * 6, `lessons checked: ${n}`);
+  // the replay's impact says what the lessons read: its blow's place in its action (no AP gained since PB-1)
   const d = AV.sceneAutoDuel('marek', 1337), rp = new AV.AutoReplay(d.result, { ren: d.ren, marek: d.foe });
   rp.skip(); rp.reset(); rp.drain();
   const imp = [];
   while (!rp.over) { rp.step(); imp.push(...rp.drain().filter((e) => e.type === 'impact')); }
   assert.ok(imp.some((e) => e.follow === true) && imp.some((e) => e.follow === false));
-  assert.ok(imp.filter((e) => e.apGain > 0).every((e) => e.kind === 'light' && e.result !== 'dodged'), 'only a light attack that lands gains AP');
-  assert.ok(imp.some((e) => e.from === 'ren' && e.apGain === R.ap.light));
+  assert.ok(imp.every((e) => e.apGain === 0), 'no AP');
 });
 
 test('the coach holds the bout on the step a lesson opens and its keys; the guide teaches it again (TU-7); every bout of a game has it', () => {
@@ -273,9 +272,10 @@ test('the guide\'s « The duel » and « Preparing a bout » for the duel played
   const s = v2(), duel = TU.chapterText(s, TU.CHAPTERS.find((c) => c.id === 'duel')), prep = TU.chapterText(s, TU.CHAPTERS.find((c) => c.id === 'prepare'));
   const hits = Object.values(AD.AUTO_WEAPONS).map((w) => w.hits.length);
   assert.match(duel, /^The computer fights your bouts as you prepared them\./);
-  assert.match(duel, new RegExp(`gives ${R.ap.light} action point; you start with ${R.ap.start} and hold ${R.ap.max} at most\\. A skill comes back ${AD.AUTO_COOLDOWN} times its first-level charge after its charge begins`));
+  assert.match(duel, new RegExp(`Each skill has a few uses in a bout, more at a higher level, and a gap between two; your heavy blow comes back ${AD.AUTO_COOLDOWN} times its first-level charge after its charge begins`));
+  assert.doesNotMatch(duel, /action point/, 'no AP since PB-1');
   assert.match(duel, new RegExp(`your light attack ${Math.min(...hits)} to ${Math.max(...hits)} by your weapon`));
-  assert.match(duel, new RegExp(`${R.react.skillGuard} times as often against a skill or a heavy blow seen coming; a guarded blow loses ${pc(R.guardReduce)} % of its damage`));
+  assert.match(duel, new RegExp(`${R.react.skillGuard} times as often against a skill or a heavy blow seen coming; a guarded blow loses ${pc(R.guard.lo)} to ${pc(R.guard.hi)} % of its damage, by Defence against Attack`));
   assert.match(duel, new RegExp(`stunned for ${R.brk.stun} seconds and takes ${R.brk.dmg} times the damage`));
   assert.match(duel, new RegExp(`up to ${pc(R.form)} % either way`));
   assert.doesNotMatch(duel, /riposte|priority|Hold \[J\]/, 'nothing of the duel of before');
@@ -287,13 +287,11 @@ test('the guide\'s « The duel » and « Preparing a bout » for the duel played
   assert.match(src('src/ui/tutorial.ts'), /const duel = row\(a\('attack'\), 'tut\.key\.attack'\) \+ row\(a\('dodge'\), 'tut\.key\.dodge'\) \+ row\(a\('pause'\), 'tut\.key\.pause'\);/);
   assert.equal(EN['tut.key.attack'], 'the bout twice as fast, and back');
   assert.equal(EN['tut.key.dodge'], 'skip to the result');
-  // equal numbers read from different rules (the cooldown and the AP's cap are both 5; the guard against a skill seen coming, a guarded blow's gauge and the
-  // break's damage are all 2): each text reads its own constant
+  // equal numbers read from different rules (the guard against a skill seen coming and a guarded blow's gauge are both 2): each text reads its own constant
   const tuSrc = src('src/ui/tutorial.ts'), dtSrc = src('src/ui/duelTutorial.ts');
   for (const [file, line] of [
-    [tuSrc, 'gain: R.ap.light, start: R.ap.start, max: R.ap.max, cool: AUTO_COOLDOWN, lo: Math.min(...hits), hi: Math.max(...hits), times: R.react.skillGuard, reduce: pct(R.guardReduce), stun: R.brk.stun, dmg: R.brk.dmg, form: pct(R.form)'],
-    [dtSrc, "case 'ap': return tx(k, { gain: R.ap.light, start: R.ap.start + (d.ren.apStart ?? 0), max: R.ap.max, cool: AUTO_COOLDOWN });"],
-    [dtSrc, 'return tx(k, { times: R.react.skillGuard, reduce: pct(R.guardReduce), foe,'],
+    [tuSrc, 'cool: AUTO_COOLDOWN, lo: Math.min(...hits), hi: Math.max(...hits), times: R.react.skillGuard, glo: pct(R.guard.lo), ghi: pct(R.guard.hi), stun: R.brk.stun, dmg: R.brk.dmg, form: pct(R.form)'],
+    [dtSrc, 'return tx(k, { times: R.react.skillGuard, rr: pct(rr.reduce), fr: pct(fr.reduce), foe,'],
     [dtSrc, "case 'gauge': return tx(k, { mul: R.gauge.guardMul });"],
     [dtSrc, "case 'break': return tx(k, { stun: R.brk.stun, times: R.brk.dmg });"],
   ]) assert.ok(file.includes(line), line);

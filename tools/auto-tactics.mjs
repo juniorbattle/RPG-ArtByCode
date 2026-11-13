@@ -1,6 +1,7 @@
 // Ways of deciding a fighter's skills in the duel played by the computer, for the laboratory (tools/auto-lab.mjs `modes`, `autos`): the tactic of the second
 // workshop (briefs/combat-auto.md § 25.5, SY-08: one condition per skill, read in the order of the four), and the measuring hands (random presses). Built on
-// the game's own automatic (src/combat/auto.ts: autoSkillChoice, heavyWhen). Nothing in src/ reads this file.
+// the game's own automatic (src/combat/auto.ts: autoSkillChoice, heavyWhen). Nothing in src/ reads this file. Since the model « La Brute » (journal Passe BL1) the duel has
+// no AP: the full-AP rules and the AP conditions hold only on a duel that has them (the rules' `ap`), the hands are keyed by the decision's rank.
 
 /** a keyed draw in [0, 1) (the hands' own stream, never the duel's) */
 function h(a, b, c, d) { let x = (a * 2654435761 + b * 40503 + c * 9973 + d * 31) >>> 0; x ^= x >>> 15; x = Math.imul(x, 2246822519) >>> 0; x ^= x >>> 13; x = Math.imul(x, 3266489917) >>> 0; x ^= x >>> 16; return (x >>> 0) / 4294967296; }
@@ -16,7 +17,7 @@ export function makeTactics(AU) {
     gauge: (v) => v.gauge(v.me) >= (2 / 3) * v.rules.gauge.max,
     hurt: (v) => v.me.hp / v.me.maxHp < 0.5,
     finish: (v) => v.foe.hp / v.foe.maxHp < 1 / 3,
-    full: (v) => v.me.ap >= v.rules.ap.max,
+    full: (v) => !!v.rules.ap && v.me.ap >= v.rules.ap.max,
     follow: (v, x, s) => x.skills.some((o) => offensive(o) && v.usable(o) && v.me.ap >= (o.ap ?? 0) + (s.ap ?? 0)),
     never: () => false,
     cue: (v, x, s) => CONDS.broken(v, x, s) || CONDS.incoming(v, x, s),
@@ -34,7 +35,7 @@ export function makeTactics(AU) {
         if (s.boost && active(v.me.boost, v.t)) continue;
         if (CONDS[c](v, x, s)) return s;
       }
-      if (full && v.me.ap >= v.rules.ap.max) {
+      if (full && v.rules.ap && v.me.ap >= v.rules.ap.max) {
         const can = x.skills.filter((s) => offensive(s) && v.usable(s));
         const o = full === 'cheap' ? can.sort((a, b) => (a.ap ?? 0) - (b.ap ?? 0) || a.charge - b.charge)[0] : can[0];
         if (o && !(full === 'cheap' && v.usable(x.heavy))) return o;
@@ -46,9 +47,9 @@ export function makeTactics(AU) {
    *  'offensive') */
   function careless(base, p = 0.25, seed = 7, which = 'all') {
     return (v, x) => {
-      const r = h(seed, Math.floor(v.t * 100), v.me.ap, v.me.n.acts);
+      const r = h(seed, Math.floor(v.t * 100), v.me.ap ?? v.me.dec, v.me.n.acts);
       const can = x.skills.filter((s) => v.usable(s) && (which === 'all' || (which === 'supports' ? !offensive(s) : offensive(s))));
-      if (can.length && r < p) return can[Math.floor(h(seed + 1, Math.floor(v.t * 100), v.me.ap, v.me.n.acts) * can.length)];
+      if (can.length && r < p) return can[Math.floor(h(seed + 1, Math.floor(v.t * 100), v.me.ap ?? v.me.dec, v.me.n.acts) * can.length)];
       return base(v, x);
     };
   }

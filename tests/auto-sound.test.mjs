@@ -51,10 +51,13 @@ test('the replay tells Ren\'s charge of a skill as the charge\'s tier, its relea
     const want = [], open = {};
     for (const e of log) {
       if (e.t > koAt) break;
+      // (PB-1: a charge of his cut by the opponent's interruption, or his blow parried, leaves there, without a blow)
+      if (e.who !== d.ren.id && (e.ev === 'interrupt' || e.ev === 'parry') && open.c) { want.push({ type: 'chargeRelease', t: e.t, idx: open.c.act === d.ren.heavy.id ? 1 : ladder.get(open.c.act) }); open.c = null; continue; }
       if (e.who !== d.ren.id) continue;
       // (his heavy blow, a base attack since SY-02, the first tier: the operator's SL1-6 « Sa charge au premier palier (au lot 2) »)
       if (e.ev === 'charge') { open.c = e.act === d.ren.light.id ? null : e; if (open.c) want.push({ type: 'chargeTier', t: e.t, idx: e.act === d.ren.heavy.id ? 1 : ladder.get(e.act) }); continue; }
-      if (e.ev === 'break') continue;
+      // (his parry and his interruption are about the opponent's action, not one of his leaving)
+      if (e.ev === 'break' || e.ev === 'parry' || e.ev === 'interrupt') continue;
       if (open.c) { want.push({ type: 'chargeRelease', t: e.t, idx: open.c.act === d.ren.heavy.id ? 1 : ladder.get(open.c.act) }); open.c = null; }
     }
     const got = evs.filter((e) => e.type === 'chargeTier' || e.type === 'chargeRelease');
@@ -167,9 +170,11 @@ test('the music\'s rule F on this duel: the lead aside on the opponent\'s sequen
     const open = {}; let lowAt = Infinity;
     for (const e of log) {
       if (e.ev === 'charge') { open[e.who] = e; continue; }
-      if (e.ev === 'break') { ivs.stun.push([e.t, e.t + AU.AUTO_RULES.brk.stun]); continue; }
-      const c = open[e.who];
-      if (c) { if (e.who === d.foe.id && big(e.who, c.act)) ivs.seq.push([c.t, e.t]); if (e.who === d.ren.id && c.act !== d.ren.light.id) ivs.ch.push([c.t, e.t]); open[e.who] = null; }
+      if (e.ev === 'break') { ivs.stun.push([e.t, e.t + (e.dur ?? AU.AUTO_RULES.brk.stun)]); continue; }
+      // (PB-1: an interruption cuts the other's charge, a parry takes the other's blow: that charge ends there)
+      const who = e.ev === 'interrupt' || e.ev === 'parry' ? (e.who === d.ren.id ? d.foe.id : d.ren.id) : e.who;
+      const c = open[who];
+      if (c) { if (who === d.foe.id && big(who, c.act)) ivs.seq.push([c.t, e.t]); if (who === d.ren.id && c.act !== d.ren.light.id) ivs.ch.push([c.t, e.t]); open[who] = null; }
       if (e.hp !== undefined && lowAt === Infinity) { const to = e.who === d.ren.id ? 'marek' : 'ren'; if (e.hp / maxHp[to] < P.LOW_HP) lowAt = e.t; }
     }
     // an action still charged at the K.O. holds its moment to the end

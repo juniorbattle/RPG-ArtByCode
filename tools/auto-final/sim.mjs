@@ -213,7 +213,8 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
     if (cfg.brute.plan === 'general') switch (s.role) {
       case 'exploit': return condHolds('open', v, x, s) || foe.hp / foe.maxHp < 0.25 || (!!L && me.hp / me.maxHp < L * 0.6);
       case 'punish': return true;
-      case 'haste': return brokenFor(v, s) || me.hp / me.maxHp < 0.5;
+      // cfg.brute.hasteRule 'hurt': the haste when hurt alone (lot 1, journal Passe BL1: the opponent's break left out)
+      case 'haste': return cfg.brute.hasteRule === 'hurt' ? me.hp / me.maxHp < 0.5 : brokenFor(v, s) || me.hp / me.maxHp < 0.5;
       case 'slow': return condHolds('incoming', v, x, s) || late;
       default: break;
     }

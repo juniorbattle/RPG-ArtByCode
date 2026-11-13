@@ -27,7 +27,8 @@ const duelOf = (foe, stage, seed, loadout = ['t1', 't4', 'd1', 's1'], order, wea
 const blows = (r) => r.log.filter((e) => e.ev === 'hit' || e.ev === 'guarded' || e.ev === 'dodged');
 /** a fighter's gauge just after line i of the script, from the script alone (lot 4, journal Passe LC6): a line's trace is written before its blow fills the gauge
  *  (src/combat/auto.ts), so the gauge after it is the next line's trace with its decay undone, full when the next line is that fighter's break or when it is broken;
- *  undefined when the next line finds it empty (a stun ended between them, or a decay to nothing) or there is no next line. k: 1 the first fighter, 3 the second */
+ *  undefined when the next line finds it empty (a stun ended between them, or a decay to nothing) or there is no next line. k: 0 the first fighter, 1 the second
+ *  (the trace's `s` is both gauges since the model « La Brute »: no AP, PB-1) */
 function gaugeAfter(log, i, k) {
   const R = AU.AUTO_RULES, e = log[i], n = log[i + 1];
   if (e.s[k] >= R.gauge.max) return R.gauge.max;
@@ -36,16 +37,15 @@ function gaugeAfter(log, i, k) {
   return n.s[k] > 0 ? Math.min(R.gauge.max, n.s[k] + R.gauge.decay * (n.t - e.t)) : undefined;
 }
 
-test('the trace changes nothing of the duel: the same script, each line with both fighters\' AP and gauges', () => {
+test('the trace changes nothing of the duel: the same script, each line with both fighters\' gauges, a blow with its target\'s gauge after it, a break with its stun', () => {
   for (const [foe, seed] of [['orla', 3], ['vessa', 11], ['marek', 7]]) {
     const { ren, foe: f, result } = duelOf(foe, 1, seed), plain = AU.autoDuel(ren, f, seed, { log: true });
-    assert.deepEqual(result.log.map(({ s, fx, ...e }) => e), plain.log, foe);
+    assert.deepEqual(result.log.map(({ s, fx, g, dur, ...e }) => e), plain.log, foe);
     assert.deepEqual({ ...result, log: null }, { ...plain, log: null });
     for (const e of result.log) {
-      assert.equal(e.s.length, 4);
-      assert.ok(e.s[0] >= 0 && e.s[0] <= 5 && e.s[2] >= 0 && e.s[2] <= 5, 'AP within 0..5');
-      assert.ok(e.s[1] >= 0 && e.s[1] <= AU.AUTO_RULES.gauge.max && e.s[3] >= 0 && e.s[3] <= AU.AUTO_RULES.gauge.max, 'gauges within 0..70');
-      if (e.ev === 'break') assert.equal(e.s[e.who === 'ren' ? 1 : 3], AU.AUTO_RULES.gauge.max, 'a break: the gauge full');
+      assert.equal(e.s.length, 2);
+      assert.ok(e.s[0] >= 0 && e.s[0] <= AU.AUTO_RULES.gauge.max && e.s[1] >= 0 && e.s[1] <= AU.AUTO_RULES.gauge.max, 'gauges within 0..70');
+      if (e.ev === 'break') { assert.equal(e.s[e.who === 'ren' ? 0 : 1], AU.AUTO_RULES.gauge.max, 'a break: the gauge full'); assert.equal(e.dur, AU.AUTO_RULES.brk.stun, 'its stun'); }
       if (e.ev === 'hit' || e.ev === 'guarded') assert.equal(e.hp, Math.max(0, e.hp), 'health');
     }
   }
@@ -145,7 +145,7 @@ test('the replay\'s HUD: both charges on the timeline, the gauges as the script 
     rp.step(rp.D.dt / 4); rp.drain();
     const h = rp.hud(), last = !r.log[i + 1] || r.log[i + 1].t > e.t + 1e-9;
     // the gauge as the last line of that instant left it (several lines can share one instant), the line's blow in it (lot 4: no longer one line late)
-    const ga = gaugeAfter(r.log, i, 1);
+    const ga = gaugeAfter(r.log, i, 0);
     if (e.s && last && Math.abs(rp.t - e.t) < 0.01 && !h.over && ga !== undefined) {
       const g = ga / AU.AUTO_RULES.gauge.max * 100, gr = h.ren.broken ? 100 : h.ren.gaugePct;
       assert.ok(Math.abs(gr - g) < 0.5 || h.ren.broken, `the gauge at ${e.t}: ${gr} for ${g}`);
@@ -180,8 +180,10 @@ test('the gauge at the blow that fills it (journal Passe LC5\'s note, fixed on t
     bl.forEach(({ e, i }, k) => byLine.set(i, imps[k]));
     for (const [i, imp] of byLine) {
       const e = r.log[i]; if (!imp || e.ev === 'dodged' || (e.hp ?? 1) <= 0) continue;
-      const kt = seat(e.who) === 'ren' ? 3 : 1, want = gaugeAfter(r.log, i, kt);
+      const kt = seat(e.who) === 'ren' ? 1 : 0, want = gaugeAfter(r.log, i, kt);
       if (want === undefined) continue;
+      // the blow's own line says it (`g`, the duel's gauge right after it), within its rounding
+      assert.ok(Math.abs(e.g - want) < 0.02, `${foe} ${seed} line ${i}: the script's g ${e.g} for ${want}`);
       assert.ok(Math.abs(imp.resist - want) < 0.02, `${foe} ${seed} line ${i} (${e.ev} ${e.act} at ${e.t}): the impact says ${imp.resist}, the script ${want}`);
       checked++; if (want - e.s[kt] > 0.5) late++; if (r.log[i + 1]?.ev === 'break') breaks++;
       const n = hitsOf(e.who, e.act), target = e.who === d.ren.id ? d.foe.id : d.ren.id;
@@ -195,7 +197,7 @@ test('the gauge at the blow that fills it (journal Passe LC5\'s note, fixed on t
     const h = new AV.AutoReplay(r, { ren: d.ren, marek: d.foe });
     for (const [i] of byLine) {
       const e = r.log[i]; if (e.ev === 'dodged' || (e.hp ?? 1) <= 0 || r.log[i + 1]?.t === e.t && r.log[i + 1]?.ev !== 'charge' && r.log[i + 1]?.ev !== 'break') continue;
-      const kt = seat(e.who) === 'ren' ? 3 : 1, want = gaugeAfter(r.log, i, kt); if (want === undefined) continue;
+      const kt = seat(e.who) === 'ren' ? 1 : 0, want = gaugeAfter(r.log, i, kt); if (want === undefined) continue;
       h.seek(e.t);
       const g = h.hud()[seat(e.who) === 'ren' ? 'marek' : 'ren'];
       if (h.hud().over) continue;
@@ -235,10 +237,9 @@ test('AC-09: the order of the four, the player\'s (a minor action of the save) o
   assert.deepEqual(AD.autoRen(ST.REN_BASE, G.v2KitOf(st)).skills.map((a) => a.id), want, 'the automatic follows it');
   // a skill swapped in: the others keep their order, the new one last
   assert.deepEqual(AD.autoOrderOf({ loadout: ['t1', 'k_iron', 't4', 's1'], levels: {}, order: want }), ['t1', 't4', 's1', 'k_iron']);
-  // the page's view: the order, each with its AP and its charge at Ren's Speed
+  // the page's view: the order, each with its charge at Ren's Speed (no AP since PB-1)
   const v = PV.autoOrderView(st, G.v2KitOf(st).loadout);
   assert.deepEqual(v.map((x) => x.id), want);
-  assert.deepEqual(v.map((x) => x.ap), want.map((id) => AD.autoSkill(id, 1).ap));
   assert.deepEqual(v.map((x) => x.charge), want.map((id) => +AD.autoSkill(id, 1).charge.toFixed(2)));
   // today's game has no such action
   assert.equal(G.advance(G.newGame(1842, 'Ren'), { type: 'setOrder', skills: want }).ok, false);

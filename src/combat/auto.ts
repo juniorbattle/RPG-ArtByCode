@@ -13,7 +13,7 @@ import { hitFactor } from './stats';
  *  and a GAP between two uses, fast, medium or long by its type (DB5-3 changed for the skills by PB-1); a ROLE each (exploit, punish, pierce, breaker, opener,
  *  interrupt, ward, parry, haste, slow, load), decided by the PLAN (a condition per skill, SY-08, in the order of the four, AC-09), the automatic playing the
  *  general plan (SL1-3 changed by PB-1). The OPENING (« la faille »): a fighter open neither guards nor dodges and takes ×1.25, opened by an opener (Sunder,
- *  8 s), an interrupt (the Feint on a big action charged, 6 s, its use lost, 1 s before it acts again), a parry (a big blow taken in its 3 s window, 6 s,
+ *  5 s), an interrupt (the Feint on a big action charged, 6 s, its use lost, 1 s before it acts again), a parry (a big blow taken in its 3 s window, 6 s,
  *  no counter-blow: AC-07) or a big action dodged (2.5 s). Each rival its STYLE under the same rules (its pieces' guard and dodge, its heavy blow, its plan).
  *  The gear's effects on top of its points (`gfx`). Each fighter's form of the day ±15 % (AC-08). An off-screen bout is the same duel (AC-18).
  *  ONE DRAW PER BLOW (SY-04): a reaction's draw is keyed by the striker, its action's rank and the hit's rank, the initiative by the side, a decision's by the
@@ -103,8 +103,9 @@ export const AUTO_RULES = {
   react: { dodge: 0.12, guard: 0.35, skillGuard: 2, cap: 0.9 },
   /** a fighter charging anything but its light attack, or striking its own enchaînement, neither guards nor dodges (AC-05, « la charge qui expose ») */
   exposed: true,
-  /** every health × 2.4: DB5's « en 2 et 5 min » held (AC-13's ×2), × 1.2 the model's (fewer skills, each heavier: SL1-2's durations) */
-  hpScale: 2.4,
+  /** every health × 3.48: DB5's « en 2 et 5 min » held (AC-13's ×2), × 1.2 the model's (fewer skills, each heavier), × 1.45 for the operator's durations of SL1-2
+   *  (A3: « la poule environ 2min, le tableau 2-4min , la finale 3-4min max »; journal Passe BL1) */
+  hpScale: 3.48,
   /** each fighter's first charge begins after a draw in [0, start] s */
   start: 1.8,
   /** the form of the day: each fighter's blows × 1 ± form, drawn before the bout from its own stream, said on the match sheet (AC-08) */
@@ -114,9 +115,9 @@ export const AUTO_RULES = {
   /** the opening (« la faille »): the damage taken ×, neither guard nor dodge; a big action dodged opens its striker this long (s) */
   open: { dmg: 1.25 }, whiff: 2.5,
   /** the roles: an exploit × in an opening, a break or on a fighter charging a big action, × `lo` else; a punish × on a fighter charging a big action; an
-   *  opener's opening (s); an interrupt's opening and the stagger before the interrupted one acts again; a parry's window and the striker's opening; the
+   *  opener's opening (s: 5, the laboratory's 8 shortened at AC-12's test, journal Passe BL1); an interrupt's opening and the stagger before the interrupted one acts again; a parry's window and the striker's opening; the
    *  haste's and the slow's charges × and lengths; a load's × on the next offensive action and its window */
-  exploit: { hi: 2, lo: 0.6 }, punish: 1.7, opener: 8, interrupt: { open: 6, stagger: 1 }, parry: { open: 6, dur: 3 },
+  exploit: { hi: 2, lo: 0.6 }, punish: 1.7, opener: 5, interrupt: { open: 6, stagger: 1 }, parry: { open: 6, dur: 3 },
   haste: { k: 0.7, dur: 15 }, slow: { k: 1.4, dur: 12 }, load: { dmg: 2, gauge: 1.5, dur: 15 },
   /** the light attack's charge × (fewer skills: the light fills the time; RY-1's forty blows a minute kept) */
   lightCharge: 1.35,
@@ -426,7 +427,7 @@ function running(v: AutoView, s: AutoAction): boolean {
 const interruptible = (v: AutoView, s: AutoAction): boolean => { const { me, foe, t } = v; if (!foe.act || foe.act.kind === 'light' || foe.combo || foe.broken) return false; return foe.at > t + v.chargeOf(me, s); };
 /** The automatic's rule for a skill by its role (the 'auto' line of a plan): the general plan measured for every rival (PB-1, the laboratory's `plan: 'general'`,
  *  journal Passe CF2) — the exploit in an opening or a break, or to finish (under a quarter), or Ren nearly down; the punish as soon as it is ready; the haste when
- *  hurt or at the opponent's break; the slow on a big action coming or late in the duel (past half of either health: a use never spent is lost); the load when
+ *  hurt (« blessé » alone: the general plan's « or at the opponent's break » cost the planner, journal Passe BL1); the slow on a big action coming or late in the duel (past half of either health: a use never spent is lost); the load when
  *  something can follow it; the opener when something can profit from it; the interrupt on a big action it can cut; the parry on a big action coming; the ward
  *  on a big action it can be up for, or its own gauge past two thirds; the piercer and the breaker as soon as they are ready. */
 export function autoRole(v: AutoView, x: AutoFighter, s: AutoAction): boolean {
@@ -434,7 +435,7 @@ export function autoRole(v: AutoView, x: AutoFighter, s: AutoAction): boolean {
   switch (s.role) {
     case 'exploit': return condHolds('open', v, x, s) || foe.hp / foe.maxHp < 0.25 || me.hp / me.maxHp < L * 0.6;
     case 'punish': return true;
-    case 'haste': return brokenFor(v, s) || me.hp / me.maxHp < 0.5;
+    case 'haste': return me.hp / me.maxHp < 0.5;
     case 'slow': return condHolds('incoming', v, x, s) || late;
     case 'load': return condHolds('follow', v, x, s);
     case 'opener': return x.skills.some((o) => o !== s && (o.role === 'exploit' || o.role === 'load') && v.usable(o)) || v.usable(x.heavy) || !x.skills.some((o) => o.role === 'exploit');

@@ -2,9 +2,10 @@
 // l’ordre gardé »), the automatic keeping its strongest skill for the break (SL1-3), the hand (SY-09 « Au prochain choix de Ren, une compétence en attente »),
 // an old save's heavy blow among the four (SL1-7). What is proved here, in Node:
 // - the automatic is the tactic whose every line is 'auto': a fighter without a tactic and one with four 'auto' lines fight the same duel, event for event;
-// - SL1-3: the strongest offensive skill leaves only on a break long enough for it to land, or at full AP when nothing else held;
-// - each condition of a tactic against an oracle written from SY-08's words; 'never' never leaves by itself; the tactic is part of the game (setTactic);
-// - the hand: a press changes nothing before it (one draw per blow), leaves at Ren's next choice once its AP and cooldown allow it, waits meanwhile, a later
+// - SL1-3 as PB-1 changed it (the general plan, journal Passe CF3): the Thrust, an exploit, kept for an opening or a break long enough for it to land, or to finish;
+// - each condition of a tactic against an oracle written from SY-08's words (and PB-1's « dans une faille », « au début »); 'never' never leaves by itself; the
+//   tactic is part of the game (setTactic);
+// - the hand: a press changes nothing before it (one draw per blow), leaves at Ren's next choice once it is ready (a use left, its gap run out), waits meanwhile, a later
 //   press replacing it; the arena's replay swaps its script at the press, keeps every line it played, and ends on the new duel's result;
 // - SL1-7: a save whose four held the heavy blow gives its place to the next skill owned, in the skills page's order; setLoadout refuses the heavy blow.
 import { test } from 'node:test';
@@ -39,38 +40,42 @@ test('the automatic is the tactic of four « auto » lines', () => {
 });
 
 /** a hand-made view (the decision's inputs only) */
-const side = (o = {}) => ({ ap: 3, hp: 100, maxHp: 100, g: 0, broken: false, stunEnd: 0, act: null, at: 0, ward: null, boost: null, ...o });
-const view = (o = {}) => { const me = side(o.me), foe = side(o.foe); return { t: 10, me, foe, rules: AU.AUTO_RULES, usable: o.usable ?? ((a) => (a.ap ?? 0) <= me.ap), gauge: (s) => s.g, chargeOf: (_, a) => a.charge, rand: () => 0.5 }; };
-const off = (id, power, ap = 2, charge = 2) => ({ id, kind: 'skill', family: 'offensive', power, ap, charge });
-const fighter = (skills, tactic) => ({ skills, tactic, heavy: { id: 'heavy', kind: 'heavy', charge: 1, ap: 0 }, light: { id: 'light', kind: 'light', charge: 0.7 } });
+const side = (o = {}) => ({ hp: 100, maxHp: 100, g: 0, broken: false, stunEnd: 0, act: null, at: 0, ward: null, openUntil: 0, hasteUntil: 0, slowUntil: 0, next: null, combo: null, ...o });
+const view = (o = {}) => { const me = side(o.me), foe = side(o.foe); return { t: 10, me, foe, rules: AU.AUTO_RULES, usable: o.usable ?? (() => true), gauge: (s) => s.g, chargeOf: (_, a) => a.charge, rand: () => 0.5 }; };
+const off = (id, power, role = 'punish', charge = 2) => ({ id, kind: 'skill', family: 'offensive', role, power, uses: 2, charge });
+const fighter = (skills, tactic) => ({ skills, tactic, heavy: { id: 'heavy', kind: 'heavy', charge: 1 }, light: { id: 'light', kind: 'light', charge: 0.7 } });
 
-test('SL1-3: the strongest offensive skill is kept for the break, or the AP full', () => {
-  const t1 = off('t1', 50), t4 = off('t4', 90, 3, 4), x = fighter([t4, t1]);
-  assert.equal(AU.strongestOf(x), t4);
-  assert.equal(AU.autoSkillChoice(view({ me: { ap: 4 } }), x), t1, 'the strongest waits, the other goes');
-  assert.equal(AU.autoSkillChoice(view({ me: { ap: 4 }, foe: { broken: true, stunEnd: 15 } }), x), t4, 'broken for 5 s: its 4 s charge lands');
-  assert.equal(AU.autoSkillChoice(view({ me: { ap: 4 }, foe: { broken: true, stunEnd: 12 } }), x), t1, 'broken for 2 s: too short for it');
-  assert.equal(AU.autoSkillChoice(view({ me: { ap: 3 }, usable: (a) => a === t4 }), x), null, 'the other not ready: it still waits');
-  assert.equal(AU.autoSkillChoice(view({ me: { ap: 5 }, usable: (a) => a === t4 }), x), t4, 'the AP full and nothing else: rather than lose them');
+test('SL1-3 as PB-1 changed it: the Thrust (an exploit) kept for an opening or a break long enough for it to land, or to finish; the Taille éclair (a punish) as soon as it is ready', () => {
+  const t1 = off('t1', 50), t4 = off('t4', 90, 'exploit', 4), x = fighter([t4, t1]);
+  assert.equal(AU.autoSkillChoice(view({}), x), t1, 'the exploit waits, the punish goes');
+  assert.equal(AU.autoSkillChoice(view({ foe: { broken: true, stunEnd: 15 } }), x), t4, 'broken for 5 s: its 4 s charge lands');
+  assert.equal(AU.autoSkillChoice(view({ foe: { broken: true, stunEnd: 12 } }), x), t1, 'broken for 2 s: too short for it');
+  assert.equal(AU.autoSkillChoice(view({ foe: { openUntil: 15 } }), x), t4, 'open for 5 s');
+  assert.equal(AU.autoSkillChoice(view({ foe: { hp: 20 } }), x), t4, 'to finish (under a quarter)');
+  assert.equal(AU.autoSkillChoice(view({ usable: (a) => a === t4 }), x), null, 'the other not ready: it still waits');
 });
 
 test('a tactic\'s conditions, against SY-08\'s words', () => {
-  const t1 = off('t1', 50), t4 = off('t4', 90, 3, 4), C = (c, o, s = t1, x = fighter([t1, t4])) => AU.condHolds(c, view(o), x, s);
+  const t1 = off('t1', 50), t4 = off('t4', 90, 'exploit', 4), C = (c, o, s = t1, x = fighter([t1, t4])) => AU.condHolds(c, view(o), x, s);
   assert.ok(C('ready', {}));
   assert.ok(C('broken', { foe: { broken: true, stunEnd: 13 } }) && !C('broken', { foe: { broken: true, stunEnd: 11 } }), 'broken long enough for it to land');
   const big = { act: { id: 'm', kind: 'skill' }, at: 14 };
   assert.ok(C('incoming', { foe: big }) && !C('incoming', { foe: { ...big, at: 11 } }) && !C('incoming', { foe: { act: { id: 'l', kind: 'light' }, at: 14 } }), 'an offensive skill leaving before the big blow');
-  const ward = { id: 'd1', kind: 'skill', family: 'defensive', ward: { dur: 5 }, ap: 2, charge: 2 };
+  const ward = { id: 'd1', kind: 'skill', family: 'defensive', role: 'ward', ward: { dur: 5 }, uses: 2, charge: 2 };
   assert.ok(C('incoming', { foe: big }, ward) && !C('incoming', { foe: { ...big, at: 18 } }, ward), 'a ward up before the blow and still up when it lands');
   assert.ok(C('gauge', { me: { g: 47 } }) && !C('gauge', { me: { g: 46 } }), 'two thirds of 70');
   assert.ok(C('hurt', { me: { hp: 49 } }) && !C('hurt', { me: { hp: 50 } }));
   assert.ok(C('finish', { foe: { hp: 33 } }) && !C('finish', { foe: { hp: 34 } }));
-  const boost = { id: 's1', kind: 'skill', family: 'support', boost: { dur: 12 }, ap: 2, charge: 2 };
-  assert.ok(C('follow', { me: { ap: 4 } }, boost) && !C('follow', { me: { ap: 3 } }, boost), 'an offensive skill can follow it');
+  const boost = { id: 's1', kind: 'skill', family: 'support', role: 'haste', boost: { dur: 12 }, uses: 2, charge: 2 };
+  assert.ok(C('follow', {}, boost) && !C('follow', { usable: (a) => a === boost }, boost), 'another offensive skill, or the heavy blow, can follow it');
+  assert.ok(C('follow', { usable: (a) => a.kind === 'heavy' }, boost), 'the heavy blow ready is enough');
+  // PB-1's two: « dans une faille » (open or broken long enough for it to land), « au début » (the first 15 s)
+  assert.ok(C('open', { foe: { openUntil: 13 } }) && !C('open', { foe: { openUntil: 11 } }));
+  assert.ok(C('start', {}) && !AU.condHolds('start', { ...view({}), t: 16 }, fighter([t1]), t1));
   assert.ok(!C('never', {}));
   const x = fighter([t1, t4], ['never', 'ready']);
-  assert.equal(AU.tacticChoice(view({ me: { ap: 3 } }), x, x.tactic), t4, '« never » never leaves by itself');
-  assert.equal(AU.tacticChoice(view({ me: { ap: 5 } }), fighter([t4, t1], ['finish', 'never']), ['finish', 'never']), null, 'no full-AP rule but the automatic\'s');
+  assert.equal(AU.planChoice(view({}), x, x.tactic), t4, '« never » never leaves by itself');
+  assert.equal(AU.planChoice(view({}), fighter([t4, t1], ['finish', 'never']), ['finish', 'never']), null, 'no rule but its line\'s');
 });
 
 test('the tactic is part of the game: setTactic', () => {
@@ -87,17 +92,19 @@ test('the tactic is part of the game: setTactic', () => {
   assert.ok(!G.advance(st, { type: 'setTactic', skill: 'd1', cond: 'follow' }).ok, 'only a condition its family takes');
 });
 
-test('the hand: nothing before the press changes, the skill leaves at the next choice that can pay it, one waits at a time', () => {
+test('the hand: nothing before the press changes, the skill leaves at the next choice once it is ready (a use left, its gap run out), one waits at a time', () => {
   for (const foe of ['marek', 'vessa', 'rhosk']) for (const seed of [5, 88]) {
     const A = renOf(), B = foeOf(foe), base = AU.autoDuel(A, B, seed, { log: true });
     for (const at of [8, 20.5, 47]) for (const sk of ['t1', 't4', 'd1', 's1']) {
       const r = AU.autoDuel(A, B, seed, { log: true, commands: [{ t: at, skill: sk }] });
       const before = (L) => L.filter((e) => e.t < at - 0.006).map(line);
       assert.deepEqual(before(r.log), before(base.log), `${foe} ${seed} ${sk} at ${at}: the lines before the press`);
-      // the first charge of Ren after the press: the skill pressed if he could pay it then; never another skill while it waits and could leave
+      // the first charge of Ren after the press: the skill pressed once it is ready, when a use is left at the press (PB-2); never another skill while it waits
       const goes = r.log.find((e) => e.who === 'ren' && e.ev === 'charge' && e.t >= at - 0.006 && e.act === sk);
-      if (r.winner !== null && r.log.at(-1).t > at + 60) assert.ok(goes, `${foe} ${seed} ${sk} at ${at}: it leaves within the minute`);
-      // while it waits, his base attacks only: no other skill spends the AP it waits for
+      const left = A.skills.find((a) => a.id === sk).uses - r.log.filter((e) => e.who === 'ren' && e.ev === 'charge' && e.act === sk && e.t < at - 0.006).length;
+      if (left > 0 && r.winner !== null && r.log.at(-1).t > at + 60) assert.ok(goes, `${foe} ${seed} ${sk} at ${at}: it leaves within the minute`);
+      if (left <= 0) assert.ok(!goes, `${foe} ${seed} ${sk} at ${at}: its uses spent, it never leaves`);
+      // while it waits, his base attacks only
       if (goes) assert.ok(!r.log.some((e) => e.who === 'ren' && e.ev === 'charge' && e.t > at + 0.01 && e.t < goes.t && !['light', 'heavy'].includes(e.act)), `${foe} ${seed} ${sk} at ${at}: no other skill meanwhile`);
     }
     // a later press replaces the first: only the second leaves
