@@ -136,6 +136,10 @@ export interface V2State {
   /** what the player has seen of the things to do in the list (Q) (the operator's LA-7, journal Passe LA2; src/simulation/v2todo.ts): a « $ » key, saved with
    *  the game and left out of its fingerprint */
   $todo?: string[];
+  /** a bout under way in the arena (the operator's SY-10 « Le résultat de la tactique écrit à l’ouverture », journal Passe SY2): the result its tactic gives, written
+   *  when the fight starts and applied if the page is left before its end (a bout left is not fought again for a better press); replaced by the bout's own result at
+   *  its end. A « $ » key, saved with the game and left out of its fingerprint (src/ui/playArena.ts, src/ui/play.ts) */
+  $pending?: { kind: 'bout' | 'challenge'; outcome: { winner: 'player' | 'opponent'; playerHp: number; playerMaxHp: number; opponentHp: number; opponentMaxHp: number; finisher: string | null } };
   /** the gear carried (lot V3): the weapon and its tier, the armour, the two accessories, the bag of what is owned and not worn */
   gear?: V2Gear;
   /** the shops' day-long states (lot V4): a bargain or a grudge of the day, closed to the player for the day, a markup until a day */

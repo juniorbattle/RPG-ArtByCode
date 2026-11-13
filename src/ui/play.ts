@@ -1,5 +1,5 @@
 import type { TimeOfDay } from '../atmosphere/DayState';
-import { actions, advance, hash, isV2, lookOf, makeV2, namedState, newGame, newGameV2, wantsV2, type Action, type GameState } from '../simulation';
+import { actions, advance, hash, isV2, lookOf, makeV2, namedState, newGame, newGameV2, settlePending, wantsV2, type Action, type GameState } from '../simulation';
 import { loadingError, toneLoading } from './loading';
 import { readSave, writeSave } from './save';
 import { lang, useLanguage } from '../narrative/text';
@@ -52,7 +52,7 @@ export function startingState(params: URLSearchParams): { state: GameState; note
   if (import.meta.env.DEV && params.has('state')) return { state: withRules(namedState(params.get('state')!, params.has('seed') ? Number(params.get('seed')) >>> 0 : undefined, params.get('name') ?? 'Ren'), params) };
   if (params.has('new')) return { state: withRules(newGame(Number(params.get('seed') ?? 1842) >>> 0, params.get('name') ?? 'Ren'), params, true) };
   const r = readSave();
-  if (r.state) return { state: r.state };
+  if (r.state) return { state: settlePending(r.state) };
   return { state: newGame(1842, params.get('name') ?? 'Ren'), note: r.error };
 }
 

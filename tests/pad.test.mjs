@@ -79,7 +79,8 @@ test('the walk (MN-2): the D-pad at full speed, the stick from 30 % to 1, B held
 
 test('the keys each button presses (MN-3, MN-4, MN-6), as the sheet\'s tables say', () => {
   assert.deepEqual({ ...P.KEYS.explore }, { [STD.A]: 'e', [STD.Y]: 'q', [STD.START]: 'Escape', [STD.VIEW]: 'm' });
-  assert.deepEqual({ ...P.KEYS.page }, { [STD.A]: 'Enter', [STD.B]: 'Escape', [STD.X]: ' ', [STD.START]: 'Escape' });
+  // Y: C, a skill's condition in the tactic (lot 2 of the second redesign, journal Passe SL3)
+  assert.deepEqual({ ...P.KEYS.page }, { [STD.A]: 'Enter', [STD.B]: 'Escape', [STD.X]: ' ', [STD.Y]: 'c', [STD.START]: 'Escape' });
   assert.deepEqual({ ...P.KEYS.scene }, { [STD.A]: 'Enter', [STD.START]: 'Escape' });
   assert.deepEqual({ ...P.TAB }, { [STD.LB]: -1, [STD.RB]: 1 });
   // the pages answer those keys: a key the pad presses (untrusted) is read as QWERTY's whatever the player's keys (the remapping, journal Passe RM2,
@@ -155,7 +156,7 @@ test('every key cap the version 2\'s interface writes shows a pad button or hide
   // (data-key, its name in the page's language: RM-7)
   const ui = fs.readdirSync(path.join(ROOT, 'src/ui')).filter((f) => f.endsWith('.ts')).map((f) => src(`src/ui/${f}`)).join('\n');
   assert.deepEqual([...ui.matchAll(/<kbd>([^<$]+)<\/kbd>/g)].map((m) => m[1]), [], 'no cap written as a bare key');
-  assert.deepEqual([...new Set([...ui.matchAll(/(?:keyCap|footBtn)\('([^']+)'/g)].map((m) => m[1]))].sort(), ['Enter', 'Esc', 'Space']);
+  assert.deepEqual([...new Set([...ui.matchAll(/(?:keyCap|footBtn)\('([^']+)'/g)].map((m) => m[1]))].sort(), ['C', 'Enter', 'Esc', 'Space']);
   const acts = new Set([...ui.matchAll(/bindCap\('([a-z]+)'/g)].map((m) => m[1]));
   // the menu's lines and the guide's shortcuts name their action
   for (const m of ui.matchAll(/this\.open\w+\([^)]*\), '([a-z]+)'\)/g)) acts.add(m[1]);
@@ -164,7 +165,9 @@ test('every key cap the version 2\'s interface writes shows a pad button or hide
   assert.deepEqual([...acts].filter((a) => !K.ACTS.includes(a)), [], 'every cap names a known action');
   for (const a of ['talk', 'list', 'map', 'journal', 'board', 'skills', 'gear', 'settings', 'guide', 'mute', 'attack', 'guard', 'dodge', 'pause', 'run']) assert.ok(acts.has(a), a);
   const B = STD;
-  for (const [k, b] of Object.entries({ Enter: B.A, Esc: B.B, Space: B.X })) assert.equal(P.capButton(k, 'other'), b, k);
+  for (const [k, b] of Object.entries({ Enter: B.A, Esc: B.B, Space: B.X, C: B.Y })) assert.equal(P.capButton(k, 'other'), b, k);
+  // the hand's four on the D-pad (lot 2 of the second redesign)
+  assert.deepEqual(['skill1', 'skill2', 'skill3', 'skill4'].map((a) => P.bindButton(a, 'arena')), [B.UP, B.RIGHT, B.DOWN, B.LEFT]);
   assert.equal(P.capButton('Esc', 'hints'), B.START);
   assert.equal(P.capButton('Esc', 'scene'), B.START);
   // an action's button wherever its cap stands, whatever key the player gave it; the pages' shortcuts hidden in the menu

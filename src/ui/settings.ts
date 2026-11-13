@@ -255,7 +255,7 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
         + own('map', cap(fam, BTN.VIEW)) + (['journal', 'board', 'skills', 'gear', 'settings', 'guide', 'mute'] as const).map((a) => own(a, via)).join('')),
       heading(tx('set.keys.page')),
       table(fixed('set.keys.choose', key('↑', '↓'), cap(fam, BTN.UP, BTN.LS)) + fixed('set.keys.press', key(fixedName('Enter')), cap(fam, BTN.A))
-        + fixed('set.keys.back', key(fixedName('Esc')), cap(fam, BTN.B)) + fixed('set.keys.space', key(fixedName('Space')), cap(fam, BTN.X))
+        + fixed('set.keys.back', key(fixedName('Esc')), cap(fam, BTN.B)) + fixed('set.keys.space', key(fixedName('Space')), cap(fam, BTN.X)) + fixed('set.keys.cond', key('C'), cap(fam, BTN.Y))
         + fixed('set.keys.tab', '', cap(fam, BTN.LB, BTN.RB)) + fixed('set.keys.scroll', '', cap(fam, BTN.RS))),
       heading(tx('set.keys.duel')),
       // the duel played by the computer (journal Passe LC3; LC3-8 « Garder ainsi ; renommer au lot 5 », renamed in Passe CO1 at the operator's « corriger cela

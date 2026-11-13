@@ -89,6 +89,12 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   const gate = `<p class="pm-sub">${challenge ? tx(reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</p><h2 class="pm-h">${esc(opp.name)}</h2><p class="pm-sub">${esc(opp.epithet)}</p>`;
   await overlay(v2 ? gate : `${gate}${report}${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }], true).done;
   app.paused = false; app.moment = false;
+  // SY-10 (the operator's « Le résultat de la tactique écrit à l’ouverture », journal Passe SY2): the fight under way, the result the tactic gives is the bout's if the
+  // page is left before its end (applied at the next page, src/ui/play.ts settlePending); the bout's own result replaces it at its end (finish)
+  if (ao && st.v2) {
+    st.v2.$pending = { kind: challenge ? 'challenge' : 'bout', outcome: { winner: ao.winner, playerHp: ao.playerHp, playerMaxHp: ao.playerMaxHp, opponentHp: ao.opponentHp, opponentMaxHp: ao.opponentMaxHp, finisher: ao.finisher } };
+    writeSave(st);
+  }
   // the first duel's tutorial (TU-11), written for the duel played by the computer (lot 3, journal Passe LC5; the three-button duel's of journal Passe TU4 went
   // with lot 2): the replay holds the first time each thing comes up in the script, a lesson read at the foot of the screen, its numbers this bout's
   if (ao) {
@@ -102,6 +108,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   async function finish(r: { winner: 'ren' | 'marek'; hp: Record<string, number>; maxHp: Record<string, number>; finisher: string | null }): Promise<void> {
     const outcome = { winner: r.winner === 'ren' ? 'player' : 'opponent', playerHp: r.hp.ren, playerMaxHp: r.maxHp.ren, opponentHp: r.hp.marek, opponentMaxHp: r.maxHp.marek, finisher: r.finisher };
     (window as any).__outcome = outcome;
+    if (st.v2) delete st.v2.$pending;
     const res = (window as any).__game.act(challenge ? { type: 'challengeResult', outcome } : { type: 'fight', outcome });
     if (!res.ok) { console.error(res.reason); return; }
     writeSave(st);

@@ -160,4 +160,15 @@ export function heavyOutOfFour(kit: { loadout: string[]; levels: Record<string, 
   if (kit.order) { const o = kit.order.indexOf('heavy'); if (o >= 0) { if (next && !kit.order.includes(next)) kit.order[o] = next; else kit.order.splice(o, 1); } }
 }
 
+/** a bout left before its end (SY-10, the operator's « Le résultat de la tactique écrit à l’ouverture », journal Passe SY2): the result its tactic gave, written when
+ *  the fight started (src/ui/playArena.ts), is the bout's; a result the game refuses (the bout already settled) is dropped */
+export function settlePending(s: GameState): GameState {
+  const p = s.v2?.$pending;
+  if (!p) return s;
+  delete s.v2!.$pending;
+  const r = advance(s, p.kind === 'challenge' ? { type: 'challengeResult', outcome: p.outcome } : { type: 'fight', outcome: p.outcome });
+  return r.ok ? r.state : s;
+}
+
+
 export function hash(st: GameState): string { return fnv64(canonical(st)); }

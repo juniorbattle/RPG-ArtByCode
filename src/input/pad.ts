@@ -59,7 +59,8 @@ export function contextOf(s: { scene: boolean; modal: boolean; duel: boolean; ex
  *  (Enter), B the way out (Esc), X Space (the skills: bring, leave), Start the way out too. A cutscene: A the next line, Start skips */
 export const KEYS: Record<Exclude<PadContext, 'duel'>, Partial<Record<Btn, string>>> = {
   explore: { [BTN.A]: 'e', [BTN.Y]: 'q', [BTN.START]: 'Escape', [BTN.VIEW]: 'm' },
-  page: { [BTN.A]: 'Enter', [BTN.B]: 'Escape', [BTN.X]: ' ', [BTN.START]: 'Escape' },
+  // Y: C, a skill's condition in the tactic (the skills page and the match sheet, lot 2 of the second redesign, journal Passe SL3)
+  page: { [BTN.A]: 'Enter', [BTN.B]: 'Escape', [BTN.X]: ' ', [BTN.Y]: 'c', [BTN.START]: 'Escape' },
   scene: { [BTN.A]: 'Enter', [BTN.START]: 'Escape' },
 };
 /** a page's shoulders (MN-4): the menu's neighbouring page, before and after */
@@ -152,6 +153,7 @@ export function capButton(key: string, where: CapPlace): Btn | 'hide' | null {
   if (k === 'Esc') return where === 'hints' || where === 'scene' ? BTN.START : BTN.B;
   if (k === 'E' || k === 'Enter') return BTN.A;
   if (k === 'Space') return BTN.X;
+  if (k === 'C') return BTN.Y;
   // the list's key: Q on QWERTY, A on AZERTY (journal Passe RG2, RG-7)
   if (k === 'Q' || k === 'A') return BTN.Y;
   if (k === 'M') return BTN.VIEW;

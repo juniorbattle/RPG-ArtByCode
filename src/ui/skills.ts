@@ -6,6 +6,9 @@ import { v2KitOf } from '../simulation/v2';
 import { RIVALS } from '../narrative/roster';
 import { num, skillName, tx } from '../narrative/text';
 import { SKILL_BOOK } from '../combat/skillbook';
+import { AUTO_CONDS_OF, AUTO_SKILLS, autoCondOf, autoPower } from '../combat/autoData';
+import type { AutoCond } from '../combat/auto';
+import { COND_TEXT } from '../simulation/v2skills';
 import { figHtml, statsHtml } from './wares';
 import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
 
@@ -41,9 +44,25 @@ function cmpHtml(now: SkillFigures, next: SkillFigures | null, level: number): s
   return `<div class="pm-cmp"><span class="h"></span><span class="h">${next ? tx('ui.wares.now') : ''}</span><span class="h">${next ? cap(tx('v2.skills.level', { level })) : ''}</span><span class="h"></span>${rows.join('')}</div>`;
 }
 
-/** the order of the duel played by the computer: the four in the automatic's order, then the light attack */
+/** a skill's condition in the tactic (SY-08, lot 2 of the second redesign, journal Passe SL3) */
+const condOf = (s: GameState, id: string): AutoCond => autoCondOf(v2KitOf(s), id);
+/** the strongest offensive skill of the four brought (the one the automatic keeps for the break, SL1-3) */
+function strongestOf(s: GameState, ids: string[]): string | null {
+  const lv = v2KitOf(s).levels; let best: string | null = null, p = -1;
+  for (const id of ids) if (AUTO_SKILLS[id]?.family === 'offensive') { const q = autoPower(id, lv[id] ?? 1); if (q > p) { p = q; best = id; } }
+  return best;
+}
+/** when a skill leaves, said in a sentence: its condition, the automatic's own rule spelt out for its family */
+function whenText(s: GameState, id: string, four: string[]): string {
+  const c = condOf(s, id);
+  if (c !== 'auto') return tx('ui.skill.leaves', { cond: tx(COND_TEXT[c]) });
+  const fam = AUTO_SKILLS[id]?.family;
+  return tx(fam === 'defensive' ? 'ui.skill.autoWard' : fam === 'support' ? 'ui.skill.autoBoost' : strongestOf(s, four) === id ? 'ui.skill.autoTop' : 'ui.skill.autoOff');
+}
+
+/** the order of the duel played by the computer: the four in the automatic's order with their conditions (the tactic), then the light attack */
 function orderHtml(s: GameState, ids: string[]): string {
-  return autoOrderView(s, ids).map((t, i) => `<div class="row"><small>${tx('v2.skills.ap', { ap: t.ap })} · ${num(t.charge)} s</small><b>${i + 1}. ${esc(skillName(t.id))}</b></div>`).join('')
+  return autoOrderView(s, ids).map((t, i) => `<div class="row"><small>${tx('v2.skills.ap', { ap: t.ap })} · ${num(t.charge)} s · ${esc(tx(COND_TEXT[condOf(s, t.id)]))}</small><b>${i + 1}. ${esc(skillName(t.id))}</b></div>`).join('')
     + `<div class="row"><small>${tx('ui.order.else')}</small><b>${esc(tx('ui.skill.light'))}</b></div>`;
 }
 
@@ -76,15 +95,17 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     (card.querySelector('.pm-purse b') as HTMLElement).textContent = String(chosen.size);
     const ladder = card.querySelector('.pm-ladder'), wide = card.querySelector('.pm-ladder2');
     if (ladder) ladder.innerHTML = `<p class="pm-sub">${tx('ui.order.title')}</p>${orderHtml(host.state(), four())}`;
-    if (wide) wide.innerHTML = `<p class="ttl">${tx('ui.order.title')}</p>${autoOrderView(host.state(), four()).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${tx('v2.skills.ap', { ap: t.ap })} · ${num(t.charge)} s</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
+    if (wide) wide.innerHTML = `<p class="ttl">${tx('ui.order.title')}</p>${autoOrderView(host.state(), four()).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${tx('v2.skills.ap', { ap: t.ap })} · ${num(t.charge)} s<br>${esc(tx(COND_TEXT[condOf(host.state(), t.id)]))}</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
     if (go) go.disabled = chosen.size !== 4;
     const lv = kit.levels[now], st = host.state(), f = skillFigures(st, now, lv), up = nextLevel(st, now), k = SKILL_BOOK[now];
     const said = !up ? tx('ui.skill.top') : up.by === 'drill' ? tx('ui.skill.drill', { level: up.level })
       : up.fromDay ? tx('ui.skill.challengeLate', { name: RIVALS[up.teacher!].name, day: up.fromDay }) : tx('ui.skill.challenge', { name: RIVALS[up.teacher!].name });
-    detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))} · ${tx('v2.skills.level', { level: lv })} · ${tx('v2.skills.ap', { ap: f.ap })}</p><p class="ab">${esc(doesWhat(f))}</p>${cmpHtml(f, up ? skillFigures(st, now, up.level) : null, up?.level ?? lv)}<p class="what">${esc(said)}</p>${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}`;
-    fit();
     const on = chosen.has(now), movable = on && chosen.size === 4;
-    fillFoot(foot, footBtn('Space', tx(on ? 'ui.skill.leave' : 'ui.skill.bring'), toggle), movable ? moveBtn('left') : null, movable ? moveBtn('right') : null, go, close);
+    // the tactic (SY-08): when a skill brought leaves, its condition chosen with C (the pad's Y)
+    const when = on ? `<p class="ab pm-when">${esc(whenText(st, now, four()))}</p>` : '';
+    detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))} · ${tx('v2.skills.level', { level: lv })} · ${tx('v2.skills.ap', { ap: f.ap })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, now, up.level) : null, up?.level ?? lv)}<p class="what">${esc(said)}</p>${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}`;
+    fit();
+    fillFoot(foot, footBtn('Space', tx(on ? 'ui.skill.leave' : 'ui.skill.bring'), toggle), on ? footBtn('C', tx('ui.skill.when'), cycle) : null, movable ? moveBtn('left') : null, movable ? moveBtn('right') : null, go, close);
   };
   /** the order of the four (AC-09): the skill selected one place earlier (left) or later (right), the game's at once (setOrder) */
   const ordered = (): string[] => autoOrderView(host.state(), four()).map((t) => t.id);
@@ -115,6 +136,17 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     e.preventDefault(); e.stopPropagation();
     if (!e.repeat) move(a.includes('left') ? -1 : 1);
   });
+  /** the tactic (the operator's SY-08 « Une condition par compétence, l’ordre gardé », journal Passe SY2): the skill selected, if brought, takes the next condition its
+   *  family offers (src/combat/autoData.ts AUTO_CONDS_OF), the game's at once (setTactic) */
+  const cycle = (): void => {
+    if (!chosen.has(now) || !(v2KitOf(host.state()).loadout as string[]).includes(now)) return;
+    const fam = AUTO_SKILLS[now]?.family; if (!fam) return;
+    const opts = AUTO_CONDS_OF[fam], c = condOf(host.state(), now);
+    host.act({ type: 'setTactic', skill: now, cond: opts[(opts.indexOf(c) + 1) % opts.length] });
+    paint();
+    list.querySelector<HTMLElement>('.pm-btn.on')?.focus();
+  };
+  list.addEventListener('keydown', (e) => { if (e.key.toLowerCase() !== 'c' || e.ctrlKey || e.metaKey || e.altKey) return; e.preventDefault(); e.stopPropagation(); if (!e.repeat) cycle(); });
   const toggle = (): void => {
     // the foot's button is drawn again: the selection keeps the keyboard
     list.querySelector<HTMLElement>('.pm-btn.on')?.focus();

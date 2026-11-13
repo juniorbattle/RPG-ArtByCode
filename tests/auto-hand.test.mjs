@@ -17,6 +17,7 @@ const AV = await load('/src/arena/autoView.ts');
 const ST = await load('/src/combat/stats.ts');
 const G = await load('/src/simulation/index.ts');
 const ADV = await load('/src/simulation/advance.ts');
+const AM = await load('/src/combat/autoMatch.ts');
 
 const RIVALS = Object.keys(ST.RIVAL_SHEETS);
 const LV = { t1: 2, t2: 1, t3: 1, t4: 1, d1: 1, s1: 1, k_iron: 1, k_parry: 1, k_cry: 1, k_focus: 1, k_sunder: 1, k_feint: 1, heavy: 1 };
@@ -136,4 +137,22 @@ test('SL1-7: the heavy blow out of the four of an old save; setLoadout refuses i
   const back = G.deserialize(G.serialize(st));
   assert.deepEqual(back.v2.kit.loadout, ['t4', 't1', 'd1', 's1'], 'read back from a save');
   assert.ok(!G.advance(back, { type: 'setLoadout', skills: ['heavy', 't1', 'd1', 's1'] }).ok, 'never one of the four again');
+});
+
+test('SY-10: the tactic\'s result written when the fight starts is the bout\'s if the page is left; outside the fingerprint; dropped once the bout is settled', () => {
+  const st = G.namedState('v2-day2-afternoon'), o = AM.autoOutcome(st, 'bout');
+  const outcome = { winner: o.winner, playerHp: o.playerHp, playerMaxHp: o.playerMaxHp, opponentHp: o.opponentHp, opponentMaxHp: o.opponentMaxHp, finisher: o.finisher };
+  const h0 = G.hash(st);
+  st.v2.$pending = { kind: 'bout', outcome };
+  assert.equal(G.hash(st), h0, 'a « $ » key: not in the fingerprint');
+  const back = G.deserialize(G.serialize(st));
+  assert.deepEqual(back.v2.$pending, st.v2.$pending, 'kept by the save');
+  const settled = G.settlePending(back), byHand = G.advance(G.namedState('v2-day2-afternoon'), { type: 'fight', outcome });
+  assert.ok(byHand.ok);
+  assert.equal(G.hash(settled), G.hash(byHand.state), 'the bout fought by its tactic, as « Skip » would');
+  assert.equal(settled.v2.$pending, undefined);
+  // the bout already settled: the result is dropped, nothing else changes
+  const again = structuredClone(settled); again.v2.$pending = { kind: 'bout', outcome };
+  assert.equal(G.hash(G.settlePending(again)), G.hash(settled));
+  assert.equal(again.v2.$pending, undefined);
 });
