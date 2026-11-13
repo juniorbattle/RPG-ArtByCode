@@ -310,7 +310,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Les autres outils qui rendent une arène avec `stem: 'music'` (huit tâches, `layer-jobs`, `mix-jobs`, `render.mjs` `mus-arena-*`) ont mesuré la foule avec la musique s'ils ont tourné entre le 09/11 et aujourd'hui ; aucun n'y a de cible (les cibles de `analyse.mjs --check` lisent les mélanges des lieux et les duels entiers, qui contiennent la foule par dessein). Non relancés ici.
 
 ### Validation
-- Modifié : `tools/audio/harness.js` ; ce journal. Rien sous `src/`.
+- Modifié : `tools/audio/harness.js` ; ce journal. Rien sous `src/`. Après la fusion, `AGENTS.md` : la description de `tests/auto-sound.test.mjs` disait encore le signe de la forme « branché nulle part » (le texte de la Passe LC6) ; elle dit le signe branché depuis la Passe LC7.
 - Archivage : avec LC8, les passes gardées auraient dépassé 60 Ko ; LC4 (branche fusionnée) déplacée à l'octet dans `journal/99-passes-LC4.md`, sa ligne ajoutée à l'index et la phrase d'en-tête complétée ; preuve par script : le corps de l'archive égale les 11687 octets retirés (SHA-256 `3c53c168b8c2c275…`), LC4 hors de `JOURNAL.md`, LC5 à LC8 identiques à l'octet, chaque titre de passe dans un seul fichier, CRLF seuls.
 
 ### Pensée
