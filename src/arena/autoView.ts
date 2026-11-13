@@ -50,6 +50,8 @@ interface State {
   g: number; gT: number; broken: boolean; stunEnd: number;
   /** a ward or a boost under way: until when, its length, what it does to the gauge (the ward on the gauge one takes, the boost on the gauge one gives) */
   ward: { until: number; dur: number; gauge: number } | null; boost: { until: number; dur: number; gauge: number } | null;
+  /** the last ward and boost raised (a traced blow says whether they weighed on it: `AutoEvent.fx`) */
+  lastWard?: { gauge: number }; lastBoost?: { gauge: number };
   cd: Record<string, { until: number; dur: number }>;
   /** the opponent's sequence (a big action charged) told to the sound's layers (sequenceStart / sequenceEnd) */
   seq: boolean;
@@ -201,8 +203,8 @@ export class AutoReplay {
         // the opponent charging a big action: its sequence, for the music's layers (the lead steps aside, the tension rises: rule F)
         if (seat === 'marek' && kindOf(a) !== 'light' && !a.ward && !a.boost) { s.seq = true; if (tell) this.emit({ type: 'sequenceStart', who: seat, len: 1 }); }
         if (tell) this.emit({ type: 'commandStart', who: seat, action: a.id, kind: kindOf(a), prep: Math.max(0, (e.at ?? e.t) - e.t), impactAt: 0, reactable: false, seqIdx: 0, seqLen: 0 });
-        // Ren charging a skill: its tier reached at once (the charge's note, its breath while it fills, the music's tension: lot 4, journal Passe LC6); his light
-        // attack is the ladder's 0, as before (nothing)
+        // Ren charging a skill or his heavy blow: its tier reached at once (the charge's note, its breath while it fills, the music's tension: lot 4, journal Passe
+        // LC6; the heavy blow the first tier, SL1-6); his light attack is the ladder's 0, as before (nothing)
         s.tier = seat === 'ren' ? this.tierOf(a.id) : 0;
         if (tell && s.tier) this.emit({ type: 'chargeTier', who: seat, action: a.id, idx: s.tier, open: true, prep: Math.max(0, (e.at ?? e.t) - e.t) });
         break;
@@ -210,7 +212,7 @@ export class AutoReplay {
       case 'ward': case 'boost': {
         if (!a) break;
         const eff = a.ward ?? a.boost!, k = { until: e.t + eff.dur, dur: eff.dur, gauge: eff.gauge };
-        if (e.ev === 'ward') s.ward = k; else s.boost = k;
+        if (e.ev === 'ward') s.ward = s.lastWard = k; else s.boost = s.lastBoost = k;
         s.charge = null;
         this.release(seat, tell);
         if (tell) this.emit({ type: 'effect', who: seat, action: a.id, family: e.ev === 'ward' ? 'defensive' : 'support', dur: eff.dur });
@@ -228,7 +230,9 @@ export class AutoReplay {
         // HUD shows it at the blow, not one line later (journal Passe LC5's note, fixed in lot 4 on the presentation's side; the duel and its script unchanged)
         if (e.ev !== 'dodged' && !o.broken && (e.hp ?? 1) > 0) {
           const share = (a.hits ?? [1])[(e.hit ?? 1) - 1] ?? 1, end = this.fighters[other].end;
-          const add = (a.gauge ?? 0) * share * (10 / Math.max(1, end)) * (e.ev === 'guarded' ? AUTO_RULES.gauge.guardMul : 1) * (s.boost ? s.boost.gauge : 1) * (o.ward ? o.ward.gauge : 1);
+          // the ward and the boost the duel weighed on this blow (its trace says so; the script's rounded times alone, without it)
+          const bz = e.fx !== undefined ? (e.fx & 2 ? s.lastBoost : null) : s.boost, wz = e.fx !== undefined ? (e.fx & 1 ? o.lastWard : null) : o.ward;
+          const add = (a.gauge ?? 0) * share * (10 / Math.max(1, end)) * (e.ev === 'guarded' ? AUTO_RULES.gauge.guardMul : 1) * (bz ? bz.gauge : 1) * (wz ? wz.gauge : 1);
           o.g = Math.min(AUTO_RULES.gauge.max, Math.max(0, o.g - AUTO_RULES.gauge.decay * (e.t - o.gT)) + add); o.gT = e.t;
         }
         const dmg = e.dmg ?? 0;
@@ -248,8 +252,9 @@ export class AutoReplay {
     }
   }
 
-  /** Ren's tier for a skill (0 his light attack or a rival's action) */
-  tierOf(id: string): number { return this.ladder.get(id) ?? 0; }
+  /** Ren's tier for a skill (0 his light attack or a rival's action); his heavy blow, a base attack since SY-02, the first tier (the operator's SL1-6 « Sa charge au
+   *  premier palier (au lot 2) », journal Passe SL2: heard coming as a skill is) */
+  tierOf(id: string): number { return id === this.fighters.ren.heavy.id ? 1 : this.ladder.get(id) ?? 0; }
 
   /** the action charged leaves: Ren's skill tells its release (the charge's whip and its light, lot S3 and FX) */
   private release(seat: Seat, tell: boolean): void {

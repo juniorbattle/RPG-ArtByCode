@@ -98,7 +98,7 @@ export type AutoRules = typeof AUTO_RULES;
 
 /** one line of a duel's script (the arena shows it): t the time (s, two decimals), who the fighter's id; `s` (with `trace`) both fighters' state just after it,
  *  [AP of the first, gauge of the first, AP of the second, gauge of the second] (the gauge settled at that time, a broken one full) */
-export interface AutoEvent { t: number; who: string; ev: 'charge' | 'ward' | 'boost' | 'hit' | 'guarded' | 'dodged' | 'break'; act?: string; at?: number; dmg?: number; hp?: number; hit?: number; s?: [number, number, number, number] }
+export interface AutoEvent { t: number; who: string; ev: 'charge' | 'ward' | 'boost' | 'hit' | 'guarded' | 'dodged' | 'break'; act?: string; at?: number; dmg?: number; hp?: number; hit?: number; s?: [number, number, number, number]; fx?: number }
 export interface AutoCount { acts: number; skills: number; heavies: number; lights: number; dodged: number; guarded: number; hit: number; hits: number; breaks: number; dmg: number; dmgBroken: number; skillDmg: number; wasted: number }
 export interface AutoResult {
   /** 0 or 1 by the K.O.; null past `maxT` (decide on the health shares: autoWinner) */
@@ -238,7 +238,9 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     if (res === 'guarded') g.n.guarded++; else g.n.hit++;
     f.n.hits++;
     if (a.kind === 'light' && !c.ap) { c.ap = true; f.ap = Math.min(R.ap.max, f.ap + R.ap.light); }
-    log && put({ t: T(), who: f.x.id, ev: res, act: a.id, dmg, hp: g.hp, hit: c.i });
+    // traced: whether the target's ward and the striker's boost weighed on this blow (the script's times are written to the hundredth: a blow within 5 ms of an
+    // effect's end cannot be told from them; journal Passe SL3, the arena's gauge)
+    log && put({ t: T(), who: f.x.id, ev: res, act: a.id, dmg, hp: g.hp, hit: c.i, ...(o.trace ? { fx: (wardOn ? 1 : 0) | (boostOn ? 2 : 0) } : {}) });
     if (g.hp <= 0) { over = true; winner = f === F[0] ? 0 : 1; finisher = a.kind; return; }
     if (!g.broken) {
       const add = (a.gauge ?? 0) * share * (10 / Math.max(1, g.x.end)) * (res === 'guarded' ? R.gauge.guardMul : 1) * (boostOn ? f.boost!.gauge : 1) * (wardOn ? g.ward!.gauge : 1);

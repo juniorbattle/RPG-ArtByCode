@@ -39,7 +39,7 @@ function gaugeAfter(log, i, k) {
 test('the trace changes nothing of the duel: the same script, each line with both fighters\' AP and gauges', () => {
   for (const [foe, seed] of [['orla', 3], ['vessa', 11], ['marek', 7]]) {
     const { ren, foe: f, result } = duelOf(foe, 1, seed), plain = AU.autoDuel(ren, f, seed, { log: true });
-    assert.deepEqual(result.log.map(({ s, ...e }) => e), plain.log, foe);
+    assert.deepEqual(result.log.map(({ s, fx, ...e }) => e), plain.log, foe);
     assert.deepEqual({ ...result, log: null }, { ...plain, log: null });
     for (const e of result.log) {
       assert.equal(e.s.length, 4);
