@@ -78,8 +78,10 @@ const CAPS: Record<string, () => string> = {
   Move: () => (['up', 'left', 'down', 'right'] as const).map((a) => bindCap(a, hints)).join(''), Run: () => bindCap('run', hints),
   // the order of the four moved on the match sheet and the skills page (journal Passe LC3): the player's left and right
   Left: () => bindCap('left'), Right: () => bindCap('right'),
+  // the tactic's key on the skills page and the match sheet, and the hand's four in the duel (lot 2 of the second redesign, journal Passe SL3)
+  C: () => keyCap('C'), Hand: () => (['skill1', 'skill2', 'skill3', 'skill4'] as const).map((a) => bindCap(a, arena)).join(''),
 };
-const CAP_TOKEN = /\[(E|Q|Menu|M|Space|Enter|Back|J|K|L|Move|Run|Left|Right)\]/g;
+const CAP_TOKEN = /\[(E|Q|Menu|M|Space|Enter|Back|J|K|L|Move|Run|Left|Right|C|Hand)]/g;
 /** a line of the table, its caps drawn and the rest escaped */
 export const inline = (t: string): string => esc(t).replace(CAP_TOKEN, (_, k: string) => CAPS[k]());
 /** a text of the table as paragraphs, its caps drawn and the rest escaped */

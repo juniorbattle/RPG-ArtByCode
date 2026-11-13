@@ -40,7 +40,7 @@ test('the texts: in the table, numbers only through slots, every cap known (TU-5
   for (const k of tutKeys.filter((x) => /^tut\.(ch|hint)\./.test(x))) assert.doesNotMatch(EN[k], /\d/, `${k} writes a number: ${EN[k]}`);
   // a key in a text is a cap the gamepad and the keyboard layout redraw, never a letter in the prose
   // [Move] and [Run], the walk's keys and the run, since the remapping (journal Passe RM2, RM-6: the words « the arrow keys », « Shift » became caps that follow)
-  for (const k of tutKeys) for (const m of EN[k].matchAll(/\[([^\]]+)\]/g)) assert.ok(['E', 'Q', 'Menu', 'M', 'Space', 'Enter', 'Back', 'J', 'K', 'L', 'Move', 'Run', 'Left', 'Right'].includes(m[1]), `${k}: unknown cap [${m[1]}]`);
+  for (const k of tutKeys) for (const m of EN[k].matchAll(/\[([^\]]+)\]/g)) assert.ok(['E', 'Q', 'Menu', 'M', 'Space', 'Enter', 'Back', 'J', 'K', 'L', 'Move', 'Run', 'Left', 'Right', 'C', 'Hand'].includes(m[1]), `${k}: unknown cap [${m[1]}]`);
   // an action's cap carries its action (data-bind) and shows the player's key; a fixed key's carries its English name (data-key) and shows its name
   const html = TU.rich('Press [E], then [Menu]; <b>x</b>');
   assert.match(html, /<kbd data-bind="talk" data-cap="hints">E<\/kbd>/);
@@ -279,7 +279,7 @@ test('the guide\'s « The duel » and « Preparing a bout » for the duel played
   assert.match(duel, new RegExp(`stunned for ${R.brk.stun} seconds and takes ${R.brk.dmg} times the damage`));
   assert.match(duel, new RegExp(`up to ${pc(R.form)} % either way`));
   assert.doesNotMatch(duel, /riposte|priority|Hold \[J\]/, 'nothing of the duel of before');
-  assert.match(prep, /bring four skills and set their order: the duel uses them in that order/);
+  assert.match(prep, /bring four skills, set their order and, with \[C\], when each leaves: the duel uses them in that order/);
   assert.match(prep, new RegExp(`every fighter's health is multiplied by ${R.hpScale}`));
   assert.match(prep, /your order of the four, which \[Left\] and \[Right\] change there/);
   assert.match(TU.rich('[Left] [Right]'), /<kbd data-bind="left">.*<\/kbd> <kbd data-bind="right">.*<\/kbd>/);

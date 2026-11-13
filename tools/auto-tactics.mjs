@@ -70,6 +70,24 @@ export function makeTactics(AU) {
     'appuis au hasard, soutiens seuls (1 sur 4)': 'careless:0.25:supports',
     'appuis au hasard, offensives seules (1 sur 4)': 'careless:0.25:offensive',
   };
+  /** the page's tactics (lot 2 of the second redesign, journal Passe SL3; SL1-4 « Le reprendre au lot 2, avant mon essai »): the game's own conditions and rule
+   *  (src/combat/auto.ts tacticChoice, the conditions AUTO_CONDS_OF offers), a condition by family or by skill; 'auto' the automatic's own */
+  const page = (by) => (v, x) => AU.tacticChoice(v, x, x.skills.map((s) => by(s, x))) ?? (AU.heavyWhen(v, x) ? x.heavy : x.light);
+  const fam = (s) => (s.ward ? 'w' : s.boost ? 'b' : 'o');
+  const PAGE = {
+    'page : offensives à la rupture': page((s) => (fam(s) === 'o' ? 'broken' : 'auto')),
+    'page : offensives quand il charge un gros coup': page((s) => (fam(s) === 'o' ? 'incoming' : 'auto')),
+    'page : la plus forte à la rupture, les autres quand il charge': page((s, x) => (fam(s) !== 'o' ? 'auto' : s === AU.strongestOf(x) ? 'broken' : 'incoming')),
+    'page : la plus forte pour finir': page((s, x) => (fam(s) === 'o' && s === AU.strongestOf(x) ? 'finish' : 'auto')),
+    'page : offensives dès que prêtes': page((s) => (fam(s) === 'o' ? 'ready' : 'auto')),
+    'page : protections quand il charge un gros coup': page((s) => (fam(s) === 'w' ? 'incoming' : 'auto')),
+    'page : protections à la jauge': page((s) => (fam(s) === 'w' ? 'gauge' : 'auto')),
+    'page : soutiens quand une offensive peut suivre': page((s) => (fam(s) === 'b' ? 'follow' : 'auto')),
+    'page : soutiens à la rupture': page((s) => (fam(s) === 'b' ? 'broken' : 'auto')),
+    'page : protections et soutiens dès que prêts': page((s) => (fam(s) === 'o' ? 'auto' : 'ready')),
+    'page : les signaux partout': page((s) => (fam(s) === 'w' ? 'incoming' : fam(s) === 'b' ? 'follow' : 'broken')),
+  };
+  if (AU.tacticChoice) Object.assign(MODES, PAGE);
   /** a preset's decider on top of a base automatic */
   const deciderOf = (m, base) => (m == null ? base : typeof m === 'string' ? (() => { const [, p, w] = m.split(':'); return careless(base, +p, p === '0.5' ? 11 : 7, w); })() : m);
   return { CONDS, tactic, careless, strongest, cueSpec, MODES, deciderOf, offensive };
