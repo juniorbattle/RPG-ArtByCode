@@ -584,7 +584,8 @@ export class TownUi {
   /** the hints of the moment: the eve of a bout, the evening, a wound, a mark (and the square's, given by the square's page) */
   momentHints(): void {
     const s = this.st, next = s.tournament.matches.filter((m) => !m.winner && (m.a === 'player' || m.b === 'player')).map((m) => m.day).sort((x, y) => x - y)[0];
-    if (next === s.day + 1 && s.slot !== 'morning') this.hint('eve');
+    // the afternoon only: its strongroom and its sand are shut in the evening (journal Passe CO2)
+    if (next === s.day + 1 && s.slot === 'afternoon') this.hint('eve');
     if (s.slot === 'evening') this.hint('evening');
     if (s.player.injury > 0) this.hint('hurt');
     if (marksOf(s) > 0) this.hint('mark');

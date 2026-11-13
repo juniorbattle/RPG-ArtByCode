@@ -38,8 +38,9 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   const rain = rainOf(st); if (rain && !q.has('rain')) q.set('rain', rain);
   const look = lookOf(st), kind = PLAZA_OF[st.place]!;
   // a cutscene of this moment (lot V6): its cast stands on the square even out of their hours
-  const scene = pendingScene(st), people = plazaPeople(st);
-  for (const id of scene?.cast ?? []) if (!people.includes(id)) people.push(id);
+  const scene = pendingScene(st), people = plazaPeople(st), extras: string[] = [];
+  for (const id of scene?.cast ?? []) if (!people.includes(id)) { people.push(id); extras.push(id); }
+  const showExtras = (on: boolean) => { for (const [a, who] of app.who) if (extras.includes(who)) a.hidden = !on; };
   const app = new PlazaApp({
     canvas: b.canvas, params: q, kind, time: look === 'night' ? null : look, people, arriveFrom: b.params.get('arrive'),
     // lot L5 (EV-12 « Les places lisent le pouls »): the crowd follows the tournament's excitement as the quay's, and gathers where the town's ambiences are
@@ -52,6 +53,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   (window as any).__plaza = app;
   installDesign(look);
   await app.init();
+  showExtras(false);
   b.loading.style.opacity = '0';
   setTimeout(() => b.loading.remove(), 900);
   (window as any).__stats = () => app.snapshot();
@@ -121,8 +123,10 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
     await ui.newsRead;
     // the registrar's announcements open on the fanfare (SA-7 « Fanfare et texte », C-LIEUX, journal Passe SN10)
     if (ANNOUNCED.has(scene.id)) void import('../audio/Sound').then((m) => m.sound().sting('fanfare'));
+    showExtras(true);
     await playCutscene(st, scene, { look: (at, dist, secs) => app.lookAt(at, dist, secs), walk: (who, to) => app.walkTo(who, to), lock: (on) => { app.locked = on; } });
     (window as any).__game.act({ type: 'watched', scene: scene.id });
+    showExtras(false);
   }
   // the tutorial (journal Passe TU3): after the news and the scene, a game begun before's line and the moment's hints, the square's own the first time; the
   // square's picture kept for the guide (TU-4)

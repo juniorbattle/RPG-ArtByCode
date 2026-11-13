@@ -2,7 +2,7 @@ import { clamp, type GameState } from '../simulation/state';
 import type { ActionDef } from '../simulation/actions';
 import { isV2 } from '../simulation/v2';
 import { PLAYER_ID, RIVALS } from './roster';
-import { PEOPLE } from './people';
+import { PEOPLE, presentAt } from './people';
 import { tx, type TextKey } from './text';
 import { stageMatches, actOf, v2Ranking, type Stage } from '../tournament/v2calendar';
 import { unmaskedHow, paradeOrder, FEST } from '../simulation/v2festival';
@@ -27,8 +27,16 @@ export function v2Lines(s: GameState, who: string): string[] | null {
   switch (who) {
     case 'marek':
       if (s.flags.champion === PLAYER_ID) return [tx('v2.line.marek.crowned', { name })];
-      if (inFinal(s, PLAYER_ID) && inFinal(s, 'marek')) return [tx('v2.line.marek.final', { name })];
-      if (act >= 2) return [beatBy(s, 'marek') ? tx('v2.line.marek.beaten') : tx('v2.line.marek.act2')];
+      // the final « tomorrow » on its eve only, « today » on the day, the tenth day before (journal Passe CO2)
+      if (inFinal(s, PLAYER_ID) && inFinal(s, 'marek')) return [tx(s.day >= 10 ? 'v2.line.marek.finalDay' : s.day === 9 ? 'v2.line.marek.final' : 'v2.line.marek.finalSoon', { name })];
+      if (act >= 2) {
+        // the four of the semi-finals only while he is one of them: out of the title, or in the final without the player, his own words (journal Passe CO2)
+        const st = s.competitors.marek?.phaseStatus;
+        if (st === 'gate' || st === 'third') return [tx('v2.line.marek.out', { name })];
+        if (st === 'final') return [tx('v2.line.marek.finalist', { name })];
+        if (st === 'champion') return null;
+        return [beatBy(s, 'marek') ? tx('v2.line.marek.beaten') : tx('v2.line.marek.act2')];
+      }
       return null;
     case 'vessa':
       if (act >= 2 && beatBy(s, 'vessa')) return [tx('v2.line.vessa.grudge')];
@@ -41,7 +49,7 @@ export function v2Lines(s: GameState, who: string): string[] | null {
       if (s.day >= 4) return [tx('v2.line.cassius.before')];
       return null;
     case 'orla':
-      if (s.facts.includes('orla-recruited')) return [act === 3 ? tx('v2.line.orla.eve') : tx('v2.line.orla.ally')];
+      if (s.facts.includes('orla-recruited')) return [act === 3 ? tx(s.day >= 10 ? 'v2.line.orla.finalDay' : 'v2.line.orla.eve') : tx('v2.line.orla.ally')];
       if (s.facts.includes('orla-recruitable')) return [s.day >= RECRUIT_DAY ? tx('v2.line.orla.ask') : tx('v2.line.orla.soon')];
       if (metIn(s, 'orla')) return [beatBy(s, 'orla') ? tx('v2.line.orla.beaten') : tx('v2.line.orla.won')];
       return null;
@@ -52,7 +60,7 @@ export function v2Lines(s: GameState, who: string): string[] | null {
     // their words of lot L2b, in the title's race or out of it (src/narrative/dialogue.ts)
     case 'tobin':
       if (act === 1) return [tx('v2.line.tobin.act1')];
-      if (act === 3) return [tx(s.flags.champion === PLAYER_ID ? 'v2.line.tobin.crowned' : inFinal(s, 'tobin') ? 'v2.line.tobin.final' : inFinal(s, PLAYER_ID) ? 'v2.line.tobin.act3final' : 'v2.line.tobin.act3')];
+      if (act === 3) return [tx(s.flags.champion === PLAYER_ID ? 'v2.line.tobin.crowned' : inFinal(s, 'tobin') ? 'v2.line.tobin.final' : inFinal(s, PLAYER_ID) ? 'v2.line.tobin.act3final' : s.day >= 10 ? 'v2.line.tobin.act3today' : 'v2.line.tobin.act3')];
       return null;
     case 'rhosk':
       if (act === 1) return [tx('v2.line.rhosk.act1')];
@@ -73,10 +81,10 @@ export type V2StoryAction = { type: 'recruit'; who: 'orla' } | { type: 'watched'
 export const V2_STORY_ACTIONS: { [K in V2StoryAction['type']]: ActionDef<Extract<V2StoryAction, { type: K }>> & { by: string | null } } = {
   recruit: {
     by: 'orla',
-    list: (s) => (isV2(s) && s.place === 'training' && s.facts.includes('orla-recruitable') && !s.facts.includes('orla-recruited') ? [{ type: 'recruit', who: 'orla' }] : []),
+    list: (s) => (isV2(s) && s.place === 'training' && s.facts.includes('orla-recruitable') && !s.facts.includes('orla-recruited') && presentAt(PEOPLE.orla, s.place, s.slot, true) ? [{ type: 'recruit', who: 'orla' }] : []),
     label: () => tx('v2.recruit.label'),
     cost: () => 0,
-    check: (s) => (!isV2(s) ? tx('v2.only') : !s.facts.includes('orla-recruitable') ? tx('v2.recruit.notYet') : s.facts.includes('orla-recruited') ? tx('v2.recruit.done')
+    check: (s) => (!isV2(s) ? tx('v2.only') : !presentAt(PEOPLE.orla, s.place, s.slot, true) ? tx('avail.notNow', { name: PEOPLE.orla.name }) : !s.facts.includes('orla-recruitable') ? tx('v2.recruit.notYet') : s.facts.includes('orla-recruited') ? tx('v2.recruit.done')
       : s.day < RECRUIT_DAY ? tx('v2.recruit.wait', { day: RECRUIT_DAY }) : null),
     apply: (s, _a, _r, emit) => {
       s.facts.push('orla-recruited');

@@ -7,6 +7,15 @@ import { PLAYER_ID } from '../narrative/roster';
 
 const FIELDS: (keyof WorldPulse)[] = ['excitement', 'activeCompetitors', 'playerFame', 'publicPressure', 'security', 'commerce', 'festivity', 'sabotageRisk'];
 
+/** a version 2 game's fighters still in the race for the title (journal Passe CO2, AU-08 / I8: the pulse counted 8 from the first day to the last, its rivals never
+ *  « eliminated »): the rivals of the pool, the semi-finals and the final (not the Gate's, not the third place's), and the player while no Gate bout, lost semi-final
+ *  or lost final has put him out */
+function inTitleV2(s: GameState): number {
+  const rivals = Object.values(s.competitors).filter((c) => c.phaseStatus === 'pool' || c.phaseStatus === 'semi' || c.phaseStatus === 'final').length;
+  const out = s.tournament.matches.some((m) => (m.a === PLAYER_ID || m.b === PLAYER_ID) && (m.stage === 'gate' || ((m.stage === 'semi' || m.stage === 'final') && !!m.winner && m.winner !== PLAYER_ID)));
+  return rivals + (out ? 0 : 1);
+}
+
 export function computePulse(s: GameState): WorldPulse {
   const night = s.slot === 'evening', matchDay = s.tournament.matches.some((m) => m.day === s.day);
   const played = s.tournament.matches.filter((m) => m.winner).length;
@@ -16,7 +25,7 @@ export function computePulse(s: GameState): WorldPulse {
   const security = clamp(62 - (night ? 12 : 0) + (s.services.forgeWatch ? 15 : 0) + shift('security'));
   const p: WorldPulse = {
     excitement,
-    activeCompetitors: Object.values(s.competitors).filter((c) => c.phaseStatus !== 'eliminated').length + 1,
+    activeCompetitors: s.flags.v2 === true ? inTitleV2(s) : Object.values(s.competitors).filter((c) => c.phaseStatus !== 'eliminated').length + 1,
     playerFame: clamp(s.player.reputation + shift('playerFame')),
     publicPressure: clamp(s.player.reputation * 0.6 + (matchDay ? 20 : 5) + shift('publicPressure')),
     security,

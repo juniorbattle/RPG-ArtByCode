@@ -80,7 +80,7 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
     cost: () => 1,
     // lot L4 (EV-7 / EV-9): the sand shut the morning after a brawl, or taken by Rhosk (src/simulation/v2rivals.ts)
     check: (s, a) => (!isV2(s) ? tx('v2.only') : !atForecourt(s) ? tx('v2.train.notHere') : s.slot === 'evening' ? tx('train.closed') : sandRefusal(s) ?? (
-      !owns(s, a.skill) && SKILL_BOOK[a.skill]?.source !== 'train' ? tx('v2.drill.notBase') : levelOf(s, a.skill) >= TRAIN_CAP ? tx('v2.drill.cap', { skill: skillName(a.skill), cap: TRAIN_CAP }) : null)),
+      !owns(s, a.skill) && SKILL_BOOK[a.skill]?.source !== 'train' ? tx('v2.drill.notBase') : levelOf(s, a.skill) >= TRAIN_CAP ? tx(SKILL_BOOK[a.skill]?.teacher || Object.values(LATE_TEACHER).includes(a.skill) ? 'v2.drill.cap' : 'v2.drill.capTop', { skill: skillName(a.skill), cap: TRAIN_CAP }) : null)),
     apply: (s, a, _r, emit) => {
       const r = learnOrRaise(s, a.skill, TRAIN_CAP);
       s.player.reputation = clamp(s.player.reputation + 1);

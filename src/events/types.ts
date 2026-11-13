@@ -61,7 +61,11 @@ export type Effect =
 
 export type EventType = 'global' | 'district' | 'faction' | 'tournament' | 'targeted' | 'personal';
 
-export interface EventOutcome { when?: Cond; effects: Effect[]; text: string }
+export interface EventOutcome {
+  when?: Cond; effects: Effect[]; text: string;
+  /** its words in a version 2 game, whose rules differ (journal Passe CO2: the steel shortage on every shop's blades and armour, a goodwill that can be lost) */
+  textV2?: string;
+}
 
 export interface EventDef {
   id: string; type: EventType;

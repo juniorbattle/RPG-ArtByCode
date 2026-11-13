@@ -265,7 +265,7 @@ export const ROLE_ACTIONS: T = {
   listen: {
     by: 'lio',
     list: (st) => (st.place === 'lanterns' ? [{ type: 'listen' }] : []),
-    label: () => tx('listen.label'),
+    label: (st) => tx(isV2(st) ? 'v2.listen.label' : 'listen.label'),
     cost: () => 1,
     check: (st) => available(st, 'lio') ?? (st.flags[`listened:${st.day}`] ? tx('listen.heard') : null),
     apply: (s, _a, _r, emit) => {

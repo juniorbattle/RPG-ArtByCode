@@ -5,14 +5,14 @@ import { isV2 } from './v2';
 import { learnFromChallenge } from './v2skills';
 import { GEAR, SHOPS, type ShopId } from './gear';
 import { gearOf, itemName } from './v2gear';
-import { holds, recordTheft, registrarOnCatch } from './v2law';
+import { holds, recordTheft, registrarOnCatch, wanted } from './v2law';
 import { PASSERS, passerOpen, passersHere } from './v2barter';
 import { applyReprisal } from './v2law';
 import { GENERICS, MUSCLE } from '../narrative/generics';
 import { LATE_TEACHER, taughtBy } from '../combat/skillbook';
 import { playerMatch } from '../tournament/pool';
 import { PEOPLE, placeOf, presentAt } from '../narrative/people';
-import { RIVALS } from '../narrative/roster';
+import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { tx } from '../narrative/text';
 import { available } from './roles';
 import { watchPost } from './v2watch';
@@ -50,10 +50,11 @@ export const RIVALS_CHALLENGE_DAY = 6;
 export function challengeable(s: GameState, who: string): string | null {
   const p = PEOPLE[who];
   if (!p) return tx('v2.challenge.who');
-  if (CHALLENGERS[who] || GENERICS[who]) return null;
+  if (GENERICS[who]) return null;
+  if (CHALLENGERS[who]) return s.tournament.matches.some((m) => m.day === s.day && !m.winner && ((m.a === who && m.b === PLAYER_ID) || (m.b === who && m.a === PLAYER_ID))) ? tx('v2.challenge.fights', { name: p.name }) : null;
   const c = s.competitors[who];
   if (!RIVALS[who] || !c || s.day < RIVALS_CHALLENGE_DAY) return tx('v2.challenge.who');
-  if (c.phaseStatus !== 'gate') return tx('v2.challenge.crown', { name: p.name });
+  if (c.phaseStatus !== 'gate' && c.phaseStatus !== 'third') return tx('v2.challenge.crown', { name: p.name });
   return fightsToday(s, who) ? tx('v2.challenge.fights', { name: p.name }) : null;
 }
 /** the fighters a challenge can be offered to at this place: the three, the generic fighters, and from day 6 the rivals in town */
@@ -86,6 +87,7 @@ function stallOpen(s: GameState, shop: ShopId): string | null {
   if (s.place !== sh.place) return tx('v2.shop.notHere');
   if (!sh.open.includes(s.slot) && !forced(s, shop)) return tx('v2.shop.shut');
   if (s.v2?.shops?.[shop]?.closed === s.day) return tx('v2.shop.barred');
+  if (wanted(s)) return tx('v2.steal.wanted', { name: PEOPLE[SHOPS[shop].keeper]?.name ?? SHOPS[shop].keeper });
   // lot L5 (EV-12, « un garde se poste à l’étal le jour d’un vol »): Wynn stands by the stall a theft was known at (src/simulation/v2watch.ts)
   return watchPost(s)?.shop === shop ? tx('v2.steal.watched', { name: PEOPLE[SHOPS[shop].keeper]?.name ?? SHOPS[shop].keeper }) : null;
 }

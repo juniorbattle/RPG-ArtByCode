@@ -4,8 +4,9 @@ import type { SlotId } from './state';
 import { isV2 } from './v2';
 import { GEAR } from './gear';
 import { gearOf, itemName, shopOpen } from './v2gear';
-import { unsettled, wanted } from './v2law';
+import { takenThefts, wanted } from './v2law';
 import { available } from './roles';
+import { sandRefusal } from './v2rivals';
 import { tx, type TextKey } from '../narrative/text';
 
 /** The money of a version 2 game (the operator's sheet of journal Passe ECO2: the request of 2026-11-10, word for word « On doit aussi pouvoir trouver le
@@ -38,7 +39,8 @@ export const workedToday = (s: GameState, job: JobId): boolean => s.flags[`work:
 /** what Mara gives for a piece of the bag (ECO-6): half its list price, rounded down */
 export const resaleOf = (item: string): number => Math.floor((GEAR[item]?.price ?? 0) / 2);
 /** a piece of a theft not settled (ECO-6: « jamais un objet volé ») */
-const stolen = (s: GameState, item: string): boolean => unsettled(s).some((t) => t.item === item);
+// a piece really taken and not settled (a theft caught took nothing: journal Passe CO2)
+const stolen = (s: GameState, item: string): boolean => takenThefts(s).some((t) => t.item === item);
 
 export type V2WorkAction =
   | { type: 'work'; job: JobId }
@@ -59,6 +61,7 @@ export const V2_WORK_ACTIONS: { [K in V2WorkAction['type']]: ActionDef<Extract<V
       if (s.slot !== j.slot) return tx(WHEN[j.slot]);
       if (workedToday(s, a.job)) return tx('v2.work.done');
       if (wanted(s)) return tx('v2.work.wanted');
+      if (j.place === 'training') { const shut = sandRefusal(s); if (shut) return shut; }
       return available(s, j.by);
     },
     apply: (s, a, _r, emit) => {

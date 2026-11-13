@@ -40,6 +40,9 @@ export const wanted = (s: GameState): boolean => isV2(s) && marksOf(s) >= LAW.wa
 export function mark(s: GameState): void { s.v2!.marks = Math.min(LAW.wanted, marksOf(s) + 1); }
 
 export const unsettled = (s: Pick<GameState, 'v2'>): V2Theft[] => (s.v2?.thefts ?? []).filter((t) => !t.settled);
+/** the thefts not settled whose piece was taken: a theft caught on the spot took nothing (journal Passe CO2, AU-08 « chaque règle alignée sur ce que le jeu dit »:
+ *  a restitution billed it at its list price, and a copy bought later was « returned », seized at dawn and refused at the resale) */
+export const takenThefts = (s: Pick<GameState, 'v2'>): V2Theft[] => unsettled(s).filter((t) => t.seen !== 'caught');
 /** who a theft robbed, by name (a keeper, a passer-by) */
 export const victimName = (id: string): string => PEOPLE[id]?.name ?? id;
 
@@ -70,7 +73,7 @@ export function recordTheft(s: GameState, t: V2Theft): void {
  *  after it (« proposé »: the pool's points no longer count once the cut is made) */
 export function registrarOnCatch(s: GameState, emit: Emit): void {
   const v = s.v2!;
-  if (!v.warned) { v.warned = true; emit({ kind: 'consequence', id: 'registrar:warn', cause: tx('v2.law.causeRules'), visible: true, text: tx('v2.law.warn') }); return; }
+  if (!v.warned) { v.warned = true; emit({ kind: 'consequence', id: 'registrar:warn', cause: tx('v2.law.causeRules'), visible: true, text: tx('v2.law.warn', { fine: LAW.registrarFine }) }); return; }
   if (s.day <= 5) {
     s.tournament.points[PLAYER_ID] = (s.tournament.points[PLAYER_ID] ?? 0) - 1;
     emit({ kind: 'consequence', id: 'registrar:point', cause: tx('v2.law.causeRules'), visible: true, text: tx('v2.law.point') });
@@ -102,7 +105,7 @@ export function v2Dawn(s: GameState, emit: Emit, rng: Rng): void {
   // the reprisal (lot L2b): the muscle a robbed owner paid takes what it came for once its nights are over; a new grudge pays it
   const muscle = GENERICS[MUSCLE].name, r = s.v2.reprisal;
   if (r && s.day >= r.until) {
-    const fine = Math.min(LAW.takes, s.player.coins), back = unsettled(s).filter((t) => t.from === r.by && holds(s, t.item));
+    const fine = Math.min(LAW.takes, s.player.coins), back = takenThefts(s).filter((t) => t.from === r.by && holds(s, t.item));
     s.player.coins -= fine; for (const t of back) { giveBack(s, t.item); t.settled = true; }
     add(s, r.by, 10); delete s.v2.reprisal;
     emit({ ...at, kind: 'consequence', id: 'reprisal:taken', cause: tx('v2.reprisal.cause', { name: victimName(r.by) }), visible: true, text: tx(back.length ? 'v2.reprisal.takenBack' : 'v2.reprisal.taken', { muscle, name: victimName(r.by), fine, items: names(back.map((t) => t.item)) }) });
@@ -115,7 +118,7 @@ export function v2Dawn(s: GameState, emit: Emit, rng: Rng): void {
   }
   // the watch searches a player it wants: what is still held of the thefts goes back, and a fine
   if (!wanted(s)) return;
-  const back = unsettled(s).filter((t) => holds(s, t.item));
+  const back = takenThefts(s).filter((t) => holds(s, t.item));
   if (!back.length) return;
   for (const t of back) { giveBack(s, t.item); t.settled = true; add(s, t.from, 5); }
   const fine = Math.min(LAW.searchFine, s.player.coins);
@@ -127,8 +130,8 @@ export function v2Dawn(s: GameState, emit: Emit, rng: Rng): void {
 
 /** what a restitution asks: the pieces still held go back, the others are paid at their list price, and Hale's fee */
 export function restitution(s: GameState): { back: string[]; coins: number } {
-  const open = unsettled(s), back = open.filter((t) => holds(s, t.item)).map((t) => t.item);
-  const paid = open.filter((t) => !holds(s, t.item)).reduce((n, t) => n + (GEAR[t.item]?.price ?? 0), 0);
+  const open = unsettled(s), taken = takenThefts(s), back = taken.filter((t) => holds(s, t.item)).map((t) => t.item);
+  const paid = taken.filter((t) => !holds(s, t.item)).reduce((n, t) => n + (GEAR[t.item]?.price ?? 0), 0);
   return { back, coins: open.length || marksOf(s) > 0 ? paid + LAW.fee : 0 };
 }
 
@@ -142,7 +145,7 @@ export function applyReprisal(s: GameState, o: DuelOutcome, emit: Emit): void {
     emit({ kind: 'consequence', id: 'reprisal:won', cause: tx('v2.reprisal.cause', { name: victimName(by) }), visible: true, text: tx('v2.reprisal.won', { muscle, name: victimName(by) }) });
     return;
   }
-  const fine = Math.min(LAW.takes, s.player.coins), back = unsettled(s).filter((t) => t.from === by && holds(s, t.item));
+  const fine = Math.min(LAW.takes, s.player.coins), back = takenThefts(s).filter((t) => t.from === by && holds(s, t.item));
   s.player.coins -= fine; for (const t of back) { giveBack(s, t.item); t.settled = true; }
   add(s, by, 10);
   emit({ kind: 'consequence', id: 'reprisal:lost', cause: tx('v2.reprisal.cause', { name: victimName(by) }), visible: true, text: tx(back.length ? 'v2.reprisal.lostBack' : 'v2.reprisal.lost', { muscle, name: victimName(by), fine, items: names(back.map((t) => t.item)) }) });
@@ -199,7 +202,7 @@ export const V2_LAW_ACTIONS: { [K in V2LawAction['type']]: ActionDef<Extract<V2L
     apply: (s, _a, _r, emit) => {
       const r = restitution(s), short = r.coins > s.player.coins, paid = Math.min(r.coins, s.player.coins);
       for (const t of unsettled(s)) {
-        if (holds(s, t.item)) giveBack(s, t.item);
+        if (t.seen !== 'caught' && holds(s, t.item)) giveBack(s, t.item);
         t.settled = true; add(s, t.from, 5);
         // a passer-by's piece goes back to its owner, who holds it again
         if (s.v2!.passed?.[t.from] !== undefined) delete s.v2!.passed[t.from];

@@ -121,7 +121,7 @@ test('where it shows: the tour of a new game, the line of a game begun before, e
   assert.match(town, /if \(isV2\(st\) && tutorialOn\(b\.params\)\) \{ void ui\.welcome\(b\.params\.has\('new'\)\);/);
   assert.match(plaza, /if \(tutorialOn\(b\.params\)\) \{ keepPlace\(st\.place, .*\); await ui\.welcome\(false\); ui\.hint\('square'\); \}/);
   assert.match(ui, /if \(fresh\) await this\.tour\(\);\n\s*else if \(!told\(\)\) \{ this\.hint\('guide'\); markTold\(\); \}/);
-  assert.match(ui, /if \(next === s\.day \+ 1 && s\.slot !== 'morning'\) this\.hint\('eve'\);/);
+  assert.match(ui, /if \(next === s\.day \+ 1 && s\.slot === 'afternoon'\) this\.hint\('eve'\);/);
   assert.match(ui, /if \(s\.slot === 'evening'\) this\.hint\('evening'\);/);
   assert.match(ui, /if \(opts\.some\(\(o\) => o\.ok && o\.action\.type === 'steal'\)\) this\.hint\('steal'\);/);
   assert.match(ui, /if \(opts\.some\(\(o\) => o\.ok && o\.action\.type === 'challenge'\)\) this\.hint\('challenge', who\);/);

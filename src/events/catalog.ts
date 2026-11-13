@@ -81,7 +81,7 @@ export const EVENTS: readonly EventDef[] = [
   {
     id: 'steel-shortage', type: 'global', about: 'With the quay\'s forge cold, steel is scarce: the shop\'s prices climb.',
     when: { forge: ['sabotaged'] }, cause: 'the forge\'s sabotage',
-    outcomes: [{ effects: [{ shop: 1.4, cause: 'steel is scarce since the forge burned' }], text: 'Word spreads that the quay\'s forge is cold: Mara raises the price of every blade by four tenths.' }],
+    outcomes: [{ effects: [{ shop: 1.4, cause: 'steel is scarce since the forge burned' }], text: 'Word spreads that the quay\'s forge is cold: Mara raises the price of every blade by four tenths.', textV2: 'Word spreads that the quay\'s forge is cold: steel is scarce, and every shop raises the price of its blades and armour by 40 %.' }],
   },
   // ---------------------------------------------------------------- district
   {
@@ -100,7 +100,7 @@ export const EVENTS: readonly EventDef[] = [
   {
     id: 'merchant-favour', type: 'district', about: 'Mara takes a liking to a helpful customer.',
     when: { town: 'mara', gte: 15 }, cause: 'your good turns to Mara',
-    outcomes: [{ effects: [{ flag: 'discount:mara', set: true }], text: 'Mara will knock a tenth off her prices for you from now on.' }],
+    outcomes: [{ effects: [{ flag: 'discount:mara', set: true }], text: 'Mara will knock a tenth off her prices for you from now on.', textV2: 'Mara takes a liking to you: 10 % off her prices while her goodwill holds.' }],
   },
   {
     id: 'night-market', type: 'district', about: 'Lantern Row comes alive at night.',

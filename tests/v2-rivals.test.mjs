@@ -136,8 +136,8 @@ test('the keepers remember: a regular (15 or more) and a face to watch (-15 or l
   const place = { mara: 'district', hilde: 'forecourt', pip: 'lanterns', corvin: 'training' }, slot = { mara: 'morning', hilde: 'morning', pip: 'evening', corvin: 'morning' };
   for (const who of Object.keys(place)) {
     const lines = (g) => { const t = at(s, 2, slot[who], place[who]); t.town[who] = g; return D.linesOf(t, who); };
-    assert.equal(lines(15).length, lines(0).length + 1); assert.match(lines(15).at(-1), /tenth off/);
-    assert.equal(lines(-15).length, lines(0).length + 1); assert.doesNotMatch(lines(-15).at(-1), /tenth off/);
+    assert.equal(lines(15).length, lines(0).length + 1); assert.match(lines(15).at(-1), /10 % off/);
+    assert.equal(lines(-15).length, lines(0).length + 1); assert.doesNotMatch(lines(-15).at(-1), /10 % off/);
     assert.equal(lines(14).length, lines(0).length); assert.equal(lines(-14).length, lines(0).length);
   }
   const today = G.namedState('day1-morning'); const before = D.linesOf(today, 'mara'); today.town.mara = 40;

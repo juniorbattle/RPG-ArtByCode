@@ -50,7 +50,8 @@ test('Tobin and Rhosk: on the training sand by day from the first day; a line an
   assert.deepEqual(D.linesOf(d5, 'tobin').slice(0, 1), [T.tx('v2.line.tobin.act1')]);
   const d7 = playTo(7, 'morning');
   for (const who of ['tobin', 'rhosk']) {
-    const k = d7.competitors[who].phaseStatus === 'gate' ? `v2.line.${who}.out` : `v2.line.${who}.in`;
+    // out of the title at the Gate, or once the semi-final is lost (the third place: journal Passe CO2, « I am still in it! » after a lost semi-final)
+    const k = ['gate', 'third'].includes(d7.competitors[who].phaseStatus) ? `v2.line.${who}.out` : `v2.line.${who}.in`;
     assert.equal(D.linesOf(d7, who)[0], T.tx(k), `${who} on day 7`);
   }
   // the third act: the player a finalist (every bout won), or not (every bout lost), or crowned

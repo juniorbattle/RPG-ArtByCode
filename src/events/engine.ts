@@ -80,7 +80,7 @@ export function runEvents(s: GameState, pulse: WorldPulse, emit: Emit, rng: Rng,
     for (const e of out.effects) applyEffect(e, s);
     s.flags[`ev:${ev.id}`] = slotNumber(s);
     // a version 2 game's ambiences leave the news (lot L4, EV-8): written hidden, their pulse kept
-    emit({ kind: ev.major ? 'consequence' : ev.type === 'targeted' ? 'sign' : 'event', id: ev.id, cause: ev.cause, text: out.text, visible: !(ev.v2quiet && s.flags.v2 === true) });
+    emit({ kind: ev.major ? 'consequence' : ev.type === 'targeted' ? 'sign' : 'event', id: ev.id, cause: ev.cause, text: (s.flags.v2 === true ? out.textV2 : undefined) ?? out.text, visible: !(ev.v2quiet && s.flags.v2 === true) });
     fired.push(ev.id);
   }
   return fired;

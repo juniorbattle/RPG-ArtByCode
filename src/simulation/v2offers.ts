@@ -23,10 +23,15 @@ export const UNMARKED_PEOPLE = new Set(['folk']);
 /** the offers that change every day */
 const DAILY = new Set(['work', 'restock', 'rumour', 'buyInfo', 'payWatch', 'keepWatch', 'lockGear', 'listen']);
 
-/** what makes an offer the same one again: a daily offer by its day, a challenge by its phase, the rest by what it names */
-export function offerKey(st: Pick<GameState, 'day'>, a: { type: string } & Record<string, unknown>): string {
+/** what makes an offer the same one again: a daily offer by its day, a challenge by its phase, an offer that comes back by what brings it back (a wound's day of
+ *  care, the day a strap is cut, the thefts and marks a restitution settles, the reprisal waiting), the rest by what it names */
+export function offerKey(st: Pick<GameState, 'day'> & Partial<Pick<GameState, 'flags' | 'v2' | 'player'>>, a: { type: string } & Record<string, unknown>): string {
   const { type, ...rest } = a;
   if (DAILY.has(type)) return `${type}:${st.day}`;
+  if (type === 'heal') return `heal:${st.player?.injury ?? 0}:${st.day}`;
+  if (type === 'checkGear') return `checkGear:${st.flags?.[`tampered:${st.day}`] ? st.day : 0}`;
+  if (type === 'restitute') return `restitute:${st.v2?.thefts?.length ?? 0}:${st.v2?.marks ?? 0}`;
+  if (type === 'faceMuscle' || type === 'payMuscle') return `${type}:${st.v2?.reprisal?.by ?? ''}:${st.v2?.reprisal?.until ?? 0}`;
   if (type === 'challenge') return `${type}:${String(a.who)}:${phaseOf(st.day)}`;
   return `${type}:${JSON.stringify(rest)}`;
 }

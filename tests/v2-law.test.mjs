@@ -41,9 +41,10 @@ test('two numbers apart: a theft caught puts a mark in Hale\'s ledger and costs 
   // the rule written out: by day 0.3, the watch's slack, the keeper's goodwill, the alert; the marks change nothing (L2-2: no hidden points)
   const rule = (s, shop = 'mara') => Math.min(0.85, Math.max(0.05, (s.slot === 'evening' ? 0.6 : 0.3) + (60 - s.pulse.security) / 200 - (s.town[{ mara: 'mara', armourer: 'hilde', master: 'corvin', trinkets: 'pip' }[shop]] ?? 0) / 400 - (s.flags[`alert:${s.day}`] ? 0.15 : 0)));
   for (const k of [0, 1, 2, 3]) { const s = structuredClone(st); s.v2.marks = k; assert.equal(T.stealChance(s, 'mara'), rule(s), `marks ${k}`); }
-  // the ledger holds three: a fourth catch changes nothing
+  // the ledger holds three, and a player the watch wants steals at no stall (journal Passe CO2, AU-08: the stalls that refuse to sell refuse to be robbed)
   const full = structuredClone(st); full.v2.marks = 3; full.player.coins = 99; full.place = 'lanterns'; full.slot = 'afternoon';
-  assert.equal(sus(act(full, { type: 'steal', shop: 'trinkets' }, LOSE).state), 3);
+  const steal = G.actions(full).find((x) => x.action.type === 'steal' && x.action.shop === 'trinkets');
+  assert.ok(steal && !steal.ok && /Sergeant Hale/.test(steal.reason), 'wanted: the stall is not robbed'); assert.equal(sus(full), 3);
 });
 
 test('an unseen theft can be found at the next dawn: the owner names the item, the watch learns of it; a theft nobody finds stays hidden', () => {
@@ -105,14 +106,15 @@ test('past the threshold: the watch searches at dawn, no stall sells (bargains i
   assert.ok(G.actions(below).some((x) => x.action.type === 'shopBuy' && x.ok), 'at two marks the stalls sell');
   const fc = structuredClone(st); fc.place = 'forecourt';
   assert.ok(G.actions(fc).some((x) => x.action.type === 'barter' && !x.action.arg && x.ok), 'Lady Edda sells to anyone');
-  // the dawn search: what is still held of the thefts goes back, and a fine; nothing held, no search
+  // the dawn search: what is still held of the thefts goes back, and a fine; nothing held, no search; a theft caught took nothing, so the whetstone the player holds is
+  // their own and stays (journal Passe CO2: a copy bought later was seized)
   const s = structuredClone(st); s.slot = 'evening'; s.player.items.push('whetstone'); s.v2.gear.acc[0] = 'docker-wrap';
   s.v2.thefts = [{ day: 1, from: 'mara', item: 'whetstone', seen: 'caught' }, { day: 1, from: 'mara', item: 'docker-wrap', seen: null }, { day: 1, from: 'pip', item: 'lucky-ribbon', seen: 'found' }];
   const log = []; L.v2Dawn(s, emitTo(log), LOSE);
   const e = log.find((x) => x.id === 'theft:search');
-  assert.ok(e && e.day === 2 && e.slot === 'morning'); assert.match(e.text, /whetstone and a docker's wrap|whetstone/);
-  assert.ok(!held(s, 'whetstone') && !held(s, 'docker-wrap')); assert.equal(s.player.coins, 99 - 10);
-  assert.deepEqual(s.v2.thefts.map((t) => !!t.settled), [true, true, false]);
+  assert.ok(e && e.day === 2 && e.slot === 'morning'); assert.match(e.text, /docker's wrap/); assert.doesNotMatch(e.text, /whetstone/);
+  assert.ok(held(s, 'whetstone') && !held(s, 'docker-wrap')); assert.equal(s.player.coins, 99 - 10);
+  assert.deepEqual(s.v2.thefts.map((t) => !!t.settled), [false, true, false]);
   const none = structuredClone(st); none.v2.thefts = [{ day: 1, from: 'pip', item: 'lucky-ribbon', seen: 'found' }]; const log2 = [];
   L.v2Dawn(none, emitTo(log2), LOSE); assert.ok(!log2.some((x) => x.id === 'theft:search'));
 });
@@ -122,12 +124,15 @@ test('a restitution at Sergeant Hale\'s: the pieces held go back, the others are
   assert.ok(!G.actions(st).some((x) => x.action.type === 'restitute'), 'nothing to settle: not offered');
   st.v2.marks = 3; st.v2.thefts = [{ day: 1, from: 'mara', item: 'whetstone', seen: 'found' }, { day: 1, from: 'pip', item: 'lucky-ribbon', seen: 'caught' }];
   const o = G.actions(st).find((x) => x.action.type === 'restitute');
-  // the whetstone held goes back; the ribbon (not held) is paid at its list price 12, and the fee 5
-  assert.ok(o.ok); assert.equal(o.coins, 12 + 5); assert.equal(o.cost, 0); assert.match(o.label, /return a whetstone/);
+  // the whetstone held goes back; the ribbon, caught in the act, was never taken: nothing to pay for it (journal Passe CO2, AU-08; it was billed 12), only the fee 5
+  assert.ok(o.ok); assert.equal(o.coins, 5); assert.equal(o.cost, 0); assert.match(o.label, /return a whetstone/);
   const r = act(st, { type: 'restitute' }).state;
-  assert.equal(sus(r), 0); assert.equal(r.player.coins, 60 - 17); assert.ok(!held(r, 'whetstone')); assert.ok(r.v2.thefts.every((t) => t.settled));
+  assert.equal(sus(r), 0); assert.equal(r.player.coins, 60 - 5); assert.ok(!held(r, 'whetstone')); assert.ok(r.v2.thefts.every((t) => t.settled));
   assert.equal(r.slot, st.slot, 'paid: no slot');
   assert.ok(G.actions(Object.assign(r, { slot: 'morning' })).some((x) => x.action.type === 'shopBuy' && x.action.shop === 'mara' && x.ok), 'Mara sells again');
+  // a piece really taken and no longer held is paid at its list price
+  const sold = structuredClone(st); sold.v2.thefts = [{ day: 1, from: 'pip', item: 'lucky-ribbon', seen: 'found' }];
+  assert.equal(G.actions(sold).find((x) => x.action.type === 'restitute').coins, 12 + 5);
   // the way out is always open: a purse of 3 pays its 3 and hauls the rest of the slot
   const poor = structuredClone(st); poor.player.coins = 3;
   const p = G.actions(poor).find((x) => x.action.type === 'restitute');

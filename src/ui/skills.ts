@@ -24,7 +24,8 @@ function doesWhat(f: SkillFigures): string {
   const both = (a: string, b: string): string => (a && b ? tx('ui.skill.both', { a, b }) : a || b);
   if (f.ward) return tx('ui.skill.ward', { dur: f.dur, what: both(f.ward.damage !== 1 ? tx('ui.skill.lessHit', { pct: pct(f.ward.damage) }) : '', f.ward.resist !== 1 ? tx('ui.skill.lessGauge', { pct: pct(f.ward.resist) }) : '') });
   if (f.boost) return tx('ui.skill.boost', { dur: f.dur, what: both(f.boost.damage !== 1 ? tx('ui.skill.moreHit', { pct: pct(f.boost.damage) }) : '', f.boost.resist !== 1 ? tx('ui.skill.moreGauge', { pct: pct(f.boost.resist) }) : '') });
-  return `${tx('ui.skill.strike', { damage: f.damage, gauge: f.gauge })}${f.pierce ? ` ${tx('ui.skill.pierce')}` : ''}`;
+  // a skill that strikes several blows says so, their damage added up as the duel adds it (journal Passe CO2)
+  return `${f.hits > 1 ? tx('ui.skill.strikes', { n: f.hits, damage: f.damage, gauge: f.gauge }) : tx('ui.skill.strike', { damage: f.damage, gauge: f.gauge })}${f.pierce ? ` ${tx('ui.skill.pierce')}` : ''}`;
 }
 
 /** the figures now and at the next level */

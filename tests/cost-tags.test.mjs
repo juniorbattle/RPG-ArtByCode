@@ -27,11 +27,12 @@ function rule(st, a) {
     // a challenge's coins staked are put on the table at once (lot L2b, EV-3: 10, won back twice); paying a reprisal's muscle off, 20
     case 'challenge': return a.stake === 'coins' ? 10 : 0;
     case 'payMuscle': return 20;
-    // a restitution at Sergeant Hale's (lot L2a): the pieces still held go back, the others are paid at their list price, his fee of 5; a thin purse pays all it has
+    // a restitution at Sergeant Hale's (lot L2a): the pieces still held go back, the others taken are paid at their list price (a theft caught took nothing:
+    // journal Passe CO2), his fee of 5; a thin purse pays all it has
     case 'restitute': {
       const PRICE = { 'imported-blade': 30, 'duelist-sabre': 55, 'padded-jack': 18, 'mail-shirt': 40, 'dock-leathers': 26, 'lucky-ribbon': 12, 'iron-ring': 24, 'swift-boots': 30, 'fervour-charm': 16, 'docker-wrap': 14, whetstone: 8, 'river-pearl': 26, 'knight-hauberk': 34, 'pilgrim-medal': 18 };
       const g = st.v2.gear, held = (id) => id === 'whetstone' ? st.player.items.includes('whetstone') : [g.weapon, g.armour, ...g.acc, ...g.bag].includes(id);
-      const open = (st.v2.thefts ?? []).filter((x) => !x.settled), debt = open.filter((x) => !held(x.item)).reduce((n, x) => n + PRICE[x.item], 0) + (open.length || (st.v2.marks ?? 0) > 0 ? 5 : 0);
+      const open = (st.v2.thefts ?? []).filter((x) => !x.settled), debt = open.filter((x) => x.seen !== 'caught' && !held(x.item)).reduce((n, x) => n + PRICE[x.item], 0) + (open.length || (st.v2.marks ?? 0) > 0 ? 5 : 0);
       return Math.min(debt, st.player.coins);
     }
     case 'barter': { const p = { fenwick: 26, edda: 34, sela: 18 }[a.who]; return !a.arg ? p : Math.max(1, Math.round(p * (a.arg === 'name' ? 0.8 : 0.7))); }

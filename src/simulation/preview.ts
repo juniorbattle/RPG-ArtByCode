@@ -58,8 +58,10 @@ export interface SkillFigures {
   ap: number;
   /** an offensive skill's power before the stats (the operator's DB7-7, journal Passe DB8: src/combat/stats.ts skillPower; 0 for a ward or a boost) */
   power: number;
-  /** what the blow does, gear and level in it: its damage and what it adds to the gauge */
+  /** what the blow does, gear and level in it: its damage and what it adds to the gauge (every blow of a skill that strikes several, journal Passe CO2) */
   damage: number; gauge: number;
+  /** the blows it strikes (Taille éclair 2, Tourbillon 3: AUTO_SKILLS hits) */
+  hits: number;
   /** the hold that opens it (s) */
   charge: number;
   /** a ward's or a boost's length (s) and what it multiplies, 0 and none for a blow */
@@ -84,16 +86,19 @@ function autoPair(s: GameState): { ren: AutoFighter; foe: AutoFighter } {
 export function skillFigures(s: GameState, id: string, level: number): SkillFigures {
   if (isV2(s)) {
     const { ren, foe } = autoPair(s), a = autoSkill(id, level, v2Mods(s).effect), e = a.ward ?? a.boost;
-    const off = !e;
+    // each blow as the duel strikes it (src/combat/auto.ts hitOnce: its share of the power, at least 1; its share of the gauge): the page said one blow of the whole
+    // power, Tourbillon's three of 0.36 are 1.08 of it (journal Passe CO2)
+    const off = !e, hits = a.hits ?? [1], k = hitFactor(ren.atk, foe.def);
     return {
-      ap: a.ap ?? 0, power: off ? +(a.power ?? 0).toFixed(1) : 0, damage: off ? Math.round((a.power ?? 0) * hitFactor(ren.atk, foe.def)) : 0,
-      gauge: off ? +((a.gauge ?? 0) * (10 / Math.max(1, foe.end))).toFixed(1) : 0, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2),
+      ap: a.ap ?? 0, power: off ? +(a.power ?? 0).toFixed(1) : 0, hits: off ? hits.length : 0,
+      damage: off ? hits.reduce((n, sh) => n + Math.max(1, Math.round((a.power ?? 0) * sh * k)), 0) : 0,
+      gauge: off ? +((a.gauge ?? 0) * hits.reduce((n, sh) => n + sh, 0) * (10 / Math.max(1, foe.end))).toFixed(1) : 0, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2),
       dur: e?.dur ?? 0, ward: a.ward ? { damage: a.ward.dmg, resist: a.ward.gauge } : null, boost: a.boost ? { damage: a.boost.dmg, resist: a.boost.gauge } : null, pierce: !!a.pierce,
     };
   }
   const k = v2KitOf(s), { data: d, tiers } = skillDuel(s, withSkill(s, id), { ...k.levels, [id]: level });
   const a = d.actions[id as DynActionId], e = a.ward ?? a.boost;
-  return { ap: a.apCost ?? 0, power: a.family === 'offensive' ? +skillPower(id, level).toFixed(1) : 0, damage: a.damage, gauge: a.resist, charge: tiers.find((t) => t.id === id)!.at, dur: e?.dur ?? 0, ward: a.ward ?? null, boost: a.boost ?? null, pierce: !!a.ignoreGuard };
+  return { ap: a.apCost ?? 0, power: a.family === 'offensive' ? +skillPower(id, level).toFixed(1) : 0, hits: a.family === 'offensive' ? 1 : 0, damage: a.damage, gauge: a.resist, charge: tiers.find((t) => t.id === id)!.at, dur: e?.dur ?? 0, ward: a.ward ?? null, boost: a.boost ?? null, pierce: !!a.ignoreGuard };
 }
 
 /** the tiers of the charge with these skills (the light attack, then each one by its time; the heavy attack only when it is among them, journal Passe CH1), as

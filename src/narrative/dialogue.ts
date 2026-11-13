@@ -207,7 +207,7 @@ function baseLines(s: GameState, who: string): string[] {
     case 'lucan': return [tx('v2.line.lucan')];
     case 'piers': return [tx('v2.line.piers')];
     case 'kell': return [tx('v2.line.kell')];
-    case 'tobin': case 'rhosk': return [tx(s.competitors[who]?.phaseStatus === 'gate' ? (who === 'tobin' ? 'v2.line.tobin.out' : 'v2.line.rhosk.out') : who === 'tobin' ? 'v2.line.tobin.in' : 'v2.line.rhosk.in')];
+    case 'tobin': case 'rhosk': return [tx(['gate', 'third'].includes(s.competitors[who]?.phaseStatus ?? '') ? (who === 'tobin' ? 'v2.line.tobin.out' : 'v2.line.rhosk.out') : who === 'tobin' ? 'v2.line.tobin.in' : 'v2.line.rhosk.in')];
     // the version 2's passers-by (lot L2a): their piece, or what is left once it has gone
     case 'fenwick': case 'edda': case 'sela': {
       const gone = s.v2?.passed?.[who] !== undefined;

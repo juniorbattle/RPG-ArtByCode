@@ -160,8 +160,9 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
     // a version 2 game says its purse (ECO-4, journal Passe ECO2); today's game keeps its line word for word
     text: won ? (isV2(s) ? tx('v2.duel.won', { name, close: close ? tx('duel.wonClose') : '', rep: opp === 'marek' ? 20 : 15, n: boutPurse(s, m, true) }) : tx('duel.won', { name, close: close ? tx('duel.wonClose') : '', rep: opp === 'marek' ? 20 : 15 }))
       // a defeat in the version 2's bracket says what it costs there (journal Passe VP1), not the pool's rule
-      : m.stage ? tx(m.stage === 'semi' ? 'v2.duel.lostSemi' : m.stage === 'gate' ? 'v2.duel.lostGate' : m.stage === 'final' ? 'v2.duel.lostFinal' : 'v2.duel.lostLast', { name, close: close ? tx('v2.duel.lostClose') : '' })
-      : tx('duel.lost', { name, close: close ? tx('duel.lostClose') : '' }),
+      // a version 2 defeat says what it gives and costs, its reputation and its purse (journal Passe CO2, AU-08 / I6); today's game keeps its line word for word
+      : m.stage ? tx(m.stage === 'semi' ? 'v2.duel.lostSemi' : m.stage === 'gate' ? 'v2.duel.lostGate' : m.stage === 'final' ? 'v2.duel.lostFinal' : 'v2.duel.lostLast', { name, close: close ? tx('v2.duel.lostClose') : '', rep: close ? '+2' : '−5', n: boutPurse(s, m, false) })
+        : isV2(s) ? tx('v2.duel.lost', { name, close: close ? tx('v2.duel.lostClose') : '', rep: close ? '+2' : '−5', n: boutPurse(s, m, false) }) : tx('duel.lost', { name, close: close ? tx('duel.lostClose') : '' }),
   });
   if (hurt) emit({ kind: 'consequence', id: 'player-injured', cause: `match:${matchId(m)}`, visible: true, text: tx('duel.injured') });
   // a version 2 game (lot L3, the operator's EV-10 « Une réponse par lieu, un effet lisible », journal Passe EV2): a strap cut in the night and fought on is found

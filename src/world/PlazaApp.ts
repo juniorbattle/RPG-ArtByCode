@@ -453,6 +453,7 @@ export class PlazaApp {
   nearby(): string | null {
     let best: string | null = null, bd = 2.2 * 2.2;
     for (const a of this.people) {
+      if (a.hidden) continue;
       // (a walker of the crowd is the town's passers-by when the page says so: lot L5)
       const w = this.who.get(a) ?? (this.opts.folk && a.role === 'crowd' && !a.hidden ? 'folk' : null); if (!w) continue;
       const d = (a.pos.x - this.player.pos.x) ** 2 + (a.pos.z - this.player.pos.z) ** 2; if (d < bd) { bd = d; best = w; }
