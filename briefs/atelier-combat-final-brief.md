@@ -65,3 +65,6 @@ par un agent. Une seule branche ouverte à la fois (règle d'`AGENTS.md`), le jo
   PA pleins), `tools/auto-balance.mjs`, `tools/auto-sym/` (le modèle de l'atelier SY1 ; sa copie n'est plus identique au jeu depuis le lot 1 : à refaire depuis le
   jeu), `tools/duel-clip.mjs`.
 - Les politiques des parties entières : `src/tournament/lab.ts` (`reference` d'AC-14, `planner`, `curious`, `diligent`, `idle`).
+
+## L'atelier mené (13/11/2026, journal Passe CF1)
+- Le laboratoire `tools/auto-final/`, ses mesures et le prototype : `briefs/combat-auto.md` § 31. La fiche : https://claude.ai/artifact/NVyUoTFKBigFFzzm1abjUz (`briefs/fiche-combat-final.html`), seize cartes, en attente de l'opérateur.

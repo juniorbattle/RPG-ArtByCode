@@ -1,0 +1,387 @@
+<title>Combat final</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.mt { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.mt th, .mt td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.mt th { color: var(--muted); font-weight: 600; }
+.mt td + td, .mt th + th { text-align: right; white-space: nowrap; }
+.mtw { overflow-x: auto; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions du responsable · 13/11/2026</span>
+    <h1>Fiche d'arbitrages — l'atelier du système de combat final</h1>
+    <p class="lede">Tu m’as demandé de pousser la réflexion loin et de te proposer un prototype final de système de combat, où la préparation pèse et où l’équipement apporte des effets. L’atelier (journal Passe CF1) a mesuré le jeu d’aujourd’hui et un prototype au laboratoire : une copie du duel prouvée identique au jeu (2 240 duels et 120 parties entières sur autant), chaque mécanique en interrupteur, jugée sur des parties entières (200 de calage, 200 tenues à part). Rien du jeu n’est changé. Ce qu’il a trouvé tient en une phrase : la tactique pèse déjà beaucoup (une tactique par rival fait passer la référence de 31 % à 52 % de titres), parce que les PA forment un budget commun à répartir ; sans PA, aucune des formes mesurées ne garde ce poids. La recommandation de la carte CF-02 n’est donc pas ta direction sur les PA : je te la soumets avec ses mesures. Seize décisions, dont quatre A3 marquées. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis quand tu me dis que la fiche est remplie.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne dans les documents du projet (tes décisions A3 citées mot pour mot et datées avant toute construction), puis la construction part en lots, chacun dans sa séance.</p>
+    <p class="src">Sources : JOURNAL.md, Passes SY2, SL1 à SL4, CF1 ; briefs/atelier-combat-final-brief.md ; briefs/combat-auto.md (§ 25 à § 31) ; tools/auto-final/ (le laboratoire de l’atelier et ses mesures) ; src/combat/auto.ts, autoData.ts, src/simulation/gear.ts.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+const GROUPS = [
+  { id: 'diag', title: 'Le diagnostic', sub: 'Le jeu d’aujourd’hui (main, Passe SL4) mesuré sur 200 parties tenues à part (graines 101 à 300), par une copie du duel prouvée identique au jeu (2 240 duels et 120 parties entières sur autant).', fam: 'var(--cendre)', items: [
+    { id: 'CF-01', tag: 'diagnostic', title: 'Ce qui donne de vrais choix aujourd’hui, et pourquoi',
+      ctx: 'Les statistiques pèsent lourd : les combats de la référence rejoués sans les points de l’équipement tombent de 48 % à 0 % en finale, sans la vigueur des victoires à 13 %, les compétences au niveau 1 à 18 %. Le choix qui dépend de l’adversaire pèse aussi, plus qu’on ne le croyait : au rythme ×3, la référence qui choisit à la fiche de match la tactique de ses quatre compétences selon le rival passe de 31 % à 52 % de titres, et « offensives à la rupture » pour tous fait 41 % (0 % en Passe SL3, au rythme d’avant). Mais la raison est cachée : les PA sont un budget commun que l’automatique dépense mal, et c’est la répartition de ce budget qu’une tactique améliore ; les réponses trouvées sont opaques (« Rempart dès qu’il est prêt » contre Vessa). Retenir un soutien ou une protection s’effondre toujours (0 à 7 %). Les PA brident l’Estoc de Ren (4 PA) bien plus que les rivaux (2 PA). Le sabre et les bottes, par leurs +2 de Vivacité, sont la meilleure pièce de leur emplacement contre presque tous les rivaux.',
+      table: [['Le jeu d’aujourd’hui (200 parties)', 'Titres', 'j2 / j4 / j5', 'Demi', 'Finale'], ['la référence (AC-14), l’automatique', '31 %', '92 / 93 / 100', '66 %', '48 %'], ['la référence, une tactique par rival', '52 %', '100 / 97 / 100', '93 %', '56 %'], ['la référence, « offensives à la rupture »', '41 %', '100 / 100 / 100', '89 %', '46 %'], ['la référence, « soutiens quand une offensive peut suivre »', '6 %', '80 / 94 / 91', '55 %', '11 %'], ['la référence, appuis au hasard', '21 à 24 %', '94 / 86-91 / 99-100', '61-64 %', '35-39 %'], ['le planificateur', '18 %', '92 / 93 / 100', '41 %', '44 %'], ['le curieux', '21 %', '85 / 92 / 97', '71 %', '34 %'], ['le diligent ; l’oisif', '0 %', '95 / 88 / 97 ; 87 / 62 / 81', '43 % ; 10 %', '0 %']],
+      rec: 'Partir de là : garder le poids des statistiques et du choix qui dépend de l’adversaire, le rendre lisible, et retirer ce qui fausse la structure (les PA tels qu’ils sont, la Vivacité des pièces). Les cartes suivantes le font une à une, chacune mesurée.',
+      opts: ['Reçu', 'Reçu, mais reprendre le diagnostic (en note)'], recIdx: 0,
+      src: 'tools/auto-final/diag.mjs, modes.mjs, adapt-bank.mjs ; briefs/combat-auto.md § 31.2' },
+  ]},
+  { id: 'ressources', title: 'Les PA, les recharges et le moment de lancer', sub: 'Tes mots du 13/11 : « si les recharges gerent deja l’usage de competences a les PA ne sont plus necessaire. dans tout dependamment de niveau/puissance/type de la competences, la recharge sera rapide,moyen,longue puis le gambit tactique permet aussi de determiner a quel moment on veut rendre actif une competence ».', fam: 'var(--ronce)', items: [
+    { id: 'CF-02', tag: 'AC-03 · le cœur', title: 'Les PA : c’est leur budget commun qui donne du poids au moment de lancer',
+      ctx: 'Ta direction était de les retirer, les recharges réglant l’usage et la tactique le moment. Je l’ai mesurée sous toutes les formes que j’ai pu, chaque fois la course recalée sur 200 parties puis jugée sur 200 autres, et une tactique par rival apprise sur d’autres parties. Avec les PA, chaque compétence se paie sur un budget commun : la tactique décide qui le reçoit et quand, et attendre ne coûte rien tant que les PA ne plafonnent pas. Sans PA, chaque compétence a sa propre horloge : la retenir fait perdre du temps de recharge, et « dès qu’elle est prête » devient presque toujours le meilleur choix ; l’automatique devient fort, et la tactique ne rapporte plus rien. Ni des terrains ×2, ni deux utilisations gardées par compétence, ni un souffle commun de 10 s entre deux compétences n’y changent rien une fois la course recalée. Les PA ont leurs défauts (l’Estoc à 4 PA, les rivaux à 2), que les autres cartes corrigent.',
+      table: [['200 parties tenues à part (la référence)', 'L’automatique', 'Une tactique par rival', 'Appuis au hasard'], ['avec les PA (le jeu d’aujourd’hui)', '31 %', '52 %', '21 à 24 %'], ['avec les PA et les cartes de cette fiche', '34 %', '49 %', '22 à 32 %'], ['sans PA, les recharges seules', '36 %', '36 %', '20 à 24 %'], ['sans PA, un souffle commun de 10 s', '27 %', '26 %', '11 à 12 %']],
+      rec: 'Garder les PA, leur budget commun, avec les corrections de cette fiche : c’est la seule structure mesurée où la préparation adaptée au rival bat nettement l’automatique (ta note de RY-3 : « donner les chances/probabilites de gagnes fortement surtout si il est bien prepare »). Je sais que ce n’est pas ta direction ; les mesures disent que sans un budget à répartir, le moment de lancer cesse de compter.',
+      opts: ['Garder les PA (leur budget commun)', 'Les retirer : les recharges seules (l’automatique décide bien, la préparation passe par les stats, l’équipement et le kit)', 'Les retirer, avec un souffle commun'], recIdx: 0,
+      src: 'tools/auto-final/final.mjs, modes.mjs, adapt-bank.mjs (game, PK, PF, PG, PG-S10, PF-C2, PG-C2, PF-T2, PG-T2) ; briefs/combat-auto.md § 31.4' },
+    { id: 'CF-03', tag: 'DB5-3 · A3', title: 'Les recharges : rapide, moyenne, longue',
+      ctx: 'DB5-3 (décision A3 du 09/11) : « 5 × le temps de charge », lu au niveau 1 (CO-4). Elle fait déjà trois familles selon le type et la puissance, à la cadence ×3 : le coup puissant et Garde-riposte 15 à 22 s ; la Taille éclair, Rempart, la Feinte, Cri de guerre 23 à 32 s ; la Fente, Peau de fer, Ferveur, Fracas, Tourbillon 34 à 46 s ; Concentration et l’Estoc 50 à 69 s. Le niveau ne la raccourcit pas. Deux façons de suivre tes mots : lire DB5-3 à la charge du niveau de la compétence (au niveau 5, environ un quart plus vite), ou trois classes nommées (15, 30 et 50 s, −6 % par niveau).',
+      table: [['À niveau égal (poule / tableau / finale)', 'Automatique', 'Une tactique par rival', 'Appuis au hasard', 'Coups / min, finale'], ['DB5-3 telle quelle (niveau 1)', '85 / 62 / 43', '94 / 77 / 47', '67 / 41 / 31', '35'], ['5 × la charge à son niveau', '87 / 62 / 45', '95 / 72 / 46', '70 / 43 / 36', '35'], ['trois classes, −6 % par niveau', '82 / 65 / 50', '91 / 72 / 86', '61 / 43 / 44', '27 (0,4 rupture)']],
+      rec: '5 × la charge à son niveau : la règle de DB5-3 gardée, ses familles par type et puissance, le niveau qui la raccourcit ; la page dit « rapide », « moyenne » ou « longue » (moins de 25 s, jusqu’à 45 s, au-delà). Les trois classes nommées vident la finale de ses ruptures. C’est une décision A3 (elle change DB5-3).',
+      opts: ['5 × la charge à son niveau, dite rapide / moyenne / longue (décision A3 : change DB5-3)', 'Garder DB5-3 telle quelle (niveau 1)', 'Trois classes nommées, −6 % par niveau (décision A3 : change DB5-3)'], recIdx: 0,
+      src: 'src/combat/autoData.ts (AUTO_COOLDOWN) ; tools/auto-final/level.mjs (G1, G2, G3)' },
+  ]},
+  { id: 'defense', title: 'La garde, l’esquive et les protections', sub: 'La garde et l’esquive restent tirées des stats (tu l’as validé). Ce qui suit : ce qu’une garde enlève, et ce que rapporte une protection bien placée. Comparé à niveau égal : les rivaux ramenés là où l’automatique de la référence gagne 85 / 65 / 50 %, puis jugé sur des combats tenus à part.', fam: 'var(--voile)', items: [
+    { id: 'CF-04', tag: 'DB5-2', title: 'La garde : −50 % à force égale, selon la Défense contre l’Attaque',
+      ctx: 'Aujourd’hui une garde enlève 80 % du coup (DB5-2), pour tous. Les rivaux gardent 11 à 16 % des coups de Ren et 15 % de ses grosses actions ; les coups gardés ne font que 3 à 4 % de ses dégâts. Proposé : la part enlevée suit les stats, 50 % à force égale, de 30 % (le frappeur bien plus fort) à 70 % (le défenseur bien plus solide). Mesuré : la forme reste bonne, la Défense compte un peu plus.',
+      table: [['À niveau égal (poule / tableau / finale)', 'Automatique', 'Une tactique par rival', 'Appuis au hasard'], ['sans PA, garde −80 %', '85 / 62 / 43', '94 / 77 / 47', '67 / 41 / 31'], ['sans PA, garde −30 à −70 % selon les stats', '86 / 59 / 48', '92 / 68 / 52', '72 / 46 / 39']],
+      rec: 'La garde selon les stats, −50 % à force égale : ta demande de la revoir, et le même principe que sa chance.',
+      opts: ['−50 % à force égale, de −30 à −70 % selon les stats', '−50 % pour tous', 'Garder −80 %'], recIdx: 0,
+      src: 'src/combat/auto.ts (AUTO_RULES.guardReduce) ; tools/auto-final/sim.mjs (guardStat) ; level.mjs (G1, G8)' },
+    { id: 'CF-05', tag: 'parade', title: 'Une protection qui couvre un gros coup le fait payer',
+      ctx: 'Aujourd’hui une protection réduit les dégâts et la jauge tant qu’elle dure, quoi qu’elle couvre. Proposé : une compétence ou un coup puissant qui tombe sur une protection (Rempart, Garde-riposte, les protections des rivaux) ajoute 2 coups à la jauge de son frappeur. Ce n’est pas une riposte : aucun coup ne part (AC-07, décision A3, gardée). Avec 4 coups, les rivaux rompaient en 13 coups au lieu des 20 à 25 de RY-3 : 2 coups.',
+      rec: 'La parade à 2 coups : une raison visible de placer une protection, sans riposte.',
+      opts: ['La parade : 2 coups à la jauge du frappeur', 'Pas de parade'], recIdx: 0,
+      src: 'tools/auto-final/sim.mjs (parry) ; level.mjs (G5, P1, PF)' },
+  ]},
+  { id: 'competences', title: 'Les compétences et les rivaux', sub: 'Que chaque compétence ait son terrain, visible dans l’arène, et que chaque rival se batte à sa façon sous les mêmes règles : la bonne préparation dépend alors de l’adversaire.', fam: 'var(--astre)', items: [
+    { id: 'CF-06', tag: 'terrains', title: 'Chaque offensive a son terrain, et deux conditions de plus',
+      ctx: 'Proposé : la Taille éclair punit une charge (×1,5 sur un adversaire qui charge une grosse action) ; la Fente et la Feinte percent la garde et aussi la moitié d’une protection ; l’Estoc achève (×1,5 sur un adversaire rompu ou sous le tiers de ses PV) ; Tourbillon et Fracas cassent (leur poids sur la jauge, gardé). Les rivaux pareil : l’élan de Vessa punit, la riposte de Cassius perce, le châtiment d’Ilse et la chute de Marek achèvent. Et deux conditions dans la page de la tactique : « quand il se protège », « quand sa jauge passe les deux tiers ». Les terrains rendent les réponses lisibles ; sans PA, ils ne rendent pas l’attente payante (des terrains ×2 non plus : carte CF-02).',
+      rec: 'Les terrains et les deux conditions : la tactique devient une lecture de ce que l’arène montre, et la préparation suit le rival.',
+      opts: ['Les terrains et les deux conditions', 'Les terrains seuls', 'Ni l’un ni l’autre'], recIdx: 0,
+      src: 'tools/auto-final/sim.mjs (TERRAIN, condHolds) ; level.mjs (G4) ; modes.mjs (PF-T2, PG-T2)' },
+    { id: 'CF-07', tag: 'styles', title: 'Chaque rival son style, dit sur la fiche de match',
+      ctx: 'Aujourd’hui les sept rivaux jouent l’automatique dans l’ordre de leur kit. Proposé : chacun sa tactique, sous les mêmes règles que Ren, dite sur la fiche de match. Vessa la vive : son élan quand Ren charge, son tempo dès qu’il est prêt. Tobin le cogneur : sa rage, puis son coup sauvage. Cassius le duelliste : sa riposte quand Ren se protège, sa parade sur ses gros coups. Orla la bousculeuse : son coup d’épaule quand la jauge de Ren est haute. Ilse la paladine : son égide dès qu’elle est prête. Marek le marteau : sa résolution, puis sa chute à la rupture. Rhosk le roc : sa peau à sa jauge, son fendoir dès qu’il est prêt. Mesuré à niveau égal (sans PA) : l’automatique reste la meilleure tactique unique, une tactique par rival le dépasse de 9 à 15 points en poule et au tableau ; avec les PA et les autres cartes : la référence 34 % de titres, une tactique par rival 49 %.',
+      rec: 'Les styles : la bonne préparation dépend de l’adversaire, sans aucune règle à part.',
+      opts: ['Chaque rival son style, dit sur la fiche de match', 'Le même automatique pour tous (aujourd’hui)'], recIdx: 0,
+      src: 'tools/auto-final/sim.mjs (STYLE_TACTIC) ; level.mjs (G1) ; kits.mjs' },
+    { id: 'CF-08', tag: 'soutiens', title: 'Les soutiens retenus s’effondrent toujours',
+      ctx: 'Ferveur multiplie tous les coups pendant sa durée : un multiplicateur plat qu’il faut toujours lancer. La retenir coûte presque tout : « soutiens à la rupture » 0 % de titres dans le jeu, 5 % dans le prototype ; « soutiens jamais » 0 et 4 %. Mesuré à niveau égal : Ferveur qui charge seulement la prochaine action offensive (×2,2 dans sa fenêtre) donne une tactique par rival au-dessus de l’automatique en finale (59 % contre 43 %), sans mesure sur parties entières.',
+      table: [['À niveau égal (poule / tableau / finale)', 'Automatique', 'Une tactique pour tous', 'Une tactique par rival', 'Appuis au hasard'], ['Ferveur sur sa durée', '84 / 69 / 49', '91 / 64 / 43', '92 / 77 / 46', '72 / 56 / 35'], ['Ferveur sur la prochaine action (×2,2)', '87 / 64 / 43', '90 / 72 / 46', '93 / 78 / 59', '82 / 58 / 36']],
+      rec: 'Ferveur sur la prochaine action offensive, mesurée au premier lot avec l’équilibre (AC-12) : c’est la piste qui donne au soutien un moment à choisir ; l’accepter sans mesure sur parties entières serait trop tôt.',
+      opts: ['Ferveur sur la prochaine action, mesurée au premier lot', 'Garder Ferveur sur sa durée', 'À reprendre (en note)'], recIdx: 0,
+      src: 'tools/auto-final/level.mjs (P1, P2) ; modes.mjs' },
+    { id: 'CF-09', tag: 'SL1-3', title: 'L’automatique',
+      ctx: 'Aujourd’hui (SL1-3) l’automatique garde sa plus forte offensive pour la rupture, ou la lance à PA pleins. Avec les PA, c’est lui que la tactique adaptée dépasse, et il reste au-dessus des appuis au hasard : il tient ton critère (« correct, mais battu par une tactique adaptée au rival »). Sans PA, un automatique dont la plus forte part aussi sur son terrain tient mieux les durées (la finale à 3 min 40 contre 4 min 22) mais ne laisse plus rien à la tactique.',
+      table: [['200 parties tenues à part (la référence)', 'Titres', 'Une tactique par rival', 'Appuis au hasard'], ['avec les PA, SL1-3 (le jeu)', '31 %', '52 %', '21 à 24 %'], ['avec les PA et les cartes de cette fiche, SL1-3', '34 %', '49 %', '22 à 32 %'], ['sans PA, la plus forte aussi sur son terrain', '36 %', '36 %', '20 à 24 %'], ['sans PA, SL1-3', '31 %', '35 %', '17 à 19 %']],
+      rec: 'Garder l’automatique de SL1-3 avec les PA : correct, et battu par la tactique adaptée.',
+      opts: ['Garder SL1-3', 'La plus forte aussi sur son terrain (si les PA sont retirés)'], recIdx: 0,
+      src: 'tools/auto-final/final.mjs, modes.mjs, adapt-bank.mjs (game, PK, PF, PG)' },
+  ]},
+  { id: 'equipement', title: 'L’équipement', sub: 'Tes mots : « les equipements en plus des stats ameliroeres peuvent apporter des effets bonus ». Chaque pièce portée à la place de celle de Ren, contre chaque rival, au tableau et en finale.', fam: 'var(--voile)', items: [
+    { id: 'CF-10', tag: 'effets', title: 'Des effets d’équipement, chacun avec sa contrepartie',
+      ctx: 'Proposé, en plus des points : la lame importée remplit la jauge ×1,1, son attaque simple charge 10 % plus longtemps ; le sabre du duelliste fait passer la garde à sa dernière taille, ses coups remplissent moins la jauge (×0,7) ; le gilet rembourré : un coup gardé ne remplit la jauge qu’une fois (au lieu de deux) ; la cotte de mailles et le haubert : −20 % aux coups d’attaque simple, l’esquive divisée par deux ; les cuirs du quai : l’esquive ×1,3, la garde ×0,85 ; l’anneau de fer : sa rupture 30 % plus courte ; le ruban porte-bonheur (son PA sans PA) : les recharges −15 % ; le jeton du champion −10 % ; les bottes rapides : la première charge du combat aussitôt. Mesuré (avec la Vivacité des pièces à moitié, carte suivante) : au tableau, aucune pièce ne domine son emplacement ; en finale, la lame importée domine les armes, rien d’autre.',
+      rec: 'Ces effets, réglés au premier lot avec le test de AC-12 étendu aux pièces : chaque pièce a ses rivaux, aucune ne domine.',
+      opts: ['Ces effets, réglés au premier lot (AC-12 étendu aux pièces)', 'Les points seuls (aujourd’hui)', 'À reprendre (en note)'], recIdx: 0,
+      src: 'tools/auto-final/sim.mjs (GEAR_FX) ; gearfx.mjs ; src/simulation/gear.ts' },
+    { id: 'CF-11', tag: 'AC-11 · A3', title: 'La Vivacité des pièces domine',
+      ctx: 'AC-11 (décision A3 du 11/11) a doublé les points des pièces : le sabre et les bottes donnent +2 de Vivacité, la cotte −1. Une charge dure 10 / Vivacité : +2 sur 9, c’est 20 % plus vite pour tout. Mesuré au tableau, contre les sept rivaux : le sabre la meilleure arme contre six rivaux sur sept, les bottes le meilleur accessoire contre presque tous ; avec la moitié de ces seuls points (+1, −0,5), plus aucune arme ni armure ne domine.',
+      table: [['Au tableau, moyenne contre les sept rivaux', 'Épée', 'Lame', 'Sabre'], ['les points d’aujourd’hui', '77 %', '82 %', '91 % (domine)'], ['la Vivacité des pièces à moitié', '60 %', '73 %', '69 %']],
+      rec: 'La Vivacité des pièces à moitié, le reste des points de AC-11 gardé : une décision A3, elle change AC-11 pour la seule Vivacité.',
+      opts: ['La Vivacité des pièces à moitié (décision A3 : change AC-11)', 'Garder AC-11 tel quel'], recIdx: 0,
+      src: 'src/simulation/gear.ts (GEAR) ; tools/auto-final/gearfx.mjs (--vivk=0.5)' },
+  ]},
+  { id: 'progression', title: 'La progression et la course', sub: 'Le prototype recommandé (les PA gardés, les styles, les terrains, la parade, la garde par les stats, les effets d’équipement, la Vivacité des pièces à moitié), sa course recalée comme AC-16 le prévoit sur 200 parties de calage (graines 1 à 100 et 301 à 400), puis 200 parties tenues à part (graines 101 à 300). Un joueur « adapté » : la référence qui, à la fiche de match, met sur ses quatre la tactique qui répond au rival (une table apprise sur les parties de calage).', fam: 'var(--ronce)', items: [
+    { id: 'CF-12', tag: 'AC-14 · AC-15', title: 'Bien préparé gagne nettement, moyen autour de l’équilibre, négligent perd',
+      ctx: 'La course reste calée sur la référence (AC-14 : le planificateur, la vérification de Hilde, l’exercice de son kit, l’automatique) aux visées de AC-15. Les durées médianes de la référence : 1 min 29, 2 min 16, 2 min 45 : la poule et la finale un peu courtes, à régler au premier lot par les PV, sans toucher aux chances ; 39,9 coups par minute ; la rupture en 23 coups pour Ren, 16 pour les rivaux, 2,4 ruptures par combat. Le curieux, qui défie les rivaux et apprend leurs compétences, passe lui aussi la référence.',
+      table: [['200 parties tenues à part', 'Titres', 'j2 / j4 / j5', 'Demi', 'Finale', 'Durées'], ['la référence adaptée (une tactique par rival)', '49 %', '96 / 100 / 99', '85 %', '58 %', '1:27 / 2:55 / 2:32'], ['le curieux', '51 %', '98 / 99 / 96', '83 %', '63 %', '1:31 / 3:02 / 4:16'], ['la référence (AC-14)', '34 %', '96 / 96 / 99', '72 %', '48 %', '1:29 / 2:16 / 2:45'], ['le planificateur', '25 %', '96 / 96 / 99', '55 %', '46 %', '1:29 / 2:14 / 2:43'], ['le diligent', '0 %', '100 / 99 / 87', '23 %', '0 %', '—'], ['l’oisif', '0 %', '89 / 94 / 64', '4 %', '0 %', '—'], ['le jeu d’aujourd’hui : la référence adaptée', '52 %', '100 / 97 / 100', '93 %', '56 %', '1:56 / 3:34 / 4:33'], ['le jeu d’aujourd’hui : la référence', '31 %', '92 / 93 / 100', '66 %', '48 %', '1:51 / 3:08 / 3:50']],
+      rec: 'Garder la course calée sur la référence : le joueur qui prépare bien (son équipement, ses exercices, et la tactique qui répond au rival) la dépasse nettement, le joueur moyen est autour de l’équilibre, le négligent perd, comme tu le demandes.',
+      opts: ['La course calée sur la référence (AC-14, AC-15 gardés)', 'La caler plus haut, sur le joueur adapté', 'À reprendre (en note)'], recIdx: 0,
+      src: 'tools/auto-final/final.mjs ; adapt-bank.mjs ; measure.mjs' },
+    { id: 'CF-13', tag: 'SL1-1 · A3', title: 'La poule trop facile à ses deux derniers tours',
+      ctx: 'Dans le jeu, la référence gagne 92 / 93 / 100 % de ses tours de poule contre 95 / 85 / 75 visés (AC-15), à +7,5 % par tour (SL1-1, décision A3 du 13/11). Dans le prototype aussi (96 / 96 / 99 avec les PA gardés, 92 / 99 / 98 sans PA). La pente ne bouge le dernier tour que par marches, et le deuxième presque pas : la référence progresse plus vite que la pente pendant la poule (son équipement, ses exercices). Le diligent (95 / 83 / 78) et l’oisif (84 / 52 / 44), eux, y perdent déjà.',
+      table: [['Pente (le prototype sans PA, sa course gardée)', 'j2 / j4 / j5 (réf.)', 'Titres (réf.)'], ['+7,5 % (aujourd’hui)', '92 / 99 / 98', '36 %'], ['+10 %', '92 / 98 / 99', '31 %'], ['+12,5 %', '92 / 97 / 95', '32 %'], ['+15 %', '92 / 97 / 88', '36 %'], ['+20 %', '92 / 91 / 59', '27 %'], ['+25 %', '92 / 89 / 36', '24 %']],
+      rec: 'Garder +7,5 % : la poule facile est celle du joueur bien préparé (ta note de RY-3 : « donner les chances […] fortement surtout si il est bien prepare ») ; les joueurs moins préparés y perdent déjà. Une pente plus forte fait tomber le dernier tour d’un coup sans corriger le deuxième.',
+      opts: ['Garder +7,5 % par tour', '+15 % par tour (décision A3 : change SL1-1)', 'À reprendre au premier lot (en note)'], recIdx: 0,
+      src: 'src/combat/autoData.ts (AUTO_RACE.pool) ; tools/auto-final/pool.mjs' },
+  ]},
+  { id: 'paris', title: 'La cote, pour les paris plus tard', sub: 'Les paris restent pour plus tard (ECO-5) ; l’atelier vérifie seulement qu’une cote lisible des deux fiches suit les combats.', fam: 'var(--astre)', items: [
+    { id: 'CF-14', tag: 'ECO-5', title: 'Une cote d’avant-combat que les combats suivent',
+      ctx: 'Deux cotes mesurées, calées sur des combats hors écran puis jugées sur d’autres. Une formule des seules fiches (le temps qu’il faut à chacun pour abattre l’autre : PV, Attaque, Défense, Vivacité) suit les combats entre rivaux mais pas ceux de Ren, dont le kit diffère. La part de combats d’essai gagnés (le même duel rejoué 60 fois avec d’autres tirages, les formes du jour connues) les suit tous.',
+      table: [['Cote', 'Hors écran : Brier ; le favori gagne', 'Combats de Ren : Brier ; le favori gagne'], ['formule des fiches (le jeu)', '0,193 ; 71 %', '0,545 ; 17 %'], ['60 combats d’essai (le jeu)', '0,106 ; 84 %', '0,099 ; 86 %'], ['60 combats d’essai (le prototype)', '0,085 ; 87 %', '0,091 ; 88 %']],
+      rec: 'La part de combats d’essai : la fiche de match dirait « sur 100 combats d’essai, Ren en gagne 62 », calculée par le jeu comme il calcule le duel, juste pour Ren comme pour les rivaux. Rien n’est construit avant les paris.',
+      opts: ['La part de combats d’essai (pour plus tard)', 'Une formule des fiches', 'Plus tard, avec les paris'], recIdx: 0,
+      src: 'tools/auto-final/odds.mjs, odds-run.mjs' },
+  ]},
+  { id: 'suite', title: 'Le contrat et la suite', sub: 'Ce que tes choix demandent de changer, et comment le construire.', fam: 'var(--cendre)', items: [
+    { id: 'CF-15', tag: '§ 6.1 · A3', title: 'Le § 6.1 du contrat projet',
+      ctx: 'Le texte d’aujourd’hui (SY-13, décision A3 du 12/11) dit notamment : « les compétences sont payées en points d’action, réglées par leur niveau, et lancées selon la tactique préparée par le joueur ou à sa main pendant le combat » et « les écarts de force viennent des statistiques, de l’équipement, de l’entraînement et de la course des rivaux ». Proposé, les PA gardés : « les écarts de force viennent des statistiques, de l’équipement et de ses effets, de l’entraînement et de la course des rivaux, chacun se battant selon son style ». Si tu retires les PA, la phrase des compétences devient : « les compétences reviennent après une recharge rapide, moyenne ou longue selon leur type, leur puissance et leur niveau, et sont lancées selon la tactique préparée par le joueur ou à sa main pendant le combat ». Le reste du § 6 inchangé, la note d’en-tête gardant le texte d’avant.',
+      rec: 'L’amender avec le texte qui suit tes choix (décision A3) : les effets d’équipement et les styles y entrent, les PA y restent ou en sortent selon CF-02.',
+      opts: ['L’amender avec ce texte, ajusté à mes choix (décision A3)', 'Ne pas l’amender'], recIdx: 0,
+      src: 'contracts/PROJECT_MASTER_CONTRACT.md § 6.1 ; journal Passe SY2' },
+    { id: 'CF-16', tag: 'construction', title: 'La construction en lots, et ton essai',
+      ctx: 'Cette fiche remplace la fiche d’essai du lot 2 (tu l’as validé). Rien n’est construit avant tes choix. Proposé, chaque lot dans sa séance, dans le jeu par défaut, fusionné après ses preuves : (1) les règles : les PA (gardés ou retirés), les recharges, la garde, la parade, les terrains, les styles, les effets d’équipement, l’équilibre du catalogue et des pièces au test de AC-12, la course recalée (graines de calage puis tenues à part) ; (2) la page : les deux conditions, les styles et les effets sur la fiche de match et la page de l’équipement, les textes ; ton essai ; (3) le guide et le tutoriel ; (4) le retrait de l’ancien duel. Les lots 3 et 4 de la seconde refonte (SY-14) se fondent dans ceux-ci.',
+      rec: 'En quatre lots, ton essai après le lot 2.',
+      opts: ['En quatre lots, mon essai après le lot 2', 'Mon essai dès le lot 1', 'À reprendre (en note)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 26.2, § 31' },
+  ]},
+];
+
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.table) { const tb = el('table', { class: 'mt' }); it.table.forEach((row, i) => { const tr = el('tr'); for (const cell of row) tr.append(el(i ? 'td' : 'th', {}, cell)); tb.append(tr); }); c.append(el('div', { class: 'mtw' }, tb)); }
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

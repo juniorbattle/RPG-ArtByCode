@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; les lots 2 à 4 à venir** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -1119,6 +1119,118 @@ La fiche https://claude.ai/artifact/LxbnwW9Q3vq7f8BqcETVk2 relue : RY-1 « ×3 p
 Mesuré sur les 200 parties tenues à part : 39 coups par minute ; la rupture en 25 coups pour Ren et 20 pour les rivaux (médianes) ; 1 min 51, 3 min 08, 3 min 50 ; la référence 92 / 93 / 100 en poule, 66 % en demi-finale, 48 % en finale, 31 % de titres. La poule trop facile à ses deux derniers tours tient à la pente A3 de SL1-1 : à soumettre à l'opérateur.
 
 Ensuite, à sa demande, l'atelier du système de combat final, dans une séance neuve : `briefs/atelier-combat-final-brief.md`. Les lots 3 et 4 du § 26.2 attendent sa fiche.
+
+## 31. L'atelier du système de combat final (13/11/2026, journal Passe CF1)
+
+**La demande** : `briefs/atelier-combat-final-brief.md` (ses mots du 13/11 cités). Les mots de l'opérateur du 13/11 qui le complètent, mot pour mot : sur les PA, « Oui voila si les recharges gerent deja l'usage de competences a les PA ne sont plus necessaire. dans tout dependamment de niveau/puissance/type de la competences, la recharge sera rapide,moyen,longue puis le gambit tactique permet aussi de determiner a quel moment on veut rendre actif une competence » ; sur le reste du brief (la garde et l'esquive par les stats, la garde à −80 % à revoir, une cote lisible des deux fiches pour des paris plus tard, cette fiche à la place de la fiche d'essai du lot 2) : « sinon les autres points sont valides ».
+
+**Statut** : un atelier ; rien du jeu n'est changé ; une fiche d'arbitrages publiée (§ 31.6), en attente de l'opérateur.
+
+### 31.1 Le laboratoire
+
+`tools/auto-final/` : une copie du duel du jeu (`sim.mjs`, `src/combat/auto.ts` à `9e2bc1f`) dont chaque mécanique est un interrupteur, branchée sur les parties entières par deux transformations du chargeur de Vite (`lab.mjs` : `autoDuel` passe par la copie ; `autoBoutOf` laisse la fiche de match choisir le kit et la tactique d'un joueur du laboratoire, et pose sur les combattants l'équipement de Ren et le kit du rival). **Prouvée identique au jeu** (`identity.mjs`) : 2 240 duels sur 2 240 événement par événement, trace comprise, et 120 parties entières sur 120 (cinq politiques, état final et empreinte). Les outils : `diag.mjs` (le diagnostic), `bank.mjs` (les combats d'une politique gardés pour être rejoués en millisecondes), `level.mjs` (un jeu de règles à niveau égal : ses rivaux ramenés étape par étape là où l'automatique de la référence gagne 85 / 65 / 50 %, puis l'automatique, la meilleure tactique unique, la meilleure tactique par rival et des appuis au hasard sur des combats tenus à part), `search.mjs` et `kits.mjs` (chaque kit d'un répertoire de sept compétences avec sa meilleure tactique contre chaque rival, chaque rival à son niveau, le test de AC-12), `gearfx.mjs` (chaque pièce portée à la place de celle de Ren), `final.mjs` et `measure.mjs` (la course recalée comme AC-16 le prévoit, puis toutes les politiques sur 200 parties tenues à part, les joueurs adaptés compris), `modes.mjs` (les tactiques de la page sur parties entières), `adapt-bank.mjs` (une tactique par rival apprise à la course du jeu de règles), `pool.mjs` (la pente de la poule), `odds.mjs` et `odds-run.mjs` (la cote).
+
+### 31.2 Le diagnostic (le jeu d'aujourd'hui ; 200 parties tenues à part, graines 101 à 300)
+
+| Mesure | Résultat |
+|---|---|
+| Les politiques | la référence 31 % de titres (92 / 93 / 100 en poule, demi 66 %, finale 48 %), le planificateur 18 %, le curieux 21 %, le diligent et l'oisif 0 % |
+| Les dégâts de Ren (poule / tableau / finale) | attaque simple 37 / 37 / 35 %, coup puissant 21 / 22 / 23 %, compétences 43 / 41 / 42 % ; pendant une rupture 27 / 14 / 8 % ; les coups gardés 3 à 4 % |
+| Les dégâts du rival | attaque simple 45 / 54 / 56 %, coup puissant 40 / 35 / 27 %, compétences 15 / 11 / 18 % |
+| Les couches (les combats de la référence rejoués, une couche retirée) | tel quel 95 / 73 / 48 % ; sans les points de l'équipement 83 / 21 / 0 % ; sans la vigueur 94 / 48 / 13 % ; compétences au niveau 1 94 / 67 / 18 % ; sans l'entraînement 92 / 72 / 39 % ; Ren de départ 73 / 6 / 0 % |
+| Les PA | l'automatique ne reste jamais aux PA pleins (il dépense à 5) ; l'Estoc (4 PA) prête à 2 à 5 % des choix de Ren ; retirés sans recalage, la finale de la référence passe de 48 à 84 % |
+| Les tactiques de la page au rythme ×3 (SL1-4 de nouveau) | l'automatique 31 % ; offensives à la rupture **41 %** (0 % en Passe SL3) ; la plus forte pour finir 33 % ; quand il charge 32 % ; dès que prêtes 26 % ; protections retenues 5 à 7 % ; soutiens retenus 0 à 6 % ; appuis au hasard 21 à 24 % |
+| Une tactique par rival (ses quatre compétences, apprise sur les graines de calage) | **52 % de titres** (100 / 97 / 100, demi 93 %, finale 56 %) contre 31 % ; avec Fente apprise, Tourbillon et Fracas achetés et le kit choisi par rival : 41 % |
+| L'équipement | le sabre et les bottes (+2 de Vivacité, AC-11) la meilleure pièce de leur emplacement contre six ou sept rivaux sur sept |
+| La cote | une formule des fiches suit les combats entre rivaux (Brier 0,193, le favori gagne 71 %) mais pas ceux de Ren (0,545) ; 60 combats d'essai, les formes du jour connues : 0,106 et 0,099, le favori gagne 84 et 86 % |
+
+**Lecture** : les statistiques pèsent lourd, la tactique par rival aussi, mais pour une raison cachée : les PA sont un budget commun que l'automatique dépense mal, et c'est l'allocation de ce budget qu'une tactique améliore. Les réponses qu'elle trouve sont opaques (« Rempart dès qu'il est prêt » contre Vessa).
+
+### 31.3 Les mécaniques mesurées, à niveau égal (`level.mjs`, 999 combats tenus à part)
+
+| Jeu de règles (poule / tableau / finale) | Automatique | Une tactique pour tous | Une tactique par rival | Appuis au hasard |
+|---|---|---|---|---|
+| le jeu (avec les PA) | 85 / 66 / 48 | 97 / 79 / 46 | 97 / 88 / 57 | 81 / 68 / 40 |
+| sans PA, DB5-3 (G1, les styles des rivaux) | 85 / 62 / 43 | 85 / 62 / 43 | 94 / 77 / 47 | 67 / 41 / 31 |
+| G1, la recharge à son niveau (G2) | 87 / 62 / 45 | 94 / 61 / 33 | 95 / 72 / 46 | 70 / 43 / 36 |
+| G1, trois classes 15 / 30 / 50 s (G3) | 82 / 65 / 50 | 91 / 68 / 51 | 91 / 72 / 86 | 61 / 43 / 44 |
+| G1, les terrains (G4) | 85 / 62 / 44 | 85 / 62 / 44 | 90 / 67 / 55 | 74 / 41 / 42 |
+| G4, la parade 4 coups (G5) | 87 / 61 / 45 | 87 / 61 / 45 | 91 / 67 / 50 | 63 / 48 / 33 |
+| G5, la garde par les stats (G6) | 87 / 67 / 43 | 85 / 68 / 40 | 90 / 73 / 51 | 67 / 52 / 37 |
+| G1, la garde par les stats (G8) | 86 / 59 / 48 | 86 / 59 / 48 | 92 / 68 / 52 | 72 / 46 / 39 |
+| le prototype PF | 84 / 69 / 49 | 91 / 64 / 43 | 92 / 77 / 46 | 72 / 56 / 35 |
+| PF, Ferveur sur la prochaine action ×2,2 (P2, avant les réglages de PF) | 87 / 64 / 43 | 90 / 72 / 46 | 93 / 78 / 59 | 82 / 58 / 36 |
+
+Les PA gardés avec un surplus non perdu (plafond 8) ne changent rien ; un PA par garde ou esquive réussie affaiblit Ren de 16 à 21 points avant recalage. Les trois classes nommées vident la finale de ses ruptures (0,4 par combat, 27 coups par minute).
+
+### 31.4 Les prototypes et leurs mesures sur parties entières
+
+**PF, sans PA** (`variants.mjs`) : sans PA, les recharges de DB5-3 ; le coup puissant quand l'adversaire ne peut se défendre ; l'automatique de SL1-3, sa plus forte offensive partant aussi sur son terrain ; chaque rival son style (`STYLE_TACTIC`) ; les terrains (la Taille éclair et l'élan de Vessa punissent une charge ×1,5 ; la Fente, la Feinte et la riposte de Cassius percent la garde et la moitié d'une protection ; l'Estoc, le châtiment d'Ilse et la chute de Marek achèvent ×1,5 un adversaire rompu ou sous le tiers) ; la parade (2 coups à la jauge du frappeur) ; la garde de −30 à −70 % selon la Défense contre l'Attaque ; les effets d'équipement (`GEAR_FX`) ; la Vivacité des pièces à moitié ; Tourbillon ×0,8 (sans PA il dominait les kits). Sa course recalée sur 200 parties de calage (graines 1 à 100 et 301 à 400) : Vessa 1,286, Tobin 1,815, Cassius 1,326, Orla 1,132, Ilse 1,257, Marek 1,333, Rhosk 1,552 ; la poule à +7,5 % ; le tableau ×1,506, la finale ×1,732.
+
+| PF (sans PA), 200 parties tenues à part | Titres | j2 / j4 / j5 | Demi | Finale | Durées poule / tableau / finale |
+|---|---|---|---|---|---|
+| la référence | 36 % | 92 / 99 / 98 | 71 % | 52 % | 91 / 144 / 220 s |
+| la référence, une tactique par rival (apprise à cette course) | 36 % | 92 / 99 / 98 | 70 % | 53 % | 91 / 146 / 225 s |
+| le curieux | 30 % | 98 / 97 / 91 | 57 % | 53 % | 102 / 193 / 363 s |
+| le planificateur | 24 % | 92 / 99 / 98 | 54 % | 45 % | 91 / 137 / 224 s |
+| le diligent | 0 % | 95 / 83 / 78 | 13 % | 0 % | 98 / 154 / 190 s |
+| l'oisif | 0 % | 84 / 52 / 44 | 1 % | 0 % | 100 / 122 / 220 s |
+
+Le rythme de la référence : 36,5 coups par minute ; la rupture en 38 coups pour Ren (son Endurance), 16 pour les rivaux (RY-3 : 20 à 25 par défaut, modulés par les stats et les compétences) ; 1,44 rupture par combat. Avec l'automatique de SL1-3 tel quel (PG, sa course recalée) : la référence 31 %, 40,2 coups par minute, la finale à 4 min 22 s (au-delà des 3 à 4 min de SL1-2).
+
+**Les tactiques de la page dans PF** (`modes.mjs`) : l'automatique 36 % ; « protections dès que prêtes », « soutiens quand une offensive peut suivre », « la plus forte pour finir » 36 à 37 % (ses propres règles) ; offensives quand il charge 19 %, à la rupture 13 %, dès que prêtes 13 %, quand il se protège 3 % ; protections retenues 2 % ; soutiens à la rupture 5 %, jamais 4 % ; appuis au hasard 20 à 24 %. Une tactique par rival apprise à la course de PF ne gagne rien (36 %) ; dans PG, +4 points (35 contre 31 %).
+
+**La tension centrale.** Avec les PA, chaque compétence se paie sur un budget commun : la tactique répartit ce budget, et attendre ne coûte rien tant que les PA ne plafonnent pas. Sans PA, chaque compétence a sa propre horloge : la retenir perd du temps de recharge, et « dès qu'elle est prête » (ou sur son terrain, ce que l'automatique de PF fait déjà) devient presque toujours le meilleur choix. Ni des terrains ×2, ni deux utilisations gardées par compétence ne rendent l'attente payante (`modes.mjs` sur PF-T2, PG-T2, PF-C2, PG-C2, PG-C2T2 : les tactiques d'attente 2 à 34 % contre l'automatique 39 à 74 %). Un souffle commun (après une compétence, aucune autre pendant 10 s) semblait la rendre à la course de PF (PG-S10 : l'automatique 50 %, une tactique par rival 57 %) ; **recalé sur sa propre course** (Vessa 1,137, Tobin 1,862, Cassius 1,337, Orla 1,13, Ilse 1,411, Marek 1,443, Rhosk 1,796 ; tableau ×1,301, finale ×1,746), le gain disparaît : la référence 27 % (95 / 100 / 92, demi 66 %, finale 41 %, 1 min 36 / 3 min 21 / 4 min 10, 41 coups par minute), une tactique par rival 26 %, offensives à la rupture 10 %, appuis au hasard 11 à 12 % ; à 20 s, tout s'effondre.
+
+**PK, les PA gardés** (le prototype recommandé) : l'automatique de SL1-3, les styles, les terrains, la parade à 2 coups, la garde par les stats, les effets d'équipement, la Vivacité des pièces à moitié. Sa course recalée sur 200 parties de calage : Vessa 1,288, Tobin 1,569, Cassius 1,228, Orla 0,884, Ilse 1,247, Marek 1,106, Rhosk 1,214 ; la poule +7,5 % ; le tableau ×1,437, la finale ×1,791.
+
+| PK (les PA gardés), 200 parties tenues à part | Titres | j2 / j4 / j5 | Demi | Finale | Durées poule / tableau / finale |
+|---|---|---|---|---|---|
+| la référence adaptée (une tactique par rival, apprise sur les parties de calage) | 49 % | 96 / 100 / 99 | 85 % | 58 % | 87 / 175 / 152 s |
+| le curieux | 51 % | 98 / 99 / 96 | 83 % | 63 % | 91 / 182 / 256 s |
+| la référence | 34 % | 96 / 96 / 99 | 72 % | 48 % | 89 / 136 / 165 s |
+| le planificateur | 25 % | 96 / 96 / 99 | 55 % | 46 % | 89 / 134 / 163 s |
+| le diligent | 0 % | 100 / 99 / 87 | 23 % | 0 % | 84 / 136 / 131 s |
+| l'oisif | 0 % | 89 / 94 / 64 | 4 % | 0 % | 88 / 106 / 120 s |
+
+Le rythme de la référence : 39,9 coups par minute ; la rupture en 23 coups pour Ren, 16 pour les rivaux ; 2,39 ruptures par combat. Les durées de la poule et de la finale un peu courtes (SL1-2 : environ 2 min, 3 à 4 min) : à régler au premier lot par les PV, sans toucher aux chances. Les tactiques de la page : l'automatique 34 % ; offensives quand il charge 32 %, à la rupture 25 % ; protections retenues 12 à 13 %, dès que prêtes 24 % ; soutiens retenus 4 à 8 % ; appuis au hasard 32 % (un choix sur quatre) et 22 % (un sur deux). La cote par 60 combats d'essai : Brier 0,072 hors écran (le favori gagne 90 %), 0,086 pour Ren (88 %).
+
+**Lecture.** Le budget commun des PA est ce qui donne du poids au moment de lancer : avec lui, une tactique adaptée au rival dépasse nettement l'automatique (52 contre 31 % dans le jeu, 49 contre 34 % dans PK) ; sans lui, l'automatique décide bien et la tactique ne rapporte plus (36 contre 36 % dans PF, 26 contre 27 % avec un souffle). C'est contraire à la direction de l'opérateur sur les PA : la fiche le dit et le lui soumet (CF-02).
+
+**L'équipement dans PF** (`gearfx.mjs`, la référence de l'étape portant chaque pièce à la place de la sienne) : au tableau, aucune arme, armure ni accessoire ne domine ; en finale, la lame importée domine les armes, rien d'autre. À pleine Vivacité (AC-11), le sabre et les bottes dominent.
+
+**La poule** (`pool.mjs`, la course de PF gardée) : +7,5 % → la référence 92 / 99 / 98 ; +10 % → 92 / 98 / 99 ; +12,5 % → 92 / 97 / 95 ; +15 % → 92 / 97 / 88 ; +20 % → 92 / 91 / 59 ; +25 % → 92 / 89 / 36 (AC-15 : 95 / 85 / 75). La pente bouge le dernier tour par marches ; le j4 reste au-dessus de sa visée.
+
+**La cote dans PF** (`odds-run.mjs`) : 60 combats d'essai, les formes du jour connues : Brier 0,085 hors écran (le favori gagne 87 %) et 0,091 pour les combats de Ren (88 %), les dixièmes de la cote suivis ; la formule des fiches : 0,239 et 0,463.
+
+### 31.5 Ce que l'atelier n'a pas fait
+
+- L'équilibre du catalogue sans PA (AC-12) : les kits de la référence restent tenus en poule et au tableau, pas en finale (Vessa et Tobin, une seule bonne réponse) ; à refaire au premier lot, comme SY-06.
+- Les films de l'arène : le prototype n'est pas dans le jeu (rien sous `src/`) ; ils viendront avec le lot 2.
+- La table des kits par rival a été apprise sur P1 (la parade à 4 coups, la lame à ×1,25, la Vivacité entière), pas sur PF.
+
+### 31.6 La fiche d'arbitrages
+
+https://claude.ai/artifact/NVyUoTFKBigFFzzm1abjUz (`briefs/fiche-combat-final.html`), publiée le 13/11/2026, seize cartes, à remplir par l'opérateur ; elle remplace la fiche d'essai du lot 2 (son « sinon les autres points sont valides »). Les décisions A3 marquées : CF-03 (les recharges, change DB5-3), CF-11 (la Vivacité des pièces, change AC-11), CF-13 (la pente de la poule, si +15 % : change SL1-1), CF-15 (le § 6.1 du contrat projet). Gardées : DB5 et SL1-2 (les durées), RY-1, RY-3 (la rupture), DB7-1, AC-07 (pas de riposte : la parade n'en est pas une), AC-16 (son principe), SY-01 (les mêmes règles pour tous : les styles sont des tactiques, pas des règles).
+
+| Carte | Sujet | Recommandation |
+|---|---|---|
+| CF-01 | Le diagnostic | reçu |
+| CF-02 | Les PA | les garder, leur budget commun (contre la direction de l'opérateur, chiffres à l'appui) |
+| CF-03 | Les recharges (DB5-3, A3) | 5 × la charge à son niveau, dite rapide / moyenne / longue |
+| CF-04 | La garde (DB5-2) | −50 % à force égale, de −30 à −70 % selon la Défense contre l'Attaque |
+| CF-05 | La parade | 2 coups à la jauge du frappeur |
+| CF-06 | Les terrains | les terrains et deux conditions (« quand il se protège », « quand sa jauge passe les deux tiers ») |
+| CF-07 | Les styles | chaque rival sa tactique, dite sur la fiche de match |
+| CF-08 | Les soutiens | Ferveur sur la prochaine action, mesurée au premier lot |
+| CF-09 | L'automatique | garder SL1-3 |
+| CF-10 | Les effets d'équipement | ces effets, réglés au premier lot (AC-12 étendu aux pièces) |
+| CF-11 | La Vivacité des pièces (AC-11, A3) | à moitié |
+| CF-12 | La course | calée sur la référence (AC-14, AC-15) |
+| CF-13 | La pente de la poule (SL1-1, A3) | garder +7,5 % |
+| CF-14 | La cote | la part de combats d'essai, pour plus tard |
+| CF-15 | Le § 6.1 (A3) | l'amender avec le texte ajusté aux choix |
+| CF-16 | La construction | en quatre lots, l'essai après le lot 2 |
 
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
