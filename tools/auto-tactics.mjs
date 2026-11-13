@@ -88,6 +88,21 @@ export function makeTactics(AU) {
     'page : les signaux partout': page((s) => (fam(s) === 'w' ? 'incoming' : fam(s) === 'b' ? 'follow' : 'broken')),
   };
   if (AU.tacticChoice) Object.assign(MODES, PAGE);
+  // a rule at full AP for every tactic (SL1-4's remedy, measured in journal Passe SL3): nothing held and the AP full, (A) the first skill of the order whose line is
+  // not « never » and that can go, or (B) the cheapest offensive skill whose line is not « never »; the automatic's own rule stays for its lines
+  const fullA = (by) => (v, x) => { const c = x.skills.map((s) => by(s, x)), t = AU.tacticChoice(v, x, c); if (t) return t; if (v.me.ap >= v.rules.ap.max) { const s = x.skills.find((s, i) => c[i] !== 'never' && v.usable(s) && !(s.ward && v.me.ward && v.me.ward.until > v.t) && !(s.boost && v.me.boost && v.me.boost.until > v.t)); if (s) return s; } return AU.heavyWhen(v, x) ? x.heavy : x.light; };
+  const fullB = (by) => (v, x) => { const c = x.skills.map((s) => by(s, x)), t = AU.tacticChoice(v, x, c); if (t) return t; if (v.me.ap >= v.rules.ap.max) { const s = x.skills.filter((s, i) => c[i] !== 'never' && offensive(s) && v.usable(s)).sort((a, b) => (a.ap ?? 0) - (b.ap ?? 0) || a.charge - b.charge)[0]; if (s) return s; } return AU.heavyWhen(v, x) ? x.heavy : x.light; };
+  const SPECS = {
+    'offensives à la rupture': (s) => (fam(s) === 'o' ? 'broken' : 'auto'),
+    'offensives quand il charge': (s) => (fam(s) === 'o' ? 'incoming' : 'auto'),
+    'soutiens quand une offensive peut suivre': (s) => (fam(s) === 'b' ? 'follow' : 'auto'),
+    'soutiens à la rupture': (s) => (fam(s) === 'b' ? 'broken' : 'auto'),
+    'protections quand il charge': (s) => (fam(s) === 'w' ? 'incoming' : 'auto'),
+    'protections à la jauge': (s) => (fam(s) === 'w' ? 'gauge' : 'auto'),
+    'les signaux partout': (s) => (fam(s) === 'w' ? 'incoming' : fam(s) === 'b' ? 'follow' : 'broken'),
+    'tout comme l’automatique': () => 'auto',
+  };
+  if (AU.tacticChoice) for (const [n, by] of Object.entries(SPECS)) { MODES[`A pleins : ${n}`] = fullA(by); MODES[`B pleins : ${n}`] = fullB(by); }
   /** a preset's decider on top of a base automatic */
   const deciderOf = (m, base) => (m == null ? base : typeof m === 'string' ? (() => { const [, p, w] = m.split(':'); return careless(base, +p, p === '0.5' ? 11 : 7, w); })() : m);
   return { CONDS, tactic, careless, strongest, cueSpec, MODES, deciderOf, offensive };

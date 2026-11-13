@@ -1096,6 +1096,17 @@ datées : journal Passe SL2. Ce paragraphe dit ce qui s'applique au lot 2 ; là 
 5. **La main** dans l'arène, **la sauvegarde** (SL1-7), **la charge du coup puissant entendue** (SL1-6).
 6. **L'essai de l'opérateur** (SL1-8, SY-14).
 
+
+## 29. Le lot 2 en cours (13/11/2026, journal Passe SL3)
+
+Branche `claude/combat-sym-lot2-017fdf`, non fusionnée. **Le rythme** : mesuré et soumis à l'opérateur, https://claude.ai/artifact/LxbnwW9Q3vq7f8BqcETVk2 (`briefs/fiche-combat-sym-lot2-rythme.html`) : un candidat ralentit tout le temps du duel d'un facteur s (les charges et leurs recharges, les écarts d'un enchaînement, les protections et les soutiens) et alourdit chaque coup (puissance et jauge) pour tenir les durées de l'opérateur, la décroissance de la jauge ×k/s ; la rupture garde ses 10 s (DB5-4, A3). Les candidats : ×1,5 (81 coups par minute), ×2 (61, recommandé), ×2,5 (49), ×3 (40) contre 120 aujourd'hui ; leurs nombres : journal Passe SL3. `AUTO_CADENCE` = { charge, power, gap, effect }.
+
+**Construit** (sans fusion) : l'automatique de SL1-3 comme la tactique de quatre lignes « comme l'automatique » (`tacticChoice`) ; la tactique (§ 25.5 : les conditions de chaque famille, `AUTO_CONDS_OF` ; `kit.tactic`, `setTactic` ; C sur la page des compétences et la fiche de match) ; la main (`autoDuel(..., { commands })`, `AutoReplay.replace`, `ArenaApp.press` ; les touches 1 à 4, la croix de la manette, le clic) ; SY-10 (`V2State.$pending`, `settlePending`) ; SL1-6 (le coup puissant au premier palier) ; SL1-7 (`heavyOutOfFour`, `setLoadout` refuse le coup puissant) ; les textes du guide et de la première leçon.
+
+**SL1-4** : les tactiques aux signaux, telles que la page les offre, restent loin sous l'automatique (0 à 15 % contre 41 % de titres au rythme d'aujourd'hui) ; une règle à PA pleins ne sauve pas un soutien retenu (0 à 2 %). La question va à la fiche d'essai, après le rythme.
+
+**Reste** : le rythme appliqué, la course recalée une fois (+7,5 %, AC-15), deux nombres épinglés remesurés, SL1-4 et AC-12 refaits avec la tactique (SL1-5), les preuves du navigateur, la fiche d'essai.
+
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
 Passe AU3, en réponse au chantier n° 1 de la Passe AU2 :
