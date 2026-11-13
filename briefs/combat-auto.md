@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée, en attente de l'opérateur (§ 25)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -691,6 +691,206 @@ des combos »), est prouvée au coup même dans le navigateur, image par image :
 d'entraînement puis au sabre et avec Tourbillon), chaque barre montre la jauge du script à chaque image, et chaque coup qui doit la bouger la bouge sur sa propre image
 (325 sur 325 : 90 coups suivants d'un enchaînement, 57 derniers de deux, 17 derniers de trois, 80 sur une protection, 75 sous un soutien) ; la base d'avant le lot 4
 échoue (`tools/gauge-proof.mjs`).
+
+## 25. La seconde refonte : les mêmes règles pour Ren et les rivaux, les compétences automatiques, à la tactique ou à la main (atelier SY1, 12/11/2026, journal Passe SY1)
+
+**La demande.** L'opérateur, le 12/11/2026, mot pour mot (dans la séance de l'audit final, relayé par elle) :
+- sur l'option D du semi-automatique : « Oui il faut bien optimiser le process... car l'idee est de soit tout tout automatiser, sinon rend auto les coups leger et
+  puissant, mais activer manuellement ou de maniere planifier via gambit/tactique l'activation des competences pendant le combat » ;
+- sur les mesures du semi-automatique : « ce n<est pas bon car cela veut dire que naturellement sans prendre en compte, les stats et etc... le joueur est
+  desavantage par ses adversaires a cause de son gameplay et donc il y a des diferences d'actions, ce qui ne devrait pas car ils ont la meme logique de combat en
+  soit des attaques simple et puissantes, des competences, et des blocages et esquives. l,equipement et l'entrainement permet de reduire la difference de force
+  face a un ennemie naturellement plus fort de base bref une logique de RPG ».
+
+**Statut** : un atelier ; rien du jeu n'est changé ; une fiche d'arbitrages publiée (§ 25.6), en attente de l'opérateur. Le prototype : `tools/auto-sym/`
+(une copie du duel avec ses deux différences en interrupteurs, prouvée identique au jeu : 2 800 duels sur 2 800 événement par événement et 60 parties
+entières sur 60, `identity.mjs`).
+
+### 25.1 L'inventaire des écarts entre Ren et les rivaux
+
+| Écart | Ren | Les rivaux | Source |
+|---|---|---|---|
+| E1 Les PA | paie 1 à 4 PA par compétence, gagnés par ses attaques simples qui touchent | ne paient rien (`ap: 0`) ; leurs PA montent sans servir | CB-1, § 5 (« Ils n'ont pas de PA ») ; AC-03 pour Ren |
+| E2 L'attaque simple | l'enchaînement de son arme (2 ou 3 coups) | un coup simple, et une action « combo » de plus (3 ou 4 coups, 1,4 × la charge, 0,75 × un coup simple chacun ; elle compte comme attaque simple : elle n'expose pas pendant sa charge et n'est gardée qu'à ×1) | AC-02 (Passe AC3, `DYN_PROFILES`) |
+| E3 Les tables | le catalogue (attaque simple 1,2 s, compétences 2,5 à 7,65 s au niveau 1 ; puissance DB5-1) ; charge × 10 / Vivacité | leurs propres tables (la fiche DB7 ×2), la cadence ×0,5 (charges et puissance), la charge × la Vivacité de leur kit / leur Vivacité ; gros coups 2,86 s en médiane | DB7, DB10, DB8 ; LC1, LC1-2 |
+| E4 Les recharges | 5 × la charge au niveau 1 (DB5-3, A3) | fixes, 16 à 40 s ; leur coup lourd sans recharge | C3 |
+| E5 Les traits | aucun | esquive de Vessa +35 %, de Cassius +20 % ; garde +5 à +17,5 % | AC-05 |
+| E6 Qui décide | l'automatique dans l'ordre de ses quatre compétences, sans hasard | une IA à poids : une compétence prête une fois sur trois environ, leur coup lourd et leur combo par leur part | § 5, C3 |
+| E7 Le hasard | un seul tirage pour tout le duel (réactions et IA) | le même | `autoDuel` |
+| E8 Les égalités | Ren agit le premier à temps égal | — | `autoDuel` (négligeable) |
+
+Chaque écart ramené seul à la règle de Ren, la course d'aujourd'hui gardée (parties entières de la référence, graines tenues à part 101 à 300 ; aujourd'hui
+34 % de titres) :
+
+| Variante | Titres | Lecture |
+|---|---|---|
+| le jeu | 34 % | — |
+| tirages séparés par action (E7) | 32 % | neutre en moyenne |
+| E1 les rivaux paient leurs PA (lourd 1, compétences 2) | 34 % | neutre (demi-finale 78 %, finale 44 %) |
+| E2 pas de combo : leur attaque simple, l'enchaînement d'une arme | 81 % | le combo vaut environ 47 points aux rivaux |
+| E3 leur cadence ×1 | 49 % | la demi-cadence leur vaut 15 points |
+| E3 les tables de Ren (sans E4) | 0 % | inséparable de E4 : leur coup lourd au tableau de Ren, sans recharge |
+| E4 la recharge de DB5-3 (le coup lourd compris) | 12 % | leurs longues recharges fixes leur coûtent 22 points |
+| E5 sans traits | 53 % | les traits leur valent 19 points |
+| E6 l'automatique de Ren, PA gratuits | 2 % | leur IA au hasard leur coûte 32 points |
+| E6 et E1 ensemble | 64 % | — |
+| tout ramené à Ren (avant de recaler la course) | 7 à 9 % | — |
+
+Les écarts jouent dans les deux sens et la course les compense en moyenne ; mais ils décident de la façon de gagner : aujourd'hui, 79 % des dégâts d'un rival
+tombent pendant que Ren charge une compétence (exposé, sans garde ni esquive), 53 % avec les mêmes règles.
+
+**Un choix changé** (`branch.mjs` : Ren d'une partie neuve contre les sept rivaux de la poule, 30 graines ; une offensive de l'automatique remplacée par une
+attaque simple après la mi-duel) : avec un seul tirage, le vainqueur change dans 17,6 % des duels et les vingt actions suivantes du rival restent les mêmes à
+34 % ; avec des tirages séparés, 7,1 % et 76 %. Avec les mêmes règles (l'IA des rivaux devenue l'automatique, qui répond à ce qu'il voit), 14,3 % et 56 % : un
+choix y a un effet réel sur la réponse de l'adversaire, plus seulement sur les tirages.
+### 25.2 Le modèle des mêmes règles (proposé, mesuré au laboratoire)
+
+Chaque combattant, Ren comme un rival, a :
+- **une attaque simple** : l'enchaînement de son arme (Ren : ses trois armes ; un rival : son combo d'aujourd'hui devenu son arme, ses coups au total de l'épée
+  d'entraînement, 2 × 0,55) ; la charge du catalogue (1,2 s) × 10 / Vivacité ; +1 PA quand elle touche ;
+- **un coup puissant**, attaque de base hors des quatre, sans PA : celui du catalogue (1,7 s au niveau 1 ; sa puissance par sa charge, DB5-1) ; l'automatique
+  le lance quand l'adversaire ne peut pas se défendre (rompu assez longtemps, ou en charge d'un gros coup qui part après lui) ou quand les PA sont pleins ;
+  **avec sa recharge de DB5-3** (5 × sa charge) — sans elle il domine (§ 25.4) ;
+- **ses compétences** : Ren ses quatre, un rival celles de son kit (C3) ; payées en PA (celles des rivaux 2 PA, comme Rempart et Ferveur), la recharge de
+  DB5-3, la puissance d'une offensive par sa charge (DB5-1), les protections et soutiens des rivaux avec leurs effets d'aujourd'hui ;
+- **la garde et l'esquive par les stats seules** (AC-05 sans les traits) ;
+- **le même automatique** (celui de Ren, AC-09), chacun dans l'ordre de son kit (les protections, les soutiens, puis les offensives de la plus forte) ;
+- **des tirages séparés par action** ;
+- **une cadence commune** : toutes les charges et puissances × c (les dégâts par seconde gardés, les recharges avec les charges, la durée des effets gardée).
+
+La cadence (avant recalage, la référence contre les sept rivaux, jour 4 et finale, 40 graines) :
+
+| Cadence | Coups par minute | Plus long silence (méd.) | Silences > 3 s | Entre deux grosses actions | Durée méd. j4 / finale |
+|---|---|---|---|---|---|
+| aujourd'hui | 70 / 73 | 4,9 / 6,1 s | 11,9 / 11,5 % | 3,4 / 3,2 s | 182 / 230 s |
+| ×1 (le catalogue) | 75 / 78 | 6,0 s | 18,1 / 17,6 % | 2,1 s | 148 / 202 s |
+| **×0,75** | 96 / 101 | 4,5 / 5,0 s | 9,3 / 10,9 % | 1,7 s | 148 / 199 s |
+| ×0,6 | 119 / 123 | 4,4 / 4,0 s | 6,8 / 7,7 % | 1,4 s | 150 / 204 s |
+| ×0,5 | 138 / 144 | 3,4 / 3,2 s | 2,2 / 1,5 % | 1,1 s | 154 / 206 s |
+### 25.3 La course et l'équilibre sur ces règles
+
+La course recalée comme AC-16 le prévoit (`fit.mjs` : chaque rival au niveau où la référence du jour 2 le bat 95 fois sur 100 en duels isolés ; le tableau et
+la finale sur les parties entières de la référence, graines 1 à 80, pour 65 et 50 % ; graines tenues à part 101 à 300), cadence ×0,75 :
+
+| Modèle | Pente de poule | Facteurs (poule, de Vessa à Rhosk ; tableau ; finale) | Référence : j2 / j4 / j5 / demi / finale | Titres | Durées méd. (p10, p90) | Silences > 3 s |
+|---|---|---|---|---|---|---|
+| coup puissant sans recharge | +15 % (LC1-1) | 1,17 / 1,52 / 1,18 / 0,80 / 1,04 / 0,89 / 1,12 ; ×1,235 ; ×1,633 | 97 / 80 / 66 / 70 / 47 % | 28 % | 166 s (87, 239) | 9,5 % |
+| coup puissant sans recharge | +10 % | les mêmes ; ×1,249 ; ×1,644 | 97 / 81 / 83 / 64 / 53 % | 31 % | 168 s | 9,6 % |
+| coup puissant sans recharge | +5 % | les mêmes ; ×1,262 ; ×1,633 | 97 / 91 / 95 / 65 / 47 % | 30 % | 162 s | 9,4 % |
+| **coup puissant rechargé** | +15 % (LC1-1) | 1,19 / 1,51 / 1,19 / 0,86 / 1,02 / 0,91 / 1,12 ; ×1,194 ; ×1,601 | 100 / 74 / 39 / 73 / 35 % | 20 % | 201 s (126, 268) | 15,7 % |
+| **coup puissant rechargé** | **+10 %** | les mêmes ; ×1,228 ; ×1,58 | **100 / 90 / 75 / 72 / 51 %** | **34 %** | 202 s (125, 269) | 15,8 % |
+| coup puissant rechargé | +20 % | les mêmes ; ×1,194 ; ×1,537 | 100 / 61 / 7 / 70 / 46 % | 18 % | 194 s (127, 263) | — |
+
+Les autres joueurs, coup puissant rechargé, +15 % : le planificateur 16 %, le curieux 21 %, le diligent et l'inactif 0 %. Le coup puissant rechargé à la
+cadence ×0,75 laisse 15,7 % du temps en silences de plus de 3 s ; à ×0,6, 9 à 11 % (duels isolés, avant recalage ; la cadence ne change pas les dégâts par
+seconde).
+
+**L'équilibre (AC-12)** ne tient plus avec ces règles (`kits.mjs`, coup puissant sans recharge, chaque rival au niveau où le kit de départ fait la cible de
+l'étape) : au tableau et en finale, le sabre 85 à 88 % en moyenne, la lame 51 à 65 % ; les quatre offensives 8 à 16 % ; le kit défensif et Fracas font les
+bonnes réponses ; aucun kit ne domine partout, mais plusieurs rivaux n'ont qu'une bonne réponse. À refaire à la construction, avec le même test (comme LC1).
+### 25.4 Les façons de décider : ce qu'elles rapportent (`modes.mjs`)
+
+Parties entières de la référence, graines 101 à 300, la décision de Ren remplacée ; « aujourd'hui » : le jeu avec des tirages séparés et sa course ;
+« mêmes règles » : le coup puissant rechargé, cadence ×0,75, sa course recalée à +15 %. Une tactique : une condition par compétence (`deciders.mjs`) ; les
+signaux : l'adversaire rompu assez longtemps, ou en charge d'un gros coup qui part après la compétence. Le coup d'avance : à chaque choix où une compétence peut
+partir, chaque possibilité est jouée jusqu'au bout, l'automatique ensuite, et la meilleure fin gardée ; jugée sur six avenirs dont les tirages (ceux de ses
+actions à venir, celle du rival en cours, les choix futurs du rival) lui sont inconnus ; 60 parties, l'automatique sur les mêmes.
+
+| Façon de décider | Aujourd'hui | Mêmes règles |
+|---|---|---|
+| l'automatique | 32 % | 20 % |
+| tactique : les offensives aux signaux, la première à PA pleins | 1 % | 17 % |
+| tactique : les offensives aux signaux seulement | 0 % | 27 % |
+| tactique : aux signaux, la moins chère à PA pleins | — | 28 % |
+| tactique : la plus forte gardée pour la rupture | 29 % | 36 % |
+| tactique : la plus forte gardée pour finir | 31 % | 30 % |
+| tactique : les protections dès qu'elles sont prêtes | 15 % | 7 % |
+| tactique : les soutiens jamais | 36 % | 12 % |
+| appuis au hasard, un choix sur quatre | 20 % | 31 % |
+| appuis au hasard, un choix sur deux | 14 % | 26 % |
+| un coup d'avance (l'automatique sur les mêmes parties) | 62 % (25 %) | 98 % (17 %) |
+| un coup d'avance qui connaît les tirages | 95 % (25 %) | — |
+
+Avec le coup puissant sans recharge (sa course) : l'automatique 28 %, aux signaux seulement 53 %, la plus forte à la rupture 49 %, pour finir 46 %, appuis au
+hasard 38 et 43 %, un coup d'avance 100 % (60 parties sur 60).
+
+**Lecture.** Aujourd'hui, la mécanique récompense le bon choix (62 % au coup d'avance) mais pas celui que l'arène montre : suivre les signaux est puni (1 %).
+Avec les mêmes règles, les tactiques lisibles valent l'automatique ou mieux, et les mauvais choix perdent ; mais des appuis au hasard battent l'automatique : il
+lance ses offensives dès qu'il peut, dans la garde ×2 de l'adversaire. Deux critères pour la construction : l'automatique au moins aussi bon que les tactiques
+simples et que des appuis au hasard ; aucune tactique lisible sous l'automatique. Le coup d'avance montre que l'automatique des rivaux, sans hasard, se laisse
+battre par qui calcule tout : un joueur ne calcule pas ainsi, mais une tactique trop forte se verrait au laboratoire avant la fiche suivante.
+### 25.5 La tactique et la main : la proposition (rien n’est construit)
+
+**La tactique** (sur la fiche de match et dans la page des compétences, à côté de l'ordre des quatre, AC-09) : chacune des quatre compétences emportées
+porte **une condition**, choisie dans une liste courte ; l'ordre des quatre reste la priorité. À chaque choix de Ren, la première compétence dont la
+condition tient et qu'il peut lancer (ses PA, sa recharge) part ; sinon les attaques de base (le coup puissant quand l'adversaire ne peut pas se défendre,
+sinon l'attaque simple). Les conditions proposées, chacune lisible sur la ligne de temps de l'arène :
+- « Dès qu'elle est prête » (la règle des offensives de l'automatique d'aujourd'hui) ;
+- « Quand l'adversaire est rompu » (et qu'elle part avant qu'il se relève) ;
+- « Quand il charge un gros coup » (une protection : elle le couvre ; une offensive : elle frappe pendant qu'il est exposé) ;
+- « Quand ma jauge passe les deux tiers » ;
+- « Quand mes PV passent sous la moitié » ;
+- « Quand ses PV passent sous le tiers » (pour finir) ;
+- « Quand une offensive peut suivre » (un soutien) ;
+- « Jamais » (la compétence gardée pour la main).
+L'automatique est une tactique parmi les autres, celle qu'une partie neuve porte (ses protections et soutiens placés comme aujourd'hui, ses offensives
+« dès qu'elle est prête »). La tactique est dans la partie, comme l'ordre (`kit.tactic`, une action `setTactic` comme `setOrder`) : elle entre dans
+l'empreinte, puisqu'elle décide du duel.
+
+**La main** : pendant le combat, une touche par compétence (1 à 4 au clavier, des actions du remappage RM3 ; la croix de la manette, MN2 ; un clic sur la
+compétence au pied du HUD). La compétence appuyée part **au prochain choix de Ren** (dès que sa charge en cours est partie), si ses PA et sa recharge le
+permettent ; sinon elle attend qu'ils le permettent, et la ligne du HUD le dit. Une seule attend à la fois (un autre appui la remplace). La tactique décide
+du reste.
+
+**Le duel refait** : le duel est déjà pur et déterministe (`autoDuel`, 0,16 ms) ; avec les tirages séparés, un appui ne change que ce qui suit l'instant où il
+part (prouvé au laboratoire : le script avant l'appui est le même). L'arène garde le script tant que rien n'est appuyé ; à un appui, elle refait le duel avec la
+liste des appuis (`o.commands` : l'instant et la compétence) et remplace la suite du script à partir de l'instant présent ; la relecture (`AutoReplay`) prend
+la suite comme elle prend déjà tout le script d'avance (Passe LC4).
+
+**La sauvegarde** : à l'ouverture de l'arène, le résultat que donne la tactique seule est écrit dans la sauvegarde comme résultat en attente ; quitter la page
+pendant le combat applique ce résultat (un combat quitté ne se rejoue pas pour chercher un meilleur appui) ; le combat fini, son résultat remplace celui
+d'attente, comme aujourd'hui. Les appuis ne sont pas gardés : le résultat l'est.
+
+**×2 et « Passer »** : ×2 inchangé ; « Passer » joue la suite par la tactique, sans appui, sous le noir (Passe LC4).
+
+**Les combats hors écran** : la même simulation, l'automatique des deux côtés (AC-18) ; chaque rival a sa tactique (son ordre et les conditions par défaut).
+
+**Le tutoriel et le guide** : une bande de la fiche de match la première fois (la tactique, une condition par compétence) ; une leçon du premier combat (la
+main : la touche, le prochain choix) ; « Le duel » et « Préparer un combat » du guide complétés ; les nombres lus dans les données, comme au lot 3.
+
+**Le son et les effets** : rien de neuf (un appui donne le clic de l'interface ; la charge de la compétence a déjà sa note, Passe LC6).
+### 25.6 La fiche d'arbitrages
+
+https://claude.ai/artifact/J99g6BKC3Fku2x6ZMvdPXF (`briefs/fiche-combat-sym.html`), quatorze cartes, publiée le 12/11/2026, à remplir par l'opérateur. Les décisions
+A3 marquées : SY-02 (le coup puissant, change CH1, CH-3, CH-4), SY-05 (+10 % par tour, change LC1-1 ; « Garder +15 % » la laisse), SY-13 (le § 6.1 du contrat
+projet). Gardées : DB5 (la durée), DB5-3 (étendue aux rivaux et au coup puissant), DB5-4, DB7-1, AC-07, AC-11, AC-16 (son principe ; ses facteurs recalés
+comme elle le prévoit).
+
+| Carte | Sujet | Recommandation |
+|---|---|---|
+| SY-01 | Ramener les rivaux aux règles de Ren | les six changements (PA, l'arme, les mêmes tables, DB5-3, sans traits, le même automatique) |
+| SY-02 | Le coup puissant (A3) | une attaque de base pour tous, automatique, avec sa recharge de DB5-3 |
+| SY-03 | La cadence commune | ×0,6 pour tous |
+| SY-04 | Le hasard | un tirage par coup |
+| SY-05 | La course (A3 si +10 %) | +10 % par tour (change LC1-1) |
+| SY-06 | L'équilibre (AC-12) | le refaire au premier lot, avec le test de AC-12 |
+| SY-07 | Les façons de décider | les trois : l'automatique, la tactique, la main ; deux critères pour l'automatique |
+| SY-08 | La forme de la tactique | une condition par compétence, l'ordre gardé |
+| SY-09 | La main | au prochain choix de Ren, une compétence en attente |
+| SY-10 | La sauvegarde, la relecture | le résultat de la tactique écrit à l'ouverture de l'arène |
+| SY-11 | Les combats hors écran | l'automatique des deux côtés, la tactique de chaque rival |
+| SY-12 | Le tutoriel et le guide | une bande de la fiche de match, une leçon au premier combat |
+| SY-13 | Le § 6.1 (A3) | l'amender avec le texte de la carte, ajusté aux choix |
+| SY-14 | La construction | en lots, l'essai de l'opérateur après le lot 2 |
+
+### 25.7 Ce qui reste ouvert
+
+- Le modèle recommandé (le coup puissant rechargé, cadence ×0,6, course à +10 %) n'a pas été mesuré tout ensemble : la course à +10 % l'a été à la cadence
+  ×0,75 (la cadence ne change pas les dégâts par seconde ; à recaler à la construction de toute façon).
+- L'automatique est sous les appuis au hasard dans ce modèle : à revoir à la construction, avec les deux critères de SY-07, puis la course recalée.
+- L'équilibre des compétences et des armes (SY-06).
+- Le coup d'avance gagne presque tout contre l'automatique des rivaux, qui n'a pas de hasard : une borne, pas un joueur ; à surveiller quand la tactique sera
+  construite (une tactique lisible trop forte se mesure au laboratoire).
 
 ---
 

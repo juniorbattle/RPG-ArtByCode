@@ -1,0 +1,358 @@
+<title>Combat symétrique</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.mt { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.mt th, .mt td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.mt th { color: var(--muted); font-weight: 600; }
+.mt td + td, .mt th + th { text-align: right; white-space: nowrap; }
+.mtw { overflow-x: auto; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions du responsable · 12/11/2026</span>
+    <h1>Fiche d'arbitrages — les mêmes règles pour tous, et les compétences à la tactique ou à la main</h1>
+    <p class="lede">L’atelier de la seconde refonte du combat joué par l’ordinateur (journal Passe SY1). Tes deux directions du 12/11 : les mêmes règles de combat pour Ren et pour les rivaux, les écarts de force venant seulement des stats, de l’équipement, de l’entraînement et de la course ; les coups simples et puissants automatiques, les compétences automatiques, à la tactique ou à la main. Tout est mesuré dans un prototype du laboratoire, prouvé identique au jeu avant d’y changer quoi que ce soit (2 800 duels et 60 parties entières sur autant). Rien du jeu n’est changé. Quatorze décisions, regroupées ; les décisions A3 sont marquées. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne dans les documents du projet, puis j'enchaîne sur la suite décidée.</p>
+    <p class="src">Sources : JOURNAL.md, Passes AC4, LC1 à LC7, SY1 ; briefs/combat-auto.md (§ 17, § 25) ; briefs/audit-final.md § 9 ; tools/auto-sym/ (le prototype et ses mesures).</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+const GROUPS = [
+  { id: 'regles', title: 'Les mêmes règles pour Ren et pour les rivaux', sub: 'Ta direction du 12/11, mot pour mot : « ils ont la meme logique de combat en soit des attaques simple et puissantes, des competences, et des blocages et esquives. l,equipement et l’entrainement permet de reduire la difference de force face a un ennemie naturellement plus fort de base bref une logique de RPG ».', fam: 'var(--ronce)', items: [
+    { id: 'SY-01', tag: 'direction 1', title: 'Ramener les rivaux aux règles de Ren',
+      ctx: 'Aujourd’hui, Ren et les rivaux ne jouent pas les mêmes règles. J’ai ramené chaque écart, seul, à la règle de Ren, la course d’aujourd’hui gardée (200 parties du joueur de référence, graines tenues à part ; aujourd’hui 34 % de titres). Les écarts jouent dans les deux sens et la course les compense en moyenne, mais ils décident de la façon de gagner : aujourd’hui, 79 % des dégâts d’un rival tombent pendant que Ren charge une compétence (exposé, sans garde ni esquive) ; 53 % avec les mêmes règles. Les six changements : (1) tout le monde paie ses compétences en PA, gagnés par l’attaque simple qui touche (les compétences des rivaux 2 PA) ; (2) l’attaque simple de chacun est l’enchaînement de son arme : le combo des rivaux devient leur arme ; (3) les mêmes tables pour tous (la charge × 10 / Vivacité, la puissance d’une compétence par sa charge, DB5-1) ; (4) la recharge de DB5-3 pour tous ; (5) plus de traits : l’esquive et la garde par les stats seules ; (6) le même automatique pour tous, chacun dans l’ordre de son kit. L’identité d’un rival vient de son kit (ses compétences, son arme, son ordre) et de ses stats.',
+      table: [['Écart (la règle des rivaux ramenée à celle de Ren)', 'Titres de la référence'], ['Le jeu d’aujourd’hui', '34 %'], ['Les rivaux paient leurs PA', '34 %'], ['Pas de combo : leur attaque simple, l’enchaînement d’une arme', '81 %'], ['Leur cadence ×1 au lieu de ×0,5', '49 %'], ['La recharge de DB5-3 (leur coup lourd compris)', '12 %'], ['Sans traits d’esquive et de garde', '53 %'], ['L’automatique de Ren à leur place (PA gratuits)', '2 %'], ['Tout à la fois, avant de recaler la course', '7 à 9 %']],
+      rec: 'Les six changements : c’est ta direction, et chaque écart mesuré pèse plus que la marge d’une course (de 12 à 81 % de titres). Aucun n’est une décision A3 (AC-02, AC-05 et CB-1 ne le sont pas ; DB5-3 est gardée et étendue) ; la cadence ×0,5 des rivaux (LC1-2) est remplacée par une cadence commune (SY-03).',
+      opts: ['Les six changements : les mêmes règles pour tous', 'Les mêmes règles, mais garder les traits d’esquive et de garde', 'Garder les règles d’aujourd’hui'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.1 ; tools/auto-sym/inventory.mjs ; src/combat/autoData.ts, auto.ts' },
+    { id: 'SY-02', tag: 'CH1 · A3', title: 'Le coup puissant : une attaque de base pour tous, automatique',
+      ctx: 'Tu as écrit « rend auto les coups leger et puissant ». Aujourd’hui le coup puissant de Ren est une compétence (ta décision A3 du 04/11, CH1 : « attaque puissante deviendra une des competences », 1 PA, CH-3, parmi les quatre, CH-4) ; celui des rivaux est gratuit et sans recharge. Proposé : une attaque de base de chacun, hors des quatre, sans PA, lancée par l’automatique quand l’adversaire ne peut pas se défendre (il est rompu, ou il charge un gros coup qui part après lui) ou quand les PA sont pleins. Sans recharge, il domine : le joueur qui attend sur 5 PA en frappe sans fin (une tactique qui n’attend que les signaux fait 53 % de titres contre 28 % pour l’automatique). Avec sa recharge de DB5-3 (5 × sa charge), il reste un coup de plus et les tactiques lisibles gardent un avantage mesuré. Chaque ligne, sur sa propre course recalée (200 parties de la référence).',
+      table: [['Le coup puissant', 'Automatique', 'Attend les signaux', 'La plus forte à la rupture', 'Appuis au hasard (1 sur 4)'], ['Attaque de base, sans recharge', '28 %', '53 %', '49 %', '38 %'], ['Attaque de base, avec sa recharge (DB5-3)', '20 %', '27 %', '36 %', '31 %']],
+      rec: 'Une attaque de base pour tous, automatique, avec sa recharge de DB5-3 : elle suit tes mots, garde la règle des recharges et ne donne pas un coup gratuit qui écrase le reste. C’est une décision A3 : elle change CH1, CH-3 et CH-4.',
+      opts: ['Une attaque de base pour tous, avec sa recharge (décision A3 : change CH1, CH-3, CH-4)', 'Une attaque de base, sans recharge (décision A3 : change CH1, CH-3, CH-4)', 'Une compétence parmi les quatre, pour tous (CH1 gardée)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.2 ; journal Passe CH2 ; tools/auto-sym/modes.mjs' },
+    { id: 'SY-03', tag: 'AC-01 · LC1-2', title: 'Une cadence commune : toutes les charges ×0,6',
+      ctx: 'La demi-cadence des rivaux (LC1-2 « Garder ×0,5 et juger à mon essai ») ne tient plus quand tout le monde a les mêmes tables. Le levier devient une cadence commune : toutes les charges et toutes les puissances du même facteur, pour Ren et les rivaux (les dégâts par seconde gardés, les recharges avec les charges, la durée des effets gardée) ; ta note sur LC1-2 demandait aussi de raccourcir les charges des compétences de Ren. Aujourd’hui : 12 % du temps en silences de plus de 3 s, 70 coups par minute (« Le rythme convient », LC3-2). Avec les mêmes règles et le coup puissant rechargé (la référence contre les sept rivaux, jour 4 et finale) : ×0,75 17 à 18 % de silences, 100 coups par minute ; ×0,6 9 à 11 %, 120 coups par minute. Sans la recharge du coup puissant, ×0,75 suffit (9 à 11 %). La durée ne bouge pas.',
+      rec: '×0,6 avec le coup puissant rechargé : le rythme que tu as trouvé bon ; l’Estocade charge 4,6 s au lieu de 7,65 s, la Taille éclair 2 s, l’attaque simple 0,7 s. L’arène montre deux fois plus de coups qu’aujourd’hui : ton essai le juge.',
+      opts: ['×0,6 pour tous', '×0,75 pour tous', '×1 (le catalogue tel quel)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.2 ; tools/auto-sym/cadence.mjs' },
+    { id: 'SY-04', tag: 'hasard', title: 'Des tirages séparés par action',
+      ctx: 'Aujourd’hui un seul tirage sert tout le duel : un choix change toute la suite des réactions. Mesuré (une offensive remplacée par une attaque simple après la mi-duel, 210 duels) : avec un seul tirage, le vainqueur change dans 17,6 % des duels et les vingt actions suivantes du rival restent les mêmes à 34 % ; avec un tirage par coup (la clé : qui frappe, le rang de son action, le rang du coup), 7,1 % et 76 %. Avec les mêmes règles, l’adversaire répond à ce qu’il voit : 14,3 % et 56 %, un effet réel du choix. Les chances moyennes ne bougent pas (34 et 32 % de titres).',
+      rec: 'Oui : c’est le préalable de la tactique et de la main ; un choix n’a que ses propres conséquences.',
+      opts: ['Un tirage par coup', 'Garder un seul tirage'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.1 ; tools/auto-sym/branch.mjs, sim.mjs' },
+    { id: 'SY-05', tag: 'AC-16 · LC1-1 · A3', title: 'La course recalée sur ces règles',
+      ctx: 'Avec les mêmes règles, la course se recale comme AC-16 le prévoit (« recalée à la construction ») : chaque rival ramené au niveau où la référence du jour 2 le bat 95 fois sur 100, puis le tableau et la finale sur parties entières (graines 1 à 80) pour 65 et 50 % (AC-15), vérifiés sur les graines 101 à 300 (le coup puissant rechargé). À +15 % par tour (LC1-1), la poule devient trop dure : la référence fait 100 / 74 / 39 / 73 / 35 % du jour 2 à la finale, 20 % de titres, parce que des rivaux qui jouent aussi bien que Ren montent plus vite qu’il ne se renforce. À +10 % par tour (la valeur d’AC-16 avant LC1-1) : 100 / 90 / 75 / 72 / 51 %, 34 % de titres : ta cible (95, 85, 75, 65, 50 %, AC-15). Les combats durent 202 s en médiane (125 s au 10e centile, 269 au 90e) : DB5 tenue. Le tableau ×1,23 et la finale ×1,58 (aujourd’hui ×1,305 et ×1,586) ; les autres joueurs, à +15 % : le planificateur 16 %, le curieux 21 %, le diligent et l’inactif 0 %.',
+      rec: '+10 % par tour : la course tombe sur ta cible à chaque étape. C’est une décision A3 : elle change LC1-1 (qui avait changé AC-16).',
+      opts: ['+10 % par tour (décision A3 : change LC1-1)', 'Garder +15 % par tour (LC1-1 inchangée)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.3 ; tools/auto-sym/fit.mjs ; journal Passe LC2' },
+    { id: 'SY-06', tag: 'AC-12', title: 'L’équilibre des compétences et des armes, à refaire',
+      ctx: 'Les tables d’aujourd’hui ont été équilibrées pour les règles d’aujourd’hui (LC1, LC1-3). Avec les mêmes règles, le test de AC-12 (chaque rival au niveau où le kit de départ fait la cible de l’étape) ne tient plus : au tableau et en finale, le sabre fait 85 à 88 % en moyenne quand la lame en fait 51 à 65 ; les quatre offensives tombent à 8 à 16 % (lancées dans la garde de l’adversaire) ; le kit défensif et Fracas font les bonnes réponses ; aucun kit ne domine partout, mais plusieurs rivaux n’ont qu’une bonne réponse.',
+      rec: 'Refaire l’équilibre au premier lot de la construction, avec le même test (AC-12), comme le lot 1 l’a fait (LC1) : les nombres des compétences et des armes seulement, les règles décidées gardées.',
+      opts: ['Le refaire au premier lot, avec le test de AC-12', 'Le juger à mon essai'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.3 ; tools/auto-sym/kits.mjs' },
+  ]},
+  { id: 'decider', title: 'Les compétences : automatiques, à la tactique ou à la main', sub: 'Ta direction du 12/11, mot pour mot : « soit tout tout automatiser, sinon rend auto les coups leger et puissant, mais activer manuellement ou de maniere planifier via gambit/tactique l’activation des competences pendant le combat ».', fam: 'var(--astre)', items: [
+    { id: 'SY-07', tag: 'AC-10', title: 'Trois façons de décider, le bon choix jamais puni',
+      ctx: 'Mesuré sur 200 parties de la référence, la décision de Ren remplacée. Aujourd’hui, suivre les signaux lisibles est puni : une tactique qui attend la rupture ou la charge de l’adversaire fait 1 % de titres contre 32 % pour l’automatique, alors qu’un joueur qui choisit chaque coup au mieux (un coup d’avance, sans connaître les tirages à venir) fait 62 % contre 25 % sur les mêmes parties : la mécanique récompense le bon choix, mais pas celui que l’arène montre. Avec les mêmes règles (le coup puissant rechargé, sa course recalée), les tactiques lisibles valent l’automatique ou mieux (la plus forte gardée pour la rupture : 36 % contre 20 %), les mauvais choix perdent (les protections lancées dès qu’elles sont prêtes, 7 % ; les soutiens jamais, 12 %), et un coup d’avance fait 98 % des titres (17 % pour l’automatique sur les mêmes parties). Des appuis au hasard battent aussi l’automatique (31 contre 20 %) : l’automatique lance ses offensives dans la garde de l’adversaire et doit être revu à la construction, pour que « tout automatiser » ne soit pas puni non plus.',
+      table: [['Façon de décider', 'Aujourd’hui', 'Mêmes règles'], ['L’automatique', '32 %', '20 %'], ['Tactique : les offensives aux signaux, la première à PA pleins', '1 %', '17 %'], ['Tactique : les offensives aux signaux seulement', '0 %', '27 %'], ['Tactique : aux signaux, la moins chère à PA pleins', '—', '28 %'], ['Tactique : la plus forte à la rupture', '29 %', '36 %'], ['Tactique : la plus forte pour finir', '31 %', '30 %'], ['Tactique : les protections dès que prêtes', '15 %', '7 %'], ['Tactique : les soutiens jamais', '36 %', '12 %'], ['Appuis au hasard (un choix sur quatre)', '20 %', '31 %'], ['Appuis au hasard (un choix sur deux)', '14 %', '26 %'], ['Un coup d’avance (le meilleur choix, l’avenir inconnu ; l’automatique sur les mêmes parties)', '62 % (25 %)', '98 % (17 %)']],
+      rec: 'Les trois : l’automatique par défaut ; une tactique réglée sur la fiche de match ; le lancement à la main pendant le combat. À la construction, deux critères : l’automatique au moins aussi bon que les tactiques simples, et aucune tactique lisible sous l’automatique.',
+      opts: ['Les trois : l’automatique, la tactique, la main', 'L’automatique et la tactique, sans la main', 'L’automatique seul'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.4 ; tools/auto-sym/modes.mjs, deciders.mjs ; la note du semi-automatique (audit final)' },
+    { id: 'SY-08', tag: 'tactique', title: 'La forme de la tactique : une condition par compétence',
+      ctx: 'Sur la fiche de match et dans la page des compétences, à côté de l’ordre des quatre (AC-09) : chaque compétence emportée porte une condition, choisie dans une liste courte ; l’ordre reste la priorité. À chaque choix de Ren, la première compétence dont la condition tient et qu’il peut payer part ; sinon les attaques de base. Les conditions, chacune lisible sur la ligne de temps : « Dès qu’elle est prête », « Quand l’adversaire est rompu », « Quand il charge un gros coup », « Quand ma jauge passe les deux tiers », « Quand mes PV passent sous la moitié », « Quand ses PV passent sous le tiers », « Quand une offensive peut suivre » (un soutien), « Jamais » (gardée pour la main). L’automatique est la tactique qu’une partie neuve porte. La tactique est dans la partie, comme l’ordre : elle décide du duel.',
+      rec: 'Une condition par compétence, dans cette liste : quatre lignes à lire, rien de caché, et l’automatique en est une.',
+      opts: ['Une condition par compétence, l’ordre gardé', 'Une liste libre de lignes « quand… alors… » (jusqu’à six)', 'Des tactiques toutes faites seulement (offensive, prudente, rupture)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.4' },
+    { id: 'SY-09', tag: 'main', title: 'Le lancement à la main',
+      ctx: 'Pendant le combat : une touche par compétence (1 à 4 au clavier, des actions du remappage ; la croix de la manette ; un clic sur la compétence au pied du HUD). La compétence appuyée part au prochain choix de Ren, dès que sa charge en cours est partie, quand ses PA et sa recharge le permettent ; sinon elle attend, et le HUD le dit. Une seule attend à la fois (un autre appui la remplace). La tactique décide du reste. Le duel est pur et rapide (0,16 ms) : à un appui, l’arène le refait avec la liste des appuis et remplace la suite du script à partir de l’instant présent ; avec les tirages séparés, ce qui précède ne change pas.',
+      rec: 'Ainsi : un appui ne coupe jamais une charge (V2-2 gardée) et se lit sur le HUD.',
+      opts: ['Au prochain choix de Ren, une compétence en attente', 'À l’instant, la charge en cours perdue'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.4 ; src/ui/playArena.ts ; src/arena/autoView.ts' },
+    { id: 'SY-10', tag: 'sauvegarde', title: 'La sauvegarde, la relecture, ×2 et « Passer »',
+      ctx: 'Aujourd’hui le duel est décidé avant que l’arène s’ouvre et son résultat écrit à la fin. Avec la main, un combat quitté puis repris pourrait se rejouer pour chercher un meilleur appui. Proposé : à l’ouverture de l’arène, le résultat de la tactique seule est écrit comme résultat en attente ; quitter pendant le combat applique ce résultat ; le combat fini, son résultat le remplace. Les appuis ne sont pas gardés, le résultat l’est. ×2 inchangé ; « Passer » joue la suite par la tactique, sous le noir.',
+      rec: 'Ainsi : rien ne se rejoue en quittant, et « Passer » reste le résultat de ta préparation.',
+      opts: ['Le résultat de la tactique écrit à l’ouverture', 'Rien d’écrit à l’ouverture (un combat quitté se rejoue)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.4 ; src/ui/playArena.ts' },
+    { id: 'SY-11', tag: 'AC-18', title: 'Les combats hors écran et les rivaux',
+      ctx: 'La même simulation, l’automatique des deux côtés (AC-18) ; chaque rival a sa tactique : l’ordre de son kit et les conditions de l’automatique. Rien d’autre ne change pour eux.',
+      rec: 'Ainsi.', opts: ['Ainsi', 'Une tactique propre à chaque rival (en note)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.4' },
+    { id: 'SY-12', tag: 'TU-11', title: 'Le tutoriel et le guide',
+      ctx: 'Une bande de la fiche de match la première fois (la tactique : une condition par compétence, l’ordre) ; une leçon au premier combat (la main : la touche, le prochain choix) ; « Le duel » et « Préparer un combat » du guide complétés ; les nombres lus dans les données, comme au lot 3 (LC5).',
+      rec: 'Ainsi.', opts: ['Ainsi', 'À revoir (en note)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.4 ; src/ui/duelTutorial.ts' },
+  ]},
+  { id: 'suite', title: 'Le contrat et la suite', sub: 'Les décisions A3 sont les tiennes, citées mot pour mot au journal avant toute construction.', fam: 'var(--voile)', items: [
+    { id: 'SY-13', tag: '§ 6.1 · A3', title: 'Amender le § 6.1 du contrat projet',
+      ctx: 'Le texte d’aujourd’hui (AC-19) : « Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1, joué par l’ordinateur selon la préparation du joueur : le temps ne s’arrête pas ; chaque combattant choisit une action et la charge sur une ligne de temps, puis elle part, en un coup ou en enchaînement, la Vivacité réglant la charge ; les compétences sont payées en points d’action et réglées par leur niveau ; la garde et l’esquive sont des réactions que donnent la Défense et la Vivacité (spécification : briefs/combat-auto.md). » Proposé : « Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1, joué par l’ordinateur selon la préparation du joueur, avec les mêmes règles pour tous les combattants : le temps ne s’arrête pas ; chaque combattant choisit une action et la charge sur une ligne de temps, puis elle part, en un coup ou en enchaînement, la Vivacité réglant la charge ; l’attaque simple et le coup puissant sont automatiques ; les compétences sont payées en points d’action, réglées par leur niveau, et lancées selon la tactique préparée par le joueur ou à sa main pendant le combat ; la garde et l’esquive sont des réactions que donnent la Défense et la Vivacité ; les écarts de force viennent des statistiques, de l’équipement, de l’entraînement et de la course des rivaux (spécification : briefs/combat-auto.md). »',
+      rec: 'L’amender avec ce texte, ajusté à tes choix sur cette fiche.',
+      opts: ['L’amender avec ce texte, ajusté à mes choix (décision A3)', 'Attendre mon essai'], recIdx: 0,
+      src: 'contracts/PROJECT_MASTER_CONTRACT.md § 6.1 ; journal Passe AC4' },
+    { id: 'SY-14', tag: 'construction', title: 'La spécification et la construction',
+      ctx: 'Rien n’est construit. Proposé, chaque lot dans sa séance, dans le jeu par défaut, fusionné après ses preuves : (1) les règles communes dans la simulation (`src/combat/auto.ts`, `autoData.ts`), les tirages séparés, la cadence, l’automatique revu, l’équilibre de AC-12 et la course recalée sur parties entières ; (2) la tactique sur la fiche de match et dans la page des compétences, la main dans l’arène, la sauvegarde ; ton essai suit ce lot ; (3) le tutoriel et le guide ; (4) le retrait de l’ancien duel (le lot 5 d’aujourd’hui). Le son n’a rien de neuf (un appui donne le clic de l’interface).',
+      rec: 'Approuvée avec tes choix ; en lots, ton essai après le lot 2.',
+      opts: ['Approuvée avec mes choix ; en lots, mon essai après le lot 2', 'Approuvée ; tout d’un bloc, mon essai à la fin', 'À reprendre (en note)'], recIdx: 0,
+      src: 'briefs/combat-auto.md § 25.5' },
+  ]},
+];
+
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.table) { const tb = el('table', { class: 'mt' }); it.table.forEach((row, i) => { const tr = el('tr'); for (const cell of row) tr.append(el(i ? 'td' : 'th', {}, cell)); tb.append(tr); }); c.append(el('div', { class: 'mtw' }, tb)); }
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
