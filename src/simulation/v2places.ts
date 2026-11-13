@@ -17,10 +17,11 @@ export const PLAZA_CROWD: Record<Look, number> = { night: 4, morning: 5, midday:
 export function plazaPeople(s: GameState): string[] {
   // (a person in the Cité some days only, a passer-by of lot L2a, stands there those days; a person met by portrait only, lot L2b, stands nowhere)
   const out = Object.values(PEOPLE).filter((p) => presentAt(p, s.place, s.slot, true) && !p.generic && (!p.days || (s.day >= p.days[0] && s.day <= p.days[1]))).map((p) => p.id);
-  // lot L5 (EV-12, « un garde se poste à l’étal le jour d’un vol »): Wynn of the quay watch at the stall he watches (src/simulation/v2watch.ts); on the forecourt
-  // the gate keeps one guard beside him (two of the same sheet in one frame read as twins)
+  // lot L5 (EV-12, « un garde se poste à l’étal le jour d’un vol »): Wynn of the quay watch at the stall he watches (src/simulation/v2watch.ts); the forecourt's gate
+  // keeps one guard, in a colouring of the approved guard sheet neither Hale nor Wynn wears (the operator's « A single guard », journal Passe CO4: the gate's two
+  // guards wore Hale's and Wynn's colours while both stood on the quay; src/world/PlazaApp.ts GATE_VARIANT)
   const watch = watchPost(s)?.place === s.place;
-  if (s.place === 'forecourt') out.push(...(watch ? ['guardA'] : ['guardA', 'guardB']));
+  if (s.place === 'forecourt') out.push('guardA');
   if (watch) out.push('wynn');
   return out;
 }

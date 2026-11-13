@@ -54,6 +54,9 @@ export interface PlazaOptions {
 // the passers-by (lot L2a, journal Passe EVL2): a citizen of the crowd stopped at a spot, the sheet the square already shows (Lady Edda the noblewoman,
 // Sela the wayfarer); while one stands there, that citizen leaves the crowd's turn
 // (lot L5, journal Passe EVL9: Wynn of the quay watch at a robbed stall, his sheet the guards')
+/** the forecourt's gate guard: the approved guard sheet's second variant (art-lab/characters/variants/variants.json, guard-x2-v1), the original being Hale's and
+ *  the first Wynn's, who stand on the quay (the operator's « A single guard », journal Passe CO4) */
+const GATE_VARIANT = 2;
 const ROLE_ARCHETYPE: Record<string, string> = { guardA: 'guardA', guardB: 'guardB', hooded: 'hooded', porter: 'porter', edda: 'citizen-noble', sela: 'citizen-wayfarer', wynn: 'guardB' };
 /** the people a square shows, generated only under `cast=generated`, the comparison (their sheets: src/characters/PlazaCast.ts, journal Passes V5 / CA5) */
 export const SQUARE_PEOPLE = ['odo', 'anwen', 'hilde', 'corvin', 'pip', 'lio', 'orla', 'vessa', 'marek', 'ilse', 'cassius', 'drill', 'bard'];
@@ -307,7 +310,7 @@ export class PlazaApp {
       const at = this.place.spots[id]; if (!at) continue;
       // a passer-by stands as a citizen's sheet: none under the generated comparison
       if (ROLE_ARCHETYPE[id]?.startsWith('citizen-')) { if (!this.cast?.has(ROLE_ARCHETYPE[id])) continue; standing.add(ROLE_ARCHETYPE[id]); }
-      const a = this.actor(ROLE_ARCHETYPE[id] ?? `person-${id}`, 'person', at[0], at[1], 100 + this.people.length);
+      const a = this.actor(ROLE_ARCHETYPE[id] ?? `person-${id}`, 'person', at[0], at[1], 100 + this.people.length, id === 'guardA' ? GATE_VARIANT : undefined);
       this.people.push(a); this.who.set(a, id);
     }
     // the crowd (journal Passe VP7): the five townsfolk in turn (their V1 variants by id), gathered by the moment of the day at the square's
@@ -341,11 +344,11 @@ export class PlazaApp {
   }
 
   /** an actor of an archetype: its baked sheet when one stands for it (scale, height, variant), else the generated sprite */
-  private actor(arch: string, role: string, x: number, z: number, id: number): Actor {
+  private actor(arch: string, role: string, x: number, z: number, id: number, variant?: number): Actor {
     const m = this.cast?.get(arch);
     const a: Actor = { id, spec: m?.id ?? arch, base: arch, role, detail: role === 'player' ? 'hero' : role === 'crowd' ? 'crowd' : 'mid', pos: new THREE.Vector3(x, 0, z), facing: 'down', dir: 'down', flip: false, anim: 'idle' as Anim, t: (id % 7) * 0.31, speed: 0, tint: [1, 1, 1], scale: (m?.scale ?? 1) * CHAR_SCALE, height: m?.height ?? 1.7, radius: 0.3 };
     const cv = m?.variants;
-    if (cv) { const v = variantOf(id, cv.list.length, cv.fixed?.[arch]); if (v > 0) a.variant = { hair: cv.list[v - 1][0], skin: cv.list[v - 1][1], hairRange: cv.hair, skinRange: cv.skin }; }
+    if (cv) { const v = variant !== undefined && variant <= cv.list.length ? variant : variantOf(id, cv.list.length, cv.fixed?.[arch]); if (v > 0) a.variant = { hair: cv.list[v - 1][0], skin: cv.list[v - 1][1], hairRange: cv.hair, skinRange: cv.skin }; }
     return a;
   }
 
