@@ -177,7 +177,8 @@ test('a rival standing shows its stance: a friend raises a hand, a respect nods,
   const s = v2('v2-famous-training');
   assert.deepEqual(RE.gestureOf(s, 'orla'), { kind: 'hail', text: tx('v2.gesture.friend', { name: 'Orla Brask' }) });
   assert.deepEqual(RE.gestureOf(s, 'vessa'), { kind: 'turn', text: tx('v2.gesture.grudge', { name: 'Vessa Lark' }) });
-  assert.equal(RE.gestureOf(s, 'marek'), null);
+  // (Ilse: no stance in this state; Marek, beaten honourably there since the clash and the gauge of BL1-8 and BL1-9, nods: journal Passe BL1)
+  assert.equal(RE.gestureOf(s, 'ilse'), null);
   const r = v2('v2-day7-training');
   assert.deepEqual(RE.gestureOf(r, 'orla'), { kind: 'nod', text: tx('v2.gesture.respect', { name: 'Orla Brask' }) });
   const d = G.namedState('day2-dusk-won'); d.competitors.orla.relationships.player = 40;

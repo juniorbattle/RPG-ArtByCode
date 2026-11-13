@@ -53,6 +53,8 @@ test('the replay tells Ren\'s charge of a skill as the charge\'s tier, its relea
       if (e.t > koAt) break;
       // (PB-1: a charge of his cut by the opponent's interruption, or his blow parried, leaves there, without a blow)
       if (e.who !== d.ren.id && (e.ev === 'interrupt' || e.ev === 'parry') && open.c) { want.push({ type: 'chargeRelease', t: e.t, idx: open.c.act === d.ren.heavy.id ? 1 : ladder.get(open.c.act) }); open.c = null; continue; }
+      // (BL1-8: a clash ends both charges where the blows meet; a light attack lost to a big action ends that one alone)
+      if (e.ev === 'clash') { if ((!e.beat || e.who === d.ren.id) && open.c) { want.push({ type: 'chargeRelease', t: e.t, idx: open.c.act === d.ren.heavy.id ? 1 : ladder.get(open.c.act) }); open.c = null; } continue; }
       if (e.who !== d.ren.id) continue;
       // (his heavy blow, a base attack since SY-02, the first tier: the operator's SL1-6 « Sa charge au premier palier (au lot 2) »)
       if (e.ev === 'charge') { open.c = e.act === d.ren.light.id ? null : e; if (open.c) want.push({ type: 'chargeTier', t: e.t, idx: e.act === d.ren.heavy.id ? 1 : ladder.get(e.act) }); continue; }
@@ -83,7 +85,7 @@ test('the replay tells Ren\'s charge of a skill as the charge\'s tier, its relea
     const sk = new AV.AutoReplay(d.result, { ren: d.ren, marek: d.foe }); sk.step(); sk.drain(); sk.skip();
     assert.ok(sk.drain().filter((e) => e.type === 'chargeTier' || e.type === 'chargeHold').length === 0);
   }
-  assert.ok(tiers > 150 && releases > 150 && holds >= 1, `the paths are reached: ${tiers} tiers, ${releases} releases, ${holds} breaths after a stun`);
+  assert.ok(tiers > 120 && releases > 120 && holds >= 1, `the paths are reached: ${tiers} tiers, ${releases} releases, ${holds} breaths after a stun`);
 });
 
 test('which sound plays: the tier\'s note at the level its skill was released at before, the whip, an enchaînement\'s later blows their side\'s plain blow, no crowd on them', () => {
@@ -172,6 +174,8 @@ test('the music\'s rule F on this duel: the lead aside on the opponent\'s sequen
       if (e.ev === 'charge') { open[e.who] = e; continue; }
       if (e.ev === 'break') { ivs.stun.push([e.t, e.t + (e.dur ?? AU.AUTO_RULES.brk.stun)]); continue; }
       // (PB-1: an interruption cuts the other's charge, a parry takes the other's blow: that charge ends there)
+      // (BL1-8: a clash ends both charges, or the light attack it loses)
+      if (e.ev === 'clash') { for (const w of e.beat ? [e.who] : [e.who, e.who === d.ren.id ? d.foe.id : d.ren.id]) { const c = open[w]; if (c) { if (w === d.foe.id && big(w, c.act)) ivs.seq.push([c.t, e.t]); if (w === d.ren.id && c.act !== d.ren.light.id) ivs.ch.push([c.t, e.t]); open[w] = null; } } continue; }
       const who = e.ev === 'interrupt' || e.ev === 'parry' ? (e.who === d.ren.id ? d.foe.id : d.ren.id) : e.who;
       const c = open[who];
       if (c) { if (who === d.foe.id && big(who, c.act)) ivs.seq.push([c.t, e.t]); if (who === d.ren.id && c.act !== d.ren.light.id) ivs.ch.push([c.t, e.t]); open[who] = null; }

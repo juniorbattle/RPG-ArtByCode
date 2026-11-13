@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32) ; relue le même jour, six sur six à la recommandation, le modèle approuvé et sa construction en cinq lots, le lot 1 lancé (§ 33)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32) ; relue le même jour, six sur six à la recommandation, le modèle approuvé et sa construction en cinq lots, le lot 1 lancé (§ 33) ; le lot 1 construit le même jour, le duel « La Brute » dans le jeu par défaut, sa fiche courte relue le même jour, neuf sur neuf à la recommandation, l'entrechoc et la jauge réglés, le § 6.1 du contrat projet amendé (§ 34)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -1345,7 +1345,7 @@ Le modèle est approuvé ; ces points restent au lot 1, mesurés avant sa fusion
 
 ### 33.4 Le § 6.1 du contrat projet : le texte proposé
 
-Avec le modèle, la phrase « les compétences sont payées en points d'action » du § 6.1 ne serait plus vraie. Aucune carte ne portait de texte d'amendement : le § 6.1 n'est pas amendé (décision C3), le texte ci-dessous attend la réponse de l'opérateur. Seule la partie sur les compétences change, plus la faille et le style des rivaux :
+**Amendé le 13/11/2026** avec ce texte, sur la branche du lot 1 (la réponse de l'opérateur, mot pour mot : « Oui, l'amender » ; journal Passe BL1, § 34.4). Avec le modèle, la phrase « les compétences sont payées en points d'action » du § 6.1 ne serait plus vraie. Aucune carte ne portait de texte d'amendement : le § 6.1 n'était pas amendé (décision C3), le texte ci-dessous attendait la réponse de l'opérateur. Seule la partie sur les compétences change, plus la faille et le style des rivaux :
 
 « Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1, joué par l'ordinateur selon la préparation du joueur, avec les mêmes règles pour tous les combattants : le temps ne s'arrête pas ; chaque combattant choisit une action et la charge sur une ligne de temps, puis elle part, en un coup ou en enchaînement, la Vivacité réglant la charge ; l'attaque simple et le coup puissant sont automatiques ; les compétences sont des coups d'éclat comptés, un nombre d'usages par combat selon leur niveau et un délai entre deux, lancés selon le plan de combat préparé par le joueur, une condition par compétence et un plan par rival, ou à sa main pendant le combat ; certaines créent une faille, un court instant où l'adversaire ne garde ni n'esquive, d'autres en profitent ; la garde et l'esquive sont des réactions que donnent la Défense et la Vivacité, et chaque rival a son style ; les écarts de force viennent des statistiques, de l'équipement, de l'entraînement et de la course des rivaux (spécification : briefs/combat-auto.md). »
 
@@ -1360,6 +1360,59 @@ Si l'opérateur l'approuve, l'amendement se fait sur la branche du lot 1, avec s
 5. **Lot 5, l'arène et la foule** (PB-5) : les défis de l'arène, le panache ; les paris quand l'opérateur le décidera (ECO-5).
 
 Chaque lot dans sa séance, fusionné après ses preuves. Le son et les effets suivent les nouveaux moments (la faille, l'interruption, la parade) avec les recettes déjà approuvées. Les lots 3 et 4 de la seconde refonte sont fondus dans ceux-ci.
+
+## 34. Le lot 1 construit : le duel « La Brute » dans le jeu par défaut (13/11/2026, journal Passe BL1)
+
+Statut : **le duel du jeu par défaut est le modèle du § 32.2** (`BK5`), avec les réglages du § 34.2 et ceux de la fiche relue (§ 34.4) ; à l'écran, seul l'entrechoc est nouveau (le reste au lot 2). Ce paragraphe l'emporte sur les §§ 27 à 30 pour le duel. Sa fiche courte : https://claude.ai/artifact/FpHhMMWt2G45CEmoSuhxuu (`briefs/fiche-combat-brute-lot1.html`), relue le même jour, neuf sur neuf à la recommandation (§ 34.4).
+
+### 34.1 Ce qui est construit
+
+- `src/combat/auto.ts` : plus de PA ; chaque compétence a un rôle, des usages par combat et un délai entre deux ; la faille (ni garde ni esquive, ×1,25) par un ouvreur (5 s), une interruption (6 s, l'action coupée, son usage perdu, 1 s avant d'agir), une parade (une fenêtre de 3 s qui prend un gros coup, 6 s) ou un gros coup esquivé (2,5 s) ; l'accélération (×0,7, 15 s), le ralentissement (×1,4, 12 s), la charge (×2 et ×1,5 à la jauge sur la prochaine action offensive, 15 s) ; l'exploitation ×2 dans une faille, une rupture ou sur un combattant qui charge un gros coup (×0,6 sinon), la punition ×1,7 sur un combattant qui charge, la perceuse à travers la protection, Tourbillon inesquivable ; l'automatique du plan général par rôle (§ 32.2, la Ferveur « blessé » seul) ; les conditions de SY-08 avec « dans une faille » et « au début » ; le coup puissant sur une faille ou dès qu'il est prêt pour un bagarreur ; la garde de −30 à −70 % selon la Défense contre l'Attaque ; les effets d'équipement ; l'entrechoc (§ 34.4) ; les santés ×3,132 ; l'attaque simple ×1,35 de charge.
+- `src/combat/autoData.ts` : `AUTO_BRUTE` (2, 2, 3, 3, 4 usages ; 8, 16, 28 s ; charges ×0,6, les exploitations ×0,4 ; puissance ×1,2 ; les rivaux au niveau 1, 2, 3 par étape), `AUTO_ROLES`, `AUTO_STYLES`, `AUTO_GEAR_FX`, `AUTO_PIECE_VIV` (½), `autoBrute`, Fracas ×0,6 ; la course `AUTO_RACE` calée sur le planificateur (PB-3), recalée avec la fiche.
+- La trace : `s` les deux jauges, `g` la jauge de la cible juste après un coup, `dur` l'étourdissement d'une rupture ; trois événements nouveaux, `parry`, `interrupt` et `clash`.
+- Les preuves du portage : `tools/auto-final/port-identity.mjs` (contre le laboratoire de `bd636ef`, 504 duels et 60 parties entières identiques, au commit du portage) ; `tests/combat-auto.test.mjs` (contre la copie sous `BL1`, `tools/auto-final/variants.mjs`, l'entrechoc compris). `tools/auto-final/lab.mjs` ne vaut plus que contre `bd636ef` ; son `kitOf` est corrigé (les combats hors écran de ses parties entières se jouaient au style de Marek).
+- Le laboratoire du jeu : `tools/auto-lab.mjs fit` (la course de PB-3) et `judge` ; `kits` fait porter l'étape et l'arme au combat.
+
+### 34.2 Les réglages du lot 1 (§ 33.3)
+
+| Point | Réglage | Mesure (avant la fiche) |
+|---|---|---|
+| La Ferveur de l'automatique | « blessé » seul | le planificateur y gagne (facteurs ×1,014 et ×1,065 à taux égal) |
+| Les durées (SL1-2, A3) | les santés ×1,45 de plus (×3,48 en tout ; ×3,132 depuis la fiche) | la référence 1 min 58 / 2 min 48 / 3 min 27 ; 45,5 coups par minute |
+| L'équilibre (AC-12) | la faille d'un ouvreur 5 s ; Fracas ×0,6 | plus aucun kit ne domine ; Orla, Ilse, Marek une seule bonne réponse au tableau et en finale ; le sabre la plus faible des armes ; une protection au niveau 3 très forte |
+| Le prix d'une compétence nouvelle | — | au niveau 1 elle a les deux usages du niveau 2 ; ce qui coûte, c'est le niveau 3 (la Peau de fer au niveau 3 : 71 → 94 % au tableau pour le planificateur) |
+| Le curieux | — | 3 % de titres ; son build (Attaque 10, compétences au niveau 1) le condamne ; ses finales avec +12 d'Attaque et le niveau 3 : 72 % |
+| La course (PB-3, A3) | poule +7,5 % ; recalée avec la fiche (§ 34.4) | le planificateur demi 58 %, finale 48 % ; la référence 34 % de titres, le planificateur 28 %, le curieux 3 %, le diligent et l'oisif 0 % (200 parties tenues à part) |
+
+### 34.3 Ce qui reste
+
+BL1-4 le curieux (1 % de titres après la fiche) : la ville qui nourrit le build, au lot 3 ; BL1-5 une passe d'équilibre à part, avant le lot 2 : les protections au niveau 3, le sabre, la paire Fracas et Estoc, et la poule de la référence à 1 min 27, sous l'« environ 2min » de SL1-2 (A3 ; écart consigné, § 34.4) ; BL1-10 la fiche de match du lot 2 dit ce qu'un coup prend de la barre de chacun. Puis le lot 2.
+
+### 34.4 La fiche relue : neuf sur neuf à la recommandation (13/11/2026)
+
+L'opérateur a regardé le duel dans le navigateur et fait trois remarques, ajoutées à la fiche avant qu'il la remplisse (BL1-8 à BL1-10 ; BL1-7, le § 6.1, retirée : déjà décidée). Ses choix, mot pour mot, sans note :
+
+| Carte | Choix |
+|---|---|
+| BL1-1 La réception | « Reçu » |
+| BL1-2 Les quatre réglages | « Les garder » |
+| BL1-3 La Vivacité des pièces à moitié | « Confirmer la moitié (décision A3 : change AC-11) » — **décision A3** |
+| BL1-4 Le curieux | « Au lot 3 : la ville nourrit le build » |
+| BL1-5 L'équilibre au test de AC-12 | « Une passe à part, avant le lot 2 » |
+| BL1-6 Le conseil d'Orla | « Son conseil : délais −10 % » |
+| BL1-8 L'entrechoc | « Oui, comme recommandé (au lot 1) » |
+| BL1-9 La jauge de rupture | « Garde ×0,5, 0,3/s, rupture à 14 (décision A3 : change le nombre de RY-3) » — **décision A3** |
+| BL1-10 La santé des rivaux | « Garder ; le dire au lot 2 sur la fiche de match » |
+
+Construit au lot 1 :
+
+- **L'entrechoc** (`AUTO_RULES.clash`) : deux coups qui partent à 0,3 s près. Deux du même poids (deux attaques de base, ou deux compétences ou coups puissants) s'entrechoquent : aucun dégât, rien aux jauges, les deux actions dépensées (l'usage d'une compétence avec), chacun reprend après 0,4 s + 0,6 s × son propre tirage (un recul commun les remettait en phase : ils s'entrechoquaient sans fin). Une compétence ou un coup puissant l'emporte sur une attaque simple, qui est perdue. L'arène montre les deux coups qui se rencontrent, les étincelles et le son de la garde, « Entrechoc » au-dessus des deux. Les santés ×0,9 (×3,132).
+- **La jauge** (A3) : un coup gardé compte moitié (×0,5 ; ×2 depuis DB9), elle baisse de 0,3 par seconde (0,16), et rompt à 14 coups par défaut (22,5) : un combattant reçoit 28 coups (médiane) avant sa première rupture, 30 avant la fiche ; garder et esquiver éloignent de la rupture. Le gambison garde la moitié du poids de la règle (×0,25).
+- **Le conseil d'Orla** : les délais et la recharge ×0,9 une fois Orla recrutée, dit sur la fiche de match.
+- **La course recalée** (PB-3) : Vessa 1,228, Tobin 1,569, Cassius 1,17, Orla 1,165, Ilse 1,051, Marek 0,992, Rhosk 1,295 ; poule +7,5 % ; tableau ×1,252, finale ×1,554. Sur 200 parties tenues à part : le planificateur demi-finale 53 %, finale 45 % ; la référence 35 % de titres, le planificateur 24 %, le curieux 1 %, le diligent et l'oisif 0 % ; la référence 1 min 27 / 2 min 50 / 3 min 07 ; 41,6 coups par minute ; l'entrechoc 1 fois par minute (2 par combat en médiane).
+- **Le § 6.1 du contrat projet** : amendé le 13/11/2026 avec le texte du § 33.4 (la réponse de l'opérateur, mot pour mot : « Oui, l'amender »), sa note datée en tête du contrat.
+
+L'écart consigné (décision C3) : la poule de la référence à 1 min 27, sous « la poule environ 2min » de SL1-2 (A3). Les santés ×0,9 de BL1-8 rendaient les durées avec l'entrechoc seul ; avec la jauge de BL1-9 et la course recalée, la poule raccourcit. À reprendre dans la passe d'équilibre de BL1-5, avant le lot 2.
 
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 

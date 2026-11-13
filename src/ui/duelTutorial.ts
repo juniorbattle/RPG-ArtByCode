@@ -63,7 +63,7 @@ export function lessonText(id: LessonId, d: LessonDuel): string {
       return tx(k, { times: R.react.skillGuard, rr: pct(rr.reduce), fr: pct(fr.reduce), foe, rd: pct(rr.dodge), rg: pct(rr.guard), rgs: pct(rr.guardSkill), fd: pct(fr.dodge), fg: pct(fr.guard) });
     }
     case 'form': return tx(k, { max: pct(R.form), you: signed(d.form[0]), them: signed(d.form[1]), foe });
-    case 'gauge': return tx(k, { mul: R.gauge.guardMul });
+    case 'gauge': return tx(k, { pct: Math.round(R.gauge.guardMul * 100) });
     case 'break': return tx(k, { stun: R.brk.stun, times: R.brk.dmg });
     default: return tx(k);
   }

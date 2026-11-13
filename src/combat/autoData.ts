@@ -115,8 +115,8 @@ export const AUTO_GEAR_FX: Record<string, AutoGearFx> = {
   'duelist-sabre': { lastPierce: true, gauge: 0.7 },
   // the imported blade's blows fill the gauge more (×1.1); its light attack charges longer
   'imported-blade': { gauge: 1.1, lightCharge: 1.1 },
-  // the padded jack: a guarded blow fills one's gauge as an unguarded one (DB9's ×2 gone)
-  'padded-jack': { guardGauge: 1 },
+  // the padded jack: a guarded blow fills one's gauge half as much as the rule says (×1 against DB9's ×2 before; ×0.25 against BL1-9's ×0.5)
+  'padded-jack': { guardGauge: 0.25 },
   // the mail: the light blows' damage −20 %; the dodge halved
   'mail-shirt': { lightTaken: 0.8, dodge: 0.5 },
   'knight-hauberk': { lightTaken: 0.8, dodge: 0.5 },
@@ -307,11 +307,11 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
  *  (the operator's PB-3 « Caler sur le joueur moyen », decision A3 of 13/11/2026 changing AC-16, journal Passe CF3; fitted in journal Passe BL1, tools/auto-lab.mjs
  *  fit): each rival's pool factor so that the planner's Ren of day 2 beats it 95 times in 100 (the bouts of 120 calibration games), the pool's slope of SL1-1, the
  *  bracket's and the final's factors on 200 whole games of the planner (seeds 1 to 100 and 301 to 400) for a semi-final and a final at 50 %, held out on seeds
- *  101 to 300 (the planner's semi-final 58 %, final 48 %). */
+ *  101 to 300; fitted again with the clash and the gauge of the operator's BL1-8 and BL1-9 (journal Passe BL1: the planner's semi-final 53 %, final 45 %). */
 export const AUTO_RACE = {
-  norm: { vessa: 1.255, tobin: 1.469, cassius: 1.231, orla: 1.155, ilse: 1.071, marek: 1.023, rhosk: 1.252 } as Record<string, number>,
+  norm: { vessa: 1.228, tobin: 1.569, cassius: 1.17, orla: 1.165, ilse: 1.051, marek: 0.992, rhosk: 1.295 } as Record<string, number>,
   pool: [1, 1.075, 1.15] as readonly number[],
-  stage: { 1: 1.203, 2: 1.524 } as Record<1 | 2, number>,
+  stage: { 1: 1.252, 2: 1.554 } as Record<1 | 2, number>,
   prepFrom: 20, prepPer: 25,
 };
 /** a bout's round of the pool by its day: day 2 the first, day 4 the second, day 5 the third (a challenge of the pool by its day) */

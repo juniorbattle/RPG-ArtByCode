@@ -1,5 +1,5 @@
 // The sets of rules the workshop measures (journal Passe CF1): each a configuration of sim.mjs. `game` is today's duel.
-import { GAME, BRUTE } from './sim.mjs';
+import { GAME, BRUTE, GEAR_FX } from './sim.mjs';
 const C = (o) => ({ ...GAME, ...o });
 export const TIERS = { R: 15, M: 30, L: 50 };
 export const VARIANTS = {
@@ -67,7 +67,9 @@ export const VARIANTS = {
   BK3: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, styles: true, brute: { ...BRUTE, roleCharge: { exploit: 0.66 }, uses: [2, 2, 3, 3, 4] }, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, vivK: 0.5 }), about: 'BK2, des usages plus doux : 2, 2, 3, 3, 4 selon le niveau (les rivaux 2, 2, 3)' },
   BK4: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, styles: true, brute: { ...BRUTE, roleCharge: { exploit: 0.66 }, late: 0.5 }, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, vivK: 0.5 }), about: 'BK2 et un automatique qui ne garde rien jusqu’au bout : passée la moitié d’une santé, ce qui attendait son moment part ; la Ferveur à la rupture ou blessé, le Cri sur un gros coup' },
   // lot 1 as built in the game (journal Passe BL1): BK5, the haste when hurt alone, an opener's opening 5 s (AC-12's test), every health ×1.45 more for SL1-2's
-  // durations (2 × 1.74 = the game's 3.48); Sunder's power ×0.6 is the game's own table (its fighters carry it)
-  BL1: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.74, styles: true, brute: { ...BRUTE, roleCharge: { exploit: 0.66 }, uses: [2, 2, 3, 3, 4], late: 0.5, plan: 'general', hasteRule: 'hurt', opener: 5 }, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, vivK: 0.5 }), about: 'le lot 1 tel que construit : BK5, la Ferveur blessé seul, la faille d’un ouvreur 5 s, les santés ×1,45 de plus (SL1-2)' },
+  // durations, then ×0.9 with the clash of the operator's BL1-8 (2 × 1.566 = the game's 3.132); Sunder's power ×0.6 is the game's own table (its fighters carry
+  // it); the gauge of BL1-9 (a guarded blow ×0.5, the decay 0.3/s, 14 blows) is the rules' own, given to the copy with the game's AUTO_RULES; the padded jack
+  // keeps half of the rule's weight of a guarded blow (×0.25 against ×0.5; ×1 against DB9's ×2 before)
+  BL1: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.566, styles: true, brute: { ...BRUTE, roleCharge: { exploit: 0.66 }, uses: [2, 2, 3, 3, 4], late: 0.5, plan: 'general', hasteRule: 'hurt', opener: 5, clash: { w: 0.3, recoil: 0.4, spread: 0.6 } }, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, gearTable: { ...GEAR_FX, 'padded-jack': { guardGauge: 0.25 } }, vivK: 0.5 }), about: 'le lot 1 tel que construit : BK5, la Ferveur blessé seul, la faille d’un ouvreur 5 s, les santés ×1,45 de plus (SL1-2) puis ×0,9, l’entrechoc (BL1-8), la jauge de BL1-9' },
   BK5: { cfg: C({ ap: 'none', heavy: 'open', hp: 1.2, styles: true, brute: { ...BRUTE, roleCharge: { exploit: 0.66 }, uses: [2, 2, 3, 3, 4], late: 0.5, plan: 'general' }, guardStat: { base: 0.5, lo: 0.3, hi: 0.7 }, gearFx: true, vivK: 0.5 }), about: 'le modèle proposé : usages 2, 2, 3, 3, 4, l’Estoc qui tient dans une faille, l’automatique qui joue le plan général (Estoc dans une faille ou à la rupture, Taille éclair dès que prête, Ferveur blessé ou à la rupture), la garde par les stats, les effets d’équipement, les styles' },
 };

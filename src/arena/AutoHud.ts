@@ -19,10 +19,10 @@ import { firstSlot } from '../settings/keys';
 
 export interface AutoTexts extends DynTexts {
   speed: string; speedSub: string; speedOn: string; skip: string; skipSub: string;
-  charging: (name: string) => string; order: string; secs: (n: number) => string; waiting: string;
+  charging: (name: string) => string; order: string; secs: (n: number) => string; waiting: string; clash: string;
 }
-const EN_EXTRA = { speed: '×2', speedSub: 'twice as fast', speedOn: 'back to ×1', skip: 'Skip', skipSub: 'to the result', charging: (n: string) => `Charging ${n}`, order: 'Your order', secs: (n: number) => `${n} s`, waiting: 'At your next choice' };
-const FR_EXTRA = { speed: '×2', speedSub: 'deux fois plus vite', speedOn: 'retour à ×1', skip: 'Passer', skipSub: 'au résultat', charging: (n: string) => `Charge : ${n}`, order: 'Votre ordre', secs: (n: number) => `${n} s`, waiting: 'À votre prochain choix' };
+const EN_EXTRA = { speed: '×2', speedSub: 'twice as fast', speedOn: 'back to ×1', skip: 'Skip', skipSub: 'to the result', charging: (n: string) => `Charging ${n}`, order: 'Your order', secs: (n: number) => `${n} s`, waiting: 'At your next choice', clash: 'Clash' };
+const FR_EXTRA = { speed: '×2', speedSub: 'deux fois plus vite', speedOn: 'retour à ×1', skip: 'Passer', skipSub: 'au résultat', charging: (n: string) => `Charge : ${n}`, order: 'Votre ordre', secs: (n: number) => `${n} s`, waiting: 'À votre prochain choix', clash: 'Entrechoc' };
 export const AUTO_TEXTS_EN: AutoTexts = { ...DYN_TEXTS_EN, ...EN_EXTRA, restart: 'An official bout cannot be restarted' };
 export const AUTO_TEXTS_FR: AutoTexts = { ...DYN_TEXTS_FR_GAME, ...FR_EXTRA };
 
@@ -188,6 +188,7 @@ export class AutoHud {
     const t = this.t;
     for (const e of evs) {
       if (e.type === 'impact') this.float(e.to as Seat, e.result === 'dodged' ? t.dodged : e.result === 'guarded' ? t.guarded(e.damage as number) : `-${e.damage}`, e.result as string);
+      else if (e.type === 'clash') { this.float(e.who as Seat, t.clash, 'guarded'); this.float(e.to as Seat, t.clash, 'guarded'); }
       else if (e.type === 'break') this.float(e.who as Seat, t.breakFloat, 'guardbreak', -34);
       else if (e.type === 'effect') this.float(e.who as Seat, e.family === 'defensive' ? t.wardOn : t.boostOn, 'ap', -34);
       else if (e.type === 'ko') { const ko = this.q('#ah-ko'); ko.querySelector('b')!.textContent = e.who === 'marek' ? t.victory : t.defeat; ko.querySelector('span')!.textContent = t.isDown(this.names[e.who as Seat]); ko.classList.add('on'); this.el.classList.add('ko'); }

@@ -41,7 +41,7 @@ test('the port: the same duels as the final workshop\'s copy under BL1, event fo
   const gears = [{ weapon: 'training-sword', armour: null, acc: [null, null] }, { weapon: 'duelist-sabre', armour: 'padded-jack', acc: ['swift-boots', 'lucky-ribbon'] }, { weapon: 'imported-blade', armour: 'mail-shirt', acc: ['iron-ring', 'champion-token'] }, { weapon: 'imported-blade', armour: 'dock-leathers', acc: ['fervour-charm', null] }];
   const viv = (g) => [g.weapon, g.armour, ...g.acc].reduce((n, id) => n + (id ? GEAR_MOD.GEAR[id]?.fx?.viv ?? 0 : 0), 0);
   const tactics = [undefined, { 0: 'open', 2: 'ready' }, { 1: 'start', 3: 'hurt' }, { 0: 'never', 1: 'follow' }];
-  const seen = { ward: 0, boost: 0, dodged: 0, guarded: 0, break: 0, parry: 0, interrupt: 0, chain: 0, heavy: 0, ko: 0, foeWins: 0 };
+  const seen = { ward: 0, boost: 0, dodged: 0, guarded: 0, break: 0, parry: 0, interrupt: 0, clash: 0, beat: 0, chain: 0, heavy: 0, ko: 0, foeWins: 0 };
   let n = 0;
   for (const [ki, loadout] of kits.entries()) for (const foe of [...RIVALS, 'aldric', 'corra']) for (let gi = 0; gi < gears.length; gi++) {
     const stage = (ki + gi + foe.length) % 3, g = gears[gi], lv = 1 + ((ki + gi) % 5);
@@ -56,7 +56,7 @@ test('the port: the same duels as the final workshop\'s copy under BL1, event fo
       const m = AU.autoDuel(A, B, seed, { log: true, commands: cmds }), p = SIM.duel({ ...A, gear: g }, B, seed, { log: true, commands: cmds }, cfg); n++;
       assert.deepEqual(m.log, p.log, `${loadout} against ${foe} (stage ${stage}, gear ${gi}), seed ${seed}`);
       assert.deepEqual([m.t, m.hp, m.maxHp, m.winner, m.leadChanges], [p.t, p.hp, p.maxHp, p.winner, p.leadChanges]);
-      for (const e of m.log) { if (e.ev in seen) seen[e.ev]++; if ((e.hit ?? 1) > 1) seen.chain++; if (e.act === 'heavy' || e.act === 'm_heavy') seen.heavy++; }
+      for (const e of m.log) { if (e.ev in seen) seen[e.ev]++; if (e.beat) seen.beat++; if ((e.hit ?? 1) > 1) seen.chain++; if (e.act === 'heavy' || e.act === 'm_heavy') seen.heavy++; }
       if (m.winner !== null) seen.ko++;
       if (AU.autoWinner(m) === 1) seen.foeWins++;
     }
@@ -152,16 +152,16 @@ const rules = (o = {}) => { const r = JSON.parse(JSON.stringify(AU.AUTO_RULES));
 const blows = (r, who = 'a') => r.log.filter((e) => e.who === who && ['hit', 'guarded', 'dodged'].includes(e.ev));
 const duel = (A, B, seed, R, o = {}) => AU.autoDuel(A, B, seed, { rules: R, log: true, ...o });
 
-test('DB7-1: a blow\'s damage is its power × 2·Atk / (Atk + Def); every health ×3.48 (AC-13\'s ×2, the model\'s ×1.2, SL1-2\'s ×1.45)', () => {
+test('DB7-1: a blow\'s damage is its power × 2·Atk / (Atk + Def); every health ×3.132 (AC-13\'s ×2, the model\'s ×1.2, SL1-2\'s ×1.45, ×0.9 with the clash of BL1-8)', () => {
   for (const [atk, def] of [[15, 10], [10, 20], [7, 7], [22, 16.5]]) {
     const r = duel(fighter({ atk }), dummy({ def, hp: 1000 }), 5, rules());
     assert.equal(blows(r)[0].dmg, Math.round(100 * (2 * atk) / (atk + def)), `${atk} against ${def}`);
   }
-  assert.ok(near(AU.AUTO_RULES.hpScale, 2 * 1.2 * 1.45));
-  assert.equal(AU.autoDuel(fighter({ hp: 500 }), dummy({ hp: 1000 }), 1, { rules: { ...rules(), hpScale: AU.AUTO_RULES.hpScale } }).maxHp[1], 3480);
+  assert.ok(near(AU.AUTO_RULES.hpScale, 2 * 1.2 * 1.45 * 0.9));
+  assert.equal(AU.autoDuel(fighter({ hp: 500 }), dummy({ hp: 1000 }), 1, { rules: { ...rules(), hpScale: AU.AUTO_RULES.hpScale } }).maxHp[1], 3132);
 });
 
-test('AC-05 with PB-1: the guard\'s chance from the stats (35 % at equality, ×2 against a big action seen coming, at most 90 %, × a style), a guarded blow loses 30 to 70 % by the Defence against the Attack (DB5-2 changed), ×2 to the guarder\'s gauge', () => {
+test('AC-05 with PB-1: the guard\'s chance from the stats (35 % at equality, ×2 against a big action seen coming, at most 90 %, × a style), a guarded blow loses 30 to 70 % by the Defence against the Attack (DB5-2 changed), ×0.5 to the guarder\'s gauge (BL1-9, A3; ×2 before)', () => {
   assert.deepEqual(AU.AUTO_RULES.react, { dodge: 0.12, guard: 0.35, skillGuard: 2, cap: 0.9 });
   assert.deepEqual(AU.AUTO_RULES.guard, { base: 0.5, lo: 0.3, hi: 0.7 });
   const freq = (A, B, R) => { const b = blows(duel(A, B, 77, R)); return { p: b.filter((e) => e.ev === 'guarded').length / b.length, b }; };
@@ -178,7 +178,7 @@ test('AC-05 with PB-1: the guard\'s chance from the stats (35 % at equality, ×2
   const certain = rules({ react: { guard: 1, cap: 1 } });
   assert.equal(freq(fighter({ light: act({ pierce: true, charge: 0.2 }) }), dummy(), certain).p, 0, 'a pierce blow is never guarded');
   const brk = (R2) => { const r = duel(fighter({ light: act({ gauge: W(10) }) }), dummy(), 3, R2); const i = r.log.findIndex((e) => e.ev === 'break'); return blows(r).filter((e) => r.log.indexOf(e) < i).length; };
-  assert.equal(brk(certain), 4, 'a guarded blow fills the gauge twice'); assert.equal(brk(rules()), 7);
+  assert.equal(brk(certain), 14, 'a guarded blow fills the gauge half as much (BL1-9)'); assert.equal(brk(rules()), 7);
 });
 
 test('AC-05 with SY-01: the dodge from the Speed (12 % at equality, × a style); a fighter charging anything but its light attack neither guards nor dodges', () => {
@@ -301,8 +301,9 @@ test('PB-1: the roles in the blow — the exploit ×2 in an opening, a break or 
   assert.deepEqual([hits[0].dmg, hits[1].dmg], [200, 100], 'the load on the next offensive action only');
 });
 
-test('DB5-4 (A3) with RY-3 (A3): the break — a gauge of 70 broken by 22.5 blows by default, stunned 10 s (the iron ring 7), ×1.4 taken, its charge paused, its enchaînement cut; the decay', () => {
-  const B = dummy({ light: act({ charge: 30, power: 1 }) }), r = duel(fighter({ light: act({ gauge: W(10) }) }), B, 8, rules({ maxT: 200 }));
+test('DB5-4 (A3) with RY-3 (A3) and BL1-9 (A3): the break — a gauge of 70 broken by 14 blows by default, stunned 10 s (the iron ring 7), ×1.4 taken, its charge paused, its enchaînement cut; the decay', () => {
+  // (the clash left out: the striker's light attacks land every second, the stunned one's would meet one of them)
+  const B = dummy({ light: act({ charge: 30, power: 1 }) }), r = duel(fighter({ light: act({ gauge: W(10) }) }), B, 8, rules({ maxT: 200, clash: undefined }));
   const brk = r.log.find((e) => e.ev === 'break' && e.who === 'b'), b = blows(r), i = b.findIndex((e) => e.t > brk.t);
   assert.equal(b.filter((e) => e.t <= brk.t).length, 7);
   assert.ok(b.slice(i).filter((e) => e.t < brk.t + 10).every((e) => e.dmg === 140), 'the damage ×1.4 while stunned (RY-3)');
@@ -317,14 +318,54 @@ test('DB5-4 (A3) with RY-3 (A3): the break — a gauge of 70 broken by 22.5 blow
   const r2 = duel(fighter({ light: act({ charge: 1.25, gauge: W(70) }) }), C, 1, rules({ maxT: 20 }));
   const b2 = r2.log.find((e) => e.ev === 'break' && e.who === 'b');
   assert.equal(r2.log.filter((e) => e.who === 'b' && e.ev === 'hit' && e.t > b2.t && e.t < b2.t + 10).length, 0, 'no hit of its chain during its stun');
-  assert.equal(AU.AUTO_RULES.gauge.decay, 0.16);
-  assert.deepEqual([AU.AUTO_RULES.gauge.max, AU.AUTO_RULES.gauge.blows, AU.AUTO_RULES.brk.stun, AU.AUTO_RULES.brk.dmg], [70, 22.5, 10, 1.4]);
+  assert.equal(AU.AUTO_RULES.gauge.decay, 0.3);
+  assert.deepEqual([AU.AUTO_RULES.gauge.max, AU.AUTO_RULES.gauge.blows, AU.AUTO_RULES.gauge.guardMul, AU.AUTO_RULES.brk.stun, AU.AUTO_RULES.brk.dmg], [70, 14, 0.5, 10, 1.4]);
   const plain = (end) => { const x = duel(fighter({ light: act({ charge: 1, gauge: 1 }) }), dummy({ end }), 1, rules({ gauge: { decay: 0 }, maxT: 400 })); const k = x.log.find((e) => e.ev === 'break'); return blows(x).filter((e) => e.t <= k.t).length; };
-  assert.deepEqual([plain(10), plain(20)], [23, 45]);
+  assert.deepEqual([plain(10), plain(20)], [14, 28]);
   assert.equal(AD.autoLight('imported-blade').gauge, 1); assert.equal(AD.autoSkill('t4', 1).gauge, 2); assert.equal(AD.autoSkill('t3', 1).gauge, 3); assert.equal(AD.autoSkill('k_sunder', 1).gauge, 4);
   // a traced blow carries its target's gauge right after it (the arena reads it)
   const tr = duel(fighter({ light: act({ gauge: 1 }) }), dummy(), 1, rules({ maxT: 5 }), { trace: true }), h = tr.log.find((e) => e.ev === 'hit');
-  assert.ok(near(h.g, (70 / 22.5), 0.006) && h.s.length === 2);
+  assert.ok(near(h.g, (70 / 14), 0.006) && h.s.length === 2);
+});
+
+test('BL1-8: the clash — two blows leaving within 0.3 s of each other: two of the same weight meet (no damage, nothing to the gauges, both spent, each back after 0.4 s + 0.6 s × its own draw); a skill or a heavy blow against a light attack goes through, the light attack lost', () => {
+  assert.deepEqual(AU.AUTO_RULES.clash, { w: 0.3, recoil: 0.4, spread: 0.6 });
+  const seed = 7, R = rules({ start: 0, maxT: 3 });
+  // the oracle: the recoil's own keyed draw (the side, its action's rank, the purpose 5)
+  const back = (i, acts, t) => +(t + 0.4 + 0.6 * AU.autoDraw(seed, i, acts, 0, 5)).toFixed(2);
+  const lands = (r, who, t0, t1) => r.log.filter((e) => e.who === who && ['hit', 'guarded', 'dodged'].includes(e.ev) && e.t >= t0 && e.t < t1);
+  // two light attacks leaving together
+  const pair = (cb) => duel(fighter({ light: act({ gauge: 1 }) }), dummy({ light: act({ charge: cb, gauge: 1 }) }), seed, R, { trace: true });
+  const r = pair(1), c = r.log.find((e) => e.ev === 'clash');
+  assert.deepEqual([c.t, c.who, c.act, c.vs, c.beat], [1, 'a', 'light', 'light', undefined]);
+  assert.equal(lands(r, 'a', 0, 1.3).length + lands(r, 'b', 0, 1.3).length, 0, 'neither blow lands');
+  assert.deepEqual(c.s, [0, 0], 'nothing to the gauges');
+  for (const [who, i] of [['a', 0], ['b', 1]]) assert.equal(r.log.filter((e) => e.who === who && e.ev === 'charge')[1].t, back(i, 1, 1), `${who} back after its recoil`);
+  const n = AU.autoDuel(fighter({ light: act({ gauge: 1 }) }), dummy({ light: act({ charge: 1, gauge: 1 }) }), seed, { rules: R }).n, met = r.log.filter((e) => e.ev === 'clash' && !e.beat).length;
+  assert.deepEqual([n[0].clashes, n[1].clashes], [met, met], 'each side counts its clashes');
+  // the window: 0.29 s apart they meet, 0.31 s apart both land
+  assert.equal(pair(1.29).log.find((e) => e.ev === 'clash')?.t, 1);
+  const far = pair(1.31);
+  assert.ok(!far.log.some((e) => e.ev === 'clash' && e.t < 1.5)); assert.equal(lands(far, 'a', 0, 1.1).length, 1); assert.equal(lands(far, 'b', 1.3, 1.4).length, 1);
+  // a skill against a light attack: the skill lands, the light attack is lost and its striker back after its recoil
+  const sk = (id, o = {}) => act({ id, kind: 'skill', role: 'punish', charge: 1, uses: 1, ...o });
+  const r3 = duel(fighter({ skills: [sk('s')], tactic: ['ready'] }), dummy({ light: act({ charge: 1.1 }) }), seed, R), c3 = r3.log.find((e) => e.ev === 'clash');
+  assert.deepEqual([c3.t, c3.who, c3.act, c3.beat], [1, 'b', 'light', 's']);
+  assert.equal(lands(r3, 'a', 1, 1.01)[0]?.act, 's', 'the skill lands'); assert.equal(lands(r3, 'b', 0, 1.3).length, 0, 'the light attack lost');
+  assert.equal(r3.log.filter((e) => e.who === 'b' && e.ev === 'charge')[1].t, back(1, 1, 1));
+  // a light attack against a skill about to leave: the light attack lost, the skill lands when its charge ends
+  const r4 = duel(fighter(), dummy({ skills: [sk('t', { charge: 1.2 })], tactic: ['ready'] }), seed, R), c4 = r4.log.find((e) => e.ev === 'clash');
+  assert.deepEqual([c4.t, c4.who, c4.act, c4.beat], [1, 'a', 'light', 't']);
+  assert.equal(lands(r4, 'a', 0, 1.3).length, 0); assert.equal(lands(r4, 'b', 1.2, 1.21)[0]?.act, 't');
+  assert.equal(r4.log.filter((e) => e.who === 'a' && e.ev === 'charge')[1].t, back(0, 1, 1));
+  // two skills: they meet, both uses spent
+  const r5 = duel(fighter({ skills: [sk('s')], tactic: ['ready'] }), dummy({ skills: [sk('t')], tactic: ['ready'] }), seed, rules({ start: 0, maxT: 30 })), c5 = r5.log.find((e) => e.ev === 'clash');
+  assert.deepEqual([c5.t, c5.who, c5.act, c5.vs], [1, 'a', 's', 't']);
+  assert.equal(r5.log.filter((e) => (e.act === 's' || e.act === 't') && e.ev !== 'clash').length, 2, 'each skill charged once, never again (its one use spent)');
+  // a ward leaving at the same moment does not clash
+  const ward = act({ id: 'w', kind: 'skill', role: 'ward', charge: 1, uses: 1, power: undefined, ward: { dur: 5, dmg: 0.5, gauge: 1 } });
+  const r6 = duel(fighter(), dummy({ skills: [ward], tactic: ['ready'] }), seed, R);
+  assert.ok(!r6.log.some((e) => e.ev === 'clash')); assert.equal(lands(r6, 'a', 1, 1.01).length, 1);
 });
 
 test('AC-08: each fighter\'s form of the day, ±15 %, from its own stream: the duel\'s other draws are the same without it', () => {

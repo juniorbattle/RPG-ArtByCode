@@ -107,6 +107,10 @@ export const V2_STORY_ACTIONS: { [K in V2StoryAction['type']]: ActionDef<Extract
 /** what Orla at your side changes in a duel (« proposé »): her advice from the stands, one action point at the start */
 export const ORLA_AP = 1;
 export function allyAp(s: GameState): number { return isV2(s) && s.facts.includes('orla-recruited') ? ORLA_AP : 0; }
+/** her advice in the duel played by the computer, without AP (the operator's BL1-6 « Son conseil : délais −10 % », 13/11/2026, journal Passe BL1): the
+ *  champion's token's effect, the skills' gaps and the heavy blow's cooldown × 0.9 */
+export const ORLA_CD = 0.9;
+export function allyCd(s: GameState): number { return isV2(s) && s.facts.includes('orla-recruited') ? ORLA_CD : 1; }
 
 // ---------------------------------------------------------------------------------------------------------------- the cutscenes
 

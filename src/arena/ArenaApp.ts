@@ -567,6 +567,14 @@ export class ArenaApp {
           this.hitLight.scale = this.hitLight.targetScale = heavy || e.result === 'guardbreak' ? 1 : 0.55;
         }
         this.cheer(e.result === 'hit' && heavy ? 0.9 : e.result === 'guardbreak' ? 0.8 : e.result === 'hit' ? 0.35 : 0.2);
+      } else if ((e as { type: string }).type === 'clash') {
+        // a clash (BL1-8): both blows meet, both knocked back a little, the guard's spark, the light between them
+        const c = e as unknown as { who: FighterId; to: FighterId; kind: string };
+        for (const k of [c.who, c.to]) this.pres[k].knock = -0.14;
+        this.shake = Math.max(this.shake, c.kind === 'light' ? 0.3 : 0.6);
+        this.spawnFx('guard', this.fighters[c.to], c.to);
+        if (this.hitLight) { this.hitLight.pos.set((this.fighters.ren.pos.x + this.fighters.marek.pos.x) / 2, 1.45, 1.2); this.hitLight.scale = this.hitLight.targetScale = c.kind === 'light' ? 0.55 : 0.8; }
+        this.cheer(0.3);
       } else if (e.type === 'ko') { this.koT = this.sim.t; this.cheer(1); }
       // the new rules' moments (DynamicSim only): a gauge breaks, the player is pushed back, a skill's effect takes hold
       else if (e.type === 'break') {

@@ -92,9 +92,16 @@ export const AUTO_RULES = {
   /** the break: a gauge of 70 (DB5-4) that breaks after `blows` blows by default for every fighter (the operator's RY-3 and its note, decision A3 of 13/11/2026,
    *  journal Passe SL3: « les ruptures devraient etre equivalente par default concernant le nombre de coup necessaire pour etre en rupture, par exemple
    *  20-25coups »): a light attack's hit one blow, a skill's or a heavy blow's its weight (AutoAction.gauge) shared over its hits; then the target's Endurance
-   *  (× 10 / End), a guard (× guardMul, DB9), a ward, a load, the striker's gear; `decay` per second; stunned 10 s, the damage taken × 1.4 (« x1,4 durant 10s
-   *  pour chacun ») */
-  gauge: { max: 70, blows: 22.5, decay: 0.16, guardMul: 2 },
+   *  (× 10 / End), a guard (× guardMul), a ward, a load, the striker's gear; `decay` per second; stunned 10 s, the damage taken × 1.4 (« x1,4 durant 10s
+   *  pour chacun »). Since the operator's BL1-9 « Garde ×0,5, 0,3/s, rupture à 14 (décision A3 : change le nombre de RY-3) » (13/11/2026, journal Passe BL1):
+   *  a guarded blow half a blow (DB9's ×2 made against the player who held the guard in the three-button duel), the decay 0.3 a second (0.16 before), 14 blows
+   *  by default (22.5 before) so that a fighter still takes about 30 blows before its first break, as before; guarding and dodging keep one from the break */
+  gauge: { max: 70, blows: 14, decay: 0.3, guardMul: 0.5 },
+  /** the clash (the operator's BL1-8 « Oui, comme recommandé (au lot 1) », 13/11/2026, journal Passe BL1): two blows that leave within `w` s of each other.
+   *  Two of the same weight (two base attacks, or two skills or heavy blows) clash: no damage, nothing to the gauges, both actions spent (a skill's use with
+   *  it), each fighter free again after `recoil` + `spread` × its own keyed draw (one recoil for both put them back in step, clashing again and again);
+   *  a skill or a heavy blow against a light attack goes through, the light attack lost and its striker back after its recoil */
+  clash: { w: 0.3, recoil: 0.4, spread: 0.6 },
   brk: { stun: 10, dmg: 1.4 },
   /** the guard takes `base` × 2·Def / (Def + the attacker's Atk) off, between `lo` and `hi` (DB5-2 changed by PB-1: « −30 à −70 % selon les stats ») */
   guard: { base: 0.5, lo: 0.3, hi: 0.7 },
@@ -103,9 +110,9 @@ export const AUTO_RULES = {
   react: { dodge: 0.12, guard: 0.35, skillGuard: 2, cap: 0.9 },
   /** a fighter charging anything but its light attack, or striking its own enchaînement, neither guards nor dodges (AC-05, « la charge qui expose ») */
   exposed: true,
-  /** every health × 3.48: DB5's « en 2 et 5 min » held (AC-13's ×2), × 1.2 the model's (fewer skills, each heavier), × 1.45 for the operator's durations of SL1-2
-   *  (A3: « la poule environ 2min, le tableau 2-4min , la finale 3-4min max »; journal Passe BL1) */
-  hpScale: 3.48,
+  /** every health × 3.132: DB5's « en 2 et 5 min » held (AC-13's ×2), × 1.2 the model's (fewer skills, each heavier), × 1.45 for the operator's durations of SL1-2
+   *  (A3: « la poule environ 2min, le tableau 2-4min , la finale 3-4min max »; journal Passe BL1), × 0.9 with the clash (BL1-8: the blows it takes away) */
+  hpScale: 3.132,
   /** each fighter's first charge begins after a draw in [0, start] s */
   start: 1.8,
   /** the form of the day: each fighter's blows × 1 ± form, drawn before the bout from its own stream, said on the match sheet (AC-08) */
@@ -129,9 +136,10 @@ export type AutoRules = typeof AUTO_RULES;
 /** one line of a duel's script (the arena shows it): t the time (s, two decimals), who the fighter's id. With `trace`: `s` both fighters' gauge just after it
  *  ([the first's, the second's], settled at that time, a broken one full); on a blow, `g` its target's gauge right after it (full when it broke) and `fx`
  *  whether the target's ward (1) weighed on it; on a break, `dur` its stun (s). 'parry': `who` parried the blow `act`; 'interrupt': `who` cut the action
- *  `act` its opponent charged. */
-export interface AutoEvent { t: number; who: string; ev: 'charge' | 'ward' | 'boost' | 'hit' | 'guarded' | 'dodged' | 'break' | 'parry' | 'interrupt'; act?: string; at?: number; dmg?: number; hp?: number; hit?: number; s?: [number, number]; g?: number; fx?: number; dur?: number }
-export interface AutoCount { acts: number; skills: number; heavies: number; lights: number; dodged: number; guarded: number; hit: number; hits: number; breaks: number; dmg: number; dmgBroken: number; skillDmg: number; wasted: number; opened: number; interrupts: number; parried: number }
+ *  `act` its opponent charged; 'clash' (BL1-8): without `beat`, `who`'s blow `act` and its opponent's `vs` met, neither landing; with `beat`, `who`'s light
+ *  attack `act` was lost to its opponent's big action `beat`, which lands. */
+export interface AutoEvent { t: number; who: string; ev: 'charge' | 'ward' | 'boost' | 'hit' | 'guarded' | 'dodged' | 'break' | 'parry' | 'interrupt' | 'clash'; act?: string; at?: number; dmg?: number; hp?: number; hit?: number; s?: [number, number]; g?: number; fx?: number; dur?: number; vs?: string; beat?: string }
+export interface AutoCount { acts: number; skills: number; heavies: number; lights: number; dodged: number; guarded: number; hit: number; hits: number; breaks: number; dmg: number; dmgBroken: number; skillDmg: number; wasted: number; opened: number; interrupts: number; parried: number; clashes: number }
 export interface AutoResult {
   /** 0 or 1 by the K.O.; null past `maxT` (decide on the health shares: autoWinner) */
   winner: 0 | 1 | null;
@@ -164,10 +172,12 @@ export function autoDraw(seed: number, a: number, b: number, c: number, d: numbe
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 /** the purposes of a keyed draw */
-const DRAW = { dodge: 1, guard: 2, start: 3, decide: 4 } as const;
+const DRAW = { dodge: 1, guard: 2, start: 3, decide: 4, recoil: 5 } as const;
 
+/** an action that strikes (neither a ward nor a support): what can clash (BL1-8) */
+const isBlow = (a: AutoAction): boolean => !a.ward && a.role !== 'haste' && a.role !== 'slow' && a.role !== 'load' && (a.power ?? 0) > 0;
 const ratio = (a: number, b: number): number => (2 * a) / Math.max(1e-6, a + b);
-const zero = (): AutoCount => ({ acts: 0, skills: 0, heavies: 0, lights: 0, dodged: 0, guarded: 0, hit: 0, hits: 0, breaks: 0, dmg: 0, dmgBroken: 0, skillDmg: 0, wasted: 0, opened: 0, interrupts: 0, parried: 0 });
+const zero = (): AutoCount => ({ acts: 0, skills: 0, heavies: 0, lights: 0, dodged: 0, guarded: 0, hit: 0, hits: 0, breaks: 0, dmg: 0, dmgBroken: 0, skillDmg: 0, wasted: 0, opened: 0, interrupts: 0, parried: 0, clashes: 0 });
 
 interface Load { until: number; dmg: number; gauge: number }
 interface Combo { a: AutoAction; hits: readonly number[]; i: number; k: number; load: Load | null }
@@ -262,6 +272,18 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
       log && put({ t: T(), who: f.x.id, ev: 'boost', act: a.id }); return false;
     }
     if (a.ward) { f.ward = { until: t + a.ward.dur, dmg: a.ward.dmg, gauge: a.ward.gauge, parry: a.role === 'parry' }; log && put({ t: T(), who: f.x.id, ev: 'ward', act: a.id }); return false; }
+    // the clash (BL1-8): the opponent's blow leaves within w s of this one
+    const g = other(f), ga = g.act, C = R.clash;
+    if (C && !g.broken && ga && !g.combo && isBlow(ga) && g.at - t <= C.w + 1e-9) {
+      const big = a.kind !== 'light', gBig = ga.kind !== 'light';
+      const back = (s: AutoSide): void => { s.pending = true; s.at = t + C.recoil + C.spread * autoDraw(s0, s.i, s.n.acts, 0, DRAW.recoil); };
+      if (big === gBig) {
+        f.n.clashes++; g.n.clashes++; g.act = null; back(g); back(f);
+        log && put({ t: T(), who: f.x.id, ev: 'clash', act: a.id, vs: ga.id }); return false;
+      }
+      if (big) { g.n.clashes++; g.act = null; back(g); log && put({ t: T(), who: g.x.id, ev: 'clash', act: ga.id, beat: a.id }); }
+      else { f.n.clashes++; back(f); log && put({ t: T(), who: f.x.id, ev: 'clash', act: a.id, beat: ga.id }); return false; }
+    }
     // a load waiting: spent by the first offensive action (a skill or the heavy blow) that leaves, in its window
     let load: Load | null = null;
     if (f.next && a.kind !== 'light') { if (f.next.until > t) load = f.next; f.next = null; }
@@ -337,7 +359,8 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
       log && put({ t: T(), who: g.x.id, ev: 'break', ...(o.trace ? { dur: stun } : {}) });
     }
   }
-  const after = (f: AutoSide): void => { if (f.broken) { f.pending = true; f.at = f.stunEnd; } else start(f, decide(f)); };
+  // (a fighter back from a clash chooses once its recoil has run out)
+  const after = (f: AutoSide): void => { if (f.broken) { f.pending = true; f.at = f.stunEnd; } else if (f.pending && f.at > t + 1e-9) return; else start(f, decide(f)); };
   const leadNow = (): void => { const ld = Math.sign(F[0].hp / F[0].maxHp - F[1].hp / F[1].maxHp); if (ld && lastLead && ld !== lastLead) leadChanges++; if (ld) lastLead = ld; };
 
   // the initiative (each side its own keyed draw)

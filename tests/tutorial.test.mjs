@@ -167,7 +167,7 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   assert.match(DT.lessonText('react', D), new RegExp(`you dodge ${pc(rr.dodge)} % of Marek’s blows and guard ${pc(rr.guard)} %, ${pc(rr.guardSkill)} % of those seen coming; Marek dodges ${pc(fr.dodge)} % of yours and guards ${pc(fr.guard)} %`));
   const sg = (f) => `${f >= 1 ? '\\+' : '−'}${Math.round(Math.abs(f - 1) * 100)}`;
   assert.match(DT.lessonText('form', D), new RegExp(`up to ${pc(R.form)} % either way: today ${sg(d.result.form[0])} % for you, ${sg(d.result.form[1])} % for Marek`));
-  assert.match(DT.lessonText('gauge', D), new RegExp(`fills the guarder's ${R.gauge.guardMul} times as much`));
+  assert.match(DT.lessonText('gauge', D), new RegExp(`a guarded blow only ${Math.round(R.gauge.guardMul * 100)} % as much, a dodged one nothing`));
   assert.match(DT.lessonText('break', D), new RegExp(`stunned for ${R.brk.stun} seconds, and takes ${R.brk.dmg} times the damage`));
   // ×2 and « Skip » on the attack's and the dodge's keys (LC3-8), the duel's caps
   assert.match(TU.rich(DT.lessonText('speed', D)), /<kbd data-bind="attack" data-cap="arena">J<\/kbd> plays it twice as fast, and back; <kbd data-bind="dodge" data-cap="arena">L<\/kbd> skips to the result/);
@@ -292,7 +292,7 @@ test('the guide\'s « The duel » and « Preparing a bout » for the duel played
   for (const [file, line] of [
     [tuSrc, 'cool: AUTO_COOLDOWN, lo: Math.min(...hits), hi: Math.max(...hits), times: R.react.skillGuard, glo: pct(R.guard.lo), ghi: pct(R.guard.hi), stun: R.brk.stun, dmg: R.brk.dmg, form: pct(R.form)'],
     [dtSrc, 'return tx(k, { times: R.react.skillGuard, rr: pct(rr.reduce), fr: pct(fr.reduce), foe,'],
-    [dtSrc, "case 'gauge': return tx(k, { mul: R.gauge.guardMul });"],
+    [dtSrc, "case 'gauge': return tx(k, { pct: Math.round(R.gauge.guardMul * 100) });"],
     [dtSrc, "case 'break': return tx(k, { stun: R.brk.stun, times: R.brk.dmg });"],
   ]) assert.ok(file.includes(line), line);
   // the chapter's figure: the order of the four as the duel follows it (the match sheet's, autoOrderView)

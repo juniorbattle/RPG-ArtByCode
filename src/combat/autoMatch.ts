@@ -4,6 +4,7 @@ import { rivalMods } from '../tournament/pool';
 import { piecesViv, v2Mods, v2Stats, wornPieces } from '../simulation/v2gear';
 import { v2KitOf } from '../simulation/v2';
 import { GENERICS } from '../narrative/generics';
+import { allyCd } from '../narrative/v2story';
 import { AUTO_RULES, autoDuel, autoFormsOf, autoWinner, type AutoFighter, type AutoResult } from './auto';
 import { autoFoe, autoGenericSheet, autoPrepPoints, autoRaceSheet, autoRen, autoRound } from './autoData';
 import { challengeSheetFor, matchSheetFor, type MatchSheet } from './match';
@@ -32,6 +33,9 @@ export function autoBoutOf(st: GameState, kind: 'bout' | 'challenge' = 'bout'): 
   if (!sh) return null;
   const o = sh.sides[1].fighters[0], stage = sh.stage ?? 0, round = stage === 0 ? autoRound(st.day) : 0, mods = v2Mods(st), g = GENERICS[o.id];
   const ren = autoRen(autoRenStats(st), v2KitOf(st), { weapon: st.v2?.gear?.weapon, hpShare: mods.hp, taken: mods.taken, effect: mods.effect, gear: wornPieces(st), pieceViv: piecesViv(st) });
+  // Orla's advice from the gate (BL1-6): the gaps and the cooldown × 0.9, on top of the gear's
+  const ally = allyCd(st);
+  if (ally !== 1) ren.gfx = { ...ren.gfx, cd: (ren.gfx?.cd ?? 1) * ally };
   const c = st.competitors[o.id];
   const foe = g ? autoFoe(o.id, autoGenericSheet(g.profile, g, stage, round), { kitOf: g.profile, stage })
     : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c?.preparation, hp: c ? rivalMods(c).hp : 1 }), { stage });

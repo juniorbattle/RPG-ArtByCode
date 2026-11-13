@@ -79,21 +79,21 @@ const lessonNow = (page) => page.evaluate(() => document.querySelector('.tu-duel
  *  at SPEED_AT; none at the K.O.'s blow or after it */
 function oracle(log, ids) {
   const first = { start: 0 }, fresh = {}, put = (id, x) => { if (!(id in first)) first[id] = x; };
-  const koAt = log.find((e) => e.hp !== undefined && e.hp <= 0)?.t ?? Infinity, max = 70, decay = 0.63;
-  // a target's gauge just after a blow: the next line's trace (written before its own blow fills anything) with its decay undone, full at that fighter's break or
-  // while it is broken (lot 4, journal Passe LC6: the HUD shows the gauge at the blow, no longer one line late)
-  const after = (i, k) => { const e = log[i], n = log[i + 1]; if (e.s[k] >= max) return max; if (!n) return 0; if (n.ev === 'break' && n.s[k] >= max) return max; return n.s[k] > 0 ? n.s[k] + decay * (n.t - e.t) : 0; };
+  const koAt = log.find((e) => e.hp !== undefined && e.hp <= 0)?.t ?? Infinity, max = 70;
+  // a target's gauge just after a blow: the blow's own line says it since the model « La Brute » (`g`, traced; full at its break or while it is broken; journal Passe
+  // BL1: the trace holds both gauges, no AP)
+  const after = (i) => log[i].g ?? 0;
   for (const [i, e] of log.entries()) {
     if (e.t >= koAt) break;
     if (e.ev === 'charge') { fresh[e.who] = true; if (e.who === ids.ren && e.act !== ids.renLight) put('charge', e.t); continue; }
     if (e.ev === 'break') { put('break', e.t); continue; }
     if (e.ev === 'ward' || e.ev === 'boost') { fresh[e.who] = false; continue; }
+    if (e.ev === 'parry' || e.ev === 'interrupt') continue;
     const follow = !fresh[e.who]; fresh[e.who] = false;
-    if (e.who === ids.ren && e.act === ids.renLight && e.ev !== 'dodged') put('ap', e.t);
     if (follow) put('combo', e.t);
     if (e.ev !== 'hit') put('react', e.t);
     if (e.ev === 'hit' && !ids.light.includes(e.act)) put('form', e.t);
-    if (e.ev !== 'dodged' && after(i, e.who === ids.ren ? 3 : 1) >= max / 3) put('gauge', e.t);
+    if (e.ev !== 'dodged' && after(i) >= max / 3) put('gauge', e.t);
   }
   if (DT.SPEED_AT < koAt) put('speed', DT.SPEED_AT);
   return first;
@@ -306,7 +306,8 @@ try {
   let held2 = false;
   for (let i = 0; i < 40; i++) { if (await page.evaluate(() => !!document.querySelector('.tu-duel') || window.__arena.paused)) { held2 = true; break; } await sleep(250); }
   const after2 = await page.evaluate(() => ({ t: window.__arena.auto.t, kept: JSON.parse(localStorage.getItem('cite-du-tournoi.auto-lessons') ?? '[]') }));
-  check(!held2 && after2.t > 20 && after2.kept.length === 9, `Esc skipped the lessons left: none held the bout again (t ${after2.t.toFixed(1)}), all ${after2.kept.length} kept as seen`);
+  // (eight lessons since the model « La Brute »: the action points' left with them, journal Passe BL1)
+  check(!held2 && after2.t > 20 && after2.kept.length === DT.LESSONS.length, `Esc skipped the lessons left: none held the bout again (t ${after2.t.toFixed(1)}), all ${after2.kept.length} kept as seen`);
   await page.keyboard.press('l');
   check(!!(await until(page, () => !!document.querySelector('.pm-big'), 15000, 'the result')), '« Skip » to the result');
   await page.close();

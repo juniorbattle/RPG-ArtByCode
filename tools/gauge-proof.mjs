@@ -44,14 +44,14 @@ try {
       for (let k = 0; k < secs * 60 && !A.auto.over; k++) { A.update(1 / 60); out.push({ t: A.auto.t, evs: q, ren: bar('ren'), marek: bar('marek') }); q = []; }
       return out;
     }, SECS);
-    // the script's gauge after each line, for each seat (index 1 Ren, 3 the opponent in the trace), and its value at a time
-    const L = script.log, seatOf = (who) => (who === script.ids.ren ? 'ren' : 'marek'), K = { ren: 1, marek: 3 }, MAX = script.rules.max, DECAY = script.rules.decay, STUN = script.rules.stun; // the page's own rules (journal Passe SL3: the decay of RY-3)
+    // the script's gauge after each line, for each seat (index 0 Ren, 1 the opponent in the trace: both gauges since the model « La Brute », journal Passe BL1), and its value at a time
+    const L = script.log, seatOf = (who) => (who === script.ids.ren ? 'ren' : 'marek'), K = { ren: 0, marek: 1 }, MAX = script.rules.max, DECAY = script.rules.decay, STUN = script.rules.stun; // the page's own rules (journal Passe SL3: the decay of RY-3)
     // a line's trace is written before its blow fills the target's gauge (src/combat/auto.ts): after a blow on that seat, the next line's trace with its decay undone (full
     // at its break); after any other line, its own trace
     const after = (i, k) => {
       const e = L[i], n = L[i + 1];
       if (e.s[k] >= MAX) return MAX;
-      const onSeat = (e.ev === 'hit' || e.ev === 'guarded') && (k === 1) !== (e.who === script.ids.ren);
+      const onSeat = (e.ev === 'hit' || e.ev === 'guarded') && (k === 0) !== (e.who === script.ids.ren);
       if (!onSeat || !n) return e.s[k];
       if (n.ev === 'break' && n.s[k] >= MAX) return MAX;
       return n.s[k] > 0 ? Math.min(MAX, n.s[k] + DECAY * (n.t - e.t)) : e.s[k];
@@ -61,7 +61,7 @@ try {
     const expected = (seat, t) => {
       let i = -1; for (let j = 0; j < L.length && L[j].t <= t + 1e-9; j++) i = j;
       if (i < 0) return 0;
-      let stunEnd = -1; for (let j = 0; j <= i; j++) if (L[j].ev === 'break' && seatOf(L[j].who) === seat) stunEnd = L[j].t + STUN;
+      let stunEnd = -1; for (let j = 0; j <= i; j++) if (L[j].ev === 'break' && seatOf(L[j].who) === seat) stunEnd = L[j].t + (L[j].dur ?? STUN);
       if (t < stunEnd - 1e-9) return 100;
       if (stunEnd > L[i].t) return 0;
       return (Math.max(0, after(i, K[seat]) - DECAY * (t - L[i].t)) / MAX) * 100;

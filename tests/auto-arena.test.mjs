@@ -97,6 +97,15 @@ test('each blow drawn from before it lands (journal Passe LC4): its run-up read 
       const s = seatOf(e.who);
       if (e.ev === 'charge') { charge[s] = e; continue; }
       if (e.ev === 'break') { stun[s].push([e.t, e.t + AU.AUTO_RULES.brk.stun]); continue; }
+      // (PB-1: an interruption or a parry ends the other's charge without a blow; BL1-8: a clash draws both blows meeting, a light attack lost to a big
+      // action none)
+      const o2 = s === 'ren' ? 'marek' : 'ren';
+      if (e.ev === 'interrupt' || e.ev === 'parry') { charge[o2] = null; continue; }
+      if (e.ev === 'clash') {
+        if (e.beat) { charge[s] = null; continue; }
+        for (const [k, act] of [[s, e.act], [o2, e.vs]]) { const c = charge[k]; want[k].push({ t: e.t, first: !!c, len: c ? c.at - c.t : 0, gap: e.t - prev[k], effect: false, act }); prev[k] = e.t; charge[k] = null; }
+        continue;
+      }
       const first = !!charge[s], len = first ? charge[s].at - charge[s].t : 0;
       want[s].push({ t: e.t, first, len, gap: e.t - prev[s], effect: e.ev === 'ward' || e.ev === 'boost', act: e.act });
       if (!(e.ev === 'ward' || e.ev === 'boost')) prev[s] = e.t;
@@ -252,8 +261,15 @@ test('a version 2 bout\'s duel is the one the match sheet prepared, and the orde
   assert.ok(b && o.duel.log.length > 50);
   assert.deepEqual(o.duel.form, AM.autoForms(b));
   assert.deepEqual(AU.autoDuel(b.ren, b.foe, b.seed), { ...o.duel, log: null });
-  const other = G.advance(st, { type: 'setOrder', skills: ['t4', 't1', 's1', 'd1'] }).state, o2 = AM.autoOutcome(other);
-  assert.notEqual(`${o2.duel.t}:${o2.playerHp}:${o2.opponentHp}`, `${o.duel.t}:${o.playerHp}:${o.opponentHp}`, 'another order, another duel');
+  // another order, another duel: in the bouts where two skills come due together (the general plan decides the rest, PB-1), about half of new games
+  let changed = 0;
+  for (let seed = 1; seed <= 12; seed++) {
+    let g = G.newGame(seed, 'Aster'); G.makeV2(g);
+    for (let i = 0; i < 4; i++) g = G.advance(g, { type: 'wait' }).state;
+    const k = (x) => `${x.duel.t}:${x.playerHp}:${x.opponentHp}`, o1 = AM.autoOutcome(g), o2 = AM.autoOutcome(G.advance(g, { type: 'setOrder', skills: ['t4', 't1', 's1', 'd1'] }).state);
+    if (k(o1) !== k(o2)) changed++;
+  }
+  assert.ok(changed >= 3, `another order, another duel (${changed} of 12 new games)`);
 });
 
 test('the arena\'s rules: a version 2 bout and the arena\'s own page play the duel played by the computer; ?duel=charge the three buttons of before; ?v2=0 today\'s', () => {

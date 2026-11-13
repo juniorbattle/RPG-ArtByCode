@@ -153,7 +153,8 @@ test('the TournamentLab\'s diligent player in a version 2 game: the training gro
   const ids = diligent.state.log.map((e) => e.id);
   assert.ok(ids.includes('shop:padded-jack'), 'armour bought'); assert.ok(diligent.state.v2.gear.armour);
   assert.ok(diligent.state.log.some((e) => e.id === 'train' || /practice sand/.test(e.text)), 'trained');
-  assert.ok(ids.filter((i) => i === 'pay-watch').length >= 5, 'the watch paid');
+  // (4 times since the clash and the gauge of BL1-8 and BL1-9, journal Passe BL1; 5 and more before)
+  assert.ok(ids.filter((i) => i === 'pay-watch').length >= 4, 'the watch paid');
   // today's game: today's policy (its lab output is main's, journal Passe VP1)
   const d = L.autoplay(4, L.POLICIES.diligent);
   assert.ok(!d.state.log.some((e) => e.id.startsWith('shop:')));

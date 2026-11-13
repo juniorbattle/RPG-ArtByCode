@@ -124,7 +124,7 @@ export const STYLE_TACTIC = {
 };
 
 export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
-  const DRAW = { dodge: 1, guard: 2, start: 3, decide: 4 };
+  const DRAW = { dodge: 1, guard: 2, start: 3, decide: 4, recoil: 5 };
   const ratio = (a, b) => (2 * a) / Math.max(1e-6, a + b);
   const zero = () => ({ acts: 0, skills: 0, heavies: 0, lights: 0, dodged: 0, guarded: 0, hit: 0, hits: 0, breaks: 0, dmg: 0, dmgBroken: 0, skillDmg: 0, wasted: 0 });
   const active = (e, t) => !!e && e.until > t;
@@ -333,6 +333,16 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
         else f.boost = { until: t + a.boost.dur, dmg: a.boost.dmg, gauge: a.boost.gauge };
         log && put({ t: T(), who: f.x.id, ev: 'boost', act: a.id }); return false;
       }
+      // brute, cfg.brute.clash (lot 1, the operator's BL1-8, journal Passe BL1): the opponent's blow leaves within w s of this one. Two of the same weight
+      // clash (no damage, both spent, each back after its recoil and its own keyed draw); a big action against a light attack goes through, the light one lost
+      const CL = BR && BR.clash, g = other(f), ga = g.act;
+      if (CL && !g.broken && ga && !g.combo && !ga.ward && !ga.boost && ga.role !== 'haste' && ga.role !== 'slow' && ga.role !== 'load' && (ga.power ?? 0) > 0 && g.at - t <= CL.w + 1e-9) {
+        const big = a.kind !== 'light', gBig = ga.kind !== 'light';
+        const back = (s) => { s.pending = true; s.at = t + CL.recoil + CL.spread * autoDraw(s0, s.i, s.n.acts, 0, DRAW.recoil); };
+        if (big === gBig) { g.act = null; back(g); back(f); log && put({ t: T(), who: f.x.id, ev: 'clash', act: a.id, vs: ga.id }); return false; }
+        if (big) { g.act = null; back(g); log && put({ t: T(), who: g.x.id, ev: 'clash', act: ga.id, beat: a.id }); }
+        else { back(f); log && put({ t: T(), who: f.x.id, ev: 'clash', act: a.id, beat: ga.id }); return false; }
+      }
       // a loaded boost ('next'): spent by the first offensive action that leaves in its window
       let load = null;
       if (f.next && a.kind !== 'light') { if (f.next.until > t) load = f.next; f.next = null; }
@@ -414,7 +424,7 @@ export function makeSim({ hitFactor, AUTO_RULES, autoFormsOf, autoDraw }) {
         log && put({ t: T(), who: g.x.id, ev: 'break' });
       }
     }
-    const after = (f) => { if (f.broken) { f.pending = true; f.at = f.stunEnd; } else start(f, decide(f)); };
+    const after = (f) => { if (f.broken) { f.pending = true; f.at = f.stunEnd; } else if (f.pending && f.at > t + 1e-9) return; else start(f, decide(f)); };
     const leadNow = () => { const ld = Math.sign(F[0].hp / F[0].maxHp - F[1].hp / F[1].maxHp); if (ld && lastLead && ld !== lastLead) leadChanges++; if (ld) lastLead = ld; };
 
     for (const f of F) { f.at = autoDraw(s0, f.i, 0, 0, DRAW.start) * R.start; f.pending = true; }

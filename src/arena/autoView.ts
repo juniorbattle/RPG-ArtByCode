@@ -257,6 +257,14 @@ export class AutoReplay {
         if (o.seq) { o.seq = false; if (tell) this.emit({ type: 'sequenceEnd', who: other }); }
         break;
       }
+      // a clash (BL1-8): two blows met, both charges end there without damage, told once (the guard's sparks and sound, « Clash »); a light attack lost to a
+      // big action (`beat`): its charge ends, the big action's blow follows
+      case 'clash': {
+        const end = (k: Seat): void => { const x = this.s[k]; if (x.charge) { x.charge = null; this.release(k, tell); } if (x.seq) { x.seq = false; if (tell) this.emit({ type: 'sequenceEnd', who: k }); } };
+        end(seat);
+        if (!e.beat) { end(other); if (tell && a) this.emit({ type: 'clash', who: seat, to: other, action: a.id, kind: kindOf(a) }); }
+        break;
+      }
     }
   }
 
@@ -427,6 +435,16 @@ export function windowsOf(log: AutoEvent[] | undefined, ids: Record<string, Seat
     if (e.ev === 'break') { stunEnd[seat] = e.t + (e.dur ?? AUTO_RULES.brk.stun); continue; }
     // a charge cut by an interruption (its fighter the other's) or a blow parried: no blow drawn for it
     if (e.ev === 'interrupt' || e.ev === 'parry') { charge[seat === 'ren' ? 'marek' : 'ren'] = null; continue; }
+    // a clash (BL1-8): both fighters' blows drawn meeting at its moment (no reaction: the knock-back is the page's); a light attack lost to a big action: none
+    if (e.ev === 'clash') {
+      const meet = (k: Seat, id: string | undefined): void => {
+        const x = id ? acts[k].get(id) : undefined, c = charge[k];
+        if (x && c) { const free = e.t - stunEnd[k], w = Math.min(kindOf(x) === 'light' ? WIND.light : kindOf(x) === 'heavy' ? WIND.heavy : WIND.skill, 0.6 * Math.max(0, c.leave - c.start)), lead = free > 0 ? Math.min(Math.max(0.04, w), free) : Math.max(0.04, w); wins[k].push({ name: animOf(x), t0: e.t - lead, impactAt: lead, dur: lead + WIND.follow, id: x.id, kind: kindOf(x), family: familyOf(x) ?? 'offensive' }); prevHit[k] = e.t; }
+        charge[k] = null;
+      };
+      if (e.beat) charge[seat] = null; else { meet(seat, e.act); meet(other, e.vs); }
+      continue;
+    }
     const a = e.act ? acts[seat].get(e.act) : undefined; if (!a) continue;
     const c = charge[seat], len = c ? Math.max(0, c.leave - c.start) : Infinity, free = e.t - stunEnd[seat];
     // at least 0.04 s, never begun in the striker's own stun (a charge paused by a break can leave a moment after it: the run-up then as short as that)

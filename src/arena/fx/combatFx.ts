@@ -127,7 +127,8 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
           if (e.result === 'hit') blow(e.follow ? blowRecipe('', 'light', e.from) : blowRecipe(e.action, e.kind, e.from), F, to);
           else if (e.result === 'guarded') blow(RECIPES[heavy ? 'guardHeavy' : 'guard'], F, to);
           else if (e.result === 'guardbreak') blow(RECIPES.break, F, to);
-        } else if (e.type === 'break') blow(RECIPES.break, F, e.who);
+        } else if (e.type === 'clash') blow(RECIPES[e.kind === 'light' ? 'guard' : 'guardHeavy'], F, e.to as FighterId);
+        else if (e.type === 'break') blow(RECIPES.break, F, e.who);
         else if (e.type === 'ko') blow(RECIPES.ko, F, e.who);
         else if (e.type === 'effect') self(effectRecipe(e.action, e.family), F[e.who as FighterId]);
         // the form of the day's sign at the start of the bout (LC6-7 « Les deux signes », journal Passe LC7)
