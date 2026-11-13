@@ -23,7 +23,7 @@ const GEAR_MOD = await load('/src/simulation/gear.ts');
 const PROF = await load('/src/combat/profiles.ts');
 const { Rng } = await load('/src/core/rng.ts');
 const { GENERICS } = await load('/src/narrative/generics.ts');
-const SIM = makeSim({ Rng, hitFactor: ST.hitFactor, AUTO_RULES: AU.AUTO_RULES, autoFormsOf: AU.autoFormsOf });
+const SIM = makeSim({ Rng, hitFactor: ST.hitFactor, AUTO_RULES: AU.AUTO_RULES, autoFormsOf: AU.autoFormsOf, gaugeHit: AU.autoGaugeHit });
 
 const RIVALS = Object.keys(ST.RIVAL_SHEETS);
 const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
@@ -54,14 +54,16 @@ test('the port: the same duels as the second workshop\'s copy (one draw per blow
 // ------------------------------------------------------------------------------------------------- 2. the tables against the decisions
 
 test('SY-01, SY-02, SY-03: the same tables for every fighter — the light attack, the heavy blow, the skills, Speed 10, the common cadence ×0.6, no traits', () => {
-  // SY-03 « ×0,6 pour tous »: every charge and power × 0.6, an enchaînement's gaps and the effects as the catalogue's
+  // RY-1 « ×3 plus lent : environ 40 coups par minute » and RY-2 « Étirés avec le reste » (journal Passe SL3): every time three times SY-03's (×0,6), the charges ×1.8,
+  // an enchaînement's gaps and the effects ×3; each blow heavier (its power) for the operator's durations (SL1-2)
   const C = AD.AUTO_CADENCE, c = C.charge, w = C.power;
-  assert.deepEqual({ ...C }, { charge: 0.6, power: 0.6, gap: 1, effect: 1 });
+  assert.deepEqual([C.charge, C.gap, C.effect], [1.8, 3, 3]);
+  assert.ok(w > 0.6 * 3, 'each blow heavier than at the cadence of SY-03');
   // the catalogue's numbers, written here: the light attack 1.2 s and power 6 (DB5-5), the heavy attack 1.7 s at level 1, the Thrust 7.65 s and 120 (DB5-1)
   assert.equal(SK.SKILLS.heavy.charge[0], 1.7); assert.equal(SK.SKILLS.t4.charge[0], 7.65);
   const ren = AD.autoRen(ST.REN_BASE, { loadout: ['t1', 't4', 'd1', 's1'], levels: { heavy: 3 } }, { weapon: 'imported-blade' });
   assert.deepEqual([ren.light.kind, ren.light.ap, ren.light.hits, ren.light.gap], ['light', 0, AD.AUTO_WEAPONS['imported-blade'].hits, 0.32 * C.gap]);
-  assert.ok(near(ren.light.charge, 1.2 * c) && near(ren.light.power, 6 * w) && near(ren.light.gauge, 0.6 * w), 'the light attack at the cadence');
+  assert.ok(near(ren.light.charge, 1.2 * c) && near(ren.light.power, 6 * w) && ren.light.gauge === 1, 'the light attack at the cadence, each hit one blow to the gauge (RY-3)');
   // SY-02 (A3): the heavy blow, a base attack outside the four, no AP, its DB5-3 cooldown, at Ren's level of it
   assert.deepEqual([ren.heavy.kind, ren.heavy.ap, ren.heavy.id], ['heavy', 0, 'heavy']);
   assert.ok(near(ren.heavy.charge, SK.SKILLS.heavy.charge[2] * c) && near(ren.heavy.cooldown, 5 * 1.7 * c), 'its charge at its level, its cooldown 5 × its first-level charge');
@@ -95,6 +97,8 @@ test('SY-01, SY-02, SY-03: the same tables for every fighter — the light attac
 
 // ------------------------------------------------------------------------------------------------- the rules against their oracles (hand-made fighters)
 
+/** a gauge in the old units (what a hit adds at Endurance 10) as the weight the rule of RY-3 takes (journal Passe SL3: a hit adds max / blows × its weight) */
+const W = (g) => (g * AU.AUTO_RULES.gauge.blows) / AU.AUTO_RULES.gauge.max;
 /** a hand-made fighter: one light attack (power 100, no gauge, one hit, 1 s), a heavy blow that never goes (cooldown for ever), no skill; a target never acts */
 const act = (o = {}) => ({ id: 'light', kind: 'light', charge: 1, power: 100, gauge: 0, ap: 0, hits: [1], gap: 0.3, ...o });
 const noHeavy = () => act({ id: 'heavy', kind: 'heavy', charge: 1, ap: 99, power: 1 }); // never paid: never goes
@@ -128,7 +132,7 @@ test('AC-05 with SY-01: the guard from the Defence alone (35 % at equality), ×2
   const certain = rules({ react: { guard: 1, cap: 1 } });
   assert.equal(freq(fighter({ light: act({ pierce: true, charge: 0.2 }) }), dummy(), certain).p, 0);
   // a guarded blow fills the guarder's gauge twice: 70 at the fourth blow of 10 always guarded, at the seventh unguarded
-  const brk = (R) => { const r = duel(fighter({ light: act({ gauge: 10 }) }), dummy(), 3, R); const i = r.log.findIndex((e) => e.ev === 'break'); return blows(r).filter((e) => r.log.indexOf(e) < i).length; };
+  const brk = (R) => { const r = duel(fighter({ light: act({ gauge: W(10) }) }), dummy(), 3, R); const i = r.log.findIndex((e) => e.ev === 'break'); return blows(r).filter((e) => r.log.indexOf(e) < i).length; };
   assert.equal(brk(certain), 4); assert.equal(brk(rules()), 7);
 });
 
@@ -206,23 +210,29 @@ test('DB5-3 (A3): a skill comes back 5 × its charge time at level 1 after its c
   for (let i = 1; i < starts.length; i++) { assert.ok(starts[i] - starts[i - 1] >= 10 - 1e-6); assert.ok(starts[i] - starts[i - 1] < 11.5); }
 });
 
-test('DB5-4 (A3): the break — a gauge of 70, stunned 10 s, the damage taken ×2, its charge paused, its enchaînement cut, the gauge empty after; the decay', () => {
-  const B = dummy({ light: act({ charge: 30, power: 1 }) }), r = duel(fighter({ light: act({ gauge: 10 }) }), B, 8, rules({ maxT: 200 }));
+test('DB5-4 (A3): the break, with RY-3 (A3) — a gauge of 70 broken by 22.5 blows by default, stunned 10 s, the damage taken ×1.4, its charge paused, its enchaînement cut, the gauge empty after; the decay', () => {
+  const B = dummy({ light: act({ charge: 30, power: 1 }) }), r = duel(fighter({ light: act({ gauge: W(10) }) }), B, 8, rules({ maxT: 200 }));
   const brk = r.log.find((e) => e.ev === 'break' && e.who === 'b'), b = blows(r), i = b.findIndex((e) => e.t > brk.t);
   assert.equal(b.filter((e) => e.t <= brk.t).length, 7);
-  assert.ok(b.slice(i).filter((e) => e.t < brk.t + 10).every((e) => e.dmg === 200), 'the damage ×2 while stunned');
+  assert.ok(b.slice(i).filter((e) => e.t < brk.t + 10).every((e) => e.dmg === 140), 'the damage ×1.4 while stunned (RY-3)');
   assert.ok(b.find((e) => e.t > brk.t + 10).dmg === 100, 'back to ×1 after');
   const charge = r.log.find((e) => e.who === 'b' && e.ev === 'charge'), landed = r.log.find((e) => e.who === 'b' && ['hit', 'guarded', 'dodged'].includes(e.ev));
   const stuns = r.log.filter((e) => e.ev === 'break' && e.who === 'b' && e.t < landed.t).length;
   assert.ok(stuns >= 2 && Math.abs(landed.t - (charge.at + 10 * stuns)) < 0.011, 'its charge paused by each stun');
   const C = dummy({ light: act({ charge: 0.5, power: 1, hits: [0.2, 0.2, 0.2, 0.2, 0.2], gap: 1 }), gauge: 0 });
-  const r2 = duel(fighter({ light: act({ charge: 1.25, gauge: 70 }) }), C, 1, rules({ maxT: 20 }));
+  const r2 = duel(fighter({ light: act({ charge: 1.25, gauge: W(70) }) }), C, 1, rules({ maxT: 20 }));
   const b2 = r2.log.find((e) => e.ev === 'break' && e.who === 'b');
   assert.equal(r2.log.filter((e) => e.who === 'b' && e.ev === 'hit' && e.t > b2.t && e.t < b2.t + 10).length, 0, 'no hit of its chain during its stun');
-  assert.equal(AU.AUTO_RULES.gauge.decay, +(1.8 * 0.7 * 0.5).toFixed(2));
-  const nth = (gauge, decay) => { const x = duel(fighter({ light: act({ charge: 10, gauge }) }), dummy(), 1, rules({ gauge: { decay }, maxT: 200 })); const k = x.log.find((e) => e.ev === 'break'); return k ? blows(x).filter((e) => e.t <= k.t).length : 0; };
+  // the decay calibrated on whole games so that a fighter breaks after 20 to 25 blows (journal Passe SL3: the reference's rivals 22, Ren 25, in the median)
+  assert.equal(AU.AUTO_RULES.gauge.decay, 0.16);
+  const nth = (gauge, decay) => { const x = duel(fighter({ light: act({ charge: 10, gauge: W(gauge) }) }), dummy(), 1, rules({ gauge: { decay }, maxT: 200 })); const k = x.log.find((e) => e.ev === 'break'); return k ? blows(x).filter((e) => e.t <= k.t).length : 0; };
   assert.equal(nth(25, 0.63), 4); assert.equal(nth(25, 0), 3); assert.equal(nth(6, 0.63), 0);
-  assert.deepEqual([AU.AUTO_RULES.gauge.max, AU.AUTO_RULES.brk.stun, AU.AUTO_RULES.brk.dmg], [70, 10, 2]);
+  assert.deepEqual([AU.AUTO_RULES.gauge.max, AU.AUTO_RULES.gauge.blows, AU.AUTO_RULES.brk.stun, AU.AUTO_RULES.brk.dmg], [70, 22.5, 10, 1.4]);
+  // RY-3: a light attack's hit one blow — 23 hits break a fighter at Endurance 10 without decay, at Endurance 20 twice as many; a skill two blows shared over its hits
+  const plain = (end) => { const x = duel(fighter({ light: act({ charge: 1, gauge: 1 }) }), dummy({ end }), 1, rules({ gauge: { decay: 0 }, maxT: 400 })); const k = x.log.find((e) => e.ev === 'break'); return blows(x).filter((e) => e.t <= k.t).length; };
+  assert.deepEqual([plain(10), plain(20)], [23, 45]);
+  assert.equal(AD.autoLight('imported-blade').gauge, 1); assert.equal(AD.autoSkill('t4', 1).gauge, 2); assert.equal(AD.autoSkill('t3', 1).gauge, 3); assert.equal(AD.autoSkill('k_sunder', 1).gauge, 4);
+  assert.ok(near(AU.autoGaugeHit(AD.autoSkill('t1', 1), 0.5, 10), (70 / 22.5) * 2 * 0.5));
 });
 
 test('AC-08: each fighter\'s form of the day, ±15 %, from its own stream: the duel\'s other draws are the same without it', () => {
@@ -293,10 +303,10 @@ test('SY-02 (A3): the heavy blow — when the opponent cannot defend when it lan
 
 // ------------------------------------------------------------------------------------------------------------------ the race and the gear
 
-test('AC-16 with SY-05 (A3): the race — each rival\'s shape at a common level, +10 % each round of the pool, more at the bracket, more again in the final, its pool Speed kept', () => {
+test('AC-16 with SY-05 (A3): the race — each rival\'s shape at a common level, +10 % each round of the pool (+7.5 %, SL1-1), more at the bracket, more again in the final, its pool Speed kept', () => {
   const R = AD.AUTO_RACE;
-  // SY-05 « +10 % par tour (décision A3 : change LC1-1) » (journal Passe SY2)
-  assert.deepEqual(R.pool.map((x) => +(x / R.pool[0]).toFixed(6)), [1, 1.1, 1.2]);
+  // SL1-1 « +7,5 % par tour (décision A3 : change SY-05) » (journal Passe SL2)
+  assert.deepEqual(R.pool.map((x) => +(x / R.pool[0]).toFixed(6)), [1, 1.075, 1.15]);
   assert.ok(R.stage[1] > R.pool[2] && R.stage[2] > R.stage[1], 'little by little in the pool, a lot in the final phase');
   for (const id of RIVALS) {
     const b = ST.RIVAL_SHEETS[id];

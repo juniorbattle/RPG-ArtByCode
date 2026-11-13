@@ -29,7 +29,7 @@ const LOST: Action = { type: 'fight', outcome: { winner: 'opponent', playerHp: 0
 const STRAP6: readonly Action[] = [W, W, { type: 'move', to: 'lanterns' }, { type: 'taunt' }, W, W, WON, W, W, W, W, W, WON, W, W, WON, W, { type: 'rumour', src: 'lio' }, W, { type: 'move', to: 'forecourt' }];
 
 // lot L4 (journal Passe EVL7): Vessa Lark beaten on day 2 (seed 1842), her tale of Orla Brask told in the taverns the next morning, the festival square on day 3's
-// afternoon (Brother Ambrose saw her pay the rounds); Rhosk out of the title (seed 6 again since the same rules for every fighter, journal Passe SL1; seed 11 from
+// afternoon (Brother Ambrose saw her pay the rounds); Rhosk out of the title (seed 18 since lot 2's rhythm and break, journal Passe SL3; seed 6 from the same rules for every fighter, journal Passe SL1; seed 11 from
 // the duel played by the computer, journal Passe LC3, to then; seed 6 before: the cut's four others), every bout won, his plan told on the quay on day 8's
 // evening, the next morning on the quay (Sergeant Hale can act on it) and at the training ground (the sand taken)
 const POOL_WON: readonly Action[] = [W, W, W, W, WON, W, W, W, W, W, WON, W, W, WON, W];
@@ -75,8 +75,8 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   'v2-strap-day6': { about: 'a version 2 game on day 6\'s afternoon, on the forecourt: the strap cut in the night before the semi-final, Lio\'s room asked of Orla', script: STRAP6, v2: true, seed: 23 },
   'v2-strap-day7': { about: 'a version 2 game on day 7\'s morning, on the forecourt: the semi-final won on the cut strap, its culprit unknown', script: [...STRAP6, WON, W], v2: true, seed: 23 },
   'v2-tale-day3': { about: 'a version 2 game on day 3\'s afternoon, on the festival square: Vessa Lark beaten on day 2, her tale of Orla Brask in the taverns', script: [W, W, W, W, WON, W, W, { type: 'move', to: 'lanterns' }], v2: true },
-  'v2-sand-day9': { about: 'a version 2 game on day 9\'s morning, on the quay: every bout won, Rhosk out of the title (seed 6), his plan to take the training sand told the night before', script: SAND9, v2: true, seed: 6 },
-  'v2-sand-training': { about: 'a version 2 game on day 9\'s morning, at the training ground: Rhosk on the sand (seed 6)', script: [...SAND9, { type: 'move', to: 'training' }], v2: true, seed: 6 },
+  'v2-sand-day9': { about: 'a version 2 game on day 9\'s morning, on the quay: every bout won, Rhosk out of the title (seed 18), his plan to take the training sand told the night before', script: SAND9, v2: true, seed: 18 },
+  'v2-sand-training': { about: 'a version 2 game on day 9\'s morning, at the training ground: Rhosk on the sand (seed 18)', script: [...SAND9, { type: 'move', to: 'training' }], v2: true, seed: 18 },
   // lot L5 (journal Passe EVL9): Wynn of the watch at a robbed stall (seed 1: caught at Hilde's on the first morning, the forecourt that afternoon; seed 1842: caught
   // at Mara's, the quay that afternoon); a famous player on day 7's morning at the training ground, Orla Brask a friend (the strap's game of lot L3)
   'v2-watch-forecourt': { about: 'a version 2 game on the first afternoon, on the forecourt: caught stealing at Hilde\'s stall that morning, Wynn of the watch beside her (seed 1)', script: [{ type: 'move', to: 'forecourt' }, { type: 'steal', shop: 'armourer' }, W], v2: true, seed: 1 },

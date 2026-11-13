@@ -61,8 +61,6 @@ function exploreInputs(look: TimeOfDay): void {
 async function startArena(): Promise<void> {
     try {
     const { ArenaApp } = await import('./arena/ArenaApp');
-    // DEV only: a rhythm candidate of lot 2's sheet (journal Passe SL3), removed after the operator's choice
-    if (import.meta.env.DEV && params.has('autotempo')) (await import('./lab/autoTempo')).applyAutoTempo(params.get('autotempo')!);
     const app = new ArenaApp({ canvas, params, onProgress: progressOn(label, bar) });
     (window as any).__arena = app;
     await app.init();

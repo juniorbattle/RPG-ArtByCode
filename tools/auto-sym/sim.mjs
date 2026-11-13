@@ -14,7 +14,8 @@ export function h5(a, b, c, d, e) {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
-export function makeSim({ Rng, hitFactor, AUTO_RULES, autoFormsOf }) {
+// `gaugeHit` (optional): a hit's gauge by the game's rule since the operator's RY-3 (journal Passe SL3, src/combat/auto.ts autoGaugeHit); without it, the workshop's
+export function makeSim({ Rng, hitFactor, AUTO_RULES, autoFormsOf, gaugeHit }) {
   const ratio = (a, b) => (2 * a) / Math.max(1e-6, a + b);
   const zero = () => ({ acts: 0, skills: 0, lights: 0, heavies: 0, dodged: 0, guarded: 0, hit: 0, hits: 0, breaks: 0, dmg: 0, dmgBroken: 0, skillDmg: 0, wasted: 0, apWasted: 0, dmgExposed: 0 });
 
@@ -83,7 +84,7 @@ export function makeSim({ Rng, hitFactor, AUTO_RULES, autoFormsOf }) {
       log && put({ t: T(), who: f.x.id, ev: res, act: a.id, dmg, hp: g.hp, hit: c.i });
       if (g.hp <= 0) { over = true; winner = f === F[0] ? 0 : 1; finisher = a.kind === 'light' ? 'light' : a.heavy ? 'heavy' : 'skill'; return; }
       if (!g.broken) {
-        const add = (a.gauge ?? 0) * share * (10 / Math.max(1, g.x.end)) * (res === 'guarded' ? R.gauge.guardMul : 1) * (boostOn ? f.boost.gauge : 1) * (wardOn ? g.ward.gauge : 1);
+        const add = (gaugeHit ? gaugeHit(a, share, g.x.end, R) : (a.gauge ?? 0) * share * (10 / Math.max(1, g.x.end))) * (res === 'guarded' ? R.gauge.guardMul : 1) * (boostOn ? f.boost.gauge : 1) * (wardOn ? g.ward.gauge : 1);
         g.g = Math.min(R.gauge.max, gaugeNow(g) + add); g.gT = t;
         if (g.g >= R.gauge.max) {
           g.broken = true; g.stunEnd = t + R.brk.stun; g.n.breaks++;

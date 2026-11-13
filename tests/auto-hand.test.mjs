@@ -97,6 +97,8 @@ test('the hand: nothing before the press changes, the skill leaves at the next c
       // the first charge of Ren after the press: the skill pressed if he could pay it then; never another skill while it waits and could leave
       const goes = r.log.find((e) => e.who === 'ren' && e.ev === 'charge' && e.t >= at - 0.006 && e.act === sk);
       if (r.winner !== null && r.log.at(-1).t > at + 60) assert.ok(goes, `${foe} ${seed} ${sk} at ${at}: it leaves within the minute`);
+      // while it waits, his base attacks only: no other skill spends the AP it waits for
+      if (goes) assert.ok(!r.log.some((e) => e.who === 'ren' && e.ev === 'charge' && e.t > at + 0.01 && e.t < goes.t && !['light', 'heavy'].includes(e.act)), `${foe} ${seed} ${sk} at ${at}: no other skill meanwhile`);
     }
     // a later press replaces the first: only the second leaves
     const two = AU.autoDuel(A, B, seed, { log: true, commands: [{ t: 30, skill: 't4' }, { t: 30.01, skill: 's1' }] });

@@ -29,7 +29,7 @@ export interface AutoAction {
   charge: number;
   /** its damage at equal Attack and Defence, before the form, a guard, a ward, a boost or a break */
   power?: number;
-  /** what it adds to the target's gauge at Endurance 10 */
+  /** what it adds to the target's gauge at Endurance 10, in blows of the default count (RY-3): a light attack's hit 1; a skill's whole, shared over its hits */
   gauge?: number;
   /** its cost in AP (the skills) */
   ap?: number;
@@ -74,10 +74,12 @@ export interface AutoFighter {
 export const AUTO_RULES = {
   /** the AP: 1 at the start (CB-5), 5 at most (C2-3), +1 a light attack that lands, hit or guarded (DB-3), once per action (AC-03) */
   ap: { start: 1, max: 5, light: 1 },
-  /** DB5-4 « 10 s, ×2, jauge de 70 » (A3); the gauge's decay per second (today's 1.8 a gauge of 100, × 70 / 100, half as fast since DB11-1); a guarded
-   *  blow fills the guarder's gauge ×2 (DB9) */
-  gauge: { max: 70, decay: 0.63, guardMul: 2 },
-  brk: { stun: 10, dmg: 2 },
+  /** the break: a gauge of 70 (DB5-4) that breaks after `blows` blows by default for every fighter (the operator's RY-3 and its note, decision A3 of 13/11/2026,
+   *  journal Passe SL3: « les ruptures devraient etre equivalente par default concernant le nombre de coup necessaire pour etre en rupture, par exemple
+   *  20-25coups »): a light attack's hit one blow, a skill's or a heavy blow's its weight (AutoAction.gauge) shared over its hits; then the target's Endurance
+   *  (× 10 / End), a guard (× guardMul, DB9), a ward, a boost; `decay` per second; stunned 10 s, the damage taken × 1.4 (« x1,4 durant 10s pour chacun ») */
+  gauge: { max: 70, blows: 22.5, decay: 0.16, guardMul: 2 },
+  brk: { stun: 10, dmg: 1.4 },
   /** the guard takes 80 % off (DB5-2's « garde à −80 % », one rule for both) */
   guardReduce: 0.8,
   /** the reactions (AC-05): the dodge 12 % × 2·Spd / (Spd + the attacker's Spd); the guard 35 % × 2·Def / (Def + the attacker's Atk), ×2 against a skill or a
@@ -88,7 +90,7 @@ export const AUTO_RULES = {
   /** every health × 2: DB5's « en 2 et 5 min » held (AC-13) */
   hpScale: 2,
   /** each fighter's first charge begins after a draw in [0, start] s */
-  start: 0.6,
+  start: 1.8,
   /** the form of the day: each fighter's blows × 1 ± form, drawn before the bout from its own stream, said on the match sheet (AC-08) */
   form: 0.15,
   /** a duel this long ends on the health shares */
@@ -113,6 +115,12 @@ export interface AutoResult {
   /** how many times the lead in health share changed hands */
   leadChanges: number;
   log: AutoEvent[] | null;
+}
+
+/** what one hit adds to its target's gauge before a guard, a ward or a boost (RY-3, A3): a light attack's hit one blow of the `blows` the gauge holds, a skill's
+ *  or a heavy blow's its weight shared over its hits; × 10 / the target's Endurance */
+export function autoGaugeHit(a: Pick<AutoAction, 'kind' | 'gauge'>, share: number, end: number, R: Pick<AutoRules, 'gauge'> = AUTO_RULES): number {
+  return (R.gauge.max / R.gauge.blows) * (a.gauge ?? 0) * (a.kind === 'light' ? 1 : share) * (10 / Math.max(1, end));
 }
 
 /** the winner by the K.O., or on the health shares past `maxT` (the first fighter on a tie) */
@@ -180,8 +188,8 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
   const usable = (f: AutoSide, a: AutoAction): boolean => (a.ap ?? 0) <= f.ap && (!a.cooldown || (f.cd[a.id] ?? 0) <= t + 1e-9);
   const view = (f: AutoSide): AutoView => { let c = 0; const d = f.dec; return { t, me: f, foe: other(f), rules: R, usable: (a) => usable(f, a), gauge: gaugeNow, chargeOf: (g, a) => a.charge * speed(g), rand: () => autoDraw(s0, f.i, d, c++, DRAW.decide) }; };
   // the hand (the operator's SY-09 « Au prochain choix de Ren, une compétence en attente », journal Passe SY2): a skill pressed leaves at the first fighter's next
-  // choice once its AP and its cooldown allow it, waiting until they do; one waits at a time, a later press replacing it; the tactic decides the rest. Nothing
-  // before a press changes (one draw per blow, SY-04): the arena replays the duel from the press with the presses so far
+  // choice once its AP and its cooldown allow it, waiting until they do, his base attacks meanwhile (no other skill spends the AP it waits for); one waits at a
+  // time, a later press replacing it. Nothing before a press changes (one draw per blow, SY-04): the arena replays the duel from the press with the presses so far
   const cmds = [...(o.commands ?? [])].sort((a, b) => a.t - b.t);
   let cmdDone = -1;
   const pressed = (f: AutoSide): AutoAction | null => {
@@ -191,7 +199,8 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     if (k <= cmdDone) return null;
     const a = f.x.skills.find((s) => s.id === cmds[k].skill);
     if (!a) { cmdDone = k; return null; }
-    if (!usable(f, a)) return null;
+    // waiting: the base attacks, the light attack earning the AP
+    if (!usable(f, a)) return heavyWhen(view(f), f.x) ? f.x.heavy : f.x.light;
     cmdDone = k; return a;
   };
   const decide = (f: AutoSide): AutoAction => { const p = pressed(f), a = p ?? (o.deciders?.[f.x.brain] ?? DECIDERS[f.x.brain])(view(f), f.x); f.dec++; return a; };
@@ -243,7 +252,7 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     log && put({ t: T(), who: f.x.id, ev: res, act: a.id, dmg, hp: g.hp, hit: c.i, ...(o.trace ? { fx: (wardOn ? 1 : 0) | (boostOn ? 2 : 0) } : {}) });
     if (g.hp <= 0) { over = true; winner = f === F[0] ? 0 : 1; finisher = a.kind; return; }
     if (!g.broken) {
-      const add = (a.gauge ?? 0) * share * (10 / Math.max(1, g.x.end)) * (res === 'guarded' ? R.gauge.guardMul : 1) * (boostOn ? f.boost!.gauge : 1) * (wardOn ? g.ward!.gauge : 1);
+      const add = autoGaugeHit(a, share, g.x.end, R) * (res === 'guarded' ? R.gauge.guardMul : 1) * (boostOn ? f.boost!.gauge : 1) * (wardOn ? g.ward!.gauge : 1);
       g.g = Math.min(R.gauge.max, gaugeNow(g) + add); g.gT = t;
       if (g.g >= R.gauge.max) {
         g.broken = true; g.stunEnd = t + R.brk.stun; g.n.breaks++;

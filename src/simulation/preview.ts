@@ -12,7 +12,7 @@ import { MAX_LEVEL } from '../combat/skills';
 import { v2DuelData, type V2Duel, type V2Kit } from '../combat/v2duel';
 import { hitFactor, skillPower } from '../combat/stats';
 import { Rng } from '../core/rng';
-import { AUTO_RULES, type AutoFighter } from '../combat/auto';
+import { AUTO_RULES, autoGaugeHit, type AutoFighter } from '../combat/auto';
 import { autoFoe, autoOrderOf, autoRaceSheet, autoRen, autoSkill } from '../combat/autoData';
 import { autoBoutOf } from '../combat/autoMatch';
 import { v2Stats } from './v2gear';
@@ -92,7 +92,7 @@ export function skillFigures(s: GameState, id: string, level: number): SkillFigu
     return {
       ap: a.ap ?? 0, power: off ? +(a.power ?? 0).toFixed(1) : 0, hits: off ? hits.length : 0,
       damage: off ? hits.reduce((n, sh) => n + Math.max(1, Math.round((a.power ?? 0) * sh * k)), 0) : 0,
-      gauge: off ? +((a.gauge ?? 0) * hits.reduce((n, sh) => n + sh, 0) * (10 / Math.max(1, foe.end))).toFixed(1) : 0, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2),
+      gauge: off ? +hits.reduce((n, sh) => n + autoGaugeHit(a, sh, foe.end), 0).toFixed(1) : 0, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2),
       dur: e?.dur ?? 0, ward: a.ward ? { damage: a.ward.dmg, resist: a.ward.gauge } : null, boost: a.boost ? { damage: a.boost.dmg, resist: a.boost.gauge } : null, pierce: !!a.pierce,
     };
   }

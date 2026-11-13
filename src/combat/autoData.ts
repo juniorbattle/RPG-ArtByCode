@@ -10,12 +10,13 @@ import { LEVEL_POWER, SKILLS, clampLevel, type Times } from './skills';
 
 // ------------------------------------------------------------------------------------------------------------------------------- the common tables
 
-/** the common cadence, Ren's and the rivals' (the operator's SY-03 « ×0,6 pour tous », journal Passe SY2): every charge × `charge` (the cooldowns with them,
- *  DB5-3), every power and gauge × `power` (a blow's weight), an enchaînement's gaps × `gap`, a ward's or a boost's length × `effect`; SY-03 = 0.6 / 0.6 / 1 / 1
- *  (the damage and the gauge a second kept) */
-export const AUTO_CADENCE = { charge: 0.6, power: 0.6, gap: 1, effect: 1 };
-/** the light attack: 1.2 s of charge at Speed 10, its power 6 (DB5-5), a tenth of it to the gauge; +1 AP when it lands (AC-03) */
-export const AUTO_LIGHT = { charge: 1.2, power: POWER.light, gauge: POWER.light * 0.1 };
+/** the common cadence, Ren's and the rivals': every charge × `charge` (the cooldowns with them, DB5-3), every power × `power` (a blow's weight), an enchaînement's
+ *  gaps × `gap`, a ward's or a boost's length × `effect`. SY-03 « ×0,6 pour tous » (journal Passe SY2) was 0.6 / 0.6 / 1 / 1; the operator's RY-1 « ×3 plus lent :
+ *  environ 40 coups par minute » and RY-2 « Étirés avec le reste » (journal Passe SL3) make every time of the duel three times SY-03's, the effects with it (the
+ *  same actions under them), each blow heavier so that his durations hold (SL1-2, A3) */
+export const AUTO_CADENCE = { charge: 1.8, power: 3.2, gap: 3, effect: 3 };
+/** the light attack: 1.2 s of charge at Speed 10, its power 6 (DB5-5), each of its hits one blow to the gauge (RY-3); +1 AP when it lands (AC-03) */
+export const AUTO_LIGHT = { charge: 1.2, power: POWER.light, gauge: 1 };
 /** Ren's weapons' enchaînements (AC-02, « l'arme de Ren »): the hits of the light attack, each one's share of its power and gauge, the gap between them (s) */
 export const AUTO_WEAPONS: Record<string, { hits: readonly number[]; gap: number }> = {
   // balanced again on the same rules for every fighter (SY-06, the test of AC-12, journal Passe SL1): the training sword and the imported blade heavier, the sabre's
@@ -45,7 +46,8 @@ export interface AutoSkillDef {
   /** its charge times by level when they are not the catalogue's */
   charge?: Times;
 }
-const GAUGE_SKILL = 0.25, BREAKER = 1.5;
+/** a skill's or a heavy blow's weight on the gauge, in blows of the default count (RY-3): two light hits (the skills fill it more, DB-5), × its gaugeK (a breaker) */
+const GAUGE_SKILL = 2, BREAKER = 1.5;
 /** the catalogue's skills (src/combat/skillbook.ts): today's six and the six of the version 2, and the heavy attack, a base attack of every fighter since SY-02
  *  (its numbers; never one of the four). Balanced to the test of AC-12 (the operator's « Équilibrer avec ce test : chaque adversaire a ses réponses, rien ne
  *  domine », journal Passes AC4 / LC1) */
@@ -90,7 +92,7 @@ export function autoSkill(id: string, level: number, effect = 1): AutoAction {
   if (d.ward) { a.ward = eff(d.ward); if (d.cover) a.cover = true; }
   else if (d.boost) a.boost = eff(d.boost);
   else {
-    a.power = autoPower(id, lv) * C.power; a.gauge = a.power * GAUGE_SKILL * (d.gaugeK ?? 1);
+    a.power = autoPower(id, lv) * C.power; a.gauge = GAUGE_SKILL * (d.gaugeK ?? 1);
     if (d.pierce) a.pierce = true;
     if (d.hits) { a.hits = d.hits; a.gap = (d.gap ?? 0.3) * C.gap; }
   }
@@ -104,7 +106,7 @@ export function autoHeavy(level = 1, id = 'heavy'): AutoAction {
 /** a light attack with a weapon's enchaînement, at the cadence (Ren's weapons, or a rival's: AUTO_FOES) */
 export function autoLight(weapon?: string | null, id = 'light', w = AUTO_WEAPONS[weapon ?? ''] ?? AUTO_WEAPONS['training-sword']): AutoAction {
   const C = AUTO_CADENCE;
-  return { id, kind: 'light', charge: AUTO_LIGHT.charge * C.charge, power: AUTO_LIGHT.power * C.power, gauge: AUTO_LIGHT.gauge * C.power, ap: 0, hits: w.hits, gap: w.gap * C.gap };
+  return { id, kind: 'light', charge: AUTO_LIGHT.charge * C.charge, power: AUTO_LIGHT.power * C.power, gauge: AUTO_LIGHT.gauge, ap: 0, hits: w.hits, gap: w.gap * C.gap };
 }
 
 /** a fighter's order when its player has set none (AC-09): the wards and the boosts first (their own conditions decide when they hold), then the offensive
@@ -155,7 +157,7 @@ export function autoTacticOf(kit: Pick<AutoKit, 'tactic'>, order: readonly strin
 // --------------------------------------------------------------------------------------------------------------------------------- the rivals
 
 /** a rival's skill of its own (C3's, as the workshop read them): an offensive one's charge from its wind-up (its power by that charge, DB5-1), a ward's or a
- *  boost's effect; `gaugeK` what an offensive skill adds to the gauge against its power × 0.25 (a breaker: the brawlers' big blows, journal Passe LC1) */
+ *  boost's effect; `gaugeK` its weight on the gauge against a skill's two blows (a breaker: the brawlers' big blows, journal Passe LC1) */
 export interface AutoFoeSkill { id: string; family: AutoFamily; charge: number; ward?: AutoEffect; boost?: AutoEffect; gaugeK?: number }
 /** a rival's kit (SY-01): its weapon (its combo of before made its light attack's enchaînement, its blows at the training sword's total, 2 × 0.55) and its skills */
 export interface AutoFoeDef { weapon: { hits: readonly number[]; gap: number }; skills: AutoFoeSkill[] }
@@ -183,7 +185,7 @@ export function autoFoeActions(kitOf: string): Pick<AutoFighter, 'light' | 'heav
     const a: AutoAction = { id: s.id, kind: 'skill', family: s.family, charge: s.charge * c, ap: AUTO_FOE_AP, cooldown: AUTO_COOLDOWN * s.charge * c };
     if (s.ward) a.ward = { ...s.ward, dur: +(s.ward.dur * C.effect).toFixed(2) };
     else if (s.boost) a.boost = { ...s.boost, dur: +(s.boost.dur * C.effect).toFixed(2) };
-    else { a.power = POWER.thrust * (s.charge / autoCharge('t4', 1)) * C.power; a.gauge = a.power * GAUGE_SKILL * (s.gaugeK ?? 1); }
+    else { a.power = POWER.thrust * (s.charge / autoCharge('t4', 1)) * C.power; a.gauge = GAUGE_SKILL * (s.gaugeK ?? 1); }
     return a;
   });
   const off = skills.filter((s) => !s.ward && !s.boost).map((s, i) => ({ s, i })).sort((a, b) => (b.s.power ?? 0) - (a.s.power ?? 0) || a.i - b.i).map((z) => z.s);
@@ -201,15 +203,16 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
 
 /** The race of the rivals (the operator's AC-16 « La course, niveau commun en poule, +10 % par tour (décision A3 : change DB7-5, DB7-6, DB11-2) », journal
  *  Passe AC4): each rival keeps the shape of its sheet (DB7-5's RIVAL_SHEETS), brought to a common level in the pool (`norm`: its health, Attack, Defence and
- *  Endurance × the same factor; its pool Speed kept the whole tournament), then a share more each round of the pool (`pool`: the rounds of days 2, 4, 5; +10 % a
- *  round, the operator's SY-05 « +10 % par tour (décision A3 : change LC1-1) », journal Passe SY2, in place of LC1-1's +15 %) and a lot at each stage of the final
- *  phase (`stage`: the bracket, the final); its preparation as visible Attack points, +1 per `prepPer` over `prepFrom` (AC-17). Fitted on the same rules for
- *  every fighter (lot 1 of the second redesign, journal Passe SL1): each rival's pool factor so that the reference player of day 2 beats it 95 times in 100
- *  (isolated duels), the bracket's and the final's on whole games of the reference (seeds 1 to 80) for the semi-final's 65 % and the final's 50 % (AC-15). */
+ *  Endurance × the same factor; its pool Speed kept the whole tournament), then a share more each round of the pool (`pool`: the rounds of days 2, 4, 5; +7.5 % a
+ *  round, the operator's SL1-1 « +7,5 % par tour (décision A3 : change SY-05) », journal Passe SL2) and a lot at each stage of the final phase (`stage`: the bracket,
+ *  the final); its preparation as visible Attack points, +1 per `prepPer` over `prepFrom` (AC-17). Fitted once on the rules of lot 2 (journal Passe SL3: the
+ *  rhythm ×3 and the break of RY-3, SL1-3's automatic): each rival's pool factor so that the reference player of day 2 beats it 95 times in 100 (isolated duels),
+ *  the bracket's and the final's on 200 whole games of the reference (seeds 1 to 100 and 301 to 400; 80 seeds left the semi-final 16 points off on held-out ones)
+ *  for the semi-final's 65 % and the final's 50 % (AC-15), held out on seeds 101 to 300. */
 export const AUTO_RACE = {
-  norm: { vessa: 1.487, tobin: 1.815, cassius: 1.54, orla: 1.004, ilse: 1.425, marek: 1.206, rhosk: 1.647 } as Record<string, number>,
-  pool: [1, 1.1, 1.2] as readonly number[],
-  stage: { 1: 1.249, 2: 1.561 } as Record<1 | 2, number>,
+  norm: { vessa: 1.248, tobin: 1.721, cassius: 1.114, orla: 0.985, ilse: 1.184, marek: 1.092, rhosk: 1.62 } as Record<string, number>,
+  pool: [1, 1.075, 1.15] as readonly number[],
+  stage: { 1: 1.335, 2: 1.749 } as Record<1 | 2, number>,
   prepFrom: 20, prepPer: 25,
 };
 /** a bout's round of the pool by its day: day 2 the first, day 4 the second, day 5 the third (a challenge of the pool by its day) */

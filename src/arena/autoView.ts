@@ -1,4 +1,4 @@
-import { AUTO_RULES, autoDuel, type AutoAction, type AutoEvent, type AutoFighter, type AutoResult } from '../combat/auto';
+import { AUTO_RULES, autoDuel, autoGaugeHit, type AutoAction, type AutoEvent, type AutoFighter, type AutoResult } from '../combat/auto';
 import { autoFoe, autoRaceSheet, autoRen } from '../combat/autoData';
 import { REN_BASE } from '../combat/stats';
 import { V2_START_KIT } from '../combat/v2duel';
@@ -82,6 +82,8 @@ export class AutoReplay {
   readonly f: Record<Seat, AutoSide>;
   end: number;
   winner: Seat;
+  /** the duel's rules (the proofs read the gauge's decay and the break's stun from the page) */
+  readonly rules = AUTO_RULES;
   /** the hand's press waiting for Ren's next choice (SY-09): its time and skill, until the script shows Ren charging it; the HUD marks its line */
   pressed: { t: number; skill: string } | null = null;
   private s: Record<Seat, State>;
@@ -232,7 +234,7 @@ export class AutoReplay {
           const share = (a.hits ?? [1])[(e.hit ?? 1) - 1] ?? 1, end = this.fighters[other].end;
           // the ward and the boost the duel weighed on this blow (its trace says so; the script's rounded times alone, without it)
           const bz = e.fx !== undefined ? (e.fx & 2 ? s.lastBoost : null) : s.boost, wz = e.fx !== undefined ? (e.fx & 1 ? o.lastWard : null) : o.ward;
-          const add = (a.gauge ?? 0) * share * (10 / Math.max(1, end)) * (e.ev === 'guarded' ? AUTO_RULES.gauge.guardMul : 1) * (bz ? bz.gauge : 1) * (wz ? wz.gauge : 1);
+          const add = autoGaugeHit(a, share, end) * (e.ev === 'guarded' ? AUTO_RULES.gauge.guardMul : 1) * (bz ? bz.gauge : 1) * (wz ? wz.gauge : 1);
           o.g = Math.min(AUTO_RULES.gauge.max, Math.max(0, o.g - AUTO_RULES.gauge.decay * (e.t - o.gT)) + add); o.gT = e.t;
         }
         const dmg = e.dmg ?? 0;

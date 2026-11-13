@@ -38,7 +38,7 @@ test('what a skill does is the duel\'s own: every skill at every level, the gear
     // every blow of a skill that strikes several, as the duel strikes them (journal Passe CO2: Tourbillon's three of 0.36)
     const hits = a.hits ?? [1];
     assert.equal(f.hits, e ? 0 : hits.length, `${id} hits`);
-    assert.equal(f.damage, e ? 0 : hits.reduce((n, sh) => n + Math.max(1, Math.round(a.power * sh * k)), 0)); assert.equal(f.gauge, e ? 0 : +(a.gauge * hits.reduce((n, sh) => n + sh, 0) * 10 / b.foe.end).toFixed(1));
+    assert.equal(f.damage, e ? 0 : hits.reduce((n, sh) => n + Math.max(1, Math.round(a.power * sh * k)), 0)); assert.equal(f.gauge, e ? 0 : +((70 / 22.5) * a.gauge * hits.reduce((n, sh) => n + sh, 0) * 10 / b.foe.end).toFixed(1)); // RY-3: a skill's blows (journal Passe SL3)
     assert.equal(f.charge, +(a.charge * 10 / b.ren.viv).toFixed(2)); assert.equal(f.dur, e?.dur ?? 0);
     assert.deepEqual(f.ward, a.ward ? { damage: a.ward.dmg, resist: a.ward.gauge } : null); assert.deepEqual(f.boost, a.boost ? { damage: a.boost.dmg, resist: a.boost.gauge } : null); assert.equal(f.pierce, !!a.pierce);
   }

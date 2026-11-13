@@ -180,7 +180,7 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   const o = AV.sceneAutoDuel('orla', 7), DO = lessonDuel(o, { ren: 'Ren', marek: 'Orla' });
   T.useLanguage('fr', FR);
   try {
-    assert.match(DT.lessonText('charge', D2), /se charge en 0,9 secondes à votre Vivacité de 8/);
+    assert.match(DT.lessonText('charge', D2), new RegExp(`se charge en ${String(+(AD.AUTO_LIGHT.charge * AD.AUTO_CADENCE.charge * 10 / 8).toFixed(2)).replace('.', ',')} secondes à votre Vivacité de 8`));
     assert.match(DT.lessonText('react', DO), /des coups d’Orla et en gardez/);
     for (const id of DT.LESSONS) assert.doesNotMatch(DT.lessonText(id, DO), /[{}]|\b(the|your|and)\b/, id);
   } finally { T.useLanguage('en'); }
