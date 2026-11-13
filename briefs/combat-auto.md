@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32) ; relue le même jour, six sur six à la recommandation, le modèle approuvé et sa construction en cinq lots, le lot 1 lancé (§ 33)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -1310,6 +1310,56 @@ https://claude.ai/artifact/VgiYmopbSiyd2Ks8MfoHzv (`briefs/proposition-combat-br
 | PB-4 | La préparation (priorité 1) | la répétition, le carnet du maître d'armes, le repérage par paliers |
 | PB-5 | Le build à la La Brute (priorité 2) | le choix du vainqueur, les talents, les armes à propriété, les défis de l'arène, après la préparation |
 | PB-6 | La suite | lancer le lot 1 dans une séance à part |
+
+## 33. La proposition relue : six sur six à la recommandation (13/11/2026, journal Passe CF3)
+
+Statut : **le modèle du § 32.2 est approuvé par l'opérateur** et se construit en cinq lots, chacun dans sa séance (§ 33.5). Ce paragraphe l'emporte sur le § 32 là où ils diffèrent. Le jeu garde son duel d'aujourd'hui (§§ 27 à 30) jusqu'à la fusion du lot 1.
+
+### 33.1 Les choix, mot pour mot
+
+L'opérateur a dit « Fiche remplie » le 13/11/2026 ; les six cartes de https://claude.ai/artifact/VgiYmopbSiyd2Ks8MfoHzv, relues par `ArtifactData list decisions`, toutes à la recommandation, sans note :
+
+| Carte | Choix, mot pour mot | Ce que cela fait |
+|---|---|---|
+| PB-1 | « Construire ce modèle » | le modèle du § 32.2 se construit dans le jeu par défaut (A3, § 33.2) |
+| PB-2 | « 2, 2, 3, 3, 4 selon le niveau » | les usages par combat d'une compétence, du niveau 1 au niveau 5 |
+| PB-3 | « Caler sur le joueur moyen » | la course des rivaux calée sur le planificateur à l'équilibre, et non plus sur la référence (A3, change AC-16) |
+| PB-4 | « Toutes » | la répétition, le carnet du maître d'armes et le repérage par paliers, au lot 3 |
+| PB-5 | « Les construire après la préparation » | le choix du vainqueur, les talents, les armes à propriété (lot 4), les défis de l'arène (lot 5) |
+| PB-6 | « Lancer le lot 1 » | le lot 1, le duel, dans une séance à part, son brief `briefs/combat-brute-lot1-brief.md` |
+
+### 33.2 Les décisions changées
+
+- **PB-1 « Construire ce modèle »**, décision A3 de l'opérateur du 13/11/2026 au sens de E11 (sa décision citée mot pour mot au journal, Passe CF3) : elle change **DB5-3** (« 5 × le temps de charge » reste la recharge du coup puissant, SY-02 ; une compétence a un nombre d'usages par combat et un délai entre deux, rapide, moyen ou long), et avec elle **AC-03** (les PA retirés), **DB5-2** (la garde par les stats, de −30 à −70 %, au lieu de −80 %) et **SL1-3** (l'automatique joue le plan général). SY-08 reste, ses conditions par rôle, avec « dans une faille » et « au début ».
+- **PB-3 « Caler sur le joueur moyen »**, décision A3 de l'opérateur du 13/11/2026 : elle change **AC-16** (la course n'est plus calée sur la référence, mais sur le planificateur, la demi-finale et la finale à 50 %, `--fitPolicy=planner --target=0.5,0.5` au laboratoire).
+- Restent : SY-01, SY-02, RY-1, RY-3, SL1-2, AC-07, AC-11 (§ 32.6).
+- À la différence des fiches AC et SY1, les options de cette page ne portaient pas la marque « décision A3 » ; la table « Les décisions que cela touche », juste au-dessus des cartes, nommait DB5-3 (A3) et AC-16 (A3) et disait « ces décisions restent les tiennes, mot pour mot, avant toute construction ». Les deux choix sont consignés comme ses décisions A3 sur cette table.
+
+### 33.3 Ce que le lot 1 doit régler
+
+Le modèle est approuvé ; ces points restent au lot 1, mesurés avant sa fusion :
+- **Le curieux** : 0 à 1 % de titres avec le modèle, contre 21 % aujourd'hui. Explorer la ville ne doit pas condamner.
+- **Les durées** : 1 min 13 / 3 min 25 / 2 min 27 au laboratoire ; la poule trop courte, la finale un peu courte. SL1-2 (la poule vers 2 min, le tableau de 2 à 4, la finale de 3 à 4 au plus) les règle par la santé.
+- **La Ferveur de l'automatique** (« blessé » seul fait mieux de 9 points), **le prix d'une compétence nouvelle** face au niveau des siennes, **l'équilibre du catalogue** au test de AC-12.
+- **La course** recalée sur parties entières, sur le joueur moyen (PB-3), contrôlée sur 200 parties tenues à part.
+
+### 33.4 Le § 6.1 du contrat projet : le texte proposé
+
+Avec le modèle, la phrase « les compétences sont payées en points d'action » du § 6.1 ne serait plus vraie. Aucune carte ne portait de texte d'amendement : le § 6.1 n'est pas amendé (décision C3), le texte ci-dessous attend la réponse de l'opérateur. Seule la partie sur les compétences change, plus la faille et le style des rivaux :
+
+« Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1, joué par l'ordinateur selon la préparation du joueur, avec les mêmes règles pour tous les combattants : le temps ne s'arrête pas ; chaque combattant choisit une action et la charge sur une ligne de temps, puis elle part, en un coup ou en enchaînement, la Vivacité réglant la charge ; l'attaque simple et le coup puissant sont automatiques ; les compétences sont des coups d'éclat comptés, un nombre d'usages par combat selon leur niveau et un délai entre deux, lancés selon le plan de combat préparé par le joueur, une condition par compétence et un plan par rival, ou à sa main pendant le combat ; certaines créent une faille, un court instant où l'adversaire ne garde ni n'esquive, d'autres en profitent ; la garde et l'esquive sont des réactions que donnent la Défense et la Vivacité, et chaque rival a son style ; les écarts de force viennent des statistiques, de l'équipement, de l'entraînement et de la course des rivaux (spécification : briefs/combat-auto.md). »
+
+Si l'opérateur l'approuve, l'amendement se fait sur la branche du lot 1, avec sa note datée en tête du contrat ; sinon, le lot 1 consigne l'écart au journal.
+
+### 33.5 La construction
+
+1. **Lot 1, le duel** (PB-6) : les usages, les rôles, la faille, la garde par les stats, les styles des rivaux, l'automatique du plan général, les effets d'équipement ; la course recalée ; les durées et le rythme ; l'équilibre au test de AC-12 ; le portage prouvé identique au laboratoire (`tools/auto-final/`, `BK5`) ; les tests et les preuves dans le navigateur. Rien de nouveau à l'écran : l'arène et ses pages continuent de marcher.
+2. **Lot 2, ce qui se voit** : la page du plan de combat (une condition par compétence, un plan par rival), la fiche de match (les styles, les usages), le HUD (les usages en pastilles, la faille), la relecture de l'arène (interruptions, parades, failles), le tutoriel et le guide.
+3. **Lot 3, la préparation** (PB-4 « Toutes ») : la répétition, le carnet du maître d'armes, le repérage par paliers. L'essai en jeu de l'opérateur après ce lot.
+4. **Lot 4, le build** (PB-5) : le choix du vainqueur, les talents, les armes à propriété.
+5. **Lot 5, l'arène et la foule** (PB-5) : les défis de l'arène, le panache ; les paris quand l'opérateur le décidera (ECO-5).
+
+Chaque lot dans sa séance, fusionné après ses preuves. Le son et les effets suivent les nouveaux moments (la faille, l'interruption, la parade) avec les recettes déjà approuvées. Les lots 3 et 4 de la seconde refonte sont fondus dans ceux-ci.
 
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
