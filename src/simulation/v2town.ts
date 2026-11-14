@@ -2,7 +2,8 @@ import { clamp, type GameState } from './state';
 import type { ActionDef } from './actions';
 import type { Emit } from './advance';
 import { isV2 } from './v2';
-import { learnFromChallenge } from './v2skills';
+import { learnFromChallenge, sandLesson } from './v2skills';
+import { keepOutcomeNote } from './v2notes';
 import { GEAR, SHOPS, type ShopId } from './gear';
 import { gearOf, itemName } from './v2gear';
 import { holds, recordTheft, registrarOnCatch, wanted } from './v2law';
@@ -246,6 +247,8 @@ export function applyChallenge(s: GameState, o: DuelOutcome, emit: Emit): void {
   delete v.challenge;
   if (ch.reprisal) { applyReprisal(s, o, emit); return; }
   (v.challenged ??= {})[who] = s.day;
+  // Master Corvin's note of the challenge (lot 3 of « La Brute »), outside the fingerprint
+  keepOutcomeNote(s, o, 'challenge');
   const stake = ch.stake ?? 'name';
   if (won) {
     // lot L4 (EV-7 « Les suites des actions »): the day's win, which makes the town talk (src/events/v2catalog.ts v2-challenge-fame: Master Corvin's lesson the next day)
@@ -261,6 +264,8 @@ export function applyChallenge(s: GameState, o: DuelOutcome, emit: Emit): void {
       if (s.flags[`sand:${s.day}`] || s.flags[`sand:${s.day + 1}`]) emit({ kind: 'consequence', id: 'rhosk:beaten', cause: `challenge:${who}`, visible: true, text: tx('v2.sand.challengeLog') });
     }
     learnFromChallenge(s, who, emit);
+    // the sand's lesson (BL1-4 « Au lot 3 : la ville nourrit le build »): the first blow of the plan under the cap rises a level
+    sandLesson(s, who, emit);
   } else {
     if (stake === 'name') s.player.reputation = clamp(s.player.reputation - STAKE.name);
     const c = s.competitors[who]; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) + 3, -100, 100);

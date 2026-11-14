@@ -222,7 +222,8 @@ test('(5) « scouting would tell you more » only of a rival one can watch train
   const day2 = v2('v2-day2-afternoon');
   for (const id of Object.keys(RIVALS)) {
     const said = U.foeIntel(day2, id);
-    assert.equal(/scouting/.test(said), watchable.has(id), `${id}: ${said}`);
+    // lot 3 of « La Brute » (the scouting by tiers): a rival not seen says how to learn its style
+    assert.equal(/watch them at practice/.test(said), watchable.has(id), `${id}: ${said}`);
     assert.ok(said.includes(RIVALS[id].name), said);
     // once watched, the skills are named
     const seen = structuredClone(day2); seen.facts.push(`scouted:${id}`);

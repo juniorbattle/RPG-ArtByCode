@@ -36,7 +36,7 @@ const FORM = (p) => (p < 40 ? 'rusty' : p < 70 ? 'steady' : 'sharp');
 
 // ------------------------------------------------------------------------------------------------- observing every rival (EV-11)
 
-test('a version 2 game: every rival of the pool watched where and when they train, once each; the match sheet names their skills after', () => {
+test('a version 2 game: every rival of the pool watched where and when they train, twice each (lot 3 of « La Brute »: the style, then another day the plan); the match sheet names their skills after', () => {
   const base = v2();
   for (let day = 1; day <= 10; day++) for (const slot of SLOTS) for (const place of PLACES) {
     const s = at(base, day, slot, place);
@@ -49,14 +49,19 @@ test('a version 2 game: every rival of the pool watched where and when they trai
       if (o?.ok) assert.equal(o.cost, 1, 'a slot');
     }
   }
-  // Orla on the training ground: the log tells her style, the fact is kept, the match sheet names her skills; once only
+  // Orla on the training ground: the log tells her style, the fact is kept, the match sheet names her skills; the second watch another day, her plan; then no more
   const s = at(base, 3, 'morning', 'training');
   const r = act(s, { type: 'scout', who: 'orla' });
   assert.equal(r.events[0].text, tx('v2.scout.log', { name: 'Orla Brask', habit: EN['v2.scout.habit.orla'] }));
   assert.ok(r.state.facts.includes('scouted:orla'));
   assert.match(U.foeIntel(r.state, 'orla'), /Dockside Shoulder/);
   const again = opt(at(r.state, 3, 'afternoon', 'training'), (a) => a.type === 'scout' && a.who === 'orla');
-  assert.equal(again.ok, false); assert.equal(again.reason, tx('scout.known', { name: 'Orla Brask' }));
+  assert.equal(again.ok, false); assert.equal(again.reason, tx('v2.scout.today', { name: 'Orla Brask' }));
+  const next = at(r.state, 4, 'morning', 'training'), r2 = act(next, { type: 'scout', who: 'orla' });
+  assert.ok(r2.state.facts.includes('scouted2:orla'));
+  assert.match(r2.events[0].text, /Orla Brask's plan: /);
+  const third = opt(at(r2.state, 5, 'morning', 'training'), (a) => a.type === 'scout' && a.who === 'orla');
+  assert.equal(third.ok, false); assert.equal(third.reason, tx('v2.scout.knownPlan', { name: 'Orla Brask' }));
   // Cassius at night on the festival square, behind the hall's stage
   const c = act(at(base, 4, 'evening', 'lanterns'), { type: 'scout', who: 'cassius' });
   assert.match(c.events[0].text, /stage/);

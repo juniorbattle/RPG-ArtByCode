@@ -8,6 +8,7 @@ import { allyCd } from '../narrative/v2story';
 import { AUTO_RULES, autoDuel, autoFormsOf, autoWinner, type AutoFighter, type AutoResult } from './auto';
 import { autoFoe, autoGenericSheet, autoKitFor, autoPrepPoints, autoRaceSheet, autoRen, autoRound } from './autoData';
 import { challengeSheetFor, matchSheetFor, type MatchSheet } from './match';
+import { boutNote } from './autoNotes';
 import type { FighterStats, Stage } from './stats';
 
 /** A game's bouts in the duel played by the computer (briefs/combat-auto.md § 17.3): Ren and his opponent from a version 2 game's state, the player's bout
@@ -31,7 +32,14 @@ export const autoSheetOf = (st: GameState, kind: 'bout' | 'challenge' = 'bout'):
 export function autoBoutOf(st: GameState, kind: 'bout' | 'challenge' = 'bout'): AutoBout | null {
   const sh = autoSheetOf(st, kind);
   if (!sh) return null;
-  const o = sh.sides[1].fighters[0], stage = sh.stage ?? 0, round = stage === 0 ? autoRound(st.day) : 0, mods = v2Mods(st), g = GENERICS[o.id];
+  const o = sh.sides[1].fighters[0], stage = sh.stage ?? 0, round = stage === 0 ? autoRound(st.day) : 0;
+  return { ...autoFightersFor(st, o.id, stage, round), foeId: o.id, seed: (sh.seed ^ 0x5bd1e995) >>> 0, stage, round };
+}
+
+/** Ren and an opponent as the duel builds them for a bout against `foeId` at this stage and round, from the state now: the day's bout and challenge (autoBoutOf), and the
+ *  rehearsal's shadow of a coming bout (lot 3 of « La Brute », src/simulation/v2prep.ts) */
+export function autoFightersFor(st: GameState, foeId: string, stage: Stage, round: number): Pick<AutoBout, 'ren' | 'foe' | 'prep'> {
+  const o = { id: foeId }, mods = v2Mods(st), g = GENERICS[o.id];
   // the plan kept for this rival, else the general one (lot 2 of « La Brute »: « un plan par rival », set on its match sheet)
   const ren = autoRen(autoRenStats(st), autoKitFor(v2KitOf(st), o.id), { weapon: st.v2?.gear?.weapon, hpShare: mods.hp, taken: mods.taken, effect: mods.effect, gear: wornPieces(st), pieceViv: piecesViv(st) });
   // Orla's advice from the gate (BL1-6): the gaps and the cooldown × 0.9, on top of the gear's
@@ -40,7 +48,7 @@ export function autoBoutOf(st: GameState, kind: 'bout' | 'challenge' = 'bout'): 
   const c = st.competitors[o.id];
   const foe = g ? autoFoe(o.id, autoGenericSheet(g.profile, g, stage, round), { kitOf: g.profile, stage })
     : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c?.preparation, hp: c ? rivalMods(c).hp : 1 }), { stage });
-  return { ren, foe, foeId: o.id, seed: (sh.seed ^ 0x5bd1e995) >>> 0, stage, round, prep: g || !c ? 0 : autoPrepPoints(c.preparation) };
+  return { ren, foe, prep: g || !c ? 0 : autoPrepPoints(c.preparation) };
 }
 
 /** the player's bout or challenge fought in this duel, as the game takes its result (DuelOutcome), and the duel itself (`log`: its script, with each
@@ -49,7 +57,9 @@ export function autoOutcome(st: GameState, kind: 'bout' | 'challenge' = 'bout', 
   const b = autoBoutOf(st, kind);
   if (!b) throw new Error(kind === 'challenge' ? 'no challenge waiting' : 'no duel today');
   const r = autoDuel(b.ren, b.foe, b.seed, { log: o.log, trace: o.log }), win = autoWinner(r) === 0;
-  return { winner: win ? 'player' : 'opponent', playerHp: r.hp[0], playerMaxHp: r.maxHp[0], opponentHp: r.hp[1], opponentMaxHp: r.maxHp[1], finisher: r.finisher, duel: r, bout: b };
+  // Master Corvin's note (lot 3 of « La Brute »), read from the script when there is one
+  const note = o.log ? boutNote(r, b.ren, b.foe, { day: st.day, foe: b.foeId, kind }) : undefined;
+  return { winner: win ? 'player' : 'opponent', playerHp: r.hp[0], playerMaxHp: r.maxHp[0], opponentHp: r.hp[1], opponentMaxHp: r.maxHp[1], finisher: r.finisher, ...(note ? { note } : {}), duel: r, bout: b };
 }
 
 /** the form of the day of a bout's two fighters (AC-08 « Une forme du jour ±15 %, dite sur la fiche de match »): drawn from the bout's seed before it, as the

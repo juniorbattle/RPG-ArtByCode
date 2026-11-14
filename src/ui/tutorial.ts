@@ -14,6 +14,8 @@ import { INJURY_HP, TRAIN_MAX } from '../simulation/v2gear';
 import { REN_BASE, TRAIN_HP, TRAIN_POINT, VIGOUR_HP } from '../combat/stats';
 import { AUTO_RULES } from '../combat/auto';
 import { AUTO_COOLDOWN, AUTO_WEAPONS } from '../combat/autoData';
+import { REHEARSAL } from '../simulation/v2prep';
+import { SAND_LESSON } from '../simulation/v2skills';
 import { autoOrderView } from '../simulation/preview';
 import { v2KitOf } from '../simulation/v2';
 import { forgetLessons } from './duelTutorial';
@@ -180,7 +182,7 @@ export function spotlight(sel: string): () => void {
 
 // ------------------------------------------------------------------------------------------------ the hints (TU-3, TU-8)
 
-export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor' | 'vigour' | 'npcMark';
+export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor' | 'vigour' | 'npcMark' | 'notebook';
 const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> = {
   square: { title: 'tut.hint.square.title', body: 'tut.hint.square.body', chapter: 'places' },
   shop: { title: 'tut.hint.shop.title', body: 'tut.hint.shop.body', chapter: 'shops' },
@@ -197,6 +199,8 @@ const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> =
   vigour: { title: 'tut.hint.vigour.title', body: 'tut.hint.vigour.body', chapter: 'prepare' },
   // the first person marked on the scene (the operator's MK-11 « La liste, un conseil et une ligne du guide », journal Passe MK2): the diamond's three forms
   npcMark: { title: 'tut.hint.npcMark.title', body: 'tut.hint.npcMark.body', chapter: 'moving' },
+  // the first note of Master Corvin's notebook (lot 3 of « La Brute »): where his notebook is
+  notebook: { title: 'tut.hint.notebook.title', body: 'tut.hint.notebook.body', chapter: 'prepare' },
 };
 function hintText(s: GameState, id: HintId, who?: string): string {
   const k = HINT[id].body;
@@ -276,7 +280,7 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'challenges': return tx(c.body, { names: list(Object.keys(CHALLENGERS).map(nameOf)), coins: STAKE.coins, name: STAKE.name, day: dayOf('semis') });
     case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM });
     // the duel played by the computer (lot 3, journal Passe LC5): the order of the four, the match sheet, the health of a bout (AUTO_RULES.hpScale, DB5)
-    case 'prepare': return tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen') });
+    case 'prepare': return tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen'), rehearse: REHEARSAL.n, cap: SAND_LESSON.cap });
     // its numbers the duel's own (src/combat/auto.ts AUTO_RULES, src/combat/autoData.ts: the cooldown, the weapons' chains of blows)
     case 'duel': {
       const R = AUTO_RULES, hits = Object.values(AUTO_WEAPONS).map((w) => w.hits.length);

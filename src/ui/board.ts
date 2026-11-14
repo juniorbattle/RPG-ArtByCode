@@ -6,7 +6,7 @@ import { tx } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { marksOf } from '../simulation/v2law';
 import { actOf, pendingFinal, stageName } from '../tournament/v2calendar';
-import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
+import { scoutLines } from '../simulation/v2scout';
 import { heardLine, seenInTown } from '../simulation/v2intel';
 import { stanceLine } from '../simulation/v2rivals';
 import { festivalLine, FESTIVAL_DAY, FEST } from '../simulation/v2festival';
@@ -76,7 +76,8 @@ function fighterHtml(st: GameState, id: string): { head: string; body: string } 
   const me = id === PLAYER_ID, r = me ? null : RIVALS[id], c = st.competitors[id], bouts = boutsOf(st, id), url = portraitUrl(id);
   const wins = bouts.filter((b) => b.won === true).length, losses = bouts.filter((b) => b.won === false).length;
   const sub = [r?.epithet ?? '', tx('ui.board.record', { wins, losses }), c && c.healthState !== 'fit' ? tx('ui.board.hurt') : ''].filter(Boolean).join(' · ');
-  const foe = isV2(st) ? V2_FOES[id] : undefined, known = foe && st.facts.includes(`scouted:${id}`) ? tx('ui.arena.foeSkills', { name: r!.name, skills: foe.skills.list.map((k) => FOE_SKILLS[k.id].name).join(', ') }) : '';
+  // what the player knows of a rival's way of fighting (lot 3 of « La Brute », the scouting by tiers, src/simulation/v2scout.ts)
+  const known = isV2(st) && r ? scoutLines(st, id).join(' ') : '';
   const fought = bouts.filter((b) => b.won !== null), ahead = bouts.filter((b) => b.won === null);
   // a version 2 game (lot L3, EV-11 « activité lisible »): what the town saw them do since yesterday, and the last rumour heard of them, with its source
   const heard = isV2(st) && r ? heardLine(st, id) : null, seen = isV2(st) && r ? seenInTown(st, id) : '';

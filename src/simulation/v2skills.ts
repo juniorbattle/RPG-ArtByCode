@@ -6,7 +6,7 @@ import { LATE_TEACHER, SKILL_BOOK, taughtBy } from '../combat/skillbook';
 import { MAX_LEVEL, chargeTime } from '../combat/skills';
 import { joined, skillName, tx, type TextKey } from '../narrative/text';
 import { sandRefusal } from './v2rivals';
-import { AUTO_CONDS_OF, AUTO_SKILLS, autoCondsFor } from '../combat/autoData';
+import { AUTO_CONDS_OF, AUTO_SKILLS, autoCondsFor, autoOrderOf } from '../combat/autoData';
 import type { AutoCond } from '../combat/auto';
 
 /** The skills of a version 2 game (lot V2, C4; the operator's decision AV-9 « Achat, entraînement et défi », journal Passe V2): the skills the
@@ -52,6 +52,25 @@ export function learnFromChallenge(s: GameState, fighter: string, emit: Emit): s
   if (!id) return null;
   const r = learnOrRaise(s, id);
   emit({ kind: 'action', id: `skill:${r}`, cause: `challenge:${fighter}`, visible: true, text: r === 'learnt' ? tx('v2.skill.learnt', { skill: skillName(id) }) : r === 'raised' ? tx('v2.skill.raised', { skill: skillName(id), level: levelOf(s, id) }) : tx('v2.skill.max', { skill: skillName(id) }) });
+  return id;
+}
+
+/** the sand's lesson (the operator's BL1-4 « Au lot 3 : la ville nourrit le build », journal Passe BL1; lot 3 of « La Brute »): a challenge won in town raises by
+ *  `levels` the first offensive skill of the general plan's order (the four brought, autoOrderOf: the player's order, else the strongest first) still under `cap`
+ *  (the training's cap: the levels above come from the challenges' teachers and the master). « proposé », measured on the curious player (journal Passe BL3) */
+export const SAND_LESSON = { cap: TRAIN_CAP, levels: 1 };
+/** the skill a challenge won would raise now (the sand's lesson), or null when every offensive skill of the four is at the cap */
+export function sandLessonSkill(s: GameState): string | null {
+  const k = v2KitOf(s);
+  return autoOrderOf(k).find((id) => AUTO_SKILLS[id]?.family === 'offensive' && (k.levels[id] ?? 0) > 0 && (k.levels[id] ?? 0) < SAND_LESSON.cap) ?? null;
+}
+/** a challenge won: the sand's lesson given, said in the log; the skill raised, or null */
+export function sandLesson(s: GameState, fighter: string, emit: Emit): string | null {
+  const id = sandLessonSkill(s);
+  if (!id || SAND_LESSON.levels <= 0) return null;
+  const k = v2State(s).kit;
+  k.levels[id] = Math.min(SAND_LESSON.cap, (k.levels[id] ?? 1) + SAND_LESSON.levels);
+  emit({ kind: 'action', id: 'skill:sand', cause: `challenge:${fighter}`, visible: true, text: tx('v2.skill.sand', { skill: skillName(id), level: k.levels[id] }) });
   return id;
 }
 

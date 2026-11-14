@@ -1,5 +1,7 @@
 import type { V2Festival } from './v2festival';
 import type { TextRef } from '../narrative/text';
+import type { BoutNote } from '../combat/autoNotes';
+import type { Rehearsal } from './v2prep';
 /** The game's state (the playable slice, journal Passe L1): plain data only, JSON-serialisable, versioned. Pure module: no three, no DOM,
  *  no Math.random, no clock (tests/game-core.test.mjs scans src/simulation, src/tournament, src/combat, src/events, src/narrative).
  *  The simulation owns the state (PROJECT_MASTER_CONTRACT § 10.2: `advance(state, action, rng)`); the town and the arena only display it. */
@@ -140,6 +142,12 @@ export interface V2State {
    *  when the fight starts and applied if the page is left before its end (a bout left is not fought again for a better press); replaced by the bout's own result at
    *  its end. A « $ » key, saved with the game and left out of its fingerprint (src/ui/playArena.ts, src/ui/play.ts) */
   $pending?: { kind: 'bout' | 'challenge'; outcome: { winner: 'player' | 'opponent'; playerHp: number; playerMaxHp: number; opponentHp: number; opponentMaxHp: number; finisher: string | null } };
+  /** Master Corvin's notebook (lot 3 of « La Brute », PB-4): a note after each bout and challenge (src/combat/autoNotes.ts), newest last; a « $ » key, saved with the game
+   *  and left out of its fingerprint */
+  $notes?: BoutNote[];
+  /** the last rehearsal against each rival (lot 3 of « La Brute », src/simulation/v2prep.ts): its chances, a win and a loss to watch again; a « $ » key, saved with the game and
+   *  left out of its fingerprint (the rehearsal's line in the log says its chances) */
+  $rehearsals?: Record<string, Rehearsal>;
   /** the gear carried (lot V3): the weapon and its tier, the armour, the two accessories, the bag of what is owned and not worn */
   gear?: V2Gear;
   /** the shops' day-long states (lot V4): a bargain or a grudge of the day, closed to the player for the day, a markup until a day */

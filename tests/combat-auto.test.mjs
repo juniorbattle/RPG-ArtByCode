@@ -556,7 +556,7 @@ test('the game: every version 2 game plays this duel, its bouts, challenges and 
   let fights = 0;
   const wrap = { name: 'w', skill: 0.6, choose: (s) => {
     const a = L.POLICIES.reference.choose(s);
-    if (a.type === 'fight') { fights++; const o = AM.autoOutcome(s), lab = L.botOutcome(s, 0.6); assert.deepEqual(lab, { winner: o.winner, playerHp: o.playerHp, playerMaxHp: o.playerMaxHp, opponentHp: o.opponentHp, opponentMaxHp: o.opponentMaxHp, finisher: o.finisher }); }
+    if (a.type === 'fight') { fights++; const o = AM.autoOutcome(s, 'bout', { log: true }), lab = L.botOutcome(s, 0.6); assert.deepEqual(lab, { winner: o.winner, playerHp: o.playerHp, playerMaxHp: o.playerMaxHp, opponentHp: o.opponentHp, opponentMaxHp: o.opponentMaxHp, finisher: o.finisher, note: o.note }); }
     return a;
   } };
   const run = L.autoplay(7, wrap, 'Ren', 260, 'v2');

@@ -34,8 +34,8 @@ export type CombatRules = 'classic' | 'dynamic' | 'v2' | 'auto';
 
 /** a duel of the duel played by the computer, as the game takes it (the duel's own record left out) */
 function autoGameOutcome(st: GameState, kind: 'bout' | 'challenge'): DuelOutcome {
-  const o = autoOutcome(st, kind);
-  return { winner: o.winner, playerHp: o.playerHp, playerMaxHp: o.playerMaxHp, opponentHp: o.opponentHp, opponentMaxHp: o.opponentMaxHp, finisher: o.finisher };
+  const o = autoOutcome(st, kind, { log: true });
+  return { winner: o.winner, playerHp: o.playerHp, playerMaxHp: o.playerMaxHp, opponentHp: o.opponentHp, opponentMaxHp: o.opponentMaxHp, finisher: o.finisher, ...(o.note ? { note: o.note } : {}) };
 }
 
 /** the player's duel today: a version 2 game's played by the computer (its preparation decides it, `skill` reads nothing there), today's game's fought by

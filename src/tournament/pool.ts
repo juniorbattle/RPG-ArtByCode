@@ -8,6 +8,8 @@ import { DYN_PROFILES, DYN_RACE_SLOPE, dynRacerOf, PROFILES, raceWinChance, race
 import { autoWinner } from '../combat/auto';
 import { autoOffscreen, autoRound } from '../combat/autoData';
 import { stageOf } from '../combat/stats';
+import type { BoutNote } from '../combat/autoNotes';
+import { keepOutcomeNote } from '../simulation/v2notes';
 
 /** The pool of phase I (choice G3, journal Passe L2): eight competitors, two rounds in the slice, points (a defeat costs points, reputation,
  *  sometimes an injury, never the tournament). The matches the player does not fight are resolved by the damage race of the same combat
@@ -114,6 +116,8 @@ export interface DuelOutcome {
   playerHp: number; playerMaxHp: number; opponentHp: number; opponentMaxHp: number;
   /** the kind of the blow that ended it ('light' | 'heavy' | 'tech'), when one did */
   finisher: string | null;
+  /** a version 2 bout's note for Master Corvin's notebook (lot 3 of « La Brute »: src/combat/autoNotes.ts), read from the duel that was played; kept outside the fingerprint */
+  note?: BoutNote;
 }
 
 /** a bout's purse, won or lost: 20 / 5 in today's game and the version 2's pool; in a version 2 game's bracket the purses rise with the tournament (the
@@ -153,6 +157,8 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
   // health, and a win never wounds
   const hurt = (!won && o.finisher === 'heavy') || (!isV2(s) && won && o.playerHp / o.playerMaxHp < 0.15);
   if (hurt) P.injury = Math.min(2, P.injury + 1);
+  // Master Corvin's note of the bout (lot 3 of « La Brute »), outside the fingerprint
+  if (s.v2) keepOutcomeNote(s, o, 'bout');
   P.training = 0; if (s.v2?.prep) s.v2.prep = [];
   P.items = P.items.filter((i) => i !== 'whetstone');
   emit({

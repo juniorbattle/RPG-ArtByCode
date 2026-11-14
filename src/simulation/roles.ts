@@ -13,15 +13,17 @@ import { V2_LAW_ACTIONS } from './v2law';
 import { placeIn } from './v2watch';
 import { V2_BARTER_ACTIONS } from './v2barter';
 import { V2_INTEL_ACTIONS } from './v2intel';
+import { planText } from './v2scout';
 import { V2_RIVAL_ACTIONS, anwenBusy } from './v2rivals';
 import { V2_FESTIVAL_ACTIONS } from './v2festival';
 import { V2_WORK_ACTIONS } from './v2work';
+import { V2_PREP_ACTIONS } from './v2prep';
 import { TRAINED_STATS, trainGain, type TrainedStat } from '../combat/stats';
 import { WEAPON_TIER_ATK } from './gear';
 /** the stats' names (keys written whole: tests/texts.test.mjs) */
 const SPAR_STAT: Record<TrainedStat, TextKey> = { atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv', hp: 'ui.stat.hp' };
 
-const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS, ...V2_WORK_ACTIONS };
+const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS, ...V2_WORK_ACTIONS, ...V2_PREP_ACTIONS };
 
 /** The town's people in game roles (choice P4, journal Passe L4): the district's existing characters offer services, quests and clues;
  *  the forecourt's officials and the rivals offer care, sparring and scouting (choice K3: portraits and dialogues). Each action names who
@@ -250,11 +252,21 @@ export const ROLE_ACTIONS: T = {
     list: (st) => (isV2(st)
       ? SCOUTED_V2.filter((who) => placeOf(PEOPLE[who], true) === st.place && (!PEOPLE[who].days || st.day >= PEOPLE[who].days![0])).map((who) => ({ type: 'scout', who }))
       : st.place === 'forecourt' ? SCOUTED.map((who) => ({ type: 'scout', who })) : []),
-    label: (st, a) => tx(isV2(st) ? 'v2.scout.label' : 'scout.label', { name: RIVALS[a.who].name }),
+    // lot 3 of « La Brute » (PB-4, the scouting by tiers, src/simulation/v2scout.ts): a version 2 game watches a rival twice, the style then (another day) the plan
+    label: (st, a) => tx(isV2(st) ? (st.facts.includes(`scouted:${a.who}`) ? 'v2.scout.label2' : 'v2.scout.label') : 'scout.label', { name: RIVALS[a.who].name }),
     cost: () => 1,
-    check: (st, a) => (isV2(st) && !SCOUTED_V2.includes(a.who) ? tx('avail.nobody') : null) ?? available(st, a.who) ?? (st.facts.includes(`scouted:${a.who}`) ? tx('scout.known', { name: RIVALS[a.who].name }) : null),
+    check: (st, a) => (isV2(st) && !SCOUTED_V2.includes(a.who) ? tx('avail.nobody') : null) ?? available(st, a.who) ?? (!st.facts.includes(`scouted:${a.who}`) ? null
+      : !isV2(st) ? tx('scout.known', { name: RIVALS[a.who].name }) : st.facts.includes(`scouted2:${a.who}`) ? tx('v2.scout.knownPlan', { name: RIVALS[a.who].name })
+        : st.flags[`scoutDay:${a.who}`] === st.day ? tx('v2.scout.today', { name: RIVALS[a.who].name }) : null),
     apply: (s, a, _r, emit) => {
+      // the second watch, a version 2 game's: their plan (when they use each skill)
+      if (isV2(s) && s.facts.includes(`scouted:${a.who}`)) {
+        fact(s, `scouted2:${a.who}`);
+        emit({ kind: 'action', id: `scout2:${a.who}`, cause: 'action:scout', text: tx('v2.scout.log2', { name: RIVALS[a.who].name, plan: planText(a.who, RIVALS[a.who].name) }), visible: true });
+        return;
+      }
       fact(s, `scouted:${a.who}`);
+      if (isV2(s)) s.flags[`scoutDay:${a.who}`] = s.day;
       const c = s.competitors[a.who]; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) + (RIVALS[a.who].temper === 'proud' ? -5 : 2), -100, 100);
       // a version 2 game: what each rival's practice shows of the style their skills make (src/combat/v2duel.ts V2_FOES), the skills named on the match sheet
       const habit = isV2(s) ? tx(SCOUT_HABIT[a.who]) : RIVALS[a.who].name === 'Marek Varn' ? tx('scout.habitMarek') : tx('scout.habitOther');

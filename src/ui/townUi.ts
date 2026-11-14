@@ -37,9 +37,13 @@ import { actsOf, onSettings } from '../settings/settings';
 import type { Act } from '../settings/keys';
 import { bindCap, keyCap } from '../input/caps';
 import { leavePage } from './curtain';
+import { notebookPage, adviceText } from './notebook';
+import { scoutLines } from '../simulation/v2scout';
+import { rehearsalFresh, rehearsalOf } from '../simulation/v2prep';
+import { notesOf } from '../simulation/v2notes';
 
 /** the menu's pages a gamepad's shoulders walk through (journal Passe MN2, MN-4) */
-type MenuPage = 'map' | 'journal' | 'board' | 'skills' | 'gear' | 'settings';
+type MenuPage = 'map' | 'journal' | 'board' | 'notebook' | 'skills' | 'gear' | 'settings';
 
 /** The play mode's interface in a place (journal Passes L4 / UM3; choice K1: English; direction A « Voile »): exploring, the state and one prompt,
  *  nothing else (UM-R2): the day and the slot top left (the clock and the next deadline, TOURNAMENT § 11), the figures top right, E next to someone at
@@ -168,6 +172,7 @@ export { costTag, shortLabel };
  *  shown by the bout itself */
 export function foeIntel(s: GameState, id: string): string {
   const name = RIVALS[id].name;
+  if (isV2(s)) return scoutLines(s, id).join(' ');
   if (s.facts.includes(`scouted:${id}`)) return tx('ui.arena.foeSkills', { name, skills: (V2_FOES[id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') });
   return scoutable(s).includes(id) ? tx('v2.sheet.unknown', { name }) : tx('v2.sheet.unseen', { name });
 }
@@ -414,9 +419,9 @@ export class TownUi {
   private shownPage: MenuPage | null = null;
   /** a version 2 game's gamepad, LB / RB on one of the menu's pages: the page before or after it, in the menu's order (MN-4) */
   tabPage(dir: -1 | 1): void {
-    const pages: MenuPage[] = isV2(this.st) ? ['map', 'journal', 'board', 'skills', 'gear', 'settings'] : ['map', 'journal', 'board'];
+    const pages: MenuPage[] = isV2(this.st) ? ['map', 'journal', 'board', 'notebook', 'skills', 'gear', 'settings'] : ['map', 'journal', 'board'];
     const to = tabTo(pages, this.shownPage, dir);
-    if (to === 'map') this.openMap(); else if (to === 'journal') this.openJournal(); else if (to === 'board') this.openBoard();
+    if (to === 'map') this.openMap(); else if (to === 'journal') this.openJournal(); else if (to === 'board') this.openBoard(); else if (to === 'notebook') this.openNotebook();
     else if (to === 'skills') this.openSkills(false); else if (to === 'gear') this.openGear(); else if (to === 'settings') this.openSettings();
   }
   /** where Esc leads from a page opened from a dialogue */
@@ -442,6 +447,8 @@ export class TownUi {
     card.innerHTML = `${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(p.name)}<small>${esc(titleOf(p, isV2(this.st)))}</small></h2><div class="pm-line">${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div>${this.saidHtml()}</div>`;
     const list = el('div', 'opts');
     if (goods) { const b = el('button', 'pm-btn', `<span>${tx(who === 'bram' ? 'ui.wares.seeForge' : 'ui.wares.see')}</span>`); b.addEventListener('click', () => this.openShop(who)); list.appendChild(b); }
+    // Master Corvin keeps his notebook (lot 3 of « La Brute »): Esc back to him
+    if (who === 'corvin' && isV2(st)) { const b = el('button', 'pm-btn', `<span>${tx('nb.see')}</span>`); b.addEventListener('click', () => { this.openNotebook(); this.back = () => this.openPerson(who); }); list.appendChild(b); }
     for (const o of opts) if (!goods || !isGoods(o)) list.appendChild(this.optionButton(o, () => { if (this.current === root) this.openPerson(who); }));
     const leave = footBtn('Esc', tx('ui.leave'), () => this.closeModal());
     side.append(list, footOf(leave)); arrowKeys(side);
@@ -473,12 +480,15 @@ export class TownUi {
     const m = playerMatch(s); if (!m) return '';
     const id = opponentOf(m), r = RIVALS[id], url = portraitUrl(id), g = s.v2?.gear;
     const stage = stageName(m);
-    const intel = foeIntel(s, id), heard = heardLine(s, id), strap = strapCut(s);
+    const heard = heardLine(s, id), strap = strapCut(s);
     // the duel played by the computer (lot 2, journal Passe LC3): what decides it, side by side (briefs/combat-auto.md § 7: « les stats des deux, les chances de
     // garde et d'esquive, la préparation du rival, sa forme du jour »), the numbers the duel itself will play (autoBoutOf: the same fighters)
     const b = autoBoutOf(s), vs = b ? this.autoVsHtml(b.ren, b.foe, autoForms(b), r.name) : '';
-    // the rival's style (PB-1: its pieces and its heavy blow, in the table's dodge and guard; its skills by their role) and BL1-10's « le dire au lot 2 »
-    const style = b ? this.styleLine(b.foe, b.foeId, r.name) : '';
+    // what the player knows of the rival (lot 3 of « La Brute », the scouting by tiers: its style, its plan, its kit), the last rehearsal against its shadow and
+    // Master Corvin's last note on it (src/simulation/v2scout.ts, v2prep.ts)
+    const known = scoutLines(s, id), reh = rehearsalOf(s, id), last = notesOf(s, id)[0];
+    const rehLine = reh ? (rehearsalFresh(s, reh) ? tx('prep.sheet.rehearsal', { wins: reh.wins, n: reh.n, name: r.name }) : tx('prep.sheet.rehearsalOld', { wins: reh.wins, n: reh.n })) : '';
+    const noteLine = last ? tx('prep.sheet.note', { name: r.name, advice: adviceText(last.advice, id) }) : '';
     const prep = b && b.prep >= 0.05 ? tx('auto.sheet.prep', { name: r.name, n: num(+b.prep.toFixed(1)) }) : '';
     // the operator's DB11-5 « Le dire partout » (journal Passe DB13): where Ren's health comes from
     const hp = healthParts(s);
@@ -486,8 +496,8 @@ export class TownUi {
       hp.train ? tx('v2.sheet.hp.train', { n: hp.train }) : '', hp.wound ? tx('v2.sheet.hp.wound', { n: hp.wound }) : ''].filter(Boolean).join(', ') + '.';
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
-      + vs + (prep ? `<p class="pm-sub pm-fstats">${esc(prep)}</p>` : '') + (style ? `<p class="pm-sub">${esc(style)}</p>` : '') + `<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p><p class="pm-sub">${esc(tx('auto.sheet.hpWhy'))}</p><p class="pm-sub">${esc(from)}</p>`
-      + `<p class="pm-sub">${esc(intel)}</p>${heard ? `<p class="pm-sub">${esc(heard)}</p>` : ''}<p class="pm-sub">${esc(gear)}</p>${strap ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.strap'))}</p>` : ''}${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
+      + vs + (prep ? `<p class="pm-sub pm-fstats">${esc(prep)}</p>` : '') + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('') + (rehLine ? `<p class="pm-sub">${esc(rehLine)}</p>` : '') + (noteLine ? `<p class="pm-sub">${esc(noteLine)}</p>` : '') + `<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p><p class="pm-sub">${esc(tx('auto.sheet.hpWhy'))}</p><p class="pm-sub">${esc(from)}</p>`
+      + `${heard ? `<p class="pm-sub">${esc(heard)}</p>` : ''}<p class="pm-sub">${esc(gear)}</p>${strap ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.strap'))}</p>` : ''}${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }
 
   /** the two fighters side by side as the duel played by the computer reads them: the health of the bout (each one's doubled, DB5), the four stats, the form of the
@@ -513,14 +523,6 @@ export class TownUi {
       [tx('auto.sheet.heavyRow'), bar(ren.heavy, ren, foe, form[0]), bar(foe.heavy, foe, ren, form[1])],
     ];
     return `<table class="pm-vs"><thead><tr><th></th><th>${esc(tx('auto.sheet.you'))}</th><th>${esc(foeName)}</th></tr></thead><tbody>${rows.map(([l, a, c]) => `<tr><td>${esc(l)}</td><td>${esc(a)}</td><td>${esc(c)}</td></tr>`).join('')}</tbody></table>`;
-  }
-
-  /** the rival's style in a sentence (PB-1 « Les styles des rivaux »): its heavy blow as soon as it is ready (Tobin, Orla), its skills by their role; its pieces are
-   *  in the table's dodge and guard */
-  private styleLine(foe: AutoFighter, id: string, name: string): string {
-    const st = AUTO_STYLES[id], skills = foe.skills.map((a) => { const role = roleName(a.id); const nm = FOE_SKILLS[a.id] ? word(FOE_SKILLS[a.id].name) : skillName(a.id); return role ? tx('auto.style.skill', { skill: nm, role }) : nm; });
-    const parts = [skills.length ? tx('auto.style.skills', { name, list: skills.join(', ') }) : '', st?.heavy === 'ready' ? tx('auto.style.heavy', { name }) : ''];
-    return parts.filter(Boolean).join(' ');
   }
 
   /** the version 2's gear (lot V3) and the bag: the page of the shops without a keeper (src/ui/wares.ts, UM7-3) */
@@ -613,9 +615,18 @@ export class TownUi {
     if (s.player.injury > 0) this.hint('hurt');
     if (marksOf(s) > 0) this.hint('mark');
     if ((s.v2?.wins ?? 0) > 0) this.hint('vigour');
+    // Master Corvin's first note (lot 3 of « La Brute »): where his notebook is
+    if (s.v2?.$notes?.length) this.hint('notebook');
   }
 
   private openJournal(): void { this.page(); this.show(journalPage(this.st, () => this.closeModal())); this.shownPage = 'journal'; }
+
+  /** Master Corvin's notebook (lot 3 of « La Brute », src/ui/notebook.ts): Enter or Space watches a rehearsed bout again in the arena, nothing of the game changed */
+  openNotebook(first?: string): void {
+    this.page();
+    this.show(notebookPage(this.st, () => this.leave(), (which) => { writeSave(this.st); this.closeModal(); this.host.reload({ scene: 'arena', review: which }); }, first));
+    this.shownPage = 'notebook';
+  }
 
   private openBoard(): void { this.page(); this.show(boardPage(this.st, standings(this.st), () => this.closeModal())); this.shownPage = 'board'; }
 
@@ -632,6 +643,8 @@ export class TownUi {
     // each page's key: the player's (the remapping, journal Passe RM2, RM-6)
     const add = (label: string, f: () => void, act: Act | '' = '') => { const b = el('button', 'pm-btn', `<span>${esc(label)}</span>${act ? bindCap(act) : ''}`); b.addEventListener('click', f); body.appendChild(b); };
     add(tx('ui.map'), () => this.openMap(), 'map'); add(tx('ui.journal'), () => this.openJournal(), 'journal'); add(tx('ui.tournament'), () => this.openBoard(), 'board');
+    // Master Corvin's notebook (lot 3 of « La Brute »): a line of its own, no key
+    if (isV2(s)) add(tx('nb.open'), () => this.openNotebook());
     if (isV2(s)) { add(tx('v2.skills.view'), () => this.openSkills(false), 'skills'); add(tx('v2.gear.view'), () => this.openGear(), 'gear'); add(tx('set.open'), () => this.openSettings(), 'settings'); }
     // the guide (journal Passe TU3, TU-7): a line of its own
     if (isV2(s)) add(tx('tut.guide'), () => this.openGuide(), 'guide');

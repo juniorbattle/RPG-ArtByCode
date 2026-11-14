@@ -25,6 +25,9 @@ import { standingsHtml } from './board';
 import { fontsReady, installDesign } from './design/system';
 import { progressOn } from './loading';
 import { DuelCoach } from './duelTutorial';
+import { boutNote } from '../combat/autoNotes';
+import { fighterName, noteLines } from './notebook';
+import { REHEARSAL, reviewOf } from '../simulation/v2prep';
 
 /** The official bout (journal Passe L3; choice G1: the arena as it is, played from a match sheet): the day's opponent in Marek's seat, the
  *  player's name and preparation in Ren's, the English HUD (choice K1). A scouting report before the first blow; once the KO has had its
@@ -36,6 +39,9 @@ import { DuelCoach } from './duelTutorial';
 
 export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   let st = st0;
+  // a rehearsed bout watched again (lot 3 of « La Brute », src/simulation/v2prep.ts): nothing of the game changes
+  const review = b.params.get('review');
+  if ((review === 'win' || review === 'loss') && isV2(st)) { await startReview(b, st, review); return; }
   // the version 2: a challenge in town is fought on the same sand (lot V4), from its own sheet
   const challenge = b.params.get('challenge') === '1' && isV2(st) ? challengeSheetFor(st) : null;
   const sheet = challenge ?? matchSheetFor(st), m = challenge ? undefined : st.tournament.matches.find((x) => x.day === st.day && (x.a === 'player' || x.b === 'player'));
@@ -106,7 +112,9 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   }
 
   async function finish(r: { winner: 'ren' | 'marek'; hp: Record<string, number>; maxHp: Record<string, number>; finisher: string | null }): Promise<void> {
-    const outcome = { winner: r.winner === 'ren' ? 'player' : 'opponent', playerHp: r.hp.ren, playerMaxHp: r.maxHp.ren, opponentHp: r.hp.marek, opponentMaxHp: r.maxHp.marek, finisher: r.finisher };
+    // Master Corvin's note (lot 3 of « La Brute »): read from the duel the arena played (the presses of the hand in it), handed in with the result
+    const note = ao && !reprisal ? boutNote(app.auto?.result ?? ao.duel, ao.bout.ren, ao.bout.foe, { day: st.day, foe: ao.bout.foeId, kind: challenge ? 'challenge' : 'bout' }) : undefined;
+    const outcome = { winner: r.winner === 'ren' ? 'player' : 'opponent', playerHp: r.hp.ren, playerMaxHp: r.maxHp.ren, opponentHp: r.hp.marek, opponentMaxHp: r.maxHp.marek, finisher: r.finisher, ...(note ? { note } : {}) };
     (window as any).__outcome = outcome;
     if (st.v2) delete st.v2.$pending;
     const res = (window as any).__game.act(challenge ? { type: 'challengeResult', outcome } : { type: 'fight', outcome });
@@ -115,7 +123,52 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     const won = r.winner === 'ren', lines = (res.events as Array<{ visible: boolean; text: string; kind: string; $t?: TextRef }>).filter((e) => e.visible && (e.kind === 'match' || e.kind === 'consequence' || (!!challenge && e.kind === 'action'))).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('');
     // the operator's DB11-5 « Le dire partout » (journal Passe DB13): a version 2 bout won (a reprisal adds none) says the vigour it gives and the health of the next bout
     const vigour = won && v2 && !reprisal ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(st).hp ?? 0 }))}</p>` : '';
-    await overlay(`<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}${vigour}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
+    const corvin = note ? `<p class="pm-sub">${tx('note.title')}</p>${noteLines(note).slice(1).map((l) => `<p>${esc(l)}</p>`).join('')}` : '';
+    await overlay(`<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}${vigour}${corvin}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
+    go(b.params);
+  }
+}
+
+/** a rehearsed bout watched again (lot 3 of « La Brute », the proposition's « tu revois deux combats »): the shadow bout as rehearsed (src/simulation/v2prep.ts reviewOf),
+ *  played by the arena on the empty stands with « Skip » and ×2 at hand; its end says the result and Master Corvin's reading of it, and the player goes back to the
+ *  training ground; nothing of the game changes (no action, no save). A set-up changed since the rehearsal plays nothing: the bout would not be the one rehearsed. */
+async function startReview(b: Boot, st: GameState, which: 'win' | 'loss'): Promise<void> {
+  installGameApi(() => st, () => {}, () => false);
+  installDesign(lookOf(st));
+  const rv = reviewOf(st, which), name = rv ? fighterName(rv.foeId) : '';
+  if (!rv || rv.stale) {
+    b.loading.remove();
+    (window as any).__ready = true;
+    await overlay(`<h2 class="pm-h">${tx('nb.rehearsal')}</h2><p>${esc(rv ? tx('prep.review.stale', { name }) : tx('prep.review.none'))}</p>`, [{ id: 'back', label: tx('prep.review.back'), primary: true }]).done;
+    go(b.params);
+    return;
+  }
+  const r0 = rv, opp = RIVALS[rv.foeId], q = new URLSearchParams(arenaQuery(st));
+  for (const k of ['fps', 'freeze', 'painters', 'hud', 'gpuprof', 'input', 'fx']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
+  const texts = { ...(lang() === 'fr' ? AUTO_TEXTS_FR : AUTO_TEXTS_EN), subtitle: tx('prep.review.title', { name }), subMarek: opp?.epithet ?? '' };
+  (window as any).__review = { which, seed: rv.seed, foe: rv.foeId };
+  const app = new ArenaApp({
+    canvas: b.canvas, params: q, onProgress: progressOn(b.label, b.bar),
+    match: { rules: 'auto', auto: { result: rv.result, ren: rv.ren, foe: rv.foe, names: { ren: st.player.name, marek: name } }, foe: rv.foeId, assist: 'subtle', texts, piece: 'lices', empty: true, onOver: (r) => void end(r) },
+  });
+  (window as any).__arena = app;
+  await app.init();
+  b.loading.style.opacity = '0';
+  setTimeout(() => b.loading.remove(), 900);
+  (window as any).__stats = () => app.snapshot();
+  app.paused = true; app.moment = true;
+  app.start();
+  await fontsReady();
+  let n = 0;
+  const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
+  wait();
+  await overlay(`<p class="pm-sub">${esc(tx('prep.review.title', { name }))}</p><h2 class="pm-h">${esc(name)}</h2><p class="pm-sub">${esc(tx('prep.review.note', { n: REHEARSAL.n }))}</p>`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }], true).done;
+  app.paused = false; app.moment = false;
+  async function end(r: { winner: 'ren' | 'marek' }): Promise<void> {
+    const note = boutNote(app.auto?.result ?? r0.result, r0.ren, r0.foe, { day: st.day, foe: r0.foeId, kind: 'rehearsal' });
+    (window as any).__reviewOutcome = { winner: r.winner === 'ren' ? 'player' : 'opponent' };
+    const lines = noteLines(note).slice(1).map((l) => `<p>${esc(l)}</p>`).join('');
+    await overlay(`<p class="pm-big">${tx(r.winner === 'ren' ? 'prep.review.won' : 'prep.review.lost')}</p><p class="pm-sub">${esc(tx('prep.review.note', { n: REHEARSAL.n }))}</p><p class="pm-sub">${tx('note.title')}</p>${lines}`, [{ id: 'back', label: tx('prep.review.back'), primary: true }]).done;
     go(b.params);
   }
 }
