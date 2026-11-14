@@ -1448,12 +1448,29 @@ Statut : **le duel du jeu par défaut est celui du § 34 avec les réglages de c
 
 ### 35.4 Ce qui reste
 
-Au test de AC-12, une seule bonne réponse en finale contre Marek (Fracas), Cassius et Rhosk (la Feinte), et au tableau contre Tobin, Cassius et Rhosk (la Feinte) : au lot 4, avec les armes à propriété. Le curieux (12 % de titres) : BL1-4, au lot 3. Ensuite le lot 2 (la fiche de match dit ce qu'un coup prend de la barre de chacun, BL1-10).
+Au test de AC-12, une seule bonne réponse en finale contre Marek (Fracas), Cassius et Rhosk (la Feinte), et au tableau contre Tobin, Cassius et Rhosk (la Feinte) : au lot 4, avec les armes à propriété. Le curieux (12 % de titres) : BL1-4, au lot 3. Ensuite le lot 2 (la fiche de match dit ce qu'un coup prend de la barre de chacun, BL1-10 ; l'arène, le total d'une attaque simple et le coup puissant tombé dans une rupture, § 35.6).
 
 ### 35.5 La fiche relue : six sur six à la recommandation (13/11/2026)
 
 L'opérateur a dit « fiche remplie » ; ses choix, mot pour mot, sans note : BE-1 « Reçu » ; BE-2 « Simple ×1,75, puissant ×1,5, compétences ×0,55 (change DB5-1 et DB5-5) » ; BE-3 « Deux fois plus courtes » ; BE-4 « La lame 0,8, le sabre 0,47 » ; BE-5 « La faille 4 s, l’Estoc un peu plus vif » ; BE-6 « Fusionner, puis le lot 2 ». DB5-1 et DB5-5 sont ses choix du 09/11 (Passe DB6), non A3 ; aucune décision A3 n'est changée (SL1-2, RY-1, RY-3, PB-3 tenus).
 
+
+### 35.6 Le poids du coup puissant : la question de l'opérateur, gardé à ×1,5 (13/11/2026, journal Passe BE2)
+
+Après la fusion, sur le tableau « Un coup en poule : Estoc / coup simple / coup puissant » (575 / 29 / 195), l'opérateur, mot pour mot : « ca reste enorme le coup puissant est environ x5.5 fois plus puissant que le coup simple??? » ; et sur la part des dégâts de Ren (38 / 12 / 50 %) : « les degats simple sont plus impact que les degats puissant ? ». Mesuré sur les combats du planificateur en poule (200 parties tenues à part, graines 101 à 300) :
+
+- **Le « 29 » est un seul coup de l'attaque simple.** Avec l'épée ou la lame, une attaque simple frappe deux fois : une attaque entière fait 52 en médiane. 74 % des coups puissants de Ren tombent dans une rupture du rival (×1,4) et aucun n'est gardé (l'automatique ne le lance que si l'adversaire ne peut pas se défendre) ; les coups simples sont gardés 16 % du temps (−30 à −70 %). **À stats égales, hors rupture**, l'attaque simple fait 57 (2 × 28,6) et le coup puissant 128 : ×2,2.
+- **Les attaques simples pèsent plus au total** : le coup puissant charge 3,1 s puis attend 15,3 s (DB5-3, « 5 × le temps de charge », A3), l'attaque simple charge 2,9 s et repart aussitôt. Par combat de poule : 18,9 attaques simples (35 coups), 904 dégâts ; 1,6 coup puissant, 296. C'est la règle du modèle : l'attaque simple est la couche continue, le coup puissant un coup ponctuel (déjà 14 % contre 6 % avant la passe).
+- **Trois poids mesurés, la course recalée chaque fois** :
+
+| Coup puissant (`AUTO_WEIGHT.heavy`) | Un coup puissant en poule (un coup simple : 29) | À stats égales, par attaque | Durées de la référence | Sa part des dégâts de Ren | Le planificateur, demi-finale / finale |
+|---|---|---|---|---|---|
+| ×1,5 (BE-2) | 195 | ×2,2 | 1 min 58 / 2 min 58 / 3 min 19 | 12 à 16 % | 54 / 50 % |
+| ×1,25 | 162 | ×1,9 | 2 min 12 / 3 min 07 / 3 min 35 | 11 à 12 % | 54 / 52 % |
+| ×1 (avant la passe) | 129 | ×1,5 | 2 min 25 / 3 min 25 / 3 min 45 | 9 à 10 % | 49 / 43 % |
+
+  Même à ×1, l'écart affiché reste de 4,4 (129 contre 29) : il vient du compte par coup et de la rupture, pas du poids.
+- **La réponse de l'opérateur**, mot pour mot, à la question « Garder le coup puissant à ×1,5 et l'expliquer à l'écran au lot 2 ? » (13/11/2026) : « Garder ×1,5 ». Rien du jeu ne change. Le lot 2 montre dans l'arène le total d'une attaque simple (52, et non 29 puis 23), dit quand un coup puissant tombe dans une rupture, et la fiche de match dit ce qu'un coup prend de la barre de chacun (BL1-10).
 
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
