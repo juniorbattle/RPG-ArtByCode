@@ -448,8 +448,11 @@ export class TownUi {
     const list = el('div', 'opts');
     if (goods) { const b = el('button', 'pm-btn', `<span>${tx(who === 'bram' ? 'ui.wares.seeForge' : 'ui.wares.see')}</span>`); b.addEventListener('click', () => this.openShop(who)); list.appendChild(b); }
     // Master Corvin keeps his notebook (lot 3 of « La Brute »): Esc back to him
+    // (his rehearsal first among his offers, then his notebook)
+    const again = () => { if (this.current === root) this.openPerson(who); }, first = opts.filter((o) => o.action.type === 'rehearse');
+    for (const o of first) list.appendChild(this.optionButton(o, again));
     if (who === 'corvin' && isV2(st)) { const b = el('button', 'pm-btn', `<span>${tx('nb.see')}</span>`); b.addEventListener('click', () => { this.openNotebook(); this.back = () => this.openPerson(who); }); list.appendChild(b); }
-    for (const o of opts) if (!goods || !isGoods(o)) list.appendChild(this.optionButton(o, () => { if (this.current === root) this.openPerson(who); }));
+    for (const o of opts) if ((!goods || !isGoods(o)) && !first.includes(o)) list.appendChild(this.optionButton(o, again));
     const leave = footBtn('Esc', tx('ui.leave'), () => this.closeModal());
     side.append(list, footOf(leave)); arrowKeys(side);
     card.appendChild(side);

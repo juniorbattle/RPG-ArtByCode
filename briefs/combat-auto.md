@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32) ; relue le même jour, six sur six à la recommandation, le modèle approuvé et sa construction en cinq lots, le lot 1 lancé (§ 33) ; le lot 1 construit le même jour, le duel « La Brute » dans le jeu par défaut, sa fiche courte relue le même jour, neuf sur neuf à la recommandation, l'entrechoc et la jauge réglés, le § 6.1 du contrat projet amendé (§ 34) ; la passe d'équilibre faite, le poids des coups, les protections, les armes et la faille réglés, sa fiche courte relue six sur six à la recommandation (§ 35)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32) ; relue le même jour, six sur six à la recommandation, le modèle approuvé et sa construction en cinq lots, le lot 1 lancé (§ 33) ; le lot 1 construit le même jour, le duel « La Brute » dans le jeu par défaut, sa fiche courte relue le même jour, neuf sur neuf à la recommandation, l'entrechoc et la jauge réglés, le § 6.1 du contrat projet amendé (§ 34) ; la passe d'équilibre faite, le poids des coups, les protections, les armes et la faille réglés, sa fiche courte relue six sur six à la recommandation (§ 35) ; le lot 2, ce qui se voit, construit le 14/11/2026 (§ 36) ; le lot 3, la préparation, construit le même jour, sa fiche courte pour l'essai en jeu de l'opérateur (§ 37)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -1505,6 +1505,42 @@ Statut : **le lot 2 du § 33.5 est construit et fusionné dans le jeu par défau
 
 - Le lot 3 : la préparation (la répétition, le carnet du maître d'armes, le repérage par paliers), la ville qui nourrit le build du curieux (BL1-4) ; puis l'essai en jeu de l'opérateur.
 - Le lot 4 : au test de AC-12, Marek, Cassius et Rhosk n'ont qu'une bonne réponse en finale (§ 35.4).
+
+## 37. Le lot 3 construit : la préparation (14/11/2026, journal Passe BL3)
+
+Statut : **le lot 3 du § 33.5 est construit et fusionné dans le jeu par défaut** (PB-4 « Toutes », BL1-4 « Au lot 3 : la ville nourrit le build ») ; les règles du duel ne changent pas (le § 35 tient). L'essai en jeu de l'opérateur vient ensuite, préparé par une fiche courte : https://claude.ai/artifact/8vuJuzGe7AUUDQQuNQyNFC (`briefs/fiche-combat-brute-lot3.html`, six cartes BL3-1 à BL3-6).
+
+### 37.1 Le repérage par paliers (`src/simulation/v2scout.ts`)
+
+| Palier | Comment | Ce qu'on sait |
+|---|---|---|
+| 0 | rien vu | comment en savoir plus |
+| 1, le style | une première observation à l'entraînement, ou un combat déjà livré contre lui (tournoi ou défi) | ses compétences et le rôle de chacune, son coup puissant s'il le lance dès qu'il est prêt, ses pièces |
+| 2, le plan | une seconde observation, un autre jour | quand part chaque compétence : sa condition (`AUTO_STYLES`) ou la règle de son rôle |
+| la rumeur | Lio ou l'inconnu, du prochain adversaire | son kit pour ce combat : ses compétences et les usages de chacune à l'étape |
+
+La fiche de match, le tableau du tournoi et le carnet lisent le palier ; la ligne du style du lot 2 en est le palier 1. Le jeu d'aujourd'hui (`v2=0`) garde une seule observation.
+
+### 37.2 La répétition (`src/simulation/v2prep.ts`)
+
+- Maître Corvin, aux lices, le matin et l'après-midi : un créneau, sans pièce, une fois le style du prochain adversaire vu. Trente combats du duel lui-même sur des graines propres (jamais celle du vrai combat), avec le kit, l'équipement, l'entraînement et le plan gardé pour ce rival ; l'ombre joue chaque compétence selon son rôle au palier 1, son propre plan au palier 2 (au palier 2, l'ombre est le combat à venir, sa graine exceptée).
+- Les chances dans le journal ; le détail hors de l'empreinte (`V2State.$rehearsals`) : une victoire et une défaite à revoir, avec les deux combattants tels que répétés (les rivaux s'entraînent hors écran à chaque créneau : on revoit le combat répété, et « avec ce plan » se lit sur le côté du joueur), la lecture du carnet sur les trente.
+- Revoir : depuis le carnet, l'arène joue le combat répété (`?scene=arena&review=win|loss`) sur les gradins vides, puis retour aux lices ; rien de la partie ne change.
+- La cote contre les vrais combats (`tools/auto-lab.mjs rehearsal`, 200 parties tenues à part) : le planificateur 81 % gagnés, 81 % dits au palier 2, 79 % au palier 1 ; la référence 84 / 83 / 81 % ; le curieux 81 / 81 / 80 % ; en finale, 50 / 53 / 49 %, 53 / 56 / 53 %, 30 / 36 / 37 %.
+
+### 37.3 Le carnet du maître d'armes (`src/combat/autoNotes.ts`, `src/ui/notebook.ts`)
+
+- Une note par combat et par défi, lue dans le script du duel joué : la durée, les dégâts par source de chacun, les failles et les ruptures, les dégâts de Ren dans une faille ou une rupture, les usages de chaque compétence et ceux qui n'ont rien donné, la compétence du rival qui a fait le plus de mal ; un conseil, le premier qui tient (une Feinte gâchée, une exploitation hors faille, de gros coups esquivés, une compétence du rival lourde, des usages jamais partis, aucune faille ; sinon garder le plan, ou répéter).
+- Portée par le résultat (`DuelOutcome.note`), gardée hors de l'empreinte (`V2State.$notes`, les 24 dernières) ; lue sur l'écran de résultat, dans le carnet (le menu, maître Corvin), sur la fiche de match (le dernier conseil sur ce rival).
+
+### 37.4 La ville nourrit le build (BL1-4)
+
+La leçon du sable (`SAND_LESSON`, `src/simulation/v2skills.ts`) : un défi gagné en ville fait monter d'un niveau la première compétence offensive du plan général encore sous le niveau 3. Le curieux passe de 11,5 à 25,5 % de titres (le planificateur 26,5 %, la référence 41 %, inchangés : ils ne défient pas). Jusqu'au niveau 5, mesuré, il atteignait 47,5 % et dépassait la référence.
+
+### 37.5 Ce qui reste
+
+- L'essai en jeu de l'opérateur (la fiche courte : les choix faits dans le cadre décidé).
+- Le lot 4 (le build : le choix du vainqueur, les talents, les armes à propriété ; au test de AC-12, Marek, Cassius et Rhosk n'ont qu'une bonne réponse en finale, § 35.4), puis le lot 5.
 
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 

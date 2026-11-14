@@ -70,7 +70,7 @@ function fightersOf(st: GameState): string[] {
 /** what the page shows of a fighter: its head and its body, and the rehearsal's bouts that can be watched again */
 function fighterHtml(st: GameState, id: string): { head: string; body: string; watch: { win: boolean; loss: boolean } } {
   const name = fighterName(id), url = portraitUrl(id), next = nextBoutOf(st)?.foe === id, r = rehearsalOf(st, id), fresh = !!r && rehearsalFresh(st, r);
-  const sub = [RIVALS[id]?.epithet ?? (GENERICS[id] ? word(GENERICS[id].epithet) : ''), next ? tx('nb.next') : ''].filter(Boolean).join(' · ');
+  const sub = RIVALS[id]?.epithet ?? (GENERICS[id] ? word(GENERICS[id].epithet) : '');
   const known = `<p class="pm-sub">${tx('nb.known')}</p>${scoutLines(st, id).map((l) => `<p>${esc(l)}</p>`).join('')}`;
   const reh = next || r ? `<p class="pm-sub">${tx('nb.rehearsal')}</p>${r ? rehearsalLines(r).map((l) => `<p class="pm-entry">${esc(l)}</p>`).join('') + (fresh ? '' : `<p class="pm-entry">${esc(tx('nb.stale'))}</p>`) : `<p>${esc(tx('nb.noRehearsal'))}</p>`}` : '';
   const notes = notesOf(st, id);

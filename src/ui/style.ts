@@ -134,6 +134,17 @@ const CSS = `
   .pm-goods .pm-foot{grid-column:1 / 3;grid-row:3;padding-top:4px}
   .pm-cmp{grid-template-columns:minmax(0,1fr) 64px 64px 48px;margin-top:4px}
 }
+@media (max-height:480px) and (min-width:701px){
+  .pm-notebook .pm-card.pm-two{display:grid;grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr);column-gap:24px}
+  .pm-notebook .pm-head p{display:none}
+  .pm-notebook .pm-who img{width:48px;height:48px}
+}
+@media (max-width:700px){
+  .pm-notebook .pm-head p{display:none}
+  .pm-notebook .pm-col .pm-glist{max-height:22vh}
+  .pm-notebook .pm-who img{display:none}
+  .pm-notebook .pm-who{padding-bottom:4px}
+}
 .pm-col .pm-glist{border-bottom:0}
 .pm-col .pm-head{padding-bottom:12px}
 .pm-col .pm-head .pm-h{margin:0}
