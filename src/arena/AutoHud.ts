@@ -54,7 +54,7 @@ body.pm-pad #ah-pause .kb{display:none}
 #arena-hud .ah-f.r .ah-cb i{left:auto;right:0}
 #arena-hud .ah-ch.big .ah-cb i{background:var(--ds-accent)}
 #arena-hud .ah-ch.off{visibility:hidden}
-#arena-hud.auto #ah-bar{gap:10px}
+#arena-hud.auto #ah-bar{gap:10px;width:max-content;max-width:calc(100vw - 32px)}
 .ah-b.slot{grid-template-columns:auto 1fr;cursor:pointer}
 .ah-b.slot.waiting{box-shadow:inset 0 0 0 1px var(--ds-accent)}.ah-b.slot.waiting b{color:var(--ds-accent)}
 .ah-b.slot .ord{grid-row:1 / span 2;grid-column:1;font:400 var(--ds-fs-label)/1 var(--ds-title);color:var(--ds-muted);min-width:14px;text-align:center}
@@ -67,11 +67,12 @@ body.pm-pad #ah-pause .kb{display:none}
 .ah-b.slot .cdv{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--ds-muted)}
 /* lot 2 of « La Brute »: a skill's uses, a filled square a use left; a skill spent in the muted grey; the opening's tag in the accent; a float's second line */
 .ah-b.slot .pips{display:inline-flex;gap:3px;margin-right:6px;vertical-align:1px}
+.ah-b.slot em .fam{display:none}
 .ah-b.slot .pips i{display:block;width:7px;height:7px;background:var(--ds-ivory);border:1px solid var(--ds-ivory)}
 .ah-b.slot .pips i.x{background:none;border-color:var(--ds-muted)}
 .ah-b.slot.spent b,.ah-b.slot.spent .ord{color:var(--ds-muted)}
 #arena-hud .ah-tags b.op{color:var(--ds-accent);border-color:var(--ds-accent)}
-#ah-dmg div small{display:block;margin-top:2px;font:600 var(--ds-fs-small)/1.2 var(--ds-text);-webkit-text-stroke:3px var(--ds-ink);color:var(--ds-accent);text-align:center}
+#ah-dmg div small{display:block;margin-top:2px;font:600 var(--ds-fs-small)/1.2 var(--ds-text);-webkit-text-stroke:4px var(--ds-ink);paint-order:stroke fill;color:var(--ds-accent);text-align:center}
 .ah-b.ctl b{color:var(--ds-ivory)}
 .ah-b.ctl.active b,.ah-b.ctl.active em{color:var(--ds-accent)}
 #arena-hud .ah-b.ctl.active kbd{border-color:var(--ds-accent);color:var(--ds-accent)}
@@ -157,7 +158,8 @@ export class AutoHud {
     const label = g.broken ? t.brokenTag(Math.ceil(g.stunLeft)) : t.breakBar;
     this.set(`rsl${id}`, label, () => { rs.querySelector('span')!.textContent = label; });
     const wd = root.querySelector('.ah-tags .wd')!, bs = root.querySelector('.ah-tags .bs')!;
-    const w = g.ward > 0 ? `${t.wardOn} ${Math.ceil(g.ward)} s` : '', b = g.boost > 0 ? `${t.boostOn} ${Math.ceil(g.boost)} s` : '';
+    // the skill's own name (lot 2 of « La Brute »: a rival's protection is its own, not Ren's Rampart)
+    const w = g.ward > 0 ? `${g.wardId ? this.name(g.wardId) : t.wardOn} ${Math.ceil(g.ward)} s` : '', b = g.boost > 0 ? `${g.boostId ? this.name(g.boostId) : t.boostOn} ${Math.ceil(g.boost)} s` : '';
     this.set(`wd${id}`, w, () => { wd.textContent = w; wd.classList.toggle('on', !!w); });
     this.set(`bs${id}`, b, () => { bs.textContent = b; bs.classList.toggle('on', !!b); });
     // the opening (PB-1's faille): its seconds left, while it lasts
@@ -215,7 +217,7 @@ export class AutoHud {
       else if (e.type === 'open' && (e.why === 'opener' || e.why === 'whiff') && !e.again) this.float(e.who as Seat, t.opened, 'ap', -34, t.secs(Math.round(Number(e.dur))));
       else if (e.type === 'clash') { this.float(e.who as Seat, t.clash, 'guarded'); this.float(e.to as Seat, t.clash, 'guarded'); }
       else if (e.type === 'break') this.float(e.who as Seat, t.breakFloat, 'guardbreak', -34);
-      else if (e.type === 'effect') this.float(e.who as Seat, e.family === 'defensive' ? t.wardOn : t.boostOn, 'ap', -34);
+      else if (e.type === 'effect') this.float(e.who as Seat, e.action ? this.name(e.action as string) : e.family === 'defensive' ? t.wardOn : t.boostOn, 'ap', -34);
       else if (e.type === 'ko') { const ko = this.q('#ah-ko'); ko.querySelector('b')!.textContent = e.who === 'marek' ? t.victory : t.defeat; ko.querySelector('span')!.textContent = t.isDown(this.names[e.who as Seat]); ko.classList.add('on'); this.el.classList.add('ko'); }
       else if (e.type === 'reset') { this.q('#ah-ko').classList.remove('on'); this.el.classList.remove('ko'); this.q('#ah-dmg').textContent = ''; }
     }

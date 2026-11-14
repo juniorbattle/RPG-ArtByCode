@@ -130,11 +130,16 @@ try {
   const bout = AM.autoBoutOf(st0), forms = AM.autoForms(bout), rr = AM.autoReactions(bout.ren, bout.foe), fr = AM.autoReactions(bout.foe, bout.ren);
   const pc = (k) => inLang(() => T.tx('auto.sheet.pct', { n: Math.round(k * 100) })), sg = (f) => `${f >= 1 ? '+' : '−'}${pc(Math.abs(f - 1))}`, n1 = (x) => inLang(() => T.num(+x.toFixed(1)));
   const lb = (k) => inLang(() => T.tx(k));
+  const bar = (a, att, def, f) => { const k = ((2 * att.atk) / (att.atk + def.def)) * (def.taken ?? 1) * f, dmg = (a.hits ?? [1]).reduce((n, sh) => n + Math.max(1, Math.round((a.power ?? 0) * sh * k)), 0); return inLang(() => T.tx('auto.sheet.pct', { n: +((100 * dmg) / Math.max(1, def.hp * AU.AUTO_RULES.hpScale)).toFixed(1) })); };
   const want = [
     // the health of the bout: every health × the duel's scale (×3.132 under the model « La Brute » with the clash, journal Passe BL1)
     [lb('auto.sheet.hp'), String(Math.round(bout.ren.hp * AU.AUTO_RULES.hpScale)), String(Math.round(bout.foe.hp * AU.AUTO_RULES.hpScale))], [lb('stat.atk'), n1(bout.ren.atk), n1(bout.foe.atk)], [lb('stat.def'), n1(bout.ren.def), n1(bout.foe.def)],
     [lb('stat.end'), n1(bout.ren.end), n1(bout.foe.end)], [lb('stat.viv'), n1(bout.ren.viv), n1(bout.foe.viv)], [lb('auto.sheet.form'), sg(forms[0]), sg(forms[1])],
     [lb('auto.sheet.dodge'), pc(rr.dodge), pc(fr.dodge)], [lb('auto.sheet.guard'), `${pc(rr.guard)} · ${pc(rr.guardSkill)}`, `${pc(fr.guard)} · ${pc(fr.guardSkill)}`],
+    // BL1-10 (lot 2 of « La Brute », journal Passe BL2): what one light attack and one heavy blow take from the other's bar, as the duel strikes them (an oracle
+    // written here from src/combat/auto.ts hitOnce: each hit its share of the power, at least 1; the Attack against the Defence, the share taken, the form)
+    [lb('auto.sheet.lightRow'), bar(bout.ren.light, bout.ren, bout.foe, forms[0]), bar(bout.foe.light, bout.foe, bout.ren, forms[1])],
+    [lb('auto.sheet.heavyRow'), bar(bout.ren.heavy, bout.ren, bout.foe, forms[0]), bar(bout.foe.heavy, bout.foe, bout.ren, forms[1])],
   ];
   check(JSON.stringify(sheet.rows) === JSON.stringify(want), `the match sheet's table is the duel's fighters: ${sheet.rows.map((r) => r.join(' ')).join(' | ')}`);
   check(bout.prep < 0.05 || sheet.text.includes(inLang(() => T.tx('auto.sheet.prep', { name: sheet.foe, n: T.num(+bout.prep.toFixed(1)) }))), `the rival's training as Attack points (${+bout.prep.toFixed(1)})`);
@@ -147,16 +152,17 @@ try {
   await page.focus(`.pm-glist .pm-btn:nth-child(${idx + 1})`);
   await page.keyboard.press('ArrowLeft');
   const st1 = await page.evaluate(() => window.__game.state());
-  const order = st1.v2.kit.order ?? [];
-  check(order[2] === last && order.length === 4, `ArrowLeft sets the order in the game: ${order.join(', ')}`);
-  actions.push({ type: 'setOrder', skills: order });
+  // the order set on the match sheet is kept for its rival (lot 2 of « La Brute »: « un plan par rival »), the general plan unchanged
+  const order = st1.v2.kit.plans?.[bout.foeId]?.order ?? [];
+  check(order[2] === last && order.length === 4 && JSON.stringify(st1.v2.kit.order) === JSON.stringify(st0.v2.kit.order), `ArrowLeft sets the order in the game, kept for ${bout.foeId}: ${order.join(', ')}`);
+  actions.push({ type: 'setOrder', skills: order, foe: bout.foeId });
   await page.screenshot({ path: path.join(outDir, 'sheet-2-order.png') });
   await page.keyboard.press('Enter');
   const to = await page.evaluate(() => window.__go);
   check(/scene=arena/.test(to ?? ''), `the sheet enters the arena: ${to}`);
   await open(to);
   const a = await page.evaluate(() => { const A = window.__arena; return { rules: A.rules, order: A.auto.fighters.ren.skills.map((x) => x.id), end: A.auto.end, hp: A.auto.result.hp }; });
-  const node = AM.autoOutcome(G.advance(st0, { type: 'setOrder', skills: order }).state);
+  const node = AM.autoOutcome(G.advance(st0, actions[0]).state);
   check(a.rules === 'auto' && a.order.join() === order.join(), `the arena plays the order set: ${a.order.join(', ')}`);
   check(a.end === node.duel.t && a.hp.join() === [node.playerHp, node.opponentHp].join(), `the arena's duel is Node's on that state (${a.end} s, ${a.hp.join(' / ')})`);
   await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());

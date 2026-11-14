@@ -118,7 +118,7 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     (card.querySelector('.pm-purse b') as HTMLElement).textContent = String(chosen.size);
     const ladder = card.querySelector('.pm-ladder'), wide = card.querySelector('.pm-ladder2');
     // the plan: the general one on the skills page, the rival's on the match sheet (kept for them), each skill's uses and its condition
-    if (ladder) ladder.innerHTML = `<p class="pm-sub">${tx('ui.order.title')}</p><p class="pm-sub">${esc(planLine(host.state(), undefined, undefined))}</p>${orderHtml(host.state(), four())}`;
+    if (ladder) ladder.innerHTML = `<p class="pm-sub">${tx('ui.order.title')}</p>${orderHtml(host.state(), four())}`;
     if (wide) wide.innerHTML = `<p class="ttl">${esc(foe && host.foeName ? tx('ui.order.vs', { name: host.foeName }) : tx('ui.order.title'))}</p><p class="pm-sub">${esc(planLine(host.state(), foe, host.foeName))}</p>${autoOrderView(host.state(), four(), foe).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${tx('ui.order.uses', { n: t.uses, gap: num(t.gapS) })}<br>${esc(tx(COND_TEXT[condOf(host.state(), t.id, foe)]))}</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
     if (go) go.disabled = chosen.size !== 4;
     const lv = kit.levels[now], st = host.state(), f = skillFigures(st, now, lv), up = nextLevel(st, now), k = SKILL_BOOK[now];
@@ -126,7 +126,8 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
       : up.fromDay ? tx('ui.skill.challengeLate', { name: RIVALS[up.teacher!].name, day: up.fromDay }) : tx('ui.skill.challenge', { name: RIVALS[up.teacher!].name });
     const on = chosen.has(now), movable = on && chosen.size === 4;
     // the tactic (SY-08): when a skill brought leaves, its condition chosen with C (the pad's Y)
-    const when = on ? `<p class="ab pm-when">${esc(whenText(st, now, foe))}</p>` : '';
+    // when it leaves, and on the skills page whose plan that is (the general one; a rival's is set on its match sheet)
+    const when = on ? `<p class="ab pm-when">${esc(whenText(st, now, foe))}</p>${sheet === null ? `<p class="what">${esc(planLine(st, undefined, undefined))}</p>` : ''}` : '';
     const role = roleName(now);
     detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))}${role ? ` · ${esc(tx('ui.skill.role', { role }))}` : ''} · ${tx('v2.skills.level', { level: lv })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, now, up.level) : null, up?.level ?? lv)}<p class="what">${esc(said)}</p>${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}`;
     fit();

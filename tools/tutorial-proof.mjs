@@ -88,8 +88,13 @@ function oracle(log, ids) {
     if (e.ev === 'charge') { fresh[e.who] = true; if (e.who === ids.ren && e.act !== ids.renLight) put('charge', e.t); continue; }
     if (e.ev === 'break') { put('break', e.t); continue; }
     if (e.ev === 'ward' || e.ev === 'boost') { fresh[e.who] = false; continue; }
-    if (e.ev === 'parry' || e.ev === 'interrupt') continue;
+    // a clash of two blows of the same weight; an interruption or a parry opens a fighter (lot 2 of « La Brute »)
+    if (e.ev === 'clash') { if (!e.beat) put('clash', e.t); continue; }
+    if (e.ev === 'parry' || e.ev === 'interrupt') { put('open', e.t); continue; }
     const follow = !fresh[e.who]; fresh[e.who] = false;
+    // an opener's first blow that lands opens its target; a big action's first blow dodged opens its striker (src/combat/auto.ts hitOnce)
+    const act = ids.acts?.[e.act];
+    if (!follow && act && ((e.ev !== 'dodged' && act.role === 'opener') || (e.ev === 'dodged' && act.kind !== 'light'))) put('open', e.t);
     if (follow) put('combo', e.t);
     if (e.ev !== 'hit') put('react', e.t);
     if (e.ev === 'hit' && !ids.light.includes(e.act)) put('form', e.t);
@@ -148,7 +153,7 @@ async function firstBout(page, sheet, tag) {
   console.log(`   said in the bout: ${said.map((x) => `${x.id} ${x.t.toFixed(2)}`).join(' | ')}`);
   check(new Set(said.map((x) => x.id)).size === said.length, 'no lesson said twice');
   // against the script
-  const duel = await page.evaluate(() => { const a = window.__arena.auto; return { log: a.result.log, ids: { ren: a.fighters.ren.id, renLight: a.fighters.ren.light.id, light: [a.fighters.ren.light.id, a.fighters.marek.light.id].filter(Boolean) }, dt: a.D.dt }; });
+  const duel = await page.evaluate(() => { const a = window.__arena.auto; return { log: a.result.log, ids: { ren: a.fighters.ren.id, renLight: a.fighters.ren.light.id, light: [a.fighters.ren.light.id, a.fighters.marek.light.id].filter(Boolean), acts: Object.fromEntries([a.fighters.ren, a.fighters.marek].flatMap((f) => [f.light, f.heavy, ...f.skills]).map((x) => [x.id, { role: x.role, kind: x.kind }])) }, dt: a.D.dt }; });
   const want = oracle(duel.log, duel.ids);
   check(JSON.stringify(said.map((x) => x.id).sort()) === JSON.stringify(Object.keys(want).sort()), `the lessons the bout reaches before its K.O.: ${Object.keys(want).join(', ')}`);
   const off = said.filter((x) => x.id !== 'start' && !(x.t >= want[x.id] - 1e-9 && x.t - want[x.id] <= duel.dt + 1e-6));
@@ -266,7 +271,8 @@ try {
   await page.evaluate(() => window.__ui.openSkills(true));
   await sleep(600);
   const sheet = await page.evaluate(() => [...document.querySelectorAll('.pm-vs tbody tr')].map((tr) => [...tr.children].map((td) => td.textContent.trim())));
-  check(sheet.length === 8, `the match sheet's two fighters: ${sheet.map((r) => r.join(' ')).join(' | ')}`);
+  // (eight lines, and since lot 2 of « La Brute » what one light attack and one heavy blow take from each bar: BL1-10, journal Passe BL2)
+  check(sheet.length === 10, `the match sheet's two fighters: ${sheet.map((r) => r.join(' ')).join(' | ')}`);
   await page.evaluate(() => [...document.querySelectorAll('.pm-overlay .pm-foot .pm-btn.primary')].pop()?.click());
   await sleep(300);
   const arenaAt = await page.evaluate(() => window.__go);

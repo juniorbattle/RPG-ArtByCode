@@ -857,7 +857,10 @@ export class ArenaApp {
     if (!m) return false;
     const t = m(a);
     if (t < 0) return false;
-    a.seek(t); this.onEvents(a.drain()); this.koT = a.over ? a.t : -1;
+    // the new moments of lot 2 of « La Brute »: their last half-second told, so that the HUD says them (an opening's tag, « Interrupted », « Parried », « Clash »)
+    if (AUTO_TOLD.has(name)) { a.seek(Math.max(0, t - 0.5)); this.onEvents(a.drain()); while (a.t < t - 1e-9 && !a.over) { a.step(); this.onEvents(a.drain()); } }
+    else { a.seek(t); this.onEvents(a.drain()); }
+    this.koT = a.over ? a.t : -1;
     this.paused = true; this.moment = true; this.hud?.still(true);
     this.presentFighters(0); this.update(0);
     return true;
@@ -896,6 +899,13 @@ const AUTO_MOMENTS: Record<string, (a: AutoReplay) => number> = {
   break: (a) => { const t = a.timeOf((e) => e.ev === 'break'); return t < 0 ? -1 : t + 1; },
   mid: (a) => a.end / 2,
   ko: (a) => a.end + 1.2,
+  // lot 2 of « La Brute »: an opener's first blow landing (an opening), an interruption, a parry, a clash of two blows of the same weight
+  open: (a) => { const ops = new Set([...a.fighters.ren.skills, ...a.fighters.marek.skills].filter((x) => x.role === 'opener').map((x) => x.id)); const t = a.timeOf((e) => (e.ev === 'hit' || e.ev === 'guarded') && !!e.act && ops.has(e.act) && e.hit === 1); return t < 0 ? -1 : t + 0.4; },
+  interrupt: (a) => { const t = a.timeOf((e) => e.ev === 'interrupt'); return t < 0 ? -1 : t + 0.3; },
+  parry: (a) => { const t = a.timeOf((e) => e.ev === 'parry'); return t < 0 ? -1 : t + 0.3; },
+  clash: (a) => { const t = a.timeOf((e) => e.ev === 'clash' && !e.beat); return t < 0 ? -1 : t + 0.25; },
 };
+/** the moments whose last half-second is told (lot 2 of « La Brute ») */
+const AUTO_TOLD = new Set(['open', 'interrupt', 'parry', 'clash']);
 
 function smooth(x: number): number { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); }

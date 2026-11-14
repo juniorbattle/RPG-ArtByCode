@@ -1472,6 +1472,40 @@ Après la fusion, sur le tableau « Un coup en poule : Estoc / coup simple / cou
   Même à ×1, l'écart affiché reste de 4,4 (129 contre 29) : il vient du compte par coup et de la rupture, pas du poids.
 - **La réponse de l'opérateur**, mot pour mot, à la question « Garder le coup puissant à ×1,5 et l'expliquer à l'écran au lot 2 ? » (13/11/2026) : « Garder ×1,5 ». Rien du jeu ne change. Le lot 2 montre dans l'arène le total d'une attaque simple (52, et non 29 puis 23), dit quand un coup puissant tombe dans une rupture, et la fiche de match dit ce qu'un coup prend de la barre de chacun (BL1-10).
 
+## 36. Le lot 2 construit : ce qui se voit du duel « La Brute » (14/11/2026, journal Passe BL2)
+
+Statut : **le lot 2 du § 33.5 est construit et fusionné dans le jeu par défaut** ; les règles du duel ne changent pas (le § 35 et le § 35.6 tiennent). L'opérateur, par la séance « Cité du Tournoi Local », mot pour mot, après avoir choisi de garder la séance de l'atelier pour le lot 2 : « donne lui l'instruction ».
+
+### 36.1 Le plan de combat
+
+- **Une condition par compétence parmi celles de son rôle** (PB-1, § 32.2) : la page offre les conditions du rôle de la compétence (`AUTO_CONDS_BY_ROLE`, `autoCondsFor` dans `src/combat/autoData.ts`), la table du laboratoire telle que ses plans ont été mesurés (`CONDS_BY_ROLE` de `tools/auto-final/brute.mjs`, le test la compare) : « dans une faille » et « au début » parmi elles. Une condition de la famille, écrite avant le lot 2, joue encore.
+- **Un plan par rival** : le plan réglé sur la fiche de match (l'ordre des quatre et la condition de chacune) est gardé pour ce rival (`kit.plans`, `setTactic` et `setOrder` avec `foe`) et repris quand on le retrouve, à son combat comme à un défi (`autoKitFor` dans `autoBoutOf`) ; il part du plan général la première fois. La page des compétences règle le plan général. La fiche le dit : « Votre plan général pour l'instant : ce que vous changez ici est gardé pour vos combats contre … », puis « Gardé pour vos combats contre … ».
+- **La page** : le rôle de chaque compétence (« rôle : exploiter »), ses usages par combat et le délai entre deux, maintenant et au niveau suivant (`skillFigures`), et dans l'ordre des quatre ses usages et son délai à côté de sa condition (`autoOrderView`).
+
+### 36.2 La relecture de l'arène et le HUD
+
+- **Les failles** lues dans le script selon la règle du duel (`src/combat/auto.ts`, `hitOnce`) : le premier coup d'un ouvreur qui touche ouvre sa cible (Fracas, l'Épaule d'Orla : 4 s), une interruption ouvre l'interrompu (6 s), une parade ouvre l'auteur du coup paré (6 s), un gros coup esquivé ouvre son auteur (2,5 s). La carte du combattant montre « Faille 4 s » (« Open »), dans l'accent ; au-dessus de lui, « Faille ! » et ses secondes. Sur 42 combats, chaque faille dite correspond au compte du duel lui-même (`n.opened`).
+- **L'interruption et la parade** : « Interrompu » au-dessus du combattant coupé, « Paré » au-dessus de l'auteur du coup paré, chacun avec sa faille ; la parade est dessinée : le gros coup de l'auteur atteint le paradeur, qui le bloque, avec la recette et le son de la garde d'un gros coup (les recettes approuvées). L'interruption et la faille n'ont pas de son propre : le coup qui interrompt garde le sien.
+- **Les usages en carrés** sous le nom de chaque compétence, un carré plein par usage restant ; une compétence épuisée passe au gris.
+- **Les coups** : les coups d'une même action en un seul nombre, leur total (§ 35.6 : « 52 », et non « 29 » puis « 23 ») ; un coup dans une rupture ou une faille le dit sous son nombre, avec le multiplicateur du duel (« dans la rupture ×1,4 », « dans la faille ×1,25 »).
+- **Les moments de l'arène** : `open`, `interrupt`, `parry`, `clash` (`__arena.jump`), leur dernière demi-seconde dite pour que le HUD les montre.
+
+### 36.3 La fiche de match
+
+- **Le style du rival** : ses compétences et leur rôle, son coup puissant dès qu'il est prêt (Tobin, Orla) ; ses pièces sont dans l'esquive et la garde du tableau. Le lot 3 (le repérage par paliers) dira ce qu'on en sait avant de l'avoir vu.
+- **BL1-10** (« Garder ; le dire au lot 2 sur la fiche de match ») : deux lignes au tableau, ce qu'une attaque simple et un coup puissant prennent à la barre de l'autre (nets, la forme du jour comprise), et la phrase : un rival a plus de santé que vous, c'est voulu, le tournoi rend ses rivaux plus forts par leur santé d'un tour à l'autre.
+- La note de la santé corrigée : « multipliée par 3,6 » (elle disait encore « compte double », le DB5 d'avant le § 34).
+
+### 36.4 Le tutoriel et le guide
+
+- Deux leçons de plus au premier combat : **la faille** (à la première faille dite : qui, combien de secondes, ce qu'elle fait, les quatre façons de l'ouvrir, la rupture comme grande faille ; la carte du combattant éclairée) et **l'entrechoc** (au premier entrechoc). La leçon du départ dit les carrés des usages ; celle de la charge ne dit plus que « rien n'en coupe une » (une Feinte coupe un gros coup).
+- Le guide : « Le duel » dit les usages, le nombre unique d'une action, la faille et ses quatre façons, l'entrechoc ; « Préparer un combat » dit les conditions par rôle, le plan gardé par rival, ce que la fiche montre (le style, ce qu'un coup prend à chaque barre).
+
+### 36.5 Ce qui reste
+
+- Le lot 3 : la préparation (la répétition, le carnet du maître d'armes, le repérage par paliers), la ville qui nourrit le build du curieux (BL1-4) ; puis l'essai en jeu de l'opérateur.
+- Le lot 4 : au test de AC-12, Marek, Cassius et Rhosk n'ont qu'une bonne réponse en finale (§ 35.4).
+
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
 Passe AU3, en réponse au chantier n° 1 de la Passe AU2 :

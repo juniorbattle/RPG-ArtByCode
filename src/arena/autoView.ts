@@ -52,7 +52,7 @@ interface State {
   side: AutoSide; charge: AutoCharge | null;
   g: number; gT: number; broken: boolean; stunEnd: number; stunDur: number;
   /** a ward or a boost under way: until when, its length, what it does to the gauge (the ward on the gauge one takes, the boost on the gauge one gives) */
-  ward: { until: number; dur: number; gauge: number } | null; boost: { until: number; dur: number; gauge: number; load?: boolean } | null;
+  ward: { until: number; dur: number; gauge: number; id?: string } | null; boost: { until: number; dur: number; gauge: number; load?: boolean; id?: string } | null;
   cd: Record<string, { until: number; dur: number }>;
   /** each skill's uses spent (its charges), against its uses per duel */
   used: Record<string, number>;
@@ -72,6 +72,8 @@ export interface AutoGauge {
   /** the gauge toward a break (0-100 % of DB5-4's 70), full while broken; the stun's seconds left and its length */
   gaugePct: number; broken: boolean; stunLeft: number; stunDur: number;
   ward: number; boost: number;
+  /** the protection's and the support's skill (its name on the card: lot 2 of « La Brute ») */
+  wardId?: string; boostId?: string;
   /** the opening's seconds left (0 when not open) */
   open: number;
   charge: { id: string; kind: string; family: string | null; pct: number; left: number } | null;
@@ -225,7 +227,7 @@ export class AutoReplay {
       }
       case 'ward': case 'boost': {
         if (!a) break;
-        const eff = a.ward ?? a.boost!, k = { until: e.t + eff.dur, dur: eff.dur, gauge: eff.gauge };
+        const eff = a.ward ?? a.boost!, k = { until: e.t + eff.dur, dur: eff.dur, gauge: eff.gauge, id: a.id };
         if (e.ev === 'ward') s.ward = k; else s.boost = { ...k, ...(a.role === 'load' ? { load: true } : {}) };
         s.charge = null;
         this.release(seat, tell);
@@ -394,6 +396,7 @@ export class AutoReplay {
         gaugePct: pct(gauge, max), broken: s.broken && this.t < s.stunEnd, stunLeft: s.broken ? Math.max(0, s.stunEnd - this.t) : 0, stunDur: s.stunDur,
         ward: s.ward ? Math.max(0, s.ward.until - this.t) : 0, boost: s.boost ? Math.max(0, s.boost.until - this.t) : 0,
         open: !this.over && s.openUntil > this.t ? s.openUntil - this.t : 0,
+        ...(s.ward?.id ? { wardId: s.ward.id } : {}), ...(s.boost?.id ? { boostId: s.boost.id } : {}),
         // a stun pauses the charge: the card says the stun, not a charge that does not move
         charge: c && !this.over && !(s.broken && this.t < s.stunEnd) ? { id: c.id, kind: c.kind, family: c.family, pct: pct(this.t - c.start, c.leave - c.start), left: Math.max(0, c.leave - this.t) } : null,
       };
