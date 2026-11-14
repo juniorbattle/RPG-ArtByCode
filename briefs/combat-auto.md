@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32) ; relue le même jour, six sur six à la recommandation, le modèle approuvé et sa construction en cinq lots, le lot 1 lancé (§ 33) ; le lot 1 construit le même jour, le duel « La Brute » dans le jeu par défaut, sa fiche courte relue le même jour, neuf sur neuf à la recommandation, l'entrechoc et la jauge réglés, le § 6.1 du contrat projet amendé (§ 34)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32) ; relue le même jour, six sur six à la recommandation, le modèle approuvé et sa construction en cinq lots, le lot 1 lancé (§ 33) ; le lot 1 construit le même jour, le duel « La Brute » dans le jeu par défaut, sa fiche courte relue le même jour, neuf sur neuf à la recommandation, l'entrechoc et la jauge réglés, le § 6.1 du contrat projet amendé (§ 34) ; la passe d'équilibre faite, le poids des coups, les protections, les armes et la faille réglés, sa fiche courte relue six sur six à la recommandation (§ 35)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -1413,6 +1413,47 @@ Construit au lot 1 :
 - **Le § 6.1 du contrat projet** : amendé le 13/11/2026 avec le texte du § 33.4 (la réponse de l'opérateur, mot pour mot : « Oui, l'amender »), sa note datée en tête du contrat.
 
 L'écart consigné (décision C3) : la poule de la référence à 1 min 27, sous « la poule environ 2min » de SL1-2 (A3). Les santés ×0,9 de BL1-8 rendaient les durées avec l'entrechoc seul ; avec la jauge de BL1-9 et la course recalée, la poule raccourcit. À reprendre dans la passe d'équilibre de BL1-5, avant le lot 2.
+
+## 35. La passe d'équilibre : le poids des coups, les protections, les armes, la faille (13/11/2026, journal Passe BE1)
+
+Statut : **le duel du jeu par défaut est celui du § 34 avec les réglages de ce paragraphe**, qui l'emporte sur le § 34 là où ils diffèrent. La passe décidée par l'opérateur avant le lot 2 (BL1-5 « Une passe à part, avant le lot 2 »), élargie à sa question du 13/11/2026, mot pour mot : « par contre comment cela se fait t-il que des competences peuvent infliger 300-400 degats quand les attaques simple et fortes font a peine 10-20 degats ? je pense que c'est cela qui fait que les match ne dure que 1min27 ... je pense qu'il faut corriger cela ». Sa fiche courte : https://claude.ai/artifact/EhdmkkCiFyxL3C4X9Q1EyD (`briefs/fiche-combat-brute-equilibre.html`).
+
+### 35.1 La réponse (le jeu du § 34 ; les combats du planificateur, 200 parties tenues à part, graines 101 à 300)
+
+- La puissance d'un coup part de la fiche DB5 (`POWER`) : l'attaque simple 1 % d'une barre de 600 (DB5-5), l'Estoc 20 % (DB5-1), les autres compétences au prorata de leur temps de charge ; ×3,2 pour tous (le rythme ×3, RY-1), ×1,2 pour les compétences (le modèle). À stats égales : l'attaque simple 19,2 en tout, partagée entre les coups de l'arme (16,3 par coup avec l'épée, 13,4 avec la lame, 3,3 avec le sabre) ; le coup puissant 85 ; l'Estoc 369, puis ×2 dans une faille ou une rupture, ×1,25 dans la faille, ×1,4 dans la rupture : 921 à 1 290.
+- En poule, 80 % des dégâts de Ren viennent des compétences (l'Estoc seul 55 %), 14 % des attaques simples, 6 % du coup puissant ; au tableau 70-23-7, en finale 69-23-8. Un Estoc fait 1 119 en médiane, une attaque simple 14 par coup.
+- Ses deux usages du niveau 1 font 95 % de la barre d'un rival de poule (2 353 en médiane) : la poule dure le temps de les placer dans une rupture ou une faille, 1 min 27.
+
+### 35.2 Les réglages
+
+| Réglage | Avant | Après | Ce qu'il corrige |
+|---|---|---|---|
+| L'attaque simple (`AUTO_WEIGHT.light`) | 1 % de la barre (DB5-5) | ×1,75 : 1,75 % | elle fait 38 / 47 / 47 % des dégâts de Ren au lieu de 14 / 23 / 23 |
+| Le coup puissant (`AUTO_WEIGHT.heavy`) | 85 à stats égales | ×1,5 : 128 | 12 / 14 / 16 % au lieu de 6 / 7 / 8 |
+| Chaque compétence (`AUTO_WEIGHT.skills`, `AUTO_BRUTE.usePower`) | ×1,2 (le modèle) | ×0,66 (×1,2 × 0,55) : l'Estoc 203, 11 % de la barre | 50 / 39 / 36 % au lieu de 80 / 70 / 69 ; un Estoc dans une faille vaut une dizaine d'attaques simples, et non plus une quarantaine |
+| Les santés (`hpScale`) | ×3,132 | ×3,6 (×1,15) | la référence 1 min 58 / 2 min 58 / 3 min 19 (SL1-2) |
+| Les protections (`AUTO_SKILLS.d1`, `k_iron`) | 27 s et 33,6 s au niveau 1 | deux fois plus courtes : 13,5 s et 16,8 s | la Peau de fer au niveau 3 +16 / +20 points au tableau et en finale, au lieu de +32 / +49 avec les coups rééquilibrés seuls |
+| La lame, le sabre (`AUTO_WEAPONS`) | 0,7 + 0,7 ; 0,17 × 3 | 0,8 + 0,8 ; 0,47 × 3 | au test de AC-12 : l'épée 79 / 50 / 38, la lame 86 / 66 / 51, le sabre 89 / 67 / 53 (le sabre à 10 % avant) |
+| La faille d'un ouvreur (`AUTO_RULES.opener`), la charge des exploits (`roleCharge.exploit`) | 5 s ; ×0,4 | 4 s ; ×0,36 | en finale, Orla, Ilse, Vessa et Tobin ont plusieurs bonnes réponses ; Marek, Cassius et Rhosk une seule |
+| La course (PB-3) | `AUTO_RACE` du § 34.4 | Vessa 1,094, Tobin 1,416, Cassius 1,245, Orla 0,952, Ilse 0,937, Marek 0,92, Rhosk 1,235 ; tableau ×1,242, finale ×1,568 | le planificateur 54 % en demi-finale, 50 % en finale |
+
+`POWER` (la fiche DB5) reste tel quel : l'ancien duel derrière `?duel=charge` le lit encore. Les options écartées et leurs mesures : journal Passe BE1.
+
+### 35.3 Sur 200 parties tenues à part (graines 101 à 300)
+
+- Les titres : la référence 41 % (35 au § 34), le planificateur 27 % (24), le curieux 12 % (1), le diligent et l'oisif 0 %.
+- Les durées de la référence : 1 min 58 / 2 min 58 / 3 min 19 ; le rythme 39 à 43 coups par minute ; 1,4 à 1,5 rupture par combat pour chacun ; 0,8 à 1 entrechoc par minute.
+- Les dégâts des rivaux (simple, puissant, compétences) : 41-40-19, 40-38-22, 42-29-29.
+- Les blessures d'une partie (graines 1 à 50) : le diligent 1,44, l'oisif 1,34, la référence 0,38 (un coup puissant plus lourd fait tomber plus souvent).
+
+### 35.4 Ce qui reste
+
+Au test de AC-12, une seule bonne réponse en finale contre Marek (Fracas), Cassius et Rhosk (la Feinte), et au tableau contre Tobin, Cassius et Rhosk (la Feinte) : au lot 4, avec les armes à propriété. Le curieux (12 % de titres) : BL1-4, au lot 3. Ensuite le lot 2 (la fiche de match dit ce qu'un coup prend de la barre de chacun, BL1-10).
+
+### 35.5 La fiche relue : six sur six à la recommandation (13/11/2026)
+
+L'opérateur a dit « fiche remplie » ; ses choix, mot pour mot, sans note : BE-1 « Reçu » ; BE-2 « Simple ×1,75, puissant ×1,5, compétences ×0,55 (change DB5-1 et DB5-5) » ; BE-3 « Deux fois plus courtes » ; BE-4 « La lame 0,8, le sabre 0,47 » ; BE-5 « La faille 4 s, l’Estoc un peu plus vif » ; BE-6 « Fusionner, puis le lot 2 ». DB5-1 et DB5-5 sont ses choix du 09/11 (Passe DB6), non A3 ; aucune décision A3 n'est changée (SL1-2, RY-1, RY-3, PB-3 tenus).
+
 
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
