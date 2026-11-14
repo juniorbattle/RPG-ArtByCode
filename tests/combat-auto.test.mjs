@@ -1,8 +1,8 @@
 // The duel played by the computer (src/combat/auto.ts, autoData.ts, autoMatch.ts): the model « La Brute » since lot 1 (the operator's PB-1 « Construire ce
 // modèle » and PB-2 « 2, 2, 3, 3, 4 selon le niveau », journal Passe CF3; briefs/combat-auto.md §§ 32-33; journal Passe BL1), on the same rules for every fighter
 // (SY-01). Three kinds of proof:
-// 1. the port: the final workshop's laboratory copy of the duel (tools/auto-final/sim.mjs) under the set of rules the game plays (`BL1`: `BK5`, the haste when
-//    hurt alone, the health of SL1-2), run beside the game on the game's own fighters, gives the same duels event for event, on inputs that reach every path
+// 1. the port: the final workshop's laboratory copy of the duel (tools/auto-final/sim.mjs) under the set of rules the game plays (`BE1`: `BK5`, the haste when
+//    hurt alone, the health of SL1-2, the clash and the gauge of BL1-8 and BL1-9, the opener's opening of journal Passe BE1), run beside the game on the game's own fighters, gives the same duels event for event, on inputs that reach every path
 //    (the principle of journal Passe P1); tools/auto-final/port-identity.mjs proves the fighters' building too, against the laboratory of the commit before;
 // 2. each rule and each table against an oracle written from the decisions (PB-1, PB-2, SY-01, SY-02, SY-04, AC-02, AC-05, AC-08, AC-11, AC-13, AC-16 with PB-3,
 //    AC-17, AC-18, DB5-3 for the heavy blow, DB5-4 with RY-3, DB7-1, SL1-2), on hand-made fighters and views, never read from the code;
@@ -32,11 +32,11 @@ const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
 
 // ------------------------------------------------------------------------------------------------- 1. the port against the laboratory's copy
 
-test('the port: the same duels as the final workshop\'s copy under BL1, event for event, on kits, levels, gears, rivals, generic fighters, stages, plans and presses that reach every path', () => {
+test('the port: the same duels as the final workshop\'s copy under BE1, event for event, on kits, levels, gears, rivals, generic fighters, stages, plans and presses that reach every path', () => {
   // the laboratory's copy on the game's rules (its AP and its guard of before unused under BL1: no AP, the guard by the stats); the health ×4.08 is the game's
   // own (BL1's 2.04 on the old ×2), so the copy takes ×1 of it
   const SIM = makeSim({ hitFactor: ST.hitFactor, AUTO_RULES: { ...AU.AUTO_RULES, ap: { start: 1, max: 5, light: 1 }, guardReduce: 0.8 }, autoFormsOf: AU.autoFormsOf, autoDraw: AU.autoDraw });
-  const cfg = { ...VARIANTS.BL1.cfg, hp: 1 };
+  const cfg = { ...VARIANTS.BE1.cfg, hp: 1 };
   const kits = [['t1', 't4', 'd1', 's1'], ['t1', 't2', 't3', 't4'], ['k_sunder', 'k_feint', 't4', 'k_focus'], ['k_parry', 'k_feint', 't1', 't4'], ['k_iron', 'd1', 't4', 'k_cry'], ['t3', 'k_sunder', 't4', 'k_cry'], ['t2', 'k_feint', 't4', 's1']];
   const gears = [{ weapon: 'training-sword', armour: null, acc: [null, null] }, { weapon: 'duelist-sabre', armour: 'padded-jack', acc: ['swift-boots', 'lucky-ribbon'] }, { weapon: 'imported-blade', armour: 'mail-shirt', acc: ['iron-ring', 'champion-token'] }, { weapon: 'imported-blade', armour: 'dock-leathers', acc: ['fervour-charm', null] }];
   const viv = (g) => [g.weapon, g.armour, ...g.acc].reduce((n, id) => n + (id ? GEAR_MOD.GEAR[id]?.fx?.viv ?? 0 : 0), 0);
@@ -79,22 +79,28 @@ const GAP = { R: 8, M: 16, L: 28 }, USES = [2, 2, 3, 3, 4];
 test('PB-1 and PB-2: every skill a role, its uses per duel by its level (2, 2, 3, 3, 4), a gap between two by its class (8, 16, 28 s); no AP; the heavy blow keeps DB5-3', () => {
   const C = AD.AUTO_CADENCE, c = C.charge, w = C.power;
   assert.deepEqual([C.charge, C.gap, C.effect], [1.8, 3, 3], 'RY-1, RY-2: the rhythm ×3 of SY-03');
-  assert.deepEqual([AD.AUTO_BRUTE.charge, AD.AUTO_BRUTE.roleCharge.exploit, AD.AUTO_BRUTE.usePower], [0.6, 0.66, 1.2], 'the skills ×0.6 their charge, the exploits ×0.4, each ×1.2 its power (§ 32.2)');
+  // the model's numbers (§ 32.2), with the blows' weights of journal Passe BE1 (the operator's question of 13/11/2026 on the skills' damage): every skill ×0.55 of the
+  // model's ×1.2, the light attack ×1.75 and the heavy blow ×1.5; the exploits ×0.36 their charge (×0.4 in the model) with the opener's opening of 4 s
+  assert.deepEqual([AD.AUTO_BRUTE.charge, AD.AUTO_BRUTE.roleCharge.exploit, AD.AUTO_BRUTE.usePower], [0.6, 0.6, 0.66], 'the skills ×0.6 their charge, the exploits ×0.36, each ×0.66 its power');
+  assert.deepEqual([AD.AUTO_WEIGHT.light, AD.AUTO_WEIGHT.heavy, AD.AUTO_WEIGHT.skills, AD.AUTO_LIGHT.power, AD.AUTO_SKILLS.heavy.powerK], [1.75, 1.5, 0.55, 10.5, 1.5], 'the blows\' weights (journal Passe BE1)');
+  assert.deepEqual([AU.AUTO_RULES.opener, AD.AUTO_SKILLS.d1.ward.dur, AD.AUTO_SKILLS.k_iron.ward.dur], [4, 4.5, 5.6], 'the opener\'s opening 4 s, the protections half as long (journal Passe BE1)');
+  assert.deepEqual([AD.AUTO_WEAPONS['training-sword'].hits, AD.AUTO_WEAPONS['imported-blade'].hits, AD.AUTO_WEAPONS['duelist-sabre'].hits], [[0.85, 0.85], [0.8, 0.8], [0.47, 0.47, 0.47]], 'the weapons (journal Passe BE1)');
   assert.equal(SK.SKILLS.heavy.charge[0], 1.7); assert.equal(SK.SKILLS.t4.charge[0], 7.65);
   assert.equal(AD.AUTO_SKILLS.k_sunder.powerK, 0.6, 'Sunder ×0.6 at AC-12\'s test (journal Passe BL1)');
   for (let lv = 1; lv <= 5; lv++) {
     const ren = AD.autoRen(ST.REN_BASE, { loadout: ['t1', 't4', 'd1', 's1'], levels: { t1: lv, t4: lv, d1: lv, s1: lv, heavy: lv } }, { weapon: 'imported-blade' });
     assert.deepEqual([ren.light.kind, ren.light.hits, ren.light.gap], ['light', AD.AUTO_WEAPONS['imported-blade'].hits, 0.32 * C.gap]);
-    assert.ok(near(ren.light.charge, 1.2 * c) && near(ren.light.power, 6 * w) && ren.light.gauge === 1 && !('ap' in ren.light), 'the light attack at the cadence, no AP');
+    assert.ok(near(ren.light.charge, 1.2 * c) && near(ren.light.power, 6 * 1.75 * w) && ren.light.gauge === 1 && !('ap' in ren.light), 'the light attack at the cadence, ×1.75 (journal Passe BE1), no AP');
+    assert.ok(near(ren.heavy.power, 120 * (1.7 / 7.65) * 1.5 * SK.LEVEL_POWER[lv - 1] * w), 'the heavy blow ×1.5 (journal Passe BE1)');
     // SY-02 (A3): the heavy blow, a base attack outside the four, its DB5-3 cooldown (5 × its first-level charge), no role nor uses
     assert.deepEqual([ren.heavy.kind, ren.heavy.id, ren.heavy.role, ren.heavy.uses], ['heavy', 'heavy', undefined, undefined]);
     assert.ok(near(ren.heavy.charge, SK.SKILLS.heavy.charge[lv - 1] * c) && near(ren.heavy.cooldown, 5 * 1.7 * c));
     for (const s of ren.skills) {
-      const [role, cls] = ROLE[s.id], k = role === 'exploit' ? 0.6 * 0.66 : 0.6;
+      const [role, cls] = ROLE[s.id], k = role === 'exploit' ? 0.6 * 0.6 : 0.6;
       assert.equal(s.role, role, s.id); assert.equal(s.uses, USES[lv - 1], `${s.id} at level ${lv}: ${USES[lv - 1]} uses`); assert.equal(s.cooldown, GAP[cls], `${s.id}: its gap`);
       assert.ok(!('ap' in s), `${s.id}: no AP`);
       assert.ok(near(s.charge, AD.autoCharge(s.id, lv) * c * k), `${s.id}: its charge`);
-      if (s.power) assert.ok(near(s.power, 120 * (AD.autoCharge(s.id, 1) / 7.65) * (AD.AUTO_SKILLS[s.id].powerK ?? 1) * SK.LEVEL_POWER[lv - 1] * w * 1.2), `${s.id}: its power`);
+      if (s.power) assert.ok(near(s.power, 120 * (AD.autoCharge(s.id, 1) / 7.65) * (AD.AUTO_SKILLS[s.id].powerK ?? 1) * SK.LEVEL_POWER[lv - 1] * w * 0.66), `${s.id}: its power`);
     }
   }
   assert.ok(!AD.autoRen(ST.REN_BASE, { loadout: ['heavy', 't1', 't4', 's1'], levels: {} }).skills.some((s) => s.id === 'heavy'), 'never one of the four');
@@ -116,14 +122,14 @@ test('SY-01 with PB-1: the rivals on the same tables, their skills\' uses by the
     const f = AD.autoFoe(id, ST.RIVAL_SHEETS[id], { stage }), P = PROF.DYN_PROFILES[id], n = Math.round((P.comboLen[0] + P.comboLen[1]) / 2);
     assert.equal(f.tempo, 10, `${id}: Speed 10 for its tables`);
     assert.deepEqual([f.light.kind, f.light.hits.length], ['light', n], `${id}: its light attack`);
-    assert.ok(near(f.light.charge, 1.2 * c) && near(f.light.power, 6 * w) && near(f.light.hits.reduce((a, b) => a + b, 0), 1.1, 1e-3));
+    assert.ok(near(f.light.charge, 1.2 * c) && near(f.light.power, 6 * 1.75 * w) && near(f.light.hits.reduce((a, b) => a + b, 0), 1.1, 1e-3));
     assert.ok(near(f.heavy.charge, 1.7 * c) && near(f.heavy.cooldown, 5 * 1.7 * c), `${id}: the heavy blow at level 1, DB5-3`);
     const [dodge, guard, heavy] = STYLE[id];
     assert.deepEqual([f.style.dodge, f.style.guard, f.style.heavy], [dodge, guard, heavy], `${id}: its style`);
     for (const s of f.skills) {
       const [role, cls] = ROLE[s.id], parry = id === 'cassius' && s.id === 'm_brace';
       assert.equal(s.role, parry ? 'parry' : role, `${id} ${s.id}`); assert.equal(s.uses, USES[stage], `${id} ${s.id} at stage ${stage}`); assert.equal(s.cooldown, GAP[cls]);
-      if (s.power) assert.ok(near(s.power, 120 * (s.charge / (c * 0.6 * (role === 'exploit' ? 0.66 : 1)) / 7.65) * w * 1.2), `${id} ${s.id}: its power by its charge`);
+      if (s.power) assert.ok(near(s.power, 120 * (s.charge / (c * 0.6 * (role === 'exploit' ? 0.6 : 1)) / 7.65) * w * 0.66), `${id} ${s.id}: its power by its charge`);
     }
     assert.deepEqual(f.tactic, f.skills.map((s) => AD.AUTO_STYLES[id].tactic[s.id] ?? 'auto'), `${id}: its plan`);
     const fam = f.skills.map((s) => (s.ward ? 0 : s.boost ? 1 : 2));
@@ -152,13 +158,13 @@ const rules = (o = {}) => { const r = JSON.parse(JSON.stringify(AU.AUTO_RULES));
 const blows = (r, who = 'a') => r.log.filter((e) => e.who === who && ['hit', 'guarded', 'dodged'].includes(e.ev));
 const duel = (A, B, seed, R, o = {}) => AU.autoDuel(A, B, seed, { rules: R, log: true, ...o });
 
-test('DB7-1: a blow\'s damage is its power × 2·Atk / (Atk + Def); every health ×3.132 (AC-13\'s ×2, the model\'s ×1.2, SL1-2\'s ×1.45, ×0.9 with the clash of BL1-8)', () => {
+test('DB7-1: a blow\'s damage is its power × 2·Atk / (Atk + Def); every health ×3.6 (AC-13\'s ×2, the model\'s ×1.2, SL1-2\'s ×1.45, ×0.9 with the clash of BL1-8, ×1.15 with the blows\' weights of journal Passe BE1)', () => {
   for (const [atk, def] of [[15, 10], [10, 20], [7, 7], [22, 16.5]]) {
     const r = duel(fighter({ atk }), dummy({ def, hp: 1000 }), 5, rules());
     assert.equal(blows(r)[0].dmg, Math.round(100 * (2 * atk) / (atk + def)), `${atk} against ${def}`);
   }
-  assert.ok(near(AU.AUTO_RULES.hpScale, 2 * 1.2 * 1.45 * 0.9));
-  assert.equal(AU.autoDuel(fighter({ hp: 500 }), dummy({ hp: 1000 }), 1, { rules: { ...rules(), hpScale: AU.AUTO_RULES.hpScale } }).maxHp[1], 3132);
+  assert.equal(AU.AUTO_RULES.hpScale, 3.6);
+  assert.equal(AU.autoDuel(fighter({ hp: 500 }), dummy({ hp: 1000 }), 1, { rules: { ...rules(), hpScale: AU.AUTO_RULES.hpScale } }).maxHp[1], 3600);
 });
 
 test('AC-05 with PB-1: the guard\'s chance from the stats (35 % at equality, ×2 against a big action seen coming, at most 90 %, × a style), a guarded blow loses 30 to 70 % by the Defence against the Attack (DB5-2 changed), ×0.5 to the guarder\'s gauge (BL1-9, A3; ×2 before)', () => {
@@ -242,16 +248,16 @@ test('PB-1 and PB-2: a skill leaves as many times as its uses, its gap apart; th
   assert.ok(near(AD.autoHeavy(3).cooldown, 5 * AD.autoCharge('heavy', 1) * AD.AUTO_CADENCE.charge));
 });
 
-test('PB-1: the opening (« la faille ») — neither guard nor dodge, ×1.25 taken; made by an opener (5 s), an interrupt (6 s, its action cut, its use spent, 1 s before it acts), a parry (a big blow taken, 6 s) or a big action dodged (2.5 s)', () => {
-  // (an opener's opening 5 s: the laboratory's 8 shortened at AC-12's test, journal Passe BL1)
-  assert.deepEqual([AU.AUTO_RULES.open.dmg, AU.AUTO_RULES.whiff, AU.AUTO_RULES.opener, AU.AUTO_RULES.interrupt, AU.AUTO_RULES.parry], [1.25, 2.5, 5, { open: 6, stagger: 1 }, { open: 6, dur: 3 }]);
-  // an opener: the target certain to guard and dodge takes every blow for 5 s after it, ×1.25
+test('PB-1: the opening (« la faille ») — neither guard nor dodge, ×1.25 taken; made by an opener (4 s), an interrupt (6 s, its action cut, its use spent, 1 s before it acts), a parry (a big blow taken, 6 s) or a big action dodged (2.5 s)', () => {
+  // (an opener's opening 4 s: the laboratory's 8 shortened to 5 at AC-12's test, journal Passe BL1, then to 4 with the blows' weights, journal Passe BE1)
+  assert.deepEqual([AU.AUTO_RULES.open.dmg, AU.AUTO_RULES.whiff, AU.AUTO_RULES.opener, AU.AUTO_RULES.interrupt, AU.AUTO_RULES.parry], [1.25, 2.5, 4, { open: 6, stagger: 1 }, { open: 6, dur: 3 }]);
+  // an opener: the target certain to guard and dodge takes every blow for 4 s after it, ×1.25
   const sure = rules({ react: { dodge: 0, guard: 1, cap: 1 }, maxT: 30 });
   const opener = act({ id: 'op', kind: 'skill', role: 'opener', charge: 1, uses: 1, pierce: true });
   const r = duel(fighter({ skills: [opener], tactic: ['ready'], light: act({ charge: 0.5 }) }), dummy(), 3, sure);
   const hitOp = r.log.find((e) => e.act === 'op' && e.ev === 'hit'), after = blows(r).filter((e) => e.act === 'light' && e.t > hitOp.t);
-  assert.ok(after.filter((e) => e.t < hitOp.t + 5 - 0.01).every((e) => e.ev === 'hit' && e.dmg === 125), 'open: every blow lands, ×1.25');
-  assert.ok(after.filter((e) => e.t > hitOp.t + 5 + 0.01).every((e) => e.ev === 'guarded'), 'closed after 5 s');
+  assert.ok(after.filter((e) => e.t < hitOp.t + 4 - 0.01).every((e) => e.ev === 'hit' && e.dmg === 125), 'open: every blow lands, ×1.25');
+  assert.ok(after.filter((e) => e.t > hitOp.t + 4 + 0.01).every((e) => e.ev === 'guarded'), 'closed after 4 s');
   // an interrupt: the target charging a big action has it cut (its use spent), acts again 1 s later, open 6 s
   const big = act({ id: 'big', kind: 'skill', charge: 20, power: 500, uses: 1 }), feint = act({ id: 'fe', kind: 'skill', role: 'interrupt', charge: 1, power: 10, uses: 1 });
   const B = dummy({ skills: [big], tactic: ['ready'], light: act({ charge: 5, power: 1 }) });

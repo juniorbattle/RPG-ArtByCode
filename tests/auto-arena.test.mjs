@@ -261,15 +261,16 @@ test('a version 2 bout\'s duel is the one the match sheet prepared, and the orde
   assert.ok(b && o.duel.log.length > 50);
   assert.deepEqual(o.duel.form, AM.autoForms(b));
   assert.deepEqual(AU.autoDuel(b.ren, b.foe, b.seed), { ...o.duel, log: null });
-  // another order, another duel: in the bouts where two skills come due together (the general plan decides the rest, PB-1), about half of new games
+  // another order, another duel: in the bouts where two skills come due together (the general plan decides the rest, PB-1), about half of new games (a third since
+  // the blows' weights of journal Passe BE1: 19 of 60, 1 of the first 12)
   let changed = 0;
-  for (let seed = 1; seed <= 12; seed++) {
+  for (let seed = 1; seed <= 40; seed++) {
     let g = G.newGame(seed, 'Aster'); G.makeV2(g);
     for (let i = 0; i < 4; i++) g = G.advance(g, { type: 'wait' }).state;
     const k = (x) => `${x.duel.t}:${x.playerHp}:${x.opponentHp}`, o1 = AM.autoOutcome(g), o2 = AM.autoOutcome(G.advance(g, { type: 'setOrder', skills: ['t4', 't1', 's1', 'd1'] }).state);
     if (k(o1) !== k(o2)) changed++;
   }
-  assert.ok(changed >= 3, `another order, another duel (${changed} of 12 new games)`);
+  assert.ok(changed >= 6, `another order, another duel (${changed} of 40 new games)`);
 });
 
 test('the arena\'s rules: a version 2 bout and the arena\'s own page play the duel played by the computer; ?duel=charge the three buttons of before; ?v2=0 today\'s', () => {

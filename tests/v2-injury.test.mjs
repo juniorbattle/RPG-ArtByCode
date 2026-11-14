@@ -129,17 +129,20 @@ test('the numbers of the decision: seeds 1..50 give Passe V2B1\'s wounds a game,
   // (lot 1 of the model « La Brute », journal Passe BL1: 0.46 and 0.7 before, 69.2 % of the bouts, the cut 98 %; the brawlers' heavy blow as soon as it is ready
   // and a heavy blow on an opening knock the lab's players down more often, the race fitted on the planner)
   // (the clash and the gauge of the operator's BL1-8 and BL1-9, the race fitted again, journal Passe BL1: 0.88 and 1.42 before, 52.4 % of the bouts, the cut 90 %)
-  assert.equal(+prepared.rates.playerInjured.toFixed(2), 0.96); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.18);
+  // (the blows' weights of journal Passe BE1, the heavy blow ×1.5 and the race fitted again: 0.96 and 1.18 before, 40.4 % of the bouts, the cut 70 %; a heavy blow
+  // that knocks down more often wounds more often)
+  assert.equal(+prepared.rates.playerInjured.toFixed(2), 1.44); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.34);
   // (lot L4, journal Passe EVL7: 0.592 since Rhosk takes the training sand on the free day before a bracket bout, which the prepared player does not answer: seed 27
   // loses the major match it won; 0.596 before; 0.604 with the duel of journal Passe DB3)
-  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.531); assert.equal(prepared.v2.champion, 0); assert.equal(prepared.v2.madeCut, 0.8);
+  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.404); assert.equal(prepared.v2.champion, 0); assert.equal(prepared.v2.madeCut, 0.7);
   // less than half as often until journal Passe DB9; at the sheet's strength the lab's prepared player, without his skills' levels, still less often than the idle one;
   // since lot 2 of the duel played by the computer (journal Passe LC3) the player who prepares the duel is the reference of AC-14 (the planner, Hilde's look, his kit
   // drilled): wounded far less often than the idle one (0.56 a game), the lab's diligent player no longer; since lot 1 of the second redesign (journal Passe SL1)
   // 0.32 a game against the idle one's 0.56: less often, no longer less than half as often (every rival's heavy blow under the same rule as Ren's)
   const reference = L.labReport(S, L.POLICIES.reference, 'v2');
-  // (0.36 against 0.7 since lot 2, journal Passe SL3; 0.36 against 1.42 under the model « La Brute », journal Passe BL1; 0.3 against 1.18 with BL1-8 and BL1-9)
-  assert.equal(+reference.rates.playerInjured.toFixed(2), 0.3);
+  // (0.36 against 0.7 since lot 2, journal Passe SL3; 0.36 against 1.42 under the model « La Brute », journal Passe BL1; 0.3 against 1.18 with BL1-8 and BL1-9;
+  // 0.38 against 1.34 with the blows' weights of journal Passe BE1)
+  assert.equal(+reference.rates.playerInjured.toFixed(2), 0.38);
   assert.ok(reference.rates.playerInjured < idle.rates.playerInjured, 'the player who prepares the duel is wounded less often than the idle one');
   assert.ok(prepared.eventCounts['healer-offer'] > 0 && idle.eventCounts['healer-offer'] > 0, 'the healer still writes to the wounded');
 });
