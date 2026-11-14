@@ -575,6 +575,13 @@ export class ArenaApp {
         this.spawnFx('guard', this.fighters[c.to], c.to);
         if (this.hitLight) { this.hitLight.pos.set((this.fighters.ren.pos.x + this.fighters.marek.pos.x) / 2, 1.45, 1.2); this.hitLight.scale = this.hitLight.targetScale = c.kind === 'light' ? 0.55 : 0.8; }
         this.cheer(0.3);
+      } else if ((e as { type: string }).type === 'parry') {
+        // a parry (lot 2 of « La Brute »): the striker's big blow meets the parrier's block, the guard's spark, the striker thrown back a little (left open)
+        const c = e as unknown as { who: FighterId; to: FighterId };
+        this.pres[c.who].knock = -0.12; this.pres[c.who].guardHit = 1; this.pres[c.to].knock = -0.22;
+        this.shake = Math.max(this.shake, 0.6);
+        this.spawnFx('guard', this.fighters[c.who], c.who);
+        this.cheer(0.5);
       } else if (e.type === 'ko') { this.koT = this.sim.t; this.cheer(1); }
       // the new rules' moments (DynamicSim only): a gauge breaks, the player is pushed back, a skill's effect takes hold
       else if (e.type === 'break') {

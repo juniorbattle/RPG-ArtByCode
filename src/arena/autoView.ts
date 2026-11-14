@@ -10,7 +10,9 @@ import { autoGenericSheet } from '../combat/autoData';
  *  arena's clock and shows it as the presentation reads a duel (ArenaApp's `DuelSim`: each fighter's health, state and animation, the events of today's
  *  duels: `impact`, `break`, `stun`, `effect`, `ko`), so that the approved combat sheets, the effects, the stands and the sound follow it without a new image;
  *  plus what the HUD of this duel shows (both charges on the timeline, both gauges, Ren's four skills with their gaps). The model « La Brute » (PB-1, journal
- *  Passe CF3) has no AP: the presentation's `ap` stays 0 (lot 1: nothing new on screen; its uses, openings, parries and interruptions are lot 2's). Pure: the
+ *  Passe CF3) has no AP: the presentation's `ap` stays 0; since its lot 2 the replay tells its openings (`open`, the duel's own rule read from the script: an
+ *  opener's blow, an interruption, a parry, a big action dodged), its interruptions and parries (`interrupt`, `parry`, a parry drawn as the striker's blow
+ *  meeting the parrier's block), each blow's place (in a break, in an opening) and an enchaînement's running total, and each skill's uses. Pure: the
  *  tests run it in Node and check that it ends on the duel's own result. */
 
 export type Seat = 'ren' | 'marek';
@@ -58,6 +60,10 @@ interface State {
   seq: boolean;
   /** Ren charging a skill: its tier on the ladder of his four (`AutoReplay.tierOf`, 0 none), told as the charge's tier (lot 4, journal Passe LC6) */
   tier: number;
+  /** open until (s on the duel's clock): neither guard nor dodge, the damage taken × 1.25 (PB-1's « faille », read from the script by the duel's rule) */
+  openUntil: number;
+  /** the damage of the action striking now, its blows added up (an enchaînement's total: the arena shows one number, § 35.6) */
+  hitSum: number;
 }
 
 /** the HUD's reading of one fighter */
@@ -66,13 +72,15 @@ export interface AutoGauge {
   /** the gauge toward a break (0-100 % of DB5-4's 70), full while broken; the stun's seconds left and its length */
   gaugePct: number; broken: boolean; stunLeft: number; stunDur: number;
   ward: number; boost: number;
+  /** the opening's seconds left (0 when not open) */
+  open: number;
   charge: { id: string; kind: string; family: string | null; pct: number; left: number } | null;
 }
 export interface AutoHudModel {
   t: number; over: boolean; winner: Seat | null;
   ren: AutoGauge; marek: AutoGauge;
-  /** Ren's four skills in his order: its gap's seconds left, whether it is the one charging, whether a use is left (`usable`) */
-  slots: Array<{ id: string; family: string; cool: number; coolPct: number; charging: boolean; usable: boolean; waiting: boolean }>;
+  /** Ren's four skills in his order: its gap's seconds left, whether it is the one charging, its uses in the bout and those left (`usable`: one is) */
+  slots: Array<{ id: string; family: string; cool: number; coolPct: number; charging: boolean; usable: boolean; uses: number; left: number; waiting: boolean }>;
 }
 
 export class AutoReplay {
@@ -128,7 +136,7 @@ export class AutoReplay {
       void x;
       const side: AutoSide = { hp: maxHp, maxHp, ap: 0, state: 'idle', stateT: 0, guarding: false, anim: { name: 'ready', t: 0, dur: 1, loop: true }, act: null };
       this.f[seat] = side;
-      this.s[seat] = { side, charge: null, g: 0, gT: 0, broken: false, stunEnd: 0, stunDur: AUTO_RULES.brk.stun, ward: null, boost: null, cd: {}, used: {}, seq: false, tier: 0 };
+      this.s[seat] = { side, charge: null, g: 0, gT: 0, broken: false, stunEnd: 0, stunDur: AUTO_RULES.brk.stun, ward: null, boost: null, cd: {}, used: {}, seq: false, tier: 0, openUntil: 0, hitSum: 0 };
     });
     this.out.push({ type: 'reset' });
     this.refresh();
@@ -238,11 +246,17 @@ export class AutoReplay {
         // it here, the model's gear and loads now in it)
         if (e.g !== undefined && e.ev !== 'dodged' && !o.broken) { o.g = e.g; o.gT = e.t; }
         const dmg = e.dmg ?? 0;
+        // where it lands (the duel's own order: a break, an opening, before this blow's own effects) and its action's damage so far
+        const inBreak = o.broken, inOpen = !o.broken && o.openUntil > e.t + 1e-9;
+        s.hitSum = first ? dmg : s.hitSum + dmg;
         if (tell && e.ev === 'dodged' && other === 'ren') this.emit({ type: 'reactStart', who: other, kind: 'dodge', cost: 0, early: false });
         // `follow`: an enchaînement's next blow (not its action's first); the first duel's tutorial reads it (lot 3, src/ui/duelTutorial.ts), the arena, the
         // effects, the stands and the sound do not; no AP since PB-1 (`apGain` 0)
-        if (tell) this.emit({ type: 'impact', from: seat, to: other, action: a.id, kind, result: e.ev === 'hit' ? 'hit' : e.ev, damage: dmg, mitigated: 0, hp: o.side.hp, resist: o.g, follow: !first, apGain: 0 });
-        if (e.hp !== undefined && e.hp <= 0) this.ko(other, true);
+        if (tell) this.emit({ type: 'impact', from: seat, to: other, action: a.id, kind, result: e.ev === 'hit' ? 'hit' : e.ev, damage: dmg, mitigated: 0, hp: o.side.hp, resist: o.g, follow: !first, apGain: 0, total: s.hitSum, inBreak, inOpen });
+        if (e.hp !== undefined && e.hp <= 0) { this.ko(other, true); break; }
+        // the openings the duel makes (src/combat/auto.ts hitOnce): an opener's first blow that lands opens its target; a big action dodged opens its striker
+        if (first && e.ev !== 'dodged' && a.role === 'opener') this.open(other, e.t + AUTO_RULES.opener, 'opener', tell);
+        if (first && e.ev === 'dodged' && a.kind !== 'light' && AUTO_RULES.whiff) this.open(seat, e.t + AUTO_RULES.whiff, 'whiff', tell);
         break;
       }
       case 'break': {
@@ -251,10 +265,14 @@ export class AutoReplay {
         if (tell) { this.emit({ type: 'break', who: seat }); this.emit({ type: 'stun', who: seat, dur: s.stunDur, why: 'break' }); }
         break;
       }
-      // an interruption cuts the action the other fighter charged; a parry takes the other's blow (lot 2 shows them): its charge ends there, without a blow
+      // an interruption cuts the action the other fighter charged (its use spent), staggers it and opens it; a parry takes the other's big blow and leaves its
+      // striker open (no counter-blow: AC-07): its charge ends there, told (`interrupt`, `parry`: the arena draws the parry, the HUD says both)
       case 'interrupt': case 'parry': {
+        const cut = e.act ? this.acts[other].get(e.act) : undefined;
         if (o.charge) { o.charge = null; this.release(other, tell); }
         if (o.seq) { o.seq = false; if (tell) this.emit({ type: 'sequenceEnd', who: other }); }
+        if (tell) this.emit(e.ev === 'interrupt' ? { type: 'interrupt', who: other, by: seat, action: e.act } : { type: 'parry', who: seat, to: other, action: e.act, kind: cut ? kindOf(cut) : 'skill' });
+        this.open(other, e.t + (e.ev === 'interrupt' ? AUTO_RULES.interrupt.open : AUTO_RULES.parry.open), e.ev, tell);
         break;
       }
       // a clash (BL1-8): two blows met, both charges end there without damage, told once (the guard's sparks and sound, « Clash »); a light attack lost to a
@@ -277,6 +295,13 @@ export class AutoReplay {
     const s = this.s[seat], idx = s.tier;
     s.tier = 0;
     if (tell && idx) this.emit({ type: 'chargeRelease', who: seat, idx, ok: true });
+  }
+
+  /** a fighter left open until `until` (the duel keeps the later end of two), told when it opens: who, why, for how long */
+  private open(seat: Seat, until: number, why: 'opener' | 'interrupt' | 'parry' | 'whiff', tell: boolean): void {
+    const s = this.s[seat], was = s.openUntil > this.t + 1e-9;
+    s.openUntil = Math.max(s.openUntil, until);
+    if (tell && !this.over) this.emit({ type: 'open', who: seat, why, dur: +(s.openUntil - this.t).toFixed(2), again: was });
   }
 
   private ko(loser: Seat, tell: boolean): void {
@@ -368,6 +393,7 @@ export class AutoReplay {
         hp: Math.max(0, Math.ceil(f.hp)), maxHp: f.maxHp, hpPct: pct(f.hp, f.maxHp), ap: f.ap,
         gaugePct: pct(gauge, max), broken: s.broken && this.t < s.stunEnd, stunLeft: s.broken ? Math.max(0, s.stunEnd - this.t) : 0, stunDur: s.stunDur,
         ward: s.ward ? Math.max(0, s.ward.until - this.t) : 0, boost: s.boost ? Math.max(0, s.boost.until - this.t) : 0,
+        open: !this.over && s.openUntil > this.t ? s.openUntil - this.t : 0,
         // a stun pauses the charge: the card says the stun, not a charge that does not move
         charge: c && !this.over && !(s.broken && this.t < s.stunEnd) ? { id: c.id, kind: c.kind, family: c.family, pct: pct(this.t - c.start, c.leave - c.start), left: Math.max(0, c.leave - this.t) } : null,
       };
@@ -377,7 +403,8 @@ export class AutoReplay {
       t: this.t, over: this.over, winner: this.over ? this.winner : null, ren: g('ren'), marek: g('marek'),
       slots: this.fighters.ren.skills.map((a) => {
         const cd = ren.cd[a.id], cool = cd ? Math.max(0, cd.until - this.t) : 0;
-        return { id: a.id, family: familyOf(a) ?? 'offensive', cool, coolPct: cd ? pct(cool, cd.dur) : 0, charging: ren.charge?.id === a.id, usable: (ren.used[a.id] ?? 0) < (a.uses ?? Infinity), waiting: this.pressed?.skill === a.id && !this.over };
+        const uses = a.uses ?? 0, left = Math.max(0, uses - (ren.used[a.id] ?? 0));
+        return { id: a.id, family: familyOf(a) ?? 'offensive', cool, coolPct: cd ? pct(cool, cd.dur) : 0, charging: ren.charge?.id === a.id, usable: (ren.used[a.id] ?? 0) < (a.uses ?? Infinity), uses, left, waiting: this.pressed?.skill === a.id && !this.over };
       }),
     };
   }
@@ -433,8 +460,15 @@ export function windowsOf(log: AutoEvent[] | undefined, ids: Record<string, Seat
     const other: Seat = seat === 'ren' ? 'marek' : 'ren';
     if (e.ev === 'charge') { charge[seat] = { start: e.t, leave: e.at ?? e.t }; continue; }
     if (e.ev === 'break') { stunEnd[seat] = e.t + (e.dur ?? AUTO_RULES.brk.stun); continue; }
-    // a charge cut by an interruption (its fighter the other's) or a blow parried: no blow drawn for it
-    if (e.ev === 'interrupt' || e.ev === 'parry') { charge[seat === 'ren' ? 'marek' : 'ren'] = null; continue; }
+    // a charge cut by an interruption (its fighter the other's): no blow drawn for it; a blow parried (lot 2): the striker's blow drawn reaching the parrier, who
+    // blocks it
+    if (e.ev === 'interrupt') { charge[other] = null; continue; }
+    if (e.ev === 'parry') {
+      const x = e.act ? acts[other].get(e.act) : undefined, c = charge[other];
+      if (x && c) { const free = e.t - stunEnd[other], w = Math.min(kindOf(x) === 'heavy' ? WIND.heavy : WIND.skill, 0.6 * Math.max(0, c.leave - c.start)), lead = free > 0 ? Math.min(Math.max(0.04, w), free) : Math.max(0.04, w); wins[other].push({ name: animOf(x), t0: e.t - lead, impactAt: lead, dur: lead + WIND.follow, id: x.id, kind: kindOf(x), family: familyOf(x) ?? 'offensive' }); prevHit[other] = e.t; }
+      reacts[seat].push({ name: 'block', t0: e.t, impactAt: 1e6, dur: WIND.block, id: 'block', kind: 'light', family: 'defensive' });
+      charge[other] = null; continue;
+    }
     // a clash (BL1-8): both fighters' blows drawn meeting at its moment (no reaction: the knock-back is the page's); a light attack lost to a big action: none
     if (e.ev === 'clash') {
       const meet = (k: Seat, id: string | undefined): void => {

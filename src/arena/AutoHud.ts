@@ -5,6 +5,7 @@ import { DYN_CSS, DYN_TEXTS_EN, DYN_TEXTS_FR_GAME, type DynTexts } from './Dynam
 import type { AutoGauge, AutoHudModel, AutoReplay, ReplayEvent, Seat } from './autoView';
 import { skillName, tx, word } from '../narrative/text';
 import { FOE_SKILLS } from '../combat/v2duel';
+import { AUTO_RULES } from '../combat/auto';
 import { actName, bindCap, keyCap } from '../input/caps';
 import { keysOf, onSettings } from '../settings/settings';
 import { firstSlot } from '../settings/keys';
@@ -15,14 +16,22 @@ import { firstSlot } from '../settings/keys';
  *  its health, its gauge toward a break (DB5-4), its wards and boosts, and what it charges now on the timeline with the charge filling; Ren's card his AP;
  *  the foot of the screen Ren's four skills in his order (AC-09), each with its AP and its cooldown (DB5-3), the one charging lit; then ×2 and « Skip » (AC-13,
  *  « Garder DB5 : PV ×2, avec ×2 et Passer »). The player does nothing in the duel: the keys are the duel's own (the remapping, journal Passe RM3), the attack's
- *  key for ×2, the dodge's for « Skip », the pause's to pause; every DOM write goes through a cache. */
+ *  key for ×2, the dodge's for « Skip », the pause's to pause; every DOM write goes through a cache. The model « La Brute » (PB-1, lot 2, briefs/combat-auto.md
+ *  § 33.5): no AP; each skill's uses in the bout as pips under its name (a filled square a use left), the opening on a fighter's card with its seconds (« Open »,
+ *  « Faille »), an interruption and a parry said over the fighter they leave open, a light attack's blows as one number (§ 35.6), a blow in a break or an
+ *  opening saying it under its number, the duel's own multiplier. */
 
 export interface AutoTexts extends DynTexts {
   speed: string; speedSub: string; speedOn: string; skip: string; skipSub: string;
   charging: (name: string) => string; order: string; secs: (n: number) => string; waiting: string; clash: string;
+  /** lot 2 of « La Brute »: the opening's tag and float, an interruption, a parry, where a blow landed (the duel's multiplier), a skill's uses */
+  openOn: string; opened: string; interrupted: string; parried: string; inBreak: (k: number) => string; inOpen: (k: number) => string; uses: (left: number, all: number) => string;
 }
-const EN_EXTRA = { speed: '×2', speedSub: 'twice as fast', speedOn: 'back to ×1', skip: 'Skip', skipSub: 'to the result', charging: (n: string) => `Charging ${n}`, order: 'Your order', secs: (n: number) => `${n} s`, waiting: 'At your next choice', clash: 'Clash' };
-const FR_EXTRA = { speed: '×2', speedSub: 'deux fois plus vite', speedOn: 'retour à ×1', skip: 'Passer', skipSub: 'au résultat', charging: (n: string) => `Charge : ${n}`, order: 'Votre ordre', secs: (n: number) => `${n} s`, waiting: 'À votre prochain choix', clash: 'Entrechoc' };
+const EN_EXTRA = { speed: '×2', speedSub: 'twice as fast', speedOn: 'back to ×1', skip: 'Skip', skipSub: 'to the result', charging: (n: string) => `Charging ${n}`, order: 'Your order', secs: (n: number) => `${n} s`, waiting: 'At your next choice', clash: 'Clash',
+  openOn: 'Open', opened: 'Open!', interrupted: 'Interrupted', parried: 'Parried', inBreak: (k: number) => `in the break ×${k}`, inOpen: (k: number) => `in the opening ×${k}`, uses: (l: number, a: number) => `${l} of ${a} uses left` };
+const comma = (k: number): string => String(k).replace('.', ',');
+const FR_EXTRA = { speed: '×2', speedSub: 'deux fois plus vite', speedOn: 'retour à ×1', skip: 'Passer', skipSub: 'au résultat', charging: (n: string) => `Charge : ${n}`, order: 'Votre ordre', secs: (n: number) => `${n} s`, waiting: 'À votre prochain choix', clash: 'Entrechoc',
+  openOn: 'Faille', opened: 'Faille !', interrupted: 'Interrompu', parried: 'Paré', inBreak: (k: number) => `dans la rupture ×${comma(k)}`, inOpen: (k: number) => `dans la faille ×${comma(k)}`, uses: (l: number, a: number) => `${l} usage${l > 1 ? 's' : ''} sur ${a}` };
 export const AUTO_TEXTS_EN: AutoTexts = { ...DYN_TEXTS_EN, ...EN_EXTRA, restart: 'An official bout cannot be restarted' };
 export const AUTO_TEXTS_FR: AutoTexts = { ...DYN_TEXTS_FR_GAME, ...FR_EXTRA };
 
@@ -56,6 +65,13 @@ body.pm-pad #ah-pause .kb{display:none}
 .ah-b.slot em .cdn{display:none;font-variant-numeric:tabular-nums}
 .ah-b.slot.cooling em .cdn{display:inline}.ah-b.slot.cooling em q,.ah-b.slot.cooling em .fam{display:none}
 .ah-b.slot .cdv{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--ds-muted)}
+/* lot 2 of « La Brute »: a skill's uses, a filled square a use left; a skill spent in the muted grey; the opening's tag in the accent; a float's second line */
+.ah-b.slot .pips{display:inline-flex;gap:3px;margin-right:6px;vertical-align:1px}
+.ah-b.slot .pips i{display:block;width:7px;height:7px;background:var(--ds-ivory);border:1px solid var(--ds-ivory)}
+.ah-b.slot .pips i.x{background:none;border-color:var(--ds-muted)}
+.ah-b.slot.spent b,.ah-b.slot.spent .ord{color:var(--ds-muted)}
+#arena-hud .ah-tags b.op{color:var(--ds-accent);border-color:var(--ds-accent)}
+#ah-dmg div small{display:block;margin-top:2px;font:600 var(--ds-fs-small)/1.2 var(--ds-text);-webkit-text-stroke:3px var(--ds-ink);color:var(--ds-accent);text-align:center}
 .ah-b.ctl b{color:var(--ds-ivory)}
 .ah-b.ctl.active b,.ah-b.ctl.active em{color:var(--ds-accent)}
 #arena-hud .ah-b.ctl.active kbd{border-color:var(--ds-accent);color:var(--ds-accent)}
@@ -86,9 +102,9 @@ export class AutoHud {
     }
     this.el = document.createElement('div'); this.el.id = 'arena-hud'; this.el.classList.add('dyn', 'auto');
     const M = replay.hud();
-    const slots = M.slots.map((s, i) => `<button class="ah-b slot wide" type="button" tabindex="-1" data-slot="${s.id}" aria-label="${i + 1}. ${this.name(s.id)}"><span class="ord">${bindCap(`skill${i + 1}` as 'skill1')}</span><b>${this.name(s.id)}</b><em><span class="fam">${t.families[s.family] ?? ''}</span><span class="cdn"></span></em><i class="pg"></i><i class="cdv"></i></button>`).join('');
+    const slots = M.slots.map((s, i) => `<button class="ah-b slot wide" type="button" tabindex="-1" data-slot="${s.id}" data-label="${i + 1}. ${this.name(s.id)}" aria-label="${i + 1}. ${this.name(s.id)}"><span class="ord">${bindCap(`skill${i + 1}` as 'skill1')}</span><b>${this.name(s.id)}</b><em><span class="pips" aria-hidden="true">${'<i></i>'.repeat(s.uses)}</span><span class="fam">${t.families[s.family] ?? ''}</span><span class="cdn"></span></em><i class="pg"></i><i class="cdv"></i></button>`).join('');
     const ctl = (id: 'speed' | 'skip', act: 'attack' | 'dodge', label: string, sub: string) => `<button class="ah-b ctl wide" type="button" data-act="${id}" aria-label="${label} (${actName(act)})">${bindCap(act)}<b>${label}</b><em>${sub}</em></button>`;
-    const card = (who: Seat, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}" aria-label="${names[who]}, ${sub}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${names[who]}<em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(names[who])}" aria-valuemin="0" aria-valuemax="${M[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div><div class="ah-ch off" aria-live="off"><span></span><div class="ah-cb"><i></i></div></div><div class="ah-tags"><b class="wd"></b><b class="bs"></b></div><div class="ah-state"></div></div></div>`;
+    const card = (who: Seat, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}" aria-label="${names[who]}, ${sub}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${names[who]}<em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(names[who])}" aria-valuemin="0" aria-valuemax="${M[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div><div class="ah-ch off" aria-live="off"><span></span><div class="ah-cb"><i></i></div></div><div class="ah-tags"><b class="op"></b><b class="wd"></b><b class="bs"></b></div><div class="ah-state"></div></div></div>`;
     this.el.setAttribute('aria-label', t.subtitle);
     this.el.innerHTML = `<div class="top"></div><div class="bot"></div>
       ${card('ren', 'l', t.subRen)}${card('marek', 'r', t.subMarek)}
@@ -144,6 +160,9 @@ export class AutoHud {
     const w = g.ward > 0 ? `${t.wardOn} ${Math.ceil(g.ward)} s` : '', b = g.boost > 0 ? `${t.boostOn} ${Math.ceil(g.boost)} s` : '';
     this.set(`wd${id}`, w, () => { wd.textContent = w; wd.classList.toggle('on', !!w); });
     this.set(`bs${id}`, b, () => { bs.textContent = b; bs.classList.toggle('on', !!b); });
+    // the opening (PB-1's faille): its seconds left, while it lasts
+    const op = root.querySelector('.ah-tags .op')!, o = g.open > 0 ? `${t.openOn} ${Math.ceil(g.open)} s` : '';
+    this.set(`op${id}`, o, () => { op.textContent = o; op.classList.toggle('on', !!o); });
     // the charge on the timeline: what it charges, filling until it leaves (a skill or a heavy blow in the accent)
     const ch = root.querySelector('.ah-ch')!, c = g.charge, big = !!c && c.kind !== 'light';
     this.cls(`cho${id}`, ch, 'off', !c);
@@ -166,7 +185,9 @@ export class AutoHud {
       const b = this.btn.get(`slot:${s.id}`); if (!b) continue;
       this.cls(`c${s.id}`, b, 'charging', s.charging);
       this.cls(`k${s.id}`, b, 'cooling', s.cool > 0 && !s.charging);
-      this.cls(`a${s.id}`, b, 'noap', !s.usable && s.cool <= 0 && !s.charging);
+      // its uses left as pips; spent once none is left (PB-2: a use never comes back)
+      this.cls(`a${s.id}`, b, 'spent', s.left <= 0 && !s.charging);
+      this.set(`u${s.id}`, s.left, () => { b.querySelectorAll('.pips i').forEach((p, k) => p.classList.toggle('x', k >= s.left)); b.setAttribute('aria-label', `${b.dataset.label ?? ''} · ${t.uses(s.left, s.uses)}`); });
       this.cls(`w${s.id}`, b, 'waiting', s.waiting);
       const cd = s.cool > 0 && !s.charging ? Math.ceil(s.cool) : 0;
       this.set(`cd${s.id}|${s.waiting}`, cd, () => { (b.querySelector('em .cdn') as HTMLElement).textContent = cd ? t.secs(cd) : ''; b.title = s.waiting ? t.waiting : cd ? t.secs(cd) : ''; });
@@ -187,7 +208,11 @@ export class AutoHud {
   onEvents(evs: ReplayEvent[]): void {
     const t = this.t;
     for (const e of evs) {
-      if (e.type === 'impact') this.float(e.to as Seat, e.result === 'dodged' ? t.dodged : e.result === 'guarded' ? t.guarded(e.damage as number) : `-${e.damage}`, e.result as string);
+      if (e.type === 'impact') this.impact(e);
+      // an interruption over the fighter cut, a parry over the striker parried: both left open (the duel's seconds); an opener's or a whiff's opening
+      else if (e.type === 'interrupt') this.float(e.who as Seat, t.interrupted, 'ap', -34, this.openLine(AUTO_RULES.interrupt.open));
+      else if (e.type === 'parry') this.float(e.to as Seat, t.parried, 'ap', -34, this.openLine(AUTO_RULES.parry.open));
+      else if (e.type === 'open' && (e.why === 'opener' || e.why === 'whiff') && !e.again) this.float(e.who as Seat, t.opened, 'ap', -34, t.secs(Math.round(Number(e.dur))));
       else if (e.type === 'clash') { this.float(e.who as Seat, t.clash, 'guarded'); this.float(e.to as Seat, t.clash, 'guarded'); }
       else if (e.type === 'break') this.float(e.who as Seat, t.breakFloat, 'guardbreak', -34);
       else if (e.type === 'effect') this.float(e.who as Seat, e.family === 'defensive' ? t.wardOn : t.boostOn, 'ap', -34);
@@ -196,12 +221,37 @@ export class AutoHud {
     }
   }
 
-  private float(who: Seat, text: string, cls: string, dy = 26): void {
+  /** an interruption's or a parry's second line: the opening it leaves */
+  private openLine(secs: number): string { return `${this.t.openOn} ${this.t.secs(secs)}`; }
+
+  /** the float of each fighter's latest blow taken (an enchaînement's later blows add to it: one number for the action, § 35.6) */
+  private last: Partial<Record<Seat, { action: string; el: HTMLElement }>> = {};
+  private impact(e: ReplayEvent): void {
+    const t = this.t, to = e.to as Seat, res = e.result as string, total = Number(e.total ?? e.damage);
+    const sub = res === 'dodged' ? '' : e.inBreak ? t.inBreak(AUTO_RULES.brk.dmg) : e.inOpen ? t.inOpen(AUTO_RULES.open.dmg) : '';
+    const prev = this.last[to];
+    // a later blow of the same action: the action's total so far in the float its first blow opened, drawn again so that it reads (a guarded first blow and a
+    // later one landing read as a blow landing)
+    if (e.follow === true && prev && prev.action === e.action && prev.el.isConnected && res !== 'dodged') {
+      const guarded = res === 'guarded' && prev.el.className === 'guarded';
+      prev.el.className = guarded ? 'guarded' : 'hit';
+      prev.el.firstChild!.textContent = guarded ? t.guarded(total) : `-${total}`;
+      if (sub && !prev.el.querySelector('small')) { const x = document.createElement('small'); x.textContent = sub; prev.el.appendChild(x); }
+      prev.el.style.animation = 'none'; void prev.el.offsetWidth; prev.el.style.animation = '';
+      return;
+    }
+    const el = this.float(to, res === 'dodged' ? t.dodged : res === 'guarded' ? t.guarded(total) : `-${total}`, res, 26, sub);
+    this.last[to] = { action: e.action as string, el };
+  }
+
+  private float(who: Seat, text: string, cls: string, dy = 26, sub = ''): HTMLElement {
     const p = this.project(who), el = document.createElement('div');
-    el.className = cls; el.textContent = text;
+    el.className = cls; el.appendChild(document.createTextNode(text));
+    if (sub) { const s = document.createElement('small'); s.textContent = sub; el.appendChild(s); }
     el.style.left = `${Math.round(p.x)}px`; el.style.top = `${Math.round(p.y + dy)}px`;
     this.q('#ah-dmg').appendChild(el);
     setTimeout(() => { if (!this.el.classList.contains('still')) el.remove(); }, 1100);
+    return el;
   }
 }
 

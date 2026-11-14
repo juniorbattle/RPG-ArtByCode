@@ -224,7 +224,18 @@ export function autoDefaultOrder(loadout: readonly string[], levels: Record<stri
   return [...loadout.filter((id) => fam(id) === 'defensive'), ...loadout.filter((id) => fam(id) === 'support'), ...off];
 }
 
-export interface AutoKit { loadout: readonly string[]; levels: Record<string, number>; order?: readonly string[]; tactic?: Readonly<Record<string, string>> }
+/** a plan of combat (PB-1, lot 2 of « La Brute », briefs/combat-auto.md § 33.5: « un plan par rival »): the order of the four and a condition per skill */
+export interface AutoPlan { order?: readonly string[]; tactic?: Readonly<Record<string, string>> }
+/** the kit: the four brought, the levels, the general plan (`order`, `tactic`: the skills page's), and the plans kept for a rival (`plans`, set on its match
+ *  sheet, taken up when it is met again) */
+export interface AutoKit { loadout: readonly string[]; levels: Record<string, number>; order?: readonly string[]; tactic?: Readonly<Record<string, string>>; plans?: Readonly<Record<string, AutoPlan>> }
+/** the kit a bout against `foe` plays: its plan kept for that rival in place of the general one, when there is one (lot 2 of « La Brute ») */
+export function autoKitFor<K extends AutoKit>(kit: K, foe: string | null | undefined): K {
+  const p = foe ? kit.plans?.[foe] : undefined;
+  if (!p) return kit;
+  const { order: _o, tactic: _t, ...rest } = kit;
+  return { ...rest, ...(p.order ? { order: p.order } : {}), ...(p.tactic ? { tactic: p.tactic } : {}) } as K;
+}
 /** the order the automatic follows (AC-09): the player's (kit.order, set on the match sheet), a skill brought since taking their place after the others; else
  *  its own (autoDefaultOrder); never the heavy attack, a base attack since SY-02 */
 export function autoOrderOf(kit: AutoKit): string[] {
@@ -251,10 +262,32 @@ export const AUTO_CONDS_OF: Record<AutoFamily, readonly AutoCond[]> = {
   support: ['auto', 'ready', 'follow', 'broken', 'finish', 'hurt', 'never'],
   offensive: ['auto', 'ready', 'broken', 'incoming', 'finish', 'hurt', 'never'],
 };
-/** a skill's condition in a kit's tactic (`kit.tactic`, set on the match sheet: setTactic); 'auto' when it has none or one its family does not take */
+/** the conditions a skill's line may take by its role (PB-1 « une condition par compétence parmi celles de son rôle », briefs/combat-auto.md § 32.2: the
+ *  laboratory's CONDS_BY_ROLE, tools/auto-final/brute.mjs, as its plans were measured): what the plan's page offers since lot 2 of « La Brute », the
+ *  automatic's first; « dans une faille » (`open`) and « au début » (`start`) among them */
+export const AUTO_CONDS_BY_ROLE: Record<AutoRole, readonly AutoCond[]> = {
+  exploit: ['auto', 'ready', 'open', 'incoming', 'broken', 'finish'],
+  punish: ['auto', 'ready', 'incoming', 'open', 'finish', 'never'],
+  pierce: ['auto', 'warded', 'open', 'incoming', 'finish'],
+  breaker: ['auto', 'open', 'foeGauge', 'incoming', 'start'],
+  opener: ['auto', 'ready', 'follow', 'foeGauge', 'start'],
+  interrupt: ['auto', 'ready', 'open', 'never'],
+  ward: ['auto', 'incoming', 'gauge', 'ready', 'never'],
+  parry: ['auto', 'ready', 'gauge', 'never'],
+  haste: ['auto', 'start', 'follow', 'broken', 'hurt'],
+  slow: ['auto', 'start', 'incoming', 'hurt', 'never'],
+  load: ['auto', 'ready', 'broken', 'open', 'finish'],
+};
+/** the conditions the plan's page offers for a skill: its role's (a skill without one: its family's) */
+export function autoCondsFor(id: string): readonly AutoCond[] {
+  const role = AUTO_ROLES[id]?.role, fam = AUTO_SKILLS[id]?.family;
+  return role ? AUTO_CONDS_BY_ROLE[role] : fam ? AUTO_CONDS_OF[fam] : ['auto'];
+}
+/** a skill's condition in a kit's tactic (`kit.tactic`, set on the match sheet: setTactic); 'auto' when it has none or one it cannot take (its role's since lot 2
+ *  of « La Brute », or its family's, a plan written before it) */
 export function autoCondOf(kit: Pick<AutoKit, 'tactic'>, id: string): AutoCond {
   const c = kit.tactic?.[id] as AutoCond | undefined, fam = AUTO_SKILLS[id]?.family;
-  return c && fam && AUTO_CONDS_OF[fam].includes(c) ? c : 'auto';
+  return c && (autoCondsFor(id).includes(c) || (!!fam && AUTO_CONDS_OF[fam].includes(c))) ? c : 'auto';
 }
 /** the tactic of Ren's four in their order, or undefined when every line is the automatic's (the fighter as before the tactic) */
 export function autoTacticOf(kit: Pick<AutoKit, 'tactic'>, order: readonly string[]): AutoCond[] | undefined {

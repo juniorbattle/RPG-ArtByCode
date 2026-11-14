@@ -9,13 +9,14 @@ import { rich, spotlight, tutorialOn, tutorialStyle } from './tutorial';
  *  version 2 game's bout the replay of the duel's script is held the first time each thing comes up in it, and a band at the foot of the screen says it, the
  *  element of the HUD it speaks of lit as the tour lights its own (TU-2, TU-9). The moments: the duel that plays itself and the order of the four (the bout's
  *  start), a skill charged and its bar, a chain of blows, a guard or a dodge, a skill or a heavy blow landing (the form of the day), a
- *  gauge a third full, a break, ×2 and « Skip » (once the bout has run a while). Every number is the duel's own (src/combat/auto.ts, autoData.ts, the bout's
+ *  gauge a third full, a break, ×2 and « Skip » (once the bout has run a while); since lot 2 of « La Brute » (briefs/combat-auto.md § 33.5) an opening (its
+ *  fighter's card lit) and a clash. Every number is the duel's own (src/combat/auto.ts, autoData.ts, the bout's
  *  two fighters and their forms; TU-6). Enter (A) takes the bout up again, Esc (B) skips the lessons left. Each lesson once in this browser (TU-9), its memory
  *  beside the tutorial's (never the save); the guide's « The duel » teaches them again at the next bout (TU-7). A browser driven by a tool keeps the bout
  *  without them unless the address asks for it (`tutorial=1`). Fades only (TU-10; the reduced motion is the game's setting, RG-5). */
 
 /** (the lesson of the action points, lot 3's « ap », left with them: the model « La Brute » has none, PB-1) */
-export type LessonId = 'start' | 'charge' | 'combo' | 'react' | 'form' | 'gauge' | 'break' | 'speed';
+export type LessonId = 'start' | 'charge' | 'combo' | 'react' | 'form' | 'gauge' | 'break' | 'open' | 'clash' | 'speed';
 /** an event of the duel's replay (src/arena/autoView.ts: `commandStart`, `impact`, `break`, `ko`...) */
 export type DuelEvent = { type: string } & Record<string, unknown>;
 const LESSON: Record<LessonId, { title: TextKey; body: TextKey; lit?: (e?: DuelEvent) => string }> = {
@@ -26,6 +27,8 @@ const LESSON: Record<LessonId, { title: TextKey; body: TextKey; lit?: (e?: DuelE
   form: { title: 'tut.duel.form.title', body: 'tut.duel.form.body' },
   gauge: { title: 'tut.duel.gauge.title', body: 'tut.duel.gauge.body', lit: (e) => `#ah-${e?.to === 'ren' ? 'ren' : 'marek'} .ah-rs` },
   break: { title: 'tut.duel.break.title', body: 'tut.duel.break.body', lit: (e) => `#ah-${e?.who === 'ren' ? 'ren' : 'marek'} .ah-rs` },
+  open: { title: 'tut.duel.open.title', body: 'tut.duel.open.body', lit: (e) => `#ah-${e?.who === 'ren' ? 'ren' : 'marek'} .ah-tags .op` },
+  clash: { title: 'tut.duel.clash.title', body: 'tut.duel.clash.body' },
   speed: { title: 'tut.duel.speed.title', body: 'tut.duel.speed.body', lit: () => '#ah-bar .ah-b.ctl' },
 };
 export const LESSONS = Object.keys(LESSON) as LessonId[];
@@ -50,8 +53,8 @@ const pct = (x: number): number => Math.round(x * 100);
 /** a form of the day as the match sheet says it (« +14 », « −5 ») */
 const signed = (f: number): string => `${f >= 1 ? '+' : '−'}${Math.round(Math.abs(f - 1) * 100)}`;
 
-/** a lesson's text, its numbers from the duel (TU-6) */
-export function lessonText(id: LessonId, d: LessonDuel): string {
+/** a lesson's text, its numbers from the duel (TU-6); `e` the event that opened it (an opening: whose, how long) */
+export function lessonText(id: LessonId, d: LessonDuel, e?: DuelEvent): string {
   const k = LESSON[id].body, R = AUTO_RULES, foe = d.names.marek;
   switch (id) {
     case 'start': return tx(k, { n: d.ren.skills.length });
@@ -65,6 +68,8 @@ export function lessonText(id: LessonId, d: LessonDuel): string {
     case 'form': return tx(k, { max: pct(R.form), you: signed(d.form[0]), them: signed(d.form[1]), foe });
     case 'gauge': return tx(k, { pct: Math.round(R.gauge.guardMul * 100) });
     case 'break': return tx(k, { stun: R.brk.stun, times: R.brk.dmg });
+    case 'open': return tx(k, { who: e?.who === 'ren' ? d.names.ren : foe, secs: Math.round(Number(e?.dur ?? R.opener)), pct: Math.round((R.open.dmg - 1) * 100), opener: R.opener, cut: R.interrupt.open, parry: R.parry.open, whiff: R.whiff });
+    case 'clash': return tx(k, { w: R.clash.w });
     default: return tx(k);
   }
 }
@@ -82,6 +87,9 @@ export function lessonsOf(e: DuelEvent): LessonId[] {
     // the target's gauge as the HUD shows it at this blow, this blow's share in it (the replay's `resist`, lot 4), a third full
     if (e.result !== 'dodged' && Number(e.resist) >= AUTO_RULES.gauge.max * GAUGE_SHARE) out.push('gauge');
   } else if (e.type === 'break') out.push('break');
+  // an opening told (an opener, an interruption, a parry, a big blow dodged), its first time; a clash
+  else if (e.type === 'open') out.push('open');
+  else if (e.type === 'clash') out.push('clash');
   return out;
 }
 /** the lesson the duel's clock opens */
@@ -136,7 +144,7 @@ export class DuelCoach {
     this.arena.hold(true);
     const root = el('div', 'pm pm-overlay pm-band tu-band tu-duel'), card = el('div', 'pm-card'), body = el('div', 'pm-body');
     card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx(LESSON[id].title));
-    body.innerHTML = `<p class="tu-step">${tx('tut.duel.step')}</p><h2 class="pm-h">${tx(LESSON[id].title)}</h2>${rich(lessonText(id, D))}`;
+    body.innerHTML = `<p class="tu-step">${tx('tut.duel.step')}</p><h2 class="pm-h">${tx(LESSON[id].title)}</h2>${rich(lessonText(id, D, e))}`;
     const since = performance.now();
     const close = (skip: boolean): void => {
       if (!skip && performance.now() - since < 250) return;

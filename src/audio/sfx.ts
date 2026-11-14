@@ -59,6 +59,8 @@ export function sfxOf(e: { type: string } & Record<string, unknown>, tiers: numb
     case 'effect': { const a = String(e.action); return [cue(SUPPORT.has(a) ? a : e.family === 'defensive' ? 'd1' : 's1', SIDE(e.who))]; }
     // a clash (BL1-8): the guard's sound, both blades in the middle of the stage
     case 'clash': return [cue(e.kind === 'light' ? 'guard' : 'guardHeavy', 0, 'guard')];
+    // a parry (lot 2 of « La Brute »): a big blow guarded, where the parrier stands
+    case 'parry': return [cue('guardHeavy', SIDE(e.who), 'guard')];
     case 'break': return [cue('break', SIDE(e.who), 'break')];
     case 'stun': return [cue('stun', SIDE(e.who))];
     case 'ko': return [cue('ko', 0, 'ko')];

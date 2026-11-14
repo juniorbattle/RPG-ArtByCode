@@ -6,7 +6,7 @@ import { v2KitOf } from '../simulation/v2';
 import { RIVALS } from '../narrative/roster';
 import { num, skillName, tx } from '../narrative/text';
 import { SKILL_BOOK } from '../combat/skillbook';
-import { AUTO_CONDS_OF, AUTO_ROLES, AUTO_SKILLS, autoCondOf } from '../combat/autoData';
+import { AUTO_ROLES, AUTO_SKILLS, autoCondOf, autoCondsFor, autoKitFor } from '../combat/autoData';
 import { AUTO_RULES, type AutoCond, type AutoRole } from '../combat/auto';
 import { COND_TEXT } from '../simulation/v2skills';
 import { figHtml, statsHtml } from './wares';
@@ -16,7 +16,15 @@ import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './st
  *  right the skills owned, a square marking the four brought, and for the line selected what the skill does and what its next level gives; on the left the
  *  hero or the opponent, and the order in which the automatic uses these four in the duel played by the computer (AC-09, lot 2, journal Passe LC3), each with
  *  its charge, then the light attack; the player's left and right keys (the pad's D-pad) move the skill selected earlier or later. The numbers are the duel's
- *  (src/simulation/preview.ts). The model « La Brute » (PB-1, journal Passe CF3) has no AP: lot 1 shows none, its uses and roles are lot 2's. */
+ *  (src/simulation/preview.ts). The model « La Brute » (PB-1, journal Passe CF3) has no AP; since its lot 2 (briefs/combat-auto.md § 33.5) the page is the plan
+ *  of combat: each skill's role, its uses in a bout and the gap between two, a condition per skill among its role's (C), the order of the four; the match sheet's
+ *  plan is kept for its rival (`foe`: « un plan par rival », taken up when it is met again), the skills page's the general one. */
+const ROLE: Record<AutoRole, 'ui.role.exploit' | 'ui.role.punish' | 'ui.role.pierce' | 'ui.role.breaker' | 'ui.role.opener' | 'ui.role.interrupt' | 'ui.role.ward' | 'ui.role.parry' | 'ui.role.haste' | 'ui.role.slow' | 'ui.role.load'> = {
+  exploit: 'ui.role.exploit', punish: 'ui.role.punish', pierce: 'ui.role.pierce', breaker: 'ui.role.breaker', opener: 'ui.role.opener', interrupt: 'ui.role.interrupt',
+  ward: 'ui.role.ward', parry: 'ui.role.parry', haste: 'ui.role.haste', slow: 'ui.role.slow', load: 'ui.role.load',
+};
+/** a skill's role in the duel, in words (PB-1: « un rôle par compétence ») */
+export const roleName = (id: string): string => { const r = AUTO_ROLES[id]?.role; return r ? tx(ROLE[r]) : ''; };
 
 const FAMILY = { offensive: 'v2.family.offensive', defensive: 'v2.family.defensive', support: 'v2.family.support' } as const;
 const pct = (k: number): number => Math.round(Math.abs(k - 1) * 100);
@@ -45,28 +53,36 @@ function cmpHtml(now: SkillFigures, next: SkillFigures | null, level: number): s
     now.gauge ? row(tx('ui.skill.gauge'), now.gauge, next?.gauge) : '',
     now.dur ? row(tx('ui.skill.length'), now.dur, next?.dur, ' s') : '',
     row(tx('ui.skill.charge'), now.charge, next?.charge, ' s'),
+    // its uses in a bout by its level and the gap between two (PB-2; lot 2 of « La Brute »)
+    now.uses ? row(tx('ui.skill.uses'), now.uses, next?.uses) : '',
+    now.gapS ? row(tx('ui.skill.gap'), now.gapS, next?.gapS, ' s') : '',
   ];
   return `<div class="pm-cmp"><span class="h"></span><span class="h">${next ? tx('ui.wares.now') : ''}</span><span class="h">${next ? cap(tx('v2.skills.level', { level })) : ''}</span><span class="h"></span>${rows.join('')}</div>`;
 }
 
-/** a skill's condition in the tactic (SY-08, lot 2 of the second redesign, journal Passe SL3) */
-const condOf = (s: GameState, id: string): AutoCond => autoCondOf(v2KitOf(s), id);
+/** a skill's condition in the tactic (SY-08, lot 2 of the second redesign, journal Passe SL3): the plan kept for `foe` (its match sheet), else the general one */
+const condOf = (s: GameState, id: string, foe?: string): AutoCond => autoCondOf(autoKitFor(v2KitOf(s), foe), id);
 /** the automatic's rule for each role (PB-1, src/combat/auto.ts autoRole), spelt out */
 const AUTO_TEXT: Record<AutoRole, 'ui.skill.autoOff' | 'ui.skill.autoExploit' | 'ui.skill.autoOpener' | 'ui.skill.autoInterrupt' | 'ui.skill.autoWard' | 'ui.skill.autoParry' | 'ui.skill.autoHaste' | 'ui.skill.autoSlow' | 'ui.skill.autoLoad'> = {
   exploit: 'ui.skill.autoExploit', punish: 'ui.skill.autoOff', pierce: 'ui.skill.autoOff', breaker: 'ui.skill.autoOff', opener: 'ui.skill.autoOpener', interrupt: 'ui.skill.autoInterrupt',
   ward: 'ui.skill.autoWard', parry: 'ui.skill.autoParry', haste: 'ui.skill.autoHaste', slow: 'ui.skill.autoSlow', load: 'ui.skill.autoLoad',
 };
 /** when a skill leaves, said in a sentence: its condition, the automatic's own rule spelt out for its role */
-function whenText(s: GameState, id: string): string {
-  const c = condOf(s, id);
+function whenText(s: GameState, id: string, foe?: string): string {
+  const c = condOf(s, id, foe);
   if (c !== 'auto') return tx('ui.skill.leaves', { cond: tx(COND_TEXT[c]) });
   return tx(AUTO_TEXT[AUTO_ROLES[id]?.role ?? 'punish']);
 }
 
-/** the order of the duel played by the computer: the four in the automatic's order with their conditions (the tactic), then the light attack */
-function orderHtml(s: GameState, ids: string[]): string {
-  return autoOrderView(s, ids).map((t, i) => `<div class="row"><small>${num(t.charge)} s · ${esc(tx(COND_TEXT[condOf(s, t.id)]))}</small><b>${i + 1}. ${esc(skillName(t.id))}</b></div>`).join('')
+/** the order of the duel played by the computer: the four in the automatic's order with their uses and their conditions (the plan), then the light attack */
+function orderHtml(s: GameState, ids: string[], foe?: string): string {
+  return autoOrderView(s, ids, foe).map((t, i) => `<div class="row"><small>${tx('ui.order.uses', { n: t.uses, gap: num(t.gapS) })} · ${esc(tx(COND_TEXT[condOf(s, t.id, foe)]))}</small><b>${i + 1}. ${esc(skillName(t.id))}</b></div>`).join('')
     + `<div class="row"><small>${tx('ui.order.else')}</small><b>${esc(tx('ui.skill.light'))}</b></div>`;
+}
+/** whose plan the page sets: the rival's (kept for them, or begun from the general one) or the general one */
+function planLine(s: GameState, foe: string | undefined, name: string | undefined): string {
+  if (!foe || !name) return tx('ui.order.general');
+  return tx(v2KitOf(s).plans?.[foe] ? 'ui.order.kept' : 'ui.order.fromGeneral', { name });
 }
 
 export interface SkillsHost {
@@ -75,6 +91,9 @@ export interface SkillsHost {
   close(): void;
   /** the match sheet: the four are kept and the bout follows */
   enter?(): void;
+  /** the match sheet's rival and their name: the plan set here is kept for them (lot 2 of « La Brute ») */
+  foe?: string;
+  foeName?: string;
 }
 
 /** the page: `sheet` the match sheet's left side, the bout following; null the hero's skills */
@@ -94,24 +113,27 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   const four = (): string[] => { const was = v2KitOf(host.state()).loadout as string[]; return was.filter((x) => chosen.has(x)).concat([...chosen].filter((x) => !was.includes(x))); };
   let now = '', full = false;
 
+  const foe = host.foe;
   const paint = (): void => {
     (card.querySelector('.pm-purse b') as HTMLElement).textContent = String(chosen.size);
     const ladder = card.querySelector('.pm-ladder'), wide = card.querySelector('.pm-ladder2');
-    if (ladder) ladder.innerHTML = `<p class="pm-sub">${tx('ui.order.title')}</p>${orderHtml(host.state(), four())}`;
-    if (wide) wide.innerHTML = `<p class="ttl">${tx('ui.order.title')}</p>${autoOrderView(host.state(), four()).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${num(t.charge)} s<br>${esc(tx(COND_TEXT[condOf(host.state(), t.id)]))}</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
+    // the plan: the general one on the skills page, the rival's on the match sheet (kept for them), each skill's uses and its condition
+    if (ladder) ladder.innerHTML = `<p class="pm-sub">${tx('ui.order.title')}</p><p class="pm-sub">${esc(planLine(host.state(), undefined, undefined))}</p>${orderHtml(host.state(), four())}`;
+    if (wide) wide.innerHTML = `<p class="ttl">${esc(foe && host.foeName ? tx('ui.order.vs', { name: host.foeName }) : tx('ui.order.title'))}</p><p class="pm-sub">${esc(planLine(host.state(), foe, host.foeName))}</p>${autoOrderView(host.state(), four(), foe).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${tx('ui.order.uses', { n: t.uses, gap: num(t.gapS) })}<br>${esc(tx(COND_TEXT[condOf(host.state(), t.id, foe)]))}</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
     if (go) go.disabled = chosen.size !== 4;
     const lv = kit.levels[now], st = host.state(), f = skillFigures(st, now, lv), up = nextLevel(st, now), k = SKILL_BOOK[now];
     const said = !up ? tx('ui.skill.top') : up.by === 'drill' ? tx('ui.skill.drill', { level: up.level })
       : up.fromDay ? tx('ui.skill.challengeLate', { name: RIVALS[up.teacher!].name, day: up.fromDay }) : tx('ui.skill.challenge', { name: RIVALS[up.teacher!].name });
     const on = chosen.has(now), movable = on && chosen.size === 4;
     // the tactic (SY-08): when a skill brought leaves, its condition chosen with C (the pad's Y)
-    const when = on ? `<p class="ab pm-when">${esc(whenText(st, now))}</p>` : '';
-    detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))} · ${tx('v2.skills.level', { level: lv })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, now, up.level) : null, up?.level ?? lv)}<p class="what">${esc(said)}</p>${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}`;
+    const when = on ? `<p class="ab pm-when">${esc(whenText(st, now, foe))}</p>` : '';
+    const role = roleName(now);
+    detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))}${role ? ` · ${esc(tx('ui.skill.role', { role }))}` : ''} · ${tx('v2.skills.level', { level: lv })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, now, up.level) : null, up?.level ?? lv)}<p class="what">${esc(said)}</p>${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}`;
     fit();
     fillFoot(foot, footBtn('Space', tx(on ? 'ui.skill.leave' : 'ui.skill.bring'), toggle), on ? footBtn('C', tx('ui.skill.when'), cycle) : null, movable ? moveBtn('left') : null, movable ? moveBtn('right') : null, go, close);
   };
   /** the order of the four (AC-09): the skill selected one place earlier (left) or later (right), the game's at once (setOrder) */
-  const ordered = (): string[] => autoOrderView(host.state(), four()).map((t) => t.id);
+  const ordered = (): string[] => autoOrderView(host.state(), four(), foe).map((t) => t.id);
   /** the order in sight under the side's fade (the keys that move it touched, whether it moves or not) */
   const showOrder = (): void => {
     const ladder = card.querySelector<HTMLElement>('.pm-ladder2');
@@ -123,7 +145,7 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     const o = ordered(), i = o.indexOf(now), j = i + by;
     if (i < 0 || j < 0 || j >= o.length) return;
     [o[i], o[j]] = [o[j], o[i]];
-    host.act({ type: 'setOrder', skills: o });
+    host.act({ type: 'setOrder', skills: o, ...(foe ? { foe } : {}) });
     paint();
     showOrder();
     list.querySelector<HTMLElement>('.pm-btn.on')?.focus();
@@ -140,12 +162,13 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     if (!e.repeat) move(a.includes('left') ? -1 : 1);
   });
   /** the tactic (the operator's SY-08 « Une condition par compétence, l’ordre gardé », journal Passe SY2): the skill selected, if brought, takes the next condition its
-   *  family offers (src/combat/autoData.ts AUTO_CONDS_OF), the game's at once (setTactic) */
+   *  role offers (src/combat/autoData.ts autoCondsFor, lot 2 of « La Brute »), the game's at once (setTactic), for the match sheet's rival or the general plan */
   const cycle = (): void => {
     if (!chosen.has(now) || !(v2KitOf(host.state()).loadout as string[]).includes(now)) return;
-    const fam = AUTO_SKILLS[now]?.family; if (!fam) return;
-    const opts = AUTO_CONDS_OF[fam], c = condOf(host.state(), now);
-    host.act({ type: 'setTactic', skill: now, cond: opts[(opts.indexOf(c) + 1) % opts.length] });
+    if (!AUTO_SKILLS[now]?.family) return;
+    // the conditions of its role (PB-1, lot 2 of « La Brute »), the plan of the match sheet's rival or the general one
+    const opts = autoCondsFor(now), c = condOf(host.state(), now, foe);
+    host.act({ type: 'setTactic', skill: now, cond: opts[(opts.indexOf(c) + 1) % opts.length], ...(foe ? { foe } : {}) });
     paint();
     list.querySelector<HTMLElement>('.pm-btn.on')?.focus();
   };

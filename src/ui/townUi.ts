@@ -12,12 +12,12 @@ import { portraitUrl } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
 import { arrowKeys, el, esc, footBtn, footOf, injectStyle, overlay, pageShell, scrollFade } from './style';
 import { skillsPage } from './skills';
-import { cap, itemText, lang, num, said, shortName, tx, word, type TextRef } from '../narrative/text';
+import { cap, itemText, lang, num, said, shortName, skillName, tx, word, type TextRef } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { pendingFinal, stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
 import { healthParts, itemName, weaponTier } from '../simulation/v2gear';
 import { duelStats } from '../simulation/preview';
-import { VIGOUR_HP } from '../combat/stats';
+import { VIGOUR_HP, hitFactor } from '../combat/stats';
 import { marksOf } from '../simulation/v2law';
 import { peopleMarks } from '../simulation/v2marks';
 import { MARK_WORD, installMarkCss, markGlyph } from './npcMarks';
@@ -25,7 +25,9 @@ import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { matchSheetFor } from '../combat/match';
 import { autoBoutOf, autoForms, autoReactions } from '../combat/autoMatch';
-import { AUTO_RULES, type AutoFighter } from '../combat/auto';
+import { AUTO_RULES, type AutoAction, type AutoFighter } from '../combat/auto';
+import { AUTO_STYLES } from '../combat/autoData';
+import { roleName } from './skills';
 import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
 import { tabTo } from '../input/pad';
 import { guidePage, hintChapter, hintSeen, markHint, markTold, runTour, showHint, told, TOUR, type HintId } from './tutorial';
@@ -455,10 +457,12 @@ export class TownUi {
 
   /** the version 2's skills (lot V2; the page, journal Passe UM11, src/ui/skills.ts); `enter`: the match sheet, the opponent first (CB-1 § 8), the bout follows */
   openSkills(enter: boolean): void {
-    const s = this.st;
+    const s = this.st, m = enter ? playerMatch(s) : null, foe = m ? opponentOf(m) : undefined;
     this.page();
     this.show(skillsPage({
       state: () => this.st, act: (a) => this.host.act(a), close: () => this.closeModal(),
+      // the plan set on the match sheet is kept for its rival (lot 2 of « La Brute »)
+      ...(foe ? { foe, foeName: RIVALS[foe]?.name ?? foe } : {}),
       enter: enter ? () => { writeSave(this.st); this.closeModal(); this.host.reload({ scene: 'arena' }); } : undefined,
     }, enter ? this.matchSheetHtml(s) : null));
     if (!enter) this.shownPage = 'skills';
@@ -473,6 +477,8 @@ export class TownUi {
     // the duel played by the computer (lot 2, journal Passe LC3): what decides it, side by side (briefs/combat-auto.md § 7: « les stats des deux, les chances de
     // garde et d'esquive, la préparation du rival, sa forme du jour »), the numbers the duel itself will play (autoBoutOf: the same fighters)
     const b = autoBoutOf(s), vs = b ? this.autoVsHtml(b.ren, b.foe, autoForms(b), r.name) : '';
+    // the rival's style (PB-1: its pieces and its heavy blow, in the table's dodge and guard; its skills by their role) and BL1-10's « le dire au lot 2 »
+    const style = b ? this.styleLine(b.foe, b.foeId, r.name) : '';
     const prep = b && b.prep >= 0.05 ? tx('auto.sheet.prep', { name: r.name, n: num(+b.prep.toFixed(1)) }) : '';
     // the operator's DB11-5 « Le dire partout » (journal Passe DB13): where Ren's health comes from
     const hp = healthParts(s);
@@ -480,7 +486,7 @@ export class TownUi {
       hp.train ? tx('v2.sheet.hp.train', { n: hp.train }) : '', hp.wound ? tx('v2.sheet.hp.wound', { n: hp.wound }) : ''].filter(Boolean).join(', ') + '.';
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
-      + vs + (prep ? `<p class="pm-sub pm-fstats">${esc(prep)}</p>` : '') + `<p class="pm-sub">${esc(tx('auto.sheet.note'))}</p><p class="pm-sub">${esc(from)}</p>`
+      + vs + (prep ? `<p class="pm-sub pm-fstats">${esc(prep)}</p>` : '') + (style ? `<p class="pm-sub">${esc(style)}</p>` : '') + `<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p><p class="pm-sub">${esc(tx('auto.sheet.hpWhy'))}</p><p class="pm-sub">${esc(from)}</p>`
       + `<p class="pm-sub">${esc(intel)}</p>${heard ? `<p class="pm-sub">${esc(heard)}</p>` : ''}<p class="pm-sub">${esc(gear)}</p>${strap ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.strap'))}</p>` : ''}${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }
 
@@ -490,14 +496,31 @@ export class TownUi {
     const pc = (k: number) => tx('auto.sheet.pct', { n: Math.round(k * 100) });
     const signed = (f: number) => `${f >= 1 ? '+' : '−'}${pc(Math.abs(f - 1))}`;
     const rr = autoReactions(ren, foe), fr = autoReactions(foe, ren), n1 = (x: number) => num(+x.toFixed(1));
+    // a blow's share of the other's bar as the duel strikes it (src/combat/auto.ts hitOnce: each hit its share of the power, at least 1; the Attack against the Defence,
+    // the target's share taken, the striker's form), clean: no guard, no break, no opening
+    const bar = (a: AutoAction, att: AutoFighter, def: AutoFighter, f: number): string => {
+      const k = hitFactor(att.atk, def.def) * (def.taken ?? 1) * f, dmg = (a.hits ?? [1]).reduce((n, sh) => n + Math.max(1, Math.round((a.power ?? 0) * sh * k)), 0);
+      return tx('auto.sheet.pct', { n: +((100 * dmg) / Math.max(1, def.hp * AUTO_RULES.hpScale)).toFixed(1) });
+    };
     const rows: Array<[string, string, string]> = [
       [tx('auto.sheet.hp'), String(Math.round(ren.hp * AUTO_RULES.hpScale)), String(Math.round(foe.hp * AUTO_RULES.hpScale))],
       [tx('stat.atk'), n1(ren.atk), n1(foe.atk)], [tx('stat.def'), n1(ren.def), n1(foe.def)], [tx('stat.end'), n1(ren.end), n1(foe.end)], [tx('stat.viv'), n1(ren.viv), n1(foe.viv)],
       [tx('auto.sheet.form'), signed(form[0]), signed(form[1])],
       [tx('auto.sheet.dodge'), pc(rr.dodge), pc(fr.dodge)],
       [tx('auto.sheet.guard'), `${pc(rr.guard)} · ${pc(rr.guardSkill)}`, `${pc(fr.guard)} · ${pc(fr.guardSkill)}`],
+      // BL1-10 (« Garder ; le dire au lot 2 sur la fiche de match »): what one light attack (its blows together, § 35.6) and one heavy blow take from the other's bar
+      [tx('auto.sheet.lightRow'), bar(ren.light, ren, foe, form[0]), bar(foe.light, foe, ren, form[1])],
+      [tx('auto.sheet.heavyRow'), bar(ren.heavy, ren, foe, form[0]), bar(foe.heavy, foe, ren, form[1])],
     ];
     return `<table class="pm-vs"><thead><tr><th></th><th>${esc(tx('auto.sheet.you'))}</th><th>${esc(foeName)}</th></tr></thead><tbody>${rows.map(([l, a, c]) => `<tr><td>${esc(l)}</td><td>${esc(a)}</td><td>${esc(c)}</td></tr>`).join('')}</tbody></table>`;
+  }
+
+  /** the rival's style in a sentence (PB-1 « Les styles des rivaux »): its heavy blow as soon as it is ready (Tobin, Orla), its skills by their role; its pieces are
+   *  in the table's dodge and guard */
+  private styleLine(foe: AutoFighter, id: string, name: string): string {
+    const st = AUTO_STYLES[id], skills = foe.skills.map((a) => { const role = roleName(a.id); const nm = FOE_SKILLS[a.id] ? word(FOE_SKILLS[a.id].name) : skillName(a.id); return role ? tx('auto.style.skill', { skill: nm, role }) : nm; });
+    const parts = [skills.length ? tx('auto.style.skills', { name, list: skills.join(', ') }) : '', st?.heavy === 'ready' ? tx('auto.style.heavy', { name }) : ''];
+    return parts.filter(Boolean).join(' ');
   }
 
   /** the version 2's gear (lot V3) and the bag: the page of the shops without a keeper (src/ui/wares.ts, UM7-3) */

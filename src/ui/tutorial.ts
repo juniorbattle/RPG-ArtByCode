@@ -280,7 +280,9 @@ export function chapterText(s: GameState, c: Chapter): string {
     // its numbers the duel's own (src/combat/auto.ts AUTO_RULES, src/combat/autoData.ts: the cooldown, the weapons' chains of blows)
     case 'duel': {
       const R = AUTO_RULES, hits = Object.values(AUTO_WEAPONS).map((w) => w.hits.length);
-      return tx(c.body, { cool: AUTO_COOLDOWN, lo: Math.min(...hits), hi: Math.max(...hits), times: R.react.skillGuard, glo: pct(R.guard.lo), ghi: pct(R.guard.hi), stun: R.brk.stun, dmg: R.brk.dmg, form: pct(R.form) });
+      // the openings and the clash (lot 2 of « La Brute »): the duel's own seconds and multiplier
+      return tx(c.body, { cool: AUTO_COOLDOWN, lo: Math.min(...hits), hi: Math.max(...hits), times: R.react.skillGuard, glo: pct(R.guard.lo), ghi: pct(R.guard.hi), stun: R.brk.stun, dmg: R.brk.dmg, form: pct(R.form),
+        open: Math.round((R.open.dmg - 1) * 100), opener: R.opener, cut: R.interrupt.open, parry: R.parry.open, whiff: R.whiff, w: R.clash.w });
     }
     case 'renown': return tx(c.body, { hale: nameOf('hale'), parade: Math.max(...daysOfKind('free')) });
     case 'time': return tx(c.body, { slot: tx('ui.oneSlot') });

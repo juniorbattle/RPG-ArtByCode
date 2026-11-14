@@ -6,7 +6,7 @@ import { LATE_TEACHER, SKILL_BOOK, taughtBy } from '../combat/skillbook';
 import { MAX_LEVEL, chargeTime } from '../combat/skills';
 import { joined, skillName, tx, type TextKey } from '../narrative/text';
 import { sandRefusal } from './v2rivals';
-import { AUTO_CONDS_OF, AUTO_SKILLS } from '../combat/autoData';
+import { AUTO_CONDS_OF, AUTO_SKILLS, autoCondsFor } from '../combat/autoData';
 import type { AutoCond } from '../combat/auto';
 
 /** The skills of a version 2 game (lot V2, C4; the operator's decision AV-9 « Achat, entraînement et défi », journal Passe V2): the skills the
@@ -23,6 +23,17 @@ export function v2State(s: GameState): V2State {
   if (!s.v2) { const k = v2KitOf(s); s.v2 = { kit: { loadout: [...k.loadout], levels: { ...k.levels } } }; }
   return s.v2;
 }
+/** the plan of combat an action writes (lot 2 of « La Brute », briefs/combat-auto.md § 33.5 « un plan par rival »): the general one (the kit's order and tactic,
+ *  the skills page's), or the one kept for `foe` (its match sheet's), begun from the general plan the first time it is set */
+function planOf(s: GameState, foe: string | undefined): { order?: string[]; tactic?: Record<string, string> } {
+  const k = v2State(s).kit;
+  if (!foe) return k;
+  const plans = (k.plans ??= {});
+  return (plans[foe] ??= { ...(k.order ? { order: [...k.order] } : {}), ...(k.tactic ? { tactic: { ...k.tactic } } : {}) });
+}
+/** a rival's name or a fighter's, as the log says it */
+const foeOk = (foe: unknown): boolean => foe === undefined || (typeof foe === 'string' && /^[a-z_]{2,24}$/.test(foe));
+
 export const owns = (s: GameState, id: string): boolean => (s.v2?.kit.levels[id] ?? v2KitOf(s).levels[id] ?? 0) > 0;
 export const levelOf = (s: GameState, id: string): number => s.v2?.kit.levels[id] ?? v2KitOf(s).levels[id] ?? 0;
 
@@ -62,8 +73,8 @@ export type V2SkillAction =
   | { type: 'buySkill'; skill: string }
   | { type: 'drillSkill'; skill: string }
   | { type: 'setLoadout'; skills: string[] }
-  | { type: 'setOrder'; skills: string[] }
-  | { type: 'setTactic'; skill: string; cond: string };
+  | { type: 'setOrder'; skills: string[]; foe?: string }
+  | { type: 'setTactic'; skill: string; cond: string; foe?: string };
 
 // the skills are taught and drilled at the training ground (lot V5)
 const atForecourt = (s: GameState) => s.place === 'training';
@@ -125,9 +136,10 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
       if (!isV2(s)) return tx('v2.only');
       const four = v2KitOf(s).loadout as string[];
       if (!Array.isArray(a.skills) || a.skills.length !== four.length || new Set(a.skills).size !== four.length || a.skills.some((id) => !four.includes(id))) return tx('v2.order.four');
+      if (!foeOk(a.foe)) return tx('v2.order.four');
       return null;
     },
-    apply: (s, a, _r, emit) => { v2State(s).kit.order = [...a.skills]; emit({ kind: 'action', id: 'order', cause: 'action:setOrder', visible: false, text: tx('v2.order.log', { skills: joined(a.skills.map(skillName)) }) }); },
+    apply: (s, a, _r, emit) => { planOf(s, a.foe).order = [...a.skills]; emit({ kind: 'action', id: 'order', cause: 'action:setOrder', visible: false, text: tx('v2.order.log', { skills: joined(a.skills.map(skillName)) }) }); },
   },
   /** the tactic (the operator's SY-08 « Une condition par compétence, l’ordre gardé », journal Passe SY2): one of the four brought takes a condition (src/combat/auto.ts
    *  AutoCond), set on the match sheet and the skills page as the order is, a minor action; 'auto' gives the skill back to the automatic's own rule. The tactic decides
@@ -141,11 +153,13 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
       if (!isV2(s)) return tx('v2.only');
       if (!(v2KitOf(s).loadout as string[]).includes(a.skill)) return tx('v2.tactic.notBrought');
       const fam = AUTO_SKILLS[a.skill]?.family;
-      if (!fam || !AUTO_CONDS_OF[fam].includes(a.cond as never)) return tx('v2.tactic.cond');
+      // a condition of its role (the plan's page since lot 2 of « La Brute ») or of its family (the page of before)
+      if (!fam || !(autoCondsFor(a.skill).includes(a.cond as never) || AUTO_CONDS_OF[fam].includes(a.cond as never))) return tx('v2.tactic.cond');
+      if (!foeOk(a.foe)) return tx('v2.tactic.cond');
       return null;
     },
     apply: (s, a, _r, emit) => {
-      const k = v2State(s).kit, t = { ...(k.tactic ?? {}) };
+      const k = planOf(s, a.foe), t = { ...(k.tactic ?? {}) };
       if (a.cond === 'auto') delete t[a.skill]; else t[a.skill] = a.cond;
       if (Object.keys(t).length) k.tactic = t; else delete k.tactic;
       emit({ kind: 'action', id: 'tactic', cause: 'action:setTactic', visible: false, text: tx('v2.tactic.log', { skill: skillName(a.skill), cond: tx(COND_TEXT[a.cond as AutoCond]) }) });

@@ -128,6 +128,8 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
           else if (e.result === 'guarded') blow(RECIPES[heavy ? 'guardHeavy' : 'guard'], F, to);
           else if (e.result === 'guardbreak') blow(RECIPES.break, F, to);
         } else if (e.type === 'clash') blow(RECIPES[e.kind === 'light' ? 'guard' : 'guardHeavy'], F, e.to as FighterId);
+        // a parry (lot 2 of « La Brute »): a big blow guarded on the parrier, the guard's recipe
+        else if (e.type === 'parry') blow(RECIPES.guardHeavy, F, e.who as FighterId);
         else if (e.type === 'break') blow(RECIPES.break, F, e.who);
         else if (e.type === 'ko') blow(RECIPES.ko, F, e.who);
         else if (e.type === 'effect') self(effectRecipe(e.action, e.family), F[e.who as FighterId]);

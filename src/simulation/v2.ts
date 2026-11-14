@@ -39,9 +39,12 @@ export function newGameV2(get: (k: string) => string | null): boolean {
   return get('v2') !== '0';
 }
 
+/** the plans kept for a rival (lot 2 of « La Brute »), copied */
+const plansCopy = (p: NonNullable<V2Kit['plans']>): NonNullable<V2Kit['plans']> => Object.fromEntries(Object.entries(p).map(([foe, x]) => [foe, { ...(x.order ? { order: [...x.order] } : {}), ...(x.tactic ? { tactic: { ...x.tactic } } : {}) }]));
+
 /** the player's duel kit in a version 2 game: the four skills brought and every skill's level (lot V2 makes it the player's own; until then
  *  today's four skills at level 1, V2_START_KIT) */
 export function v2KitOf(s: Pick<GameState, 'flags' | 'v2'>): V2Kit {
   const k = s.v2?.kit;
-  return k ? { loadout: [...k.loadout] as V2Kit['loadout'], levels: { ...k.levels }, ...(k.order ? { order: [...k.order] } : {}), ...(k.tactic ? { tactic: { ...k.tactic } } : {}) } : { loadout: [...V2_START_KIT.loadout], levels: { ...V2_START_KIT.levels } };
+  return k ? { loadout: [...k.loadout] as V2Kit['loadout'], levels: { ...k.levels }, ...(k.order ? { order: [...k.order] } : {}), ...(k.tactic ? { tactic: { ...k.tactic } } : {}), ...(k.plans ? { plans: plansCopy(k.plans) } : {}) } : { loadout: [...V2_START_KIT.loadout], levels: { ...V2_START_KIT.levels } };
 }

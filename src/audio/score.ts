@@ -57,6 +57,7 @@ const sideOf = (who: unknown): number => (who === 'ren' ? -0.28 : 0.28);
 export function duelCue(e: { type: string } & Record<string, unknown>): DuelCue | null {
   if (e.type === 'impact') return { effect: e.result === 'dodged' ? 'dodge' : e.result === 'guarded' ? 'guard' : e.result === 'guardbreak' ? 'break' : e.kind === 'heavy' || (e.damage as number) >= 20 ? 'heavy' : 'hit', pan: sideOf(e.to) };
   if (e.type === 'clash') return { effect: 'guard' };
+  if (e.type === 'parry') return { effect: 'guard', pan: sideOf(e.who) };
   if (e.type === 'ko') return { effect: 'ko' };
   if (e.type === 'break') return { effect: 'break', pan: sideOf(e.who) };
   if (e.type === 'chargeTier') return e.open ? { effect: 'tier', rate: 2 ** (2 * (e.idx as number) / 12), pan: sideOf('ren') } : null;

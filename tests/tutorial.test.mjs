@@ -151,7 +151,8 @@ const lessonDuel = (d, names = { ren: 'Ren', marek: 'Marek' }) => ({ ren: d.ren,
 
 test('the first duel\'s lessons: one per first of the duel played by the computer, their numbers the bout\'s own (TU-11, TU-6)', () => {
   // (the action points' lesson left with them: the model « La Brute » has none, PB-1, journal Passe BL1)
-  assert.deepEqual(DT.LESSONS, ['start', 'charge', 'combo', 'react', 'form', 'gauge', 'break', 'speed']);
+  // (lot 2 of « La Brute », journal Passe BL2: an opening and a clash)
+  assert.deepEqual(DT.LESSONS, ['start', 'charge', 'combo', 'react', 'form', 'gauge', 'break', 'open', 'clash', 'speed']);
   assert.ok(!('tut.duel.ap.body' in EN));
   for (const k of tutKeys.filter((x) => /^tut\.duel\./.test(x))) assert.doesNotMatch(EN[k], /\d/, `${k} writes a number`);
   for (const id of DT.LESSONS) assert.ok(`tut.duel.${id}.title` in EN && `tut.duel.${id}.body` in EN, id);
@@ -169,6 +170,9 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   assert.match(DT.lessonText('form', D), new RegExp(`up to ${pc(R.form)} % either way: today ${sg(d.result.form[0])} % for you, ${sg(d.result.form[1])} % for Marek`));
   assert.match(DT.lessonText('gauge', D), new RegExp(`a guarded blow only ${Math.round(R.gauge.guardMul * 100)} % as much, a dodged one nothing`));
   assert.match(DT.lessonText('break', D), new RegExp(`stunned for ${R.brk.stun} seconds, and takes ${R.brk.dmg} times the damage`));
+  // an opening: whose and how long (the event's), the duel's multiplier and the seconds of each way of opening; a clash's window
+  assert.match(DT.lessonText('open', D, { type: 'open', who: 'marek', why: 'parry', dur: R.parry.open }), new RegExp(`^Marek is open for ${R.parry.open} seconds: neither guard nor dodge, and every blow ${Math.round((R.open.dmg - 1) * 100)} % harder\. Sunder opens the opponent for ${R.opener} seconds, a Feint that cuts a big blow for ${R.interrupt.open}, a parry for ${R.parry.open}, a big blow dodged leaves its striker open for ${R.whiff}\.`));
+  assert.match(DT.lessonText('clash', D), new RegExp(`leave within ${R.clash.w} seconds of each other meet`));
   // ×2 and « Skip » on the attack's and the dodge's keys (LC3-8), the duel's caps
   assert.match(TU.rich(DT.lessonText('speed', D)), /<kbd data-bind="attack" data-cap="arena">J<\/kbd> plays it twice as fast, and back; <kbd data-bind="dodge" data-cap="arena">L<\/kbd> skips to the result/);
   // the numbers follow the bout, not constants: a Ren at Speed 8 with the sabre
@@ -188,9 +192,11 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
 
 /** the first time each lesson opens in a duel, from the script alone (its lines and their trace), independent of the replay's events: a blow that is not its
  *  action's first, a guard or a dodge, a skill or a heavy blow landing, a target's gauge a third full at a blow, a break, Ren
- *  charging a skill; the clock's lesson at SPEED_AT; none at the K.O.'s blow or after it */
+ *  charging a skill, an opening (an opener's first blow landing, a big action's first blow dodged, an interruption, a parry), a clash; the clock's lesson at
+ *  SPEED_AT; none at the K.O.'s blow or after it */
 function oracle(d) {
   const log = d.result.log, light = new Set([d.ren.light.id, d.foe.light.id]), first = { start: 0 }, fresh = {};
+  const acts = new Map([d.ren.light, d.ren.heavy, ...d.ren.skills, d.foe.light, d.foe.heavy, ...d.foe.skills].map((a) => [a.id, a]));
   // a target's gauge just after a blow, from the script alone: the next line's trace (written before its own blow fills anything) with its decay undone, full at
   // that fighter's break or while it is broken (lot 4, journal Passe LC6: the HUD shows the gauge at the blow, no longer one line late)
   // (k: 0 the first fighter, 1 the second: the trace's `s` holds both gauges since PB-1)
@@ -201,8 +207,14 @@ function oracle(d) {
     if (e.t >= koAt) break;
     if (e.ev === 'charge') { fresh[e.who] = true; if (e.who === d.ren.id && e.act !== d.ren.light.id) put('charge', e.t); continue; }
     if (e.ev === 'break') { put('break', e.t); continue; }
-    if (e.ev === 'ward' || e.ev === 'boost' || e.ev === 'parry' || e.ev === 'interrupt') { if (e.ev === 'ward' || e.ev === 'boost') fresh[e.who] = false; continue; }
+    // a clash of two blows of the same weight (BL1-8; a light attack beaten by a big action is not one); an interruption or a parry opens a fighter (lot 2)
+    if (e.ev === 'clash') { if (!e.beat) put('clash', e.t); continue; }
+    if (e.ev === 'parry' || e.ev === 'interrupt') { put('open', e.t); continue; }
+    if (e.ev === 'ward' || e.ev === 'boost') { fresh[e.who] = false; continue; }
     const follow = !fresh[e.who]; fresh[e.who] = false;
+    // an opener's first blow that lands opens its target; a big action's first blow dodged opens its striker (src/combat/auto.ts hitOnce)
+    const act = acts.get(e.act);
+    if (!follow && act && ((e.ev !== 'dodged' && act.role === 'opener') || (e.ev === 'dodged' && act.kind !== 'light'))) put('open', e.t);
     if (follow) put('combo', e.t);
     if (e.ev !== 'hit') put('react', e.t);
     if (e.ev === 'hit' && !light.has(e.act)) put('form', e.t);
@@ -272,16 +284,20 @@ test('the guide\'s « The duel » and « Preparing a bout » for the duel played
   const s = v2(), duel = TU.chapterText(s, TU.CHAPTERS.find((c) => c.id === 'duel')), prep = TU.chapterText(s, TU.CHAPTERS.find((c) => c.id === 'prepare'));
   const hits = Object.values(AD.AUTO_WEAPONS).map((w) => w.hits.length);
   assert.match(duel, /^The computer fights your bouts as you prepared them\./);
-  assert.match(duel, new RegExp(`Each skill has a few uses in a bout, more at a higher level, and a gap between two; your heavy blow comes back ${AD.AUTO_COOLDOWN} times its first-level charge after its charge begins`));
+  assert.match(duel, new RegExp(`Each skill has a few uses in a bout, more at a higher level, the squares under its name, and a gap between two; a use spent never comes back\. Your heavy blow comes back ${AD.AUTO_COOLDOWN} times its first-level charge after its charge begins`));
+  // the openings and the clash (lot 2 of « La Brute »), the duel's own numbers
+  assert.match(duel, new RegExp(`neither guard nor dodge, and every blow ${Math.round((R.open.dmg - 1) * 100)} % harder\. Sunder opens the opponent for ${R.opener} seconds; a Feint cuts a big blow being charged and opens its fighter for ${R.interrupt.open}; a parry takes a big blow and leaves its striker open for ${R.parry.open}; a big blow dodged leaves its striker open for ${R.whiff}\. Two blows that leave within ${R.clash.w} seconds clash`));
+  assert.doesNotMatch(duel, /nothing cuts one/, 'a Feint cuts a big blow');
   assert.doesNotMatch(duel, /action point/, 'no AP since PB-1');
   assert.match(duel, new RegExp(`your light attack ${Math.min(...hits)} to ${Math.max(...hits)} by your weapon`));
   assert.match(duel, new RegExp(`${R.react.skillGuard} times as often against a skill or a heavy blow seen coming; a guarded blow loses ${pc(R.guard.lo)} to ${pc(R.guard.hi)} % of its damage, by Defence against Attack`));
   assert.match(duel, new RegExp(`stunned for ${R.brk.stun} seconds and takes ${R.brk.dmg} times the damage`));
   assert.match(duel, new RegExp(`up to ${pc(R.form)} % either way`));
   assert.doesNotMatch(duel, /riposte|priority|Hold \[J\]/, 'nothing of the duel of before');
-  assert.match(prep, /bring four skills, set their order and, with \[C\], when each leaves: the duel uses them in that order/);
+  assert.match(prep, /bring four skills, set their order and, with \[C\], when each leaves among the conditions of its role: your general plan, which the duel follows/);
   assert.match(prep, new RegExp(`every fighter's health is multiplied by ${R.hpScale}`));
-  assert.match(prep, /your order of the four, which \[Left\] and \[Right\] change there/);
+  // the plan set on a rival's match sheet is kept for them (lot 2 of « La Brute »)
+  assert.match(prep, /The plan you set there, the order with \[Left\] and \[Right\] and when each leaves with \[C\], is kept for your bouts against that rival/);
   assert.match(TU.rich('[Left] [Right]'), /<kbd data-bind="left">.*<\/kbd> <kbd data-bind="right">.*<\/kbd>/);
   // the duel's keys in « Keys »: ×2 on the attack's, « Skip » on the dodge's, the pause; the guard's does nothing there (lot 5 renames them)
   assert.match(src('src/ui/tutorial.ts'), /const duel = row\(a\('attack'\), 'tut\.key\.attack'\) \+ row\(a\('dodge'\), 'tut\.key\.dodge'\) \+ row\(a\('pause'\), 'tut\.key\.pause'\);/);

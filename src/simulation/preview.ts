@@ -13,7 +13,7 @@ import { v2DuelData, type V2Duel, type V2Kit } from '../combat/v2duel';
 import { hitFactor, skillPower } from '../combat/stats';
 import { Rng } from '../core/rng';
 import { AUTO_RULES, autoGaugeHit, type AutoFighter, type AutoRole } from '../combat/auto';
-import { autoFoe, autoOrderOf, autoRaceSheet, autoRen, autoSkill } from '../combat/autoData';
+import { autoFoe, autoKitFor, autoOrderOf, autoRaceSheet, autoRen, autoSkill } from '../combat/autoData';
 import { autoBoutOf } from '../combat/autoMatch';
 import { piecesViv, v2Stats, wornPieces } from './v2gear';
 import { RIVALS_CHALLENGE_DAY } from './v2town';
@@ -67,6 +67,8 @@ export interface SkillFigures {
   hits: number;
   /** the hold that opens it (s) */
   charge: number;
+  /** its uses in a bout by its level and the gap between two (s), the gear's and an ally's share in it (PB-2; lot 2 of « La Brute » shows them); 0 in today's game */
+  uses: number; gapS: number;
   /** a ward's or a boost's length (s) and what it multiplies, 0 and none for a blow */
   dur: number; ward: { damage: number; resist: number } | null; boost: { damage: number; resist: number } | null;
   pierce: boolean;
@@ -93,7 +95,7 @@ export function skillFigures(s: GameState, id: string, level: number): SkillFigu
     // power, Tourbillon's three of 0.36 are 1.08 of it (journal Passe CO2)
     const off = !e, hits = a.hits ?? [1], k = hitFactor(ren.atk, foe.def);
     return {
-      ap: 0, role: a.role, power: off ? +(a.power ?? 0).toFixed(1) : 0, hits: off ? hits.length : 0,
+      ap: 0, role: a.role, uses: a.uses ?? 0, gapS: +((a.cooldown ?? 0) * (ren.gfx?.cd ?? 1)).toFixed(1), power: off ? +(a.power ?? 0).toFixed(1) : 0, hits: off ? hits.length : 0,
       damage: off ? hits.reduce((n, sh) => n + Math.max(1, Math.round((a.power ?? 0) * sh * k)), 0) : 0,
       gauge: off ? +hits.reduce((n, sh) => n + autoGaugeHit(a, sh, foe.end), 0).toFixed(1) : 0, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2),
       dur: e?.dur ?? 0, ward: a.ward ? { damage: a.ward.dmg, resist: a.ward.gauge } : null, boost: a.boost ? { damage: a.boost.dmg, resist: a.boost.gauge } : null, pierce: !!a.pierce,
@@ -101,7 +103,7 @@ export function skillFigures(s: GameState, id: string, level: number): SkillFigu
   }
   const k = v2KitOf(s), { data: d, tiers } = skillDuel(s, withSkill(s, id), { ...k.levels, [id]: level });
   const a = d.actions[id as DynActionId], e = a.ward ?? a.boost;
-  return { ap: a.apCost ?? 0, power: a.family === 'offensive' ? +skillPower(id, level).toFixed(1) : 0, hits: a.family === 'offensive' ? 1 : 0, damage: a.damage, gauge: a.resist, charge: tiers.find((t) => t.id === id)!.at, dur: e?.dur ?? 0, ward: a.ward ?? null, boost: a.boost ?? null, pierce: !!a.ignoreGuard };
+  return { ap: a.apCost ?? 0, uses: 0, gapS: 0, power: a.family === 'offensive' ? +skillPower(id, level).toFixed(1) : 0, hits: a.family === 'offensive' ? 1 : 0, damage: a.damage, gauge: a.resist, charge: tiers.find((t) => t.id === id)!.at, dur: e?.dur ?? 0, ward: a.ward ?? null, boost: a.boost ?? null, pierce: !!a.ignoreGuard };
 }
 
 /** the tiers of the charge with these skills (the light attack, then each one by its time; the heavy attack only when it is among them, journal Passe CH1), as
@@ -113,9 +115,10 @@ export function chargeLadder(s: GameState, ids: string[]): ChargeTier[] {
 
 /** the order the automatic follows with these four (AC-09), each with its charge at Ren's Speed, then the light attack: what the match sheet and the skills' page
  *  show (lot 2, journal Passe LC3); a choice of fewer than four is shown as it stands */
-export function autoOrderView(s: GameState, ids: string[]): Array<{ id: string; charge: number }> {
-  const k = v2KitOf(s), { ren } = autoPair(s), order = autoOrderOf({ loadout: ids, levels: k.levels, order: k.order });
-  return order.map((id) => { const a = autoSkill(id, k.levels[id] ?? 1); return { id, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2) }; });
+export function autoOrderView(s: GameState, ids: string[], foe?: string | null): Array<{ id: string; charge: number; uses: number; gapS: number }> {
+  // the plan kept for the rival met (its match sheet), else the general one (lot 2 of « La Brute »); each skill's uses and its gap as the duel counts them
+  const k = autoKitFor(v2KitOf(s), foe), { ren } = autoPair(s), order = autoOrderOf({ loadout: ids, levels: k.levels, order: k.order });
+  return order.map((id) => { const a = autoSkill(id, k.levels[id] ?? 1); return { id, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2), uses: a.uses ?? 0, gapS: +((a.cooldown ?? 0) * (ren.gfx?.cd ?? 1)).toFixed(1) }; });
 }
 
 /** the level a skill can still reach and how: drilling up to its cap, then only the fighter who teaches it; a skill only a rival out of the title teaches
