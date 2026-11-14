@@ -18,6 +18,11 @@
 //   node tools/auto-lab.mjs modes [--seeds=101..300] [--auto=<name>] [--only=a,b]
 //       the ways of deciding Ren's skills (tools/auto-tactics.mjs: the tactics of SY-08, random presses) against the automatic every fighter plays (`--auto` one of
 //       AUTOS: a candidate automatic for every fighter, the rivals' included): the reference player's whole games, Ren's decider replaced (SY-07's two criteria)
+//   node tools/auto-lab.mjs damage [--policies=planner,reference] [--seeds=101..300] [--json=f]
+//       where the damage comes from (journal Passe BE1): each fighter's share by source (the light attack, the heavy blow, the skills) and by action, one blow of
+//       each kind, the share dealt in the opponent's break, the durations, the blows a minute, the breaks and the clashes, by stage
+//   node tools/auto-lab.mjs price [--policy=planner] [--seeds=101..300] [--swaps=<from>:<to>:<level>;...]
+//       the price of a skill (journal Passes BL1, BE1): the policy's bouts replayed with one of Ren's skills swapped for another at a level
 //   every command: --set=<TABLE>.<path>=<value>[,...] changes RULES (AUTO_RULES), SKILLS (AUTO_SKILLS), FOES (AUTO_FOES), RACE (AUTO_RACE), WEAPONS
 //       (AUTO_WEAPONS), LIGHT (AUTO_LIGHT); --race=<file.json> loads a race ({ norm, pool, stage })
 import fs from 'node:fs';
@@ -372,6 +377,77 @@ function judge() {
   if (arg('json')) fs.writeFileSync(arg('json'), JSON.stringify(out, null, 1));
 }
 
+// ------------------------------------------------------------------------------------------------------------------------------- the blows (journal Passe BE1)
+const SOURCE = (act) => (act === 'light' || act === 'm_light' ? 'simple' : act === 'heavy' || act === 'm_heavy' ? 'puissant' : 'comp');
+/** where each fighter's damage comes from in a policy's bouts (whole games): each source's share (the light attack, the heavy blow, the skills) and each action's,
+ *  one blow of each kind (median, p10, p90), the share dealt in the opponent's break, the durations, the blows a minute, the breaks and the clashes, by stage */
+export function damageOf(pn, seeds) {
+  const P = LAB.POLICIES[pn], bouts = [];
+  const wrap = { name: pn, skill: P.skill, choose: (st) => {
+    const a = P.choose(st);
+    if (a.type === 'fight' || a.type === 'challengeResult') {
+      const kind = a.type === 'fight' ? 'bout' : 'challenge', o = AM.autoOutcome(st, kind, { log: true });
+      if (kind === 'bout') bouts.push({ stage: o.bout.stage, r: o.duel });
+      return { ...a, outcome: { winner: o.winner, playerHp: o.playerHp, playerMaxHp: o.playerMaxHp, opponentHp: o.opponentHp, opponentMaxHp: o.opponentMaxHp, finisher: o.finisher } };
+    }
+    return a;
+  } };
+  for (const s of seeds) { try { LAB.autoplay(s, wrap, 'Ren', 260, 'auto'); } catch (e) { if (!/refused action/.test(String(e))) throw e; } }
+  const out = {};
+  for (const stage of [0, 1, 2]) {
+    const B = bouts.filter((x) => x.stage === stage); if (!B.length) continue;
+    const src = { ren: {}, foe: {} }, act = { ren: {}, foe: {} }, per = {}; let brk = 0, clash = 0, T = 0, blows = 0, inBreak = 0, ren = 0;
+    for (const { r } of B) {
+      T += r.t; let brokenUntil = -1;
+      for (const e of r.log) {
+        if (e.ev === 'break') { brk++; if (e.who !== 'ren') brokenUntil = e.t + (e.dur ?? AU.AUTO_RULES.brk.stun); }
+        if (e.ev === 'clash' && !e.beat) clash++;
+        if (e.ev === 'hit' || e.ev === 'guarded' || e.ev === 'dodged') blows++;
+        if (e.ev !== 'hit' && e.ev !== 'guarded') continue;
+        const side = e.who === 'ren' ? 'ren' : 'foe';
+        src[side][SOURCE(e.act)] = (src[side][SOURCE(e.act)] ?? 0) + e.dmg; act[side][e.act] = (act[side][e.act] ?? 0) + e.dmg; (per[`${side}:${e.act}`] ??= []).push(e.dmg);
+        if (side === 'ren') { ren += e.dmg; if (e.t <= brokenUntil) inBreak += e.dmg; }
+      }
+    }
+    const share = (o) => { const s = Object.values(o).reduce((a, b) => a + b, 0); return Object.fromEntries(Object.entries(o).sort((a, b) => b[1] - a[1]).map(([k, v]) => [k, Math.round((100 * v) / s)])); };
+    out[stage] = { n: B.length, t: med(B.map((x) => x.r.t)), perMin: (blows / T) * 60, breaks: brk / B.length, clashes: (clash / T) * 60, inBreak: inBreak / ren,
+      ren: share(src.ren), foe: share(src.foe), renActs: share(act.ren), foeActs: share(act.foe),
+      blow: Object.fromEntries(Object.entries(per).filter(([, v]) => v.length >= 20).sort((a, b) => med(b[1]) - med(a[1])).map(([k, v]) => [k, [med(v), q(v, 0.1), q(v, 0.9), v.length]])) };
+  }
+  return out;
+}
+function damage() {
+  const seeds = seedList(arg('seeds', '101..300')), out = {};
+  for (const pn of arg('policies', 'planner,reference').split(',')) {
+    const D = out[pn] = damageOf(pn, seeds), line = (o) => Object.entries(o).map(([k, v]) => `${k} ${v} %`).join(', ');
+    console.log(`${pn} (${seeds.length} parties) :`);
+    for (const [s, x] of Object.entries(D)) {
+      console.log(`  étape ${s} (${x.n} combats) : durée méd. ${x.t.toFixed(0)} s ; ${x.perMin.toFixed(1)} coups/min ; ${x.breaks.toFixed(2)} ruptures par combat ; ${x.clashes.toFixed(2)} entrechocs/min`);
+      console.log(`    les dégâts de Ren : ${line(x.ren)} (${line(x.renActs)} ; pendant une rupture du rival ${Math.round(100 * x.inBreak)} %)`);
+      console.log(`    les dégâts du rival : ${line(x.foe)} (${line(x.foeActs)})`);
+      console.log(`    un coup (médiane [p10-p90] ×nombre) : ${Object.entries(x.blow).map(([k, [m, a, b, n]]) => `${k} ${m} [${a}-${b}] ×${n}`).join(' ; ')}`);
+    }
+  }
+  if (arg('json')) fs.writeFileSync(arg('json'), JSON.stringify(out, null, 1));
+}
+/** the price of a skill (journal Passes BL1, BE1): the planner's bouts of whole games, one of Ren's skills swapped for another at a level, replayed against the
+ *  rival of the race in force; `--swaps=<from>:<to>:<level>;...` */
+function price() {
+  const bank = captureBank(seedList(arg('seeds', '101..300')), arg('policy', 'planner'));
+  const foeOf = (e) => AD.autoFoe(e.foeId, AD.autoRaceSheet(e.foeId, e.stage, e.round, { preparation: e.prep, hp: e.foeHp }), { stage: e.stage });
+  const swaps = [['tel quel', null], ...(arg('swaps', 'd1:k_iron:1;d1:k_iron:3;d1:d1:3;s1:k_sunder:1;s1:k_sunder:3;d1:k_feint:1;d1:k_parry:1;t4:t4:3').split(';').map((x) => [x, x.split(':')]))];
+  console.log(`${arg('policy', 'planner')}, poule / tableau / finale (% gagnés), une compétence échangée (de:pour:niveau)`);
+  for (const [name, sw] of swaps) {
+    const w = [0, 0, 0], n = [0, 0, 0];
+    for (const e of bank) {
+      let ren = e.ren;
+      if (sw) { const i = ren.skills.findIndex((s) => s.id === sw[0]); if (i < 0) continue; ren = { ...ren, skills: ren.skills.map((s, j) => (j === i ? AD.autoSkill(sw[1], +sw[2]) : s)) }; }
+      n[e.stage]++; if (AU.autoWinner(AU.autoDuel(ren, foeOf(e), e.seed)) === 0) w[e.stage]++;
+    }
+    console.log(`  ${name.padEnd(18)} ${[0, 1, 2].map((s) => String(pct(w[s], n[s])).padStart(4)).join(' /')}   (${n.join(', ')} combats)`);
+  }
+}
+
 const cmd = process.argv[2];
 try {
   if (cmd === 'games') games();
@@ -383,6 +459,8 @@ try {
   else if (cmd === 'offscreen') offscreen();
   else if (cmd === 'level') level();
   else if (cmd === 'modes') modes();
-  else if (cmd !== 'lib') console.log('commands: games | refs | rhythm | kits | offscreen | level (see the header)');
+  else if (cmd === 'damage') damage();
+  else if (cmd === 'price') price();
+  else if (cmd !== 'lib') console.log('commands: games | refs | rhythm | kits | offscreen | level | modes | fit | judge | damage | price (see the header)');
 } finally { if (cmd !== 'lib') await server.close(); }
 export { AU, AD, AM, LAB, ST, range, med, q, pct, rate, server };
