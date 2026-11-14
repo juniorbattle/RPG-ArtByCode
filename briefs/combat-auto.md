@@ -1537,9 +1537,13 @@ La fiche de match, le tableau du tournoi et le carnet lisent le palier ; la lign
 
 La leçon du sable (`SAND_LESSON`, `src/simulation/v2skills.ts`) : un défi gagné en ville fait monter d'un niveau la première compétence offensive du plan général encore sous le niveau 3. Le curieux passe de 11,5 à 25,5 % de titres (le planificateur 26,5 %, la référence 41 %, inchangés : ils ne défient pas). Jusqu'au niveau 5, mesuré, il atteignait 47,5 % et dépassait la référence.
 
-### 37.5 Ce qui reste
+### 37.5 La fiche relue : six sur six à la recommandation (14/11/2026)
 
-- L'essai en jeu de l'opérateur (la fiche courte : les choix faits dans le cadre décidé).
+L'opérateur a dit « fiche remplie » ; ses choix, mot pour mot, sans note : BL3-1 « Reçu » ; BL3-2 « Garder ainsi » ; BL3-3 « Garder ainsi » ; BL3-4 « Garder ainsi » ; BL3-5 « Jusqu’au niveau 3, un niveau par défi » ; BL3-6 « Lancer mon essai maintenant ». Aucune décision A3 n'est touchée ; rien du jeu ne change (les réglages recommandés étaient construits).
+
+### 37.6 Ce qui reste
+
+- L'essai en jeu de l'opérateur, lancé (BL3-6) ; ses remarques sur une fiche, avant le lot 4.
 - Le lot 4 (le build : le choix du vainqueur, les talents, les armes à propriété ; au test de AC-12, Marek, Cassius et Rhosk n'ont qu'une bonne réponse en finale, § 35.4), puis le lot 5.
 
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
