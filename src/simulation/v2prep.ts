@@ -28,10 +28,13 @@ export const REHEARSAL = { n: 30 };
 
 export interface Rehearsal {
   foe: string; day: number; slot: SlotId; n: number; wins: number; tier: ScoutTier;
-  /** the bout's set-up when it was rehearsed (both fighters as the duel took them): a review needs the same */
+  /** the player's side of the set-up when it was rehearsed (Ren as the duel took him, and how the shadow played: by its roles or its plan): the rehearsal holds
+   *  « with this plan » while it is the same (the rival's own training goes on meanwhile, slot after slot) */
   key: string;
   /** a won and a lost bout of the thirty, by their seed, to watch again */
   seeds: { win?: number; loss?: number };
+  /** both fighters as the thirty duels took them: a bout watched again is the very one rehearsed */
+  ren: AutoFighter; shadow: AutoFighter;
   sum: NoteSum;
 }
 
@@ -44,8 +47,8 @@ export function shadowBout(s: GameState): { ren: AutoFighter; foe: AutoFighter; 
   const foe: AutoFighter = tier >= 2 ? f.foe : { ...f.foe, tactic: f.foe.skills.map((): AutoCond => 'auto') };
   return { ren: f.ren, foe, foeId: n.foe, stage: n.stage, round, tier };
 }
-/** a set-up's key (both fighters, canonical) */
-export const shadowKey = (b: { ren: AutoFighter; foe: AutoFighter }): string => fnv64(canonical({ ren: b.ren, foe: b.foe }));
+/** the player's side of a set-up (Ren, and the shadow's plan), canonical */
+export const shadowKey = (b: { ren: AutoFighter; foe: AutoFighter }): string => fnv64(canonical({ ren: b.ren, plan: b.foe.tactic ?? null }));
 
 /** the rehearsal's seeds: its own, by the game, the rival, the day and the slot (never the real bout's: src/combat/match.ts mixes the match's id) */
 export function rehearsalSeeds(s: GameState, foe: string): number[] {
@@ -65,15 +68,15 @@ export function runRehearsal(s: GameState): Rehearsal | null {
     notes.push(boutNote(r, b.ren, b.foe, { day: s.day, foe: b.foeId, kind: 'rehearsal' }));
   }
   const sum = sumNotes(notes);
-  return { foe: b.foeId, day: s.day, slot: s.slot, n: notes.length, wins: sum.wins, tier: b.tier, key: shadowKey(b), seeds, sum };
+  return { foe: b.foeId, day: s.day, slot: s.slot, n: notes.length, wins: sum.wins, tier: b.tier, key: shadowKey(b), seeds, ren: b.ren, shadow: b.foe, sum };
 }
 
-/** a rehearsed bout to watch again (`win` or `loss`), as the arena plays it; `stale` when the set-up changed since (the plan, the gear, the training, what is known
- *  of the rival): the bout would not be the one rehearsed */
-export function reviewOf(s: GameState, which: 'win' | 'loss'): { result: AutoResult; ren: AutoFighter; foe: AutoFighter; foeId: string; seed: number; stale: boolean } | null {
-  const b = shadowBout(s), r = b ? s.v2?.$rehearsals?.[b.foeId] : undefined, seed = r?.seeds[which];
-  if (!b || !r || seed === undefined) return null;
-  return { result: autoDuel(b.ren, b.foe, seed, { log: true, trace: true }), ren: b.ren, foe: b.foe, foeId: b.foeId, seed, stale: shadowKey(b) !== r.key };
+/** a rehearsed bout to watch again (`win` or `loss`) of the last rehearsal against the next opponent, as the arena plays it: the very bout rehearsed (its two fighters
+ *  kept with it), whatever changed since */
+export function reviewOf(s: GameState, which: 'win' | 'loss'): { result: AutoResult; ren: AutoFighter; foe: AutoFighter; foeId: string; seed: number } | null {
+  const n = nextBoutOf(s), r = n ? rehearsalOf(s, n.foe) : null, seed = r?.seeds[which];
+  if (!r || seed === undefined || !r.ren || !r.shadow) return null;
+  return { result: autoDuel(r.ren, r.shadow, seed, { log: true, trace: true }), ren: r.ren, foe: r.shadow, foeId: r.foe, seed };
 }
 
 /** the last rehearsal against a rival, while it still is the bout to come (null after that bout, or never rehearsed) */
@@ -83,7 +86,7 @@ export function rehearsalOf(s: GameState, foe: string): Rehearsal | null {
   const fought = s.tournament.matches.some((m) => !!m.winner && m.day >= r.day && ((m.a === PLAYER_ID && m.b === foe) || (m.b === PLAYER_ID && m.a === foe)));
   return fought ? null : r;
 }
-/** the rehearsal still matches the bout as it would be fought now */
+/** the rehearsal still holds « with this plan »: the player's side of the bout as it would be fought now is the one rehearsed */
 export const rehearsalFresh = (s: GameState, r: Rehearsal): boolean => { const b = shadowBout(s); return !!b && b.foeId === r.foe && shadowKey(b) === r.key; };
 
 

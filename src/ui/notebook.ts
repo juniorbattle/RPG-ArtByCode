@@ -78,7 +78,7 @@ function fighterHtml(st: GameState, id: string): { head: string; body: string; w
   return {
     head: `<div class="pm-who">${url ? `<img src="${url}" alt="">` : ''}<h2 class="pm-h">${esc(name)}<small>${esc(sub)}</small></h2></div>`,
     body: known + reh + book,
-    watch: { win: fresh && r!.seeds.win !== undefined, loss: fresh && r!.seeds.loss !== undefined },
+    watch: { win: next && !!r && r.seeds.win !== undefined, loss: next && !!r && r.seeds.loss !== undefined },
   };
 }
 

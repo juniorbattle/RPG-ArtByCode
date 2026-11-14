@@ -398,7 +398,7 @@ export class TownUi {
     const duel = isV2(this.st) ? news.find((e) => e.kind === 'match' && (e.id === 'player-won' || e.id === 'player-lost')) : undefined;
     // the operator's DB11-5 « Le dire partout » (journal Passe DB13): a bout won, the tournament's or a challenge's, says the vigour it gives and the health of the next bout
     const won = isV2(this.st) && news.some((e) => e.id === 'player-won' || e.id === 'challenge:won');
-    const vigour = won ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(this.st).hp ?? 0 }))}</p>` : '';
+    const vigour = won ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(this.st).hp ?? 0, k: num(AUTO_RULES.hpScale) }))}</p>` : '';
     if (duel) { this.newsRead = this.card(`<div class="pm-result"><p class="pm-big">${duel.id === 'player-won' ? tx('v2.result.won') : tx('v2.result.lost')}</p>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}${vigour}</div>`, tx('ui.goOn')); return; }
     this.newsRead = this.card(`<h2 class="pm-h">${news.length > 1 ? tx('ui.meanwhile') : tx('ui.news')}</h2>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}${vigour}`, tx('ui.goOn'), true);
   }

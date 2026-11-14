@@ -120,7 +120,7 @@ export function boutNote(r: AutoResult, ren: AutoFighter, foe: AutoFighter, meta
 
 /** the advice of a note: the first that holds, in this order (a Feint wasted, an exploit spent without an opening, big blows dodged, an opponent's skill that did
  *  the harm, uses left unspent, no opening made; else keep the plan, or rehearse it after a defeat) */
-function adviceOf(n: BoutNote, ren: AutoFighter, feint: string | undefined, cut: number, dodged: number): Advice {
+export function adviceOf(n: BoutNote, ren: AutoFighter, feint: string | undefined, cut: number, dodged: number): Advice {
   const N = NOTE_RULES, f = feint ? n.skills.find((x) => x.id === feint) : undefined;
   const role = (id: string) => ren.skills.find((a) => a.id === id);
   const isExploit = (id: string) => role(id)?.role === 'exploit', isBlow = (id: string) => { const a = role(id); return !!a && !a.ward && !a.boost && a.role !== 'haste' && a.role !== 'slow' && a.role !== 'load'; };

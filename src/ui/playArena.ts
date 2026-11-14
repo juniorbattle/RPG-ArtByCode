@@ -16,7 +16,7 @@ import { ACTION_NAMES_EN } from '../narrative/texts';
 
 /** the actions' names in the page's language (journal Passe RG4: the English through the table's `word`) */
 const actionNames = (): Record<string, string> => Object.fromEntries(Object.entries(ACTION_NAMES_EN).map(([k, v]) => [k, word(v)]));
-import { lang, said, tx, word, type TextRef } from '../narrative/text';
+import { lang, num, said, tx, word, type TextRef } from '../narrative/text';
 import { arenaQuery, lookOf, standings, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { writeSave } from './save';
@@ -25,6 +25,7 @@ import { standingsHtml } from './board';
 import { fontsReady, installDesign } from './design/system';
 import { progressOn } from './loading';
 import { DuelCoach } from './duelTutorial';
+import { AUTO_RULES } from '../combat/auto';
 import { boutNote } from '../combat/autoNotes';
 import { fighterName, noteLines } from './notebook';
 import { REHEARSAL, reviewOf } from '../simulation/v2prep';
@@ -122,7 +123,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     writeSave(st);
     const won = r.winner === 'ren', lines = (res.events as Array<{ visible: boolean; text: string; kind: string; $t?: TextRef }>).filter((e) => e.visible && (e.kind === 'match' || e.kind === 'consequence' || (!!challenge && e.kind === 'action'))).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('');
     // the operator's DB11-5 « Le dire partout » (journal Passe DB13): a version 2 bout won (a reprisal adds none) says the vigour it gives and the health of the next bout
-    const vigour = won && v2 && !reprisal ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(st).hp ?? 0 }))}</p>` : '';
+    const vigour = won && v2 && !reprisal ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(st).hp ?? 0, k: num(AUTO_RULES.hpScale) }))}</p>` : '';
     const corvin = note ? `<p class="pm-sub">${tx('note.title')}</p>${noteLines(note).slice(1).map((l) => `<p>${esc(l)}</p>`).join('')}` : '';
     await overlay(`<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}${vigour}${corvin}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
     go(b.params);
@@ -131,15 +132,15 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
 
 /** a rehearsed bout watched again (lot 3 of « La Brute », the proposition's « tu revois deux combats »): the shadow bout as rehearsed (src/simulation/v2prep.ts reviewOf),
  *  played by the arena on the empty stands with « Skip » and ×2 at hand; its end says the result and Master Corvin's reading of it, and the player goes back to the
- *  training ground; nothing of the game changes (no action, no save). A set-up changed since the rehearsal plays nothing: the bout would not be the one rehearsed. */
+ *  training ground; nothing of the game changes (no action, no save). The bout is the very one rehearsed (its fighters kept with the rehearsal). */
 async function startReview(b: Boot, st: GameState, which: 'win' | 'loss'): Promise<void> {
   installGameApi(() => st, () => {}, () => false);
   installDesign(lookOf(st));
   const rv = reviewOf(st, which), name = rv ? fighterName(rv.foeId) : '';
-  if (!rv || rv.stale) {
+  if (!rv) {
     b.loading.remove();
     (window as any).__ready = true;
-    await overlay(`<h2 class="pm-h">${tx('nb.rehearsal')}</h2><p>${esc(rv ? tx('prep.review.stale', { name }) : tx('prep.review.none'))}</p>`, [{ id: 'back', label: tx('prep.review.back'), primary: true }]).done;
+    await overlay(`<h2 class="pm-h">${tx('nb.rehearsal')}</h2><p>${esc(tx('prep.review.none'))}</p>`, [{ id: 'back', label: tx('prep.review.back'), primary: true }]).done;
     go(b.params);
     return;
   }

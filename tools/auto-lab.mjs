@@ -23,6 +23,10 @@
 //       each kind, the share dealt in the opponent's break, the durations, the blows a minute, the breaks and the clashes, by stage
 //   node tools/auto-lab.mjs price [--policy=planner] [--seeds=101..300] [--swaps=<from>:<to>:<level>;...]
 //       the price of a skill (journal Passes BL1, BE1): the policy's bouts replayed with one of Ren's skills swapped for another at a level
+//   node tools/auto-lab.mjs rehearsal [--policy=planner] [--seeds=101..300]
+//       the rehearsal against the real bouts (lot 3 of « La Brute », journal Passe BL3): at each bout of the policy's whole games, the rehearsal's chances from that
+//       state (the shadow at tier 2, its own plan; at tier 1, its skills by their roles) against the bout's result: the mean chances and the bouts won, by stage,
+//       the Brier score, the bouts by tenths of chances
 //   every command: --set=<TABLE>.<path>=<value>[,...] changes RULES (AUTO_RULES), SKILLS (AUTO_SKILLS), FOES (AUTO_FOES), RACE (AUTO_RACE), WEAPONS
 //       (AUTO_WEAPONS), LIGHT (AUTO_LIGHT); --race=<file.json> loads a race ({ norm, pool, stage })
 import fs from 'node:fs';
@@ -40,6 +44,7 @@ const pct = (w, n) => (n ? Math.round((100 * w) / n) : NaN);
 const server = await createServer({ root: ROOT, configFile: false, logLevel: 'error', appType: 'custom', cacheDir: 'node_modules/.vite-test', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, optimizeDeps: { noDiscovery: true } });
 const load = (f) => server.ssrLoadModule(f);
 const AU = await load('/src/combat/auto.ts'), AD = await load('/src/combat/autoData.ts'), AM = await load('/src/combat/autoMatch.ts');
+const PR = await load('/src/simulation/v2prep.ts');
 const LAB = await load('/src/tournament/lab.ts'), ST = await load('/src/combat/stats.ts'), V2 = await load('/src/simulation/v2.ts');
 const TABLES = { CADENCE: AD.AUTO_CADENCE, RULES: AU.AUTO_RULES, SKILLS: AD.AUTO_SKILLS, FOES: AD.AUTO_FOES, RACE: AD.AUTO_RACE, WEAPONS: AD.AUTO_WEAPONS, LIGHT: AD.AUTO_LIGHT, BRUTE: AD.AUTO_BRUTE, ROLES: AD.AUTO_ROLES, STYLES: AD.AUTO_STYLES, GEARFX: AD.AUTO_GEAR_FX };
 const RIVALS = Object.keys(ST.RIVAL_SHEETS);
@@ -430,6 +435,41 @@ function damage() {
   }
   if (arg('json')) fs.writeFileSync(arg('json'), JSON.stringify(out, null, 1));
 }
+/** the rehearsal against the real bouts (lot 3 of « La Brute »): the chances the rehearsal would say from the bout's own state, at tier 2 and tier 1 of the scouting,
+ *  against the bout's result (the game's duel on its own seed) */
+function rehearsal() {
+  const seeds = seedList(arg('seeds', '101..300')), pol = LAB.POLICIES[arg('policy', 'planner')];
+  const rows = [];
+  const oddsAt = (st, foe, tier) => {
+    const s = structuredClone(st); s.facts = s.facts.filter((x) => x !== `scouted:${foe}` && x !== `scouted2:${foe}`);
+    if (tier >= 1) s.facts.push(`scouted:${foe}`); if (tier >= 2) s.facts.push(`scouted2:${foe}`);
+    const r = PR.runRehearsal(s); return r ? r.wins / r.n : NaN;
+  };
+  for (const seed of seeds) {
+    const wrap = { ...pol, choose: (st) => {
+      const a = pol.choose(st);
+      if (a.type === 'fight') {
+        const b = AM.autoBoutOf(st), won = a.outcome.winner === 'player';
+        rows.push({ stage: b.stage, won, t2: oddsAt(st, b.foeId, 2), t1: oddsAt(st, b.foeId, 1) });
+      }
+      return a;
+    } };
+    LAB.autoplay(seed, wrap, 'Ren', 400, 'v2');
+  }
+  const mean = (a) => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
+  console.log(`la répétition contre les vrais combats (${arg('policy', 'planner')}, ${seeds.length} parties, ${rows.length} combats)`);
+  for (const st of [0, 1, 2, 'tous']) {
+    const r = st === 'tous' ? rows : rows.filter((x) => x.stage === st);
+    if (!r.length) continue;
+    const brier = (k) => mean(r.map((x) => (x[k] - (x.won ? 1 : 0)) ** 2));
+    console.log(`  étape ${st} (${r.length}) : gagnés ${pct(r.filter((x) => x.won).length, r.length)} % ; chances dites, palier 2 ${Math.round(100 * mean(r.map((x) => x.t2)))} % (Brier ${brier('t2').toFixed(3)}), palier 1 ${Math.round(100 * mean(r.map((x) => x.t1)))} % (Brier ${brier('t1').toFixed(3)})`);
+  }
+  for (const k of ['t2', 't1']) {
+    const bins = Array.from({ length: 10 }, () => ({ n: 0, w: 0, o: 0 }));
+    for (const x of rows) { const b = bins[Math.min(9, Math.floor(x[k] * 10))]; b.n++; b.w += x.won ? 1 : 0; b.o += x[k]; }
+    console.log(`  palier ${k[1]}, par dixièmes de chances : ${bins.map((b, i) => (b.n ? `${i * 10}-${i * 10 + 10} % : ${b.n} combats, dit ${Math.round((100 * b.o) / b.n)} %, gagnés ${pct(b.w, b.n)} %` : '')).filter(Boolean).join(' ; ')}`);
+  }
+}
 /** the price of a skill (journal Passes BL1, BE1): the planner's bouts of whole games, one of Ren's skills swapped for another at a level, replayed against the
  *  rival of the race in force; `--swaps=<from>:<to>:<level>;...` */
 function price() {
@@ -461,6 +501,7 @@ try {
   else if (cmd === 'modes') modes();
   else if (cmd === 'damage') damage();
   else if (cmd === 'price') price();
+  else if (cmd === 'rehearsal') rehearsal();
   else if (cmd !== 'lib') console.log('commands: games | refs | rhythm | kits | offscreen | level | modes | fit | judge | damage | price (see the header)');
 } finally { if (cmd !== 'lib') await server.close(); }
 export { AU, AD, AM, LAB, ST, range, med, q, pct, rate, server };
