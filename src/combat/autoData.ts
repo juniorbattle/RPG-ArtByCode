@@ -18,15 +18,23 @@ import { LEVEL_POWER, SKILLS, clampLevel, type Times } from './skills';
  *  environ 40 coups par minute » and RY-2 « Étirés avec le reste » (journal Passe SL3) make every time of the duel three times SY-03's, the effects with it (the
  *  same actions under them), each blow heavier so that his durations hold (SL1-2, A3) */
 export const AUTO_CADENCE = { charge: 1.8, power: 3.2, gap: 3, effect: 3 };
-/** the light attack: 1.2 s of charge at Speed 10, its power 6 (DB5-5), each of its hits one blow to the gauge (RY-3); +1 AP when it lands (AC-03) */
-export const AUTO_LIGHT = { charge: 1.2, power: POWER.light, gauge: 1 };
+/** the blows' weights in this duel against the DB5 sheet's (journal Passe BE1, the operator's question of 13/11/2026, word for word « par contre comment cela se
+ *  fait t-il que des competences peuvent infliger 300-400 degats quand les attaques simple et fortes font a peine 10-20 degats ? je pense que c'est cela qui fait
+ *  que les match ne dure que 1min27 ... je pense qu'il faut corriger cela »): the skills made 80 % of Ren's damage in the pool (an Estoc 1 119 in a break against a
+ *  light hit's 14), two Estocs a pool bout. The light attack ×1.75 (DB5-5's 1 % of a bar of 600 made 1.75 %), the heavy blow ×1.5 (`AUTO_SKILLS.heavy.powerK`), every
+ *  skill ×0.55 (`AUTO_BRUTE.usePower` 0.66 for the model's 1.2) */
+export const AUTO_WEIGHT = { light: 1.75, heavy: 1.5, skills: 0.55 };
+/** the light attack: 1.2 s of charge at Speed 10, its power 6 (DB5-5) × AUTO_WEIGHT.light, each of its hits one blow to the gauge (RY-3) */
+export const AUTO_LIGHT = { charge: 1.2, power: POWER.light * AUTO_WEIGHT.light, gauge: 1 };
 /** Ren's weapons' enchaînements (AC-02, « l'arme de Ren »): the hits of the light attack, each one's share of its power and gauge, the gap between them (s) */
 export const AUTO_WEAPONS: Record<string, { hits: readonly number[]; gap: number }> = {
   // balanced again on the same rules for every fighter (SY-06, the test of AC-12, journal Passe SL1): the training sword and the imported blade heavier, the sabre's
   // three cuts lighter (0.55, 0.62 and 0.23 before; its +2 Speed and +3 Attack, the gear's, made it the best weapon against nearly every rival)
+  // with the light attack heavier (AUTO_WEIGHT, journal Passe BE1) its hits weigh half of Ren's damage: the imported blade's 0.7 left it under the training sword
+  // (its light attack 10 % slower), the sabre's 0.17 at 10 % of the bouts at AC-12's test; the blade 0.8, the sabre 0.47 (a little over the blade, it costs more)
   'training-sword': { hits: [0.85, 0.85], gap: 0.3 },
-  'imported-blade': { hits: [0.7, 0.7], gap: 0.32 },
-  'duelist-sabre': { hits: [0.17, 0.17, 0.17], gap: 0.22 },
+  'imported-blade': { hits: [0.8, 0.8], gap: 0.32 },
+  'duelist-sabre': { hits: [0.47, 0.47, 0.47], gap: 0.22 },
 };
 
 /** one of Ren's skills on the timeline, at level 1 (the level raises its power or its effect's length by LEVEL_POWER and shortens its charge: skills.ts) */
@@ -51,18 +59,19 @@ const GAUGE_SKILL = 2, BREAKER = 1.5;
  *  (its numbers; never one of the four). Balanced to the test of AC-12 (the operator's « Équilibrer avec ce test : chaque adversaire a ses réponses, rien ne
  *  domine », journal Passes AC4 / LC1) */
 export const AUTO_SKILLS: Record<string, AutoSkillDef> = {
-  heavy: { family: 'offensive' },
+  heavy: { family: 'offensive', powerK: AUTO_WEIGHT.heavy },
   t1: { family: 'offensive', hits: [0.5, 0.5], gap: 0.25 },
   t2: { family: 'offensive', pierce: true },
   // Tourbillon ×1.8 and the Thrust ×0.8 on the same rules (journal Passe SL1: the offensive kits fell to 2 to 21 % of the start kit's level)
   t3: { family: 'offensive', gaugeK: BREAKER, hits: [0.36, 0.36, 0.36], gap: 0.25, powerK: 1.8 },
   t4: { family: 'offensive', powerK: 0.8 },
-  d1: { family: 'defensive', ward: { dur: 9, dmg: 0.4, gauge: 0.3 } },
+  // the protections half as long (journal Passe BE1: with the damage on many light blows, the Iron skin at level 3 took the planner from 66 to 97 % in the bracket)
+  d1: { family: 'defensive', ward: { dur: 4.5, dmg: 0.4, gauge: 0.3 } },
   s1: { family: 'support', boost: { dur: 12, dmg: 1.8, gauge: 2 } },
   // Sunder ×0.6 at AC-12's test under the model (journal Passe BL1: with the Thrust in an opening it was the best kit against nearly every rival, dominating the final)
   k_sunder: { family: 'offensive', gaugeK: 2, powerK: 0.6 },
   k_feint: { family: 'offensive', pierce: true },
-  k_iron: { family: 'defensive', ward: { dur: 11.2, dmg: 0.3, gauge: 0.15 } },
+  k_iron: { family: 'defensive', ward: { dur: 5.6, dmg: 0.3, gauge: 0.15 } },
   k_parry: { family: 'defensive', ward: { dur: 6.5, dmg: 0.05, gauge: 0.5 } },
   k_cry: { family: 'support', boost: { dur: 7.5, dmg: 1.9, gauge: 1.5 } },
   k_focus: { family: 'support', boost: { dur: 13, dmg: 1.5, gauge: 4 } },
@@ -80,8 +89,10 @@ export const AUTO_COOLDOWN = 5;
 export const AUTO_BRUTE = {
   uses: [2, 2, 3, 3, 4] as readonly number[],
   gap: { R: 8, M: 16, L: 28 },
-  charge: 0.6, roleCharge: { exploit: 0.66 } as Partial<Record<AutoRole, number>>,
-  usePower: 1.2,
+  // the exploits ×0.36 since journal Passe BE1 (×0.4 in the model: with the opener's opening of 4 s, the Estoc still fits in it)
+  charge: 0.6, roleCharge: { exploit: 0.6 } as Partial<Record<AutoRole, number>>,
+  // the model's 1.2 × AUTO_WEIGHT.skills (0.55), written out (1.2 × 0.55 is 0.6600000000000001 in floating point)
+  usePower: 0.66,
   rivalLevel: [1, 2, 3] as readonly number[],
 };
 /** each skill's role, its gap's class and what it does besides (Ren's catalogue and the rivals' own; the laboratory's BRUTE_ROLES) */
@@ -307,11 +318,12 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
  *  (the operator's PB-3 « Caler sur le joueur moyen », decision A3 of 13/11/2026 changing AC-16, journal Passe CF3; fitted in journal Passe BL1, tools/auto-lab.mjs
  *  fit): each rival's pool factor so that the planner's Ren of day 2 beats it 95 times in 100 (the bouts of 120 calibration games), the pool's slope of SL1-1, the
  *  bracket's and the final's factors on 200 whole games of the planner (seeds 1 to 100 and 301 to 400) for a semi-final and a final at 50 %, held out on seeds
- *  101 to 300; fitted again with the clash and the gauge of the operator's BL1-8 and BL1-9 (journal Passe BL1: the planner's semi-final 53 %, final 45 %). */
+ *  101 to 300; fitted again with the clash and the gauge of the operator's BL1-8 and BL1-9 (journal Passe BL1: the planner's semi-final 53 %, final 45 %), and with the
+ *  blows' weights of journal Passe BE1 (AUTO_WEIGHT, the protections, the weapons, the opener's opening 4 s, every health ×3.6: the planner's semi-final 54 %, final 50 %). */
 export const AUTO_RACE = {
-  norm: { vessa: 1.228, tobin: 1.569, cassius: 1.17, orla: 1.165, ilse: 1.051, marek: 0.992, rhosk: 1.295 } as Record<string, number>,
+  norm: { vessa: 1.094, tobin: 1.416, cassius: 1.245, orla: 0.952, ilse: 0.937, marek: 0.92, rhosk: 1.235 } as Record<string, number>,
   pool: [1, 1.075, 1.15] as readonly number[],
-  stage: { 1: 1.252, 2: 1.554 } as Record<1 | 2, number>,
+  stage: { 1: 1.242, 2: 1.568 } as Record<1 | 2, number>,
   prepFrom: 20, prepPer: 25,
 };
 /** a bout's round of the pool by its day: day 2 the first, day 4 the second, day 5 the third (a challenge of the pool by its day) */

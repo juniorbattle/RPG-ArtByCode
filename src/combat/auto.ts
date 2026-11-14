@@ -111,8 +111,9 @@ export const AUTO_RULES = {
   /** a fighter charging anything but its light attack, or striking its own enchaînement, neither guards nor dodges (AC-05, « la charge qui expose ») */
   exposed: true,
   /** every health × 3.132: DB5's « en 2 et 5 min » held (AC-13's ×2), × 1.2 the model's (fewer skills, each heavier), × 1.45 for the operator's durations of SL1-2
-   *  (A3: « la poule environ 2min, le tableau 2-4min , la finale 3-4min max »; journal Passe BL1), × 0.9 with the clash (BL1-8: the blows it takes away) */
-  hpScale: 3.132,
+   *  (A3: « la poule environ 2min, le tableau 2-4min , la finale 3-4min max »; journal Passe BL1), × 0.9 with the clash (BL1-8: the blows it takes away); 3.6
+   *  (× 1.15) with the blows' weights of journal Passe BE1 (AUTO_WEIGHT) and the race fitted again: the reference's bouts 2 min 03 / 3 min 01 / 3 min 26 */
+  hpScale: 3.6,
   /** each fighter's first charge begins after a draw in [0, start] s */
   start: 1.8,
   /** the form of the day: each fighter's blows × 1 ± form, drawn before the bout from its own stream, said on the match sheet (AC-08) */
@@ -122,9 +123,10 @@ export const AUTO_RULES = {
   /** the opening (« la faille »): the damage taken ×, neither guard nor dodge; a big action dodged opens its striker this long (s) */
   open: { dmg: 1.25 }, whiff: 2.5,
   /** the roles: an exploit × in an opening, a break or on a fighter charging a big action, × `lo` else; a punish × on a fighter charging a big action; an
-   *  opener's opening (s: 5, the laboratory's 8 shortened at AC-12's test, journal Passe BL1); an interrupt's opening and the stagger before the interrupted one acts again; a parry's window and the striker's opening; the
+   *  opener's opening (s: 4; the laboratory's 8 shortened to 5 at AC-12's test, journal Passe BL1, then to 4 with the blows' weights, journal Passe BE1: in the final
+   *  Sunder and the Estoc were the one good answer against Orla, Ilse and Marek); an interrupt's opening and the stagger before the interrupted one acts again; a parry's window and the striker's opening; the
    *  haste's and the slow's charges × and lengths; a load's × on the next offensive action and its window */
-  exploit: { hi: 2, lo: 0.6 }, punish: 1.7, opener: 5, interrupt: { open: 6, stagger: 1 }, parry: { open: 6, dur: 3 },
+  exploit: { hi: 2, lo: 0.6 }, punish: 1.7, opener: 4, interrupt: { open: 6, stagger: 1 }, parry: { open: 6, dur: 3 },
   haste: { k: 0.7, dur: 15 }, slow: { k: 1.4, dur: 12 }, load: { dmg: 2, gauge: 1.5, dur: 15 },
   /** the light attack's charge × (fewer skills: the light fills the time; RY-1's forty blows a minute kept) */
   lightCharge: 1.35,
