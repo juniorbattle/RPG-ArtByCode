@@ -1,0 +1,401 @@
+<title>Gameplay au-delà du combat</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions de l’opérateur · 15 novembre 2026</span>
+    <h1>Le gameplay au-delà du combat</h1>
+    <p class="lede">L’audit du jeu par défaut, système par système (le défi des PNJ, le vol, les quêtes et les événements, l’entraînement, les défis et le repérage, l’or et l’équipement), mesuré sur cent parties par politique et douze déroulés dans le navigateur. Pour chaque écart : le contexte, ma recommandation et tes options. Les options marquées « décision A3 » changent ou précisent une de tes décisions A3. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement. Rien n’est construit avant que tu aies rempli la fiche.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot au journal (les décisions A3 comprises), puis chaque chantier décidé part dans sa propre séance, dans l’ordre que tu auras choisi.</p>
+    <p class="src">Sources : <code>briefs/audit-gameplay-gp1.md</code> (le rapport), <code>JOURNAL.md</code> Passe GP1, les contrats <code>contracts/GAMEPLAY_MASTER_CONTRACT.md</code> et <code>TOURNAMENT_MASTER_CONTRACT.md</code>, les archives <code>journal/59</code> (Passe EV2), <code>journal/60</code> (Passes EVL2, EVL3), <code>journal/62</code>-<code>63</code> (Passes GA1 à GA4).</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+// Apostrophes : l’apostrophe typographique ’ (ou \') ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+// Fiche GP1 (journal, Passe GP1) : l’audit du gameplay général, au-delà du combat. Apostrophes typographiques seulement.
+const GROUPS = [
+  { id: 'pnj', title: 'Le défi des PNJ', sub: 'Ta priorité : se battre pour un objet, contre un PNJ, quand on tente de le voler ou de le prendre de force.', fam: 'var(--cendre)', items: [
+    { id: 'GP-01', tag: 'GP-01', title: 'Ce que le défi des PNJ doit faire',
+      ctx: 'Ta demande d’origine (fiche EV1, Passe EV2) : « une possibilite de combat et de represaille reelle » après un vol, « des pnjs generiques qui peuvent etre des combattants », « obtenir un objet […] comme dans octopath travaler ». Ta réponse d’alors à la question des génériques : « En ville, structure gardée ». Ce qui a été construit : six combattants nommés (les éliminés des qualifications) qu’on défie pour le sport, avec une mise ; un vol qui reste un tirage (une ligne de menu et un pourcentage) ; une représaille différée (Corra, deux nuits plus tard, seulement si la faveur du volé tombe à −30). Aucun combat au moment d’un vol, aucune action pour prendre un objet de force, aucun PNJ ordinaire qui ait un combattant.',
+      shots: [['img/voler-halle.png', 'Voler aujourd’hui : une ligne de la liste [Q] et une chance ; on ne choisit ni la pièce ni la façon'], ['img/corra-represaille.png', 'Le seul combat qu’un vol déclenche : Corra, deux nuits plus tard, sous condition']],
+      rec: 'Les deux, comme tu l’as écrit (« lorsqu’on décide de tenter de les voler ou obtenir de force et frontalement un objet ») : un combat quand on est pris, et une action « exiger par les armes » qui prend un objet de face. Les deux passent par le duel qui existe (un combat sur le sable aux gradins vides) : aucune règle de combat neuve.',
+      opts: ['Les deux : se battre quand on est pris, et prendre de force', 'Seulement prendre de force (le vol inchangé)', 'Seulement se battre quand on est pris', 'Garder ainsi (défi sportif et représaille)'], recIdx: 0,
+      src: 'briefs/audit-gameplay-gp1.md § 2 ; journal/59 (Passe EV2), journal/60 (Passes EVL2, EVL3) ; src/simulation/v2town.ts, v2law.ts, v2barter.ts' },
+    { id: 'GP-02', tag: 'GP-02', title: 'Prendre de force : sur qui, et à quel prix',
+      ctx: 'Aujourd’hui trois passants portent une pièce unique (Fenwick, Dame Edda, Sela) ; les marchands (Mara, Hilde, Pip, Corvin, Bram) tiennent la boutique, ce qui fait vivre l’économie. Proposé (les nombres mesurés à la construction) : gagné, la pièce, la réputation −5 et la faveur du propriétaire −30 (il peut payer une représaille) ; c’est un acte public, le registre de Hale prend une marque ; perdu, 10 pièces au propriétaire, la réputation −3, jamais de blessure sauf un K.O. par coup puissant ; une fois par propriétaire et par phase, jamais l’après-midi de ton combat.',
+      shots: [['img/edda-articles.png', 'Dame Edda : sa pièce s’achète, se marchande ou se vole ; rien ne la prend de face']],
+      rec: 'Les passants (et ceux de GP-06) : c’est là qu’est l’objet unique qu’on veut, et les boutiques restent la colonne de l’économie. Les marchands gardent le vol et le marchandage.',
+      opts: ['Les passants seulement', 'Les passants et les marchands (une pièce d’étal, défendue par un protecteur)', 'Tout PNJ qui porte une pièce'], recIdx: 0,
+      src: 'src/simulation/v2barter.ts (PASSERS), src/narrative/people.ts ; audit § 2.2' },
+    { id: 'GP-03', tag: 'GP-03', title: 'Pris sur le fait : payer ou se battre',
+      ctx: 'Aujourd’hui un vol pris coûte une amende (15 pièces de jour, 25 la nuit), −8 à −15 de réputation, l’étal barré et une marque, sans choix. Proposé : au moment d’être pris, deux réponses, payer (comme aujourd’hui) ou se battre contre celui qui t’a pris (le protecteur du marchand, ou Wynn du guet). Gagné : tu t’échappes sans amende, la pièce reste à l’étal, la marque est écrite ; perdu : l’amende doublée.',
+      rec: 'Un combat pour échapper à l’amende, pas pour garder la pièce : le vol ne devient pas gratuit, et la prise devient une décision au lieu d’une bande de texte.',
+      opts: ['Gagné : on s’échappe sans amende (la pièce reste)', 'Gagné : on garde la pièce', 'Pas de combat à la prise'], recIdx: 0,
+      src: 'src/simulation/v2town.ts (steal, pickpocket) ; audit § 2.2' },
+    { id: 'GP-04', tag: 'GP-04', title: 'Qui se bat pour les PNJ : des combattants génériques conçus pour eux',
+      ctx: 'Les six génériques d’aujourd’hui ont un visage et une feuille de combat (Passes GA1 à GA4) ; aucun ne défend personne. Ta demande dit « avec conception de combattant générique pour eux ». Proposé : quatre gabarits neufs (le gros bras du quai, le garde de la ville, le garde du corps d’une noble, le bretteur des rues), tirés des planches de référence approuvées, chacun sa feuille de ville et sa feuille de combat ×3, déclinés en peaux par les masques qui existent déjà (comme les génériques et les rivaux) : beaucoup de PNJ ont un défenseur sans une feuille chacun. L’art passe par l’outil de génération (5 $ au plus par tâche) et par ta fiche de lot avant la production.',
+      shots: [['img/piers-duel.png', 'Un générique d’aujourd’hui en duel (Piers) : la feuille de combat existe déjà']],
+      rec: 'Les deux, dans l’ordre : les six d’aujourd’hui comme protecteurs d’abord (jouable tout de suite, sans art : Aldric pour sa mère Edda, Piers pour la barge de Fenwick…), les gabarits neufs ensuite, sur leur fiche d’art.',
+      opts: ['Les deux : les six d’abord, les gabarits neufs ensuite', 'Les quatre gabarits neufs seulement', 'Les six d’aujourd’hui seulement, sans art neuf', 'Une feuille par PNJ'], recIdx: 0,
+      src: 'src/narrative/generics.ts ; art-lab/characters/variants/fighters.json ; AGENTS.md « Image generation » ; Passes GA1-GA4, GS1-GS2' },
+    { id: 'GP-05', tag: 'GP-05', title: 'Les six génériques dans le monde',
+      ctx: 'Aldric, Corra, Ambrose, Lucan, Piers et Kell ne se voient pas : on lit leur nom dans la liste [Q], on leur parle en portrait, mais la place est vide (leurs feuilles de ville sont approuvées pour les portraits seulement). Les poser debout à leur place et à leur heure, comme les autres personnes, demande ton approbation de production de ces feuilles pour les places.',
+      shots: [['img/piers-portrait.png', 'Piers Calloway « garde les barges » : un portrait, aucun corps sur le quai']],
+      rec: 'Debout à leur place : un combattant qu’on défie, ou qui défend quelqu’un, doit se voir dans la ville (la mini-carte et les losanges les prendront comme les autres).',
+      opts: ['Debout à leur place et à leur heure (production de leurs feuilles de ville sur les places)', 'Portrait seulement'], recIdx: 0,
+      src: 'src/simulation/v2places.ts:19, src/characters/PlazaCast.ts:27 ; Passes GA2, GA4' },
+    { id: 'GP-06', tag: 'GP-06', title: 'Plus de PNJ qui portent quelque chose',
+      ctx: 'Trois passants seulement portent une pièce (le curieux du laboratoire en prend 2,65 par partie). Dans Octopath Traveler, presque chaque habitant a un objet. Proposé : un passant par lieu et par moment (douze), tirés des cinq citadins approuvés (vendeur, voyageur, noble, garçon de courses, fillette) et de leurs variantes, chacun une pièce, une raison d’être là et une réplique ; achat, marchandage, vol et, avec GP-02, la force.',
+      rec: 'Douze, sans art neuf : le défi des PNJ a besoin de cibles, et la ville gagne des rencontres.',
+      opts: ['Un passant par lieu et par moment (douze)', 'Garder les trois', 'Chaque marcheur porte une pièce'], recIdx: 0,
+      src: 'src/simulation/v2barter.ts ; src/characters/PlazaCast.ts (les citadins, Passe CA7)' },
+  ]},
+  { id: 'vol', title: 'Le vol et ses suites', sub: 'Ce qui marche reste (les marques, la restitution toujours ouverte, Wynn posté) ; deux manques.', fam: 'var(--voile)', items: [
+    { id: 'GP-07', tag: 'GP-07', title: 'Ce qu’on vole',
+      ctx: 'Un vol prend toujours la pièce la moins chère que tu n’as pas : chez Mara, la pierre à aiguiser (8 pièces) ; un voleur ne vise jamais ce qu’il veut. Proposé : choisir la pièce dans la page des marchandises, la chance baissant avec son prix.',
+      shots: [['img/quai-liste.png', 'Le quai, le premier matin : « Voler une pierre à aiguiser… environ 29 % »']],
+      rec: 'Choisir la pièce : le vol devient un pari sur ce qu’on veut, pas un tirage sur ce qu’on trouve.',
+      opts: ['Choisir la pièce, la chance suit son prix', 'Garder la moins chère'], recIdx: 0,
+      src: 'src/simulation/v2town.ts (stealTarget, stealChance)' },
+    { id: 'GP-08', tag: 'GP-08', title: 'Ce que le joueur ne sait pas du vol',
+      ctx: 'Le guide « Voler et le guet » ne dit pas qu’un marchand volé peut payer des gros bras (la représaille), ni quand (sa faveur à −30, invisible) ; un passant pris à faire les poches boude pour toute la partie, et la restitution ne lève pas sa bouderie, sans que rien le dise.',
+      rec: 'Le dire et lever la bouderie à la restitution : la sortie par Hale doit tout réparer, comme le guide le promet.',
+      opts: ['Le dire, et la restitution lève la bouderie', 'Garder ainsi'], recIdx: 0,
+      src: 'src/narrative/text/en.ts (tut.ch.law.body) ; src/simulation/v2law.ts, v2town.ts:156' },
+  ]},
+  { id: 'quetes', title: 'Les quêtes et les événements', sub: 'Il n’y a pas de système de quête : une seule quête à étapes, et des événements sans choix.', fam: 'var(--ronce)', items: [
+    { id: 'GP-09', tag: 'GP-09', title: 'Un système de quêtes',
+      ctx: 'La seule quête est la Cargaison d’acier (Tam, les papiers de Hale, la forge, la trempe) ; dans la version 2 elle rend ce que la forge vend au même prix (un palier d’arme), ne peut pas échouer et commence seulement si l’on parle à Tam. Aucun écran ne suit un objectif. Le contrat de gameplay veut des « quêtes structurées » dans la boucle (§ 2, § 4.1) et « 1 quête influençant un combat » (§ 13) : écarts consignés. Proposé : quatre quêtes de ville, une par lieu, en deux ou trois étapes, chacune avec un effet réel sur la préparation ou un combat et une façon d’échouer, suivies dans le journal (une page « En cours ») ; la Cargaison réécrite pour donner ce que la forge ne vend pas.',
+      rec: 'Quatre quêtes et la page « En cours » : c’est la part « RPG » que ton ami a sentie, et ce qui manque le plus au contrat.',
+      opts: ['Quatre quêtes de ville et une page « En cours »', 'Seulement la page « En cours » pour ce qui existe (la cargaison, les sabotages, Rhosk, Orla, le festival)', 'Garder ainsi'], recIdx: 0,
+      src: 'audit § 4 ; src/narrative/dialogue.ts, src/simulation/roles.ts (cargo) ; contrat de gameplay §§ 2, 4.1, 11, 13' },
+    { id: 'GP-10', tag: 'GP-10', title: 'Les événements : un lieu, un choix',
+      ctx: 'Aucun événement ne propose de choix ; aucune condition de lieu n’existe : les tricheurs de la halle (−5 pièces) et les tire-laines frappent le joueur où qu’il soit. Le contrat veut des « risques propres » à chaque quartier (§ 6). Proposé : un événement de quartier ne frappe que là où il est ; un événement qui coûte propose une réponse (payer, refuser, se battre avec GP-03).',
+      rec: 'Le lieu et le choix : le risque devient une raison d’aller (ou pas) quelque part, et une décision.',
+      opts: ['Le lieu et le choix', 'Le lieu seul', 'Garder ainsi'], recIdx: 0,
+      src: 'src/events/engine.ts, types.ts, v2catalog.ts ; contrat de gameplay § 6' },
+    { id: 'GP-11', tag: 'GP-11', title: 'Lire une menace',
+      ctx: 'La carte « Pendant ce temps » ne garde que les 8 dernières lignes ; payer le guet et la chambre forte d’Odo portent un losange chaque soir ou chaque veille, menace ou non, ce qui noie le signal ; la liste [Q] dit « quelque chose de neuf (type) », jamais quoi ; le guide n’a aucun chapitre sur les événements ni le sabotage.',
+      rec: 'Les signes jamais coupés, le losange des parades seulement après un signe, la liste qui dit quoi, un chapitre « Événements et sabotage ».',
+      opts: ['Corriger la lecture et ajouter le chapitre', 'Garder ainsi'], recIdx: 0,
+      src: 'src/ui/townUi.ts:402, src/simulation/v2offers.ts:15-24, src/ui/todo.ts, src/ui/tutorial.ts' },
+  ]},
+  { id: 'prep', title: 'La préparation : entraînement, défis, repérage', sub: 'Une stratégie est possible et lisible, mais elle se règle trop tard, et le défi domine.', fam: 'var(--astre)', items: [
+    { id: 'GP-12', tag: 'GP-12', title: 'Préparer un rival avant le jour du combat',
+      ctx: 'Le plan propre à un rival et ses stats ne se voient que sur la fiche de match, l’après-midi du combat, quand les créneaux sont dépensés ; la répétition de la veille joue le plan général ; la page des compétences calcule contre le Marek de la poule. Le joueur choisit son entraînement à l’aveugle.',
+      shots: [['img/competences.png', '« Votre plan général. Un plan contre un rival se règle sur sa fiche de match. »'], ['img/corvin.png', 'La répétition chez Corvin : elle joue le plan général']],
+      rec: 'La fiche de match ouverte dès que le prochain adversaire est connu (ses stats, ton plan pour lui), la répétition jouant ce plan : l’information mène enfin à une décision avant le combat.',
+      opts: ['La fiche dès que l’adversaire est connu', 'Garder l’après-midi du combat'], recIdx: 0,
+      src: 'src/ui/townUi.ts:469-528, src/simulation/preview.ts:78, src/simulation/v2prep.ts' },
+    { id: 'GP-13', tag: 'GP-13', title: 'Une fiche avant un défi',
+      ctx: 'Un défi accepté ouvre l’arène directement : on ne voit pas l’adversaire et l’on ne règle aucun plan pour lui (le combattant de la ville se bat sur le profil d’un rival, que rien ne dit).',
+      rec: 'Une fiche courte avant le sable : l’adversaire, ses stats, un plan pour lui.',
+      opts: ['Une fiche courte avant un défi', 'Garder l’entrée directe'], recIdx: 0,
+      src: 'src/ui/townUi.ts:330-333' },
+    { id: 'GP-14', tag: 'GP-14', title: 'Le poids du défi',
+      ctx: 'Un défi gagné donne ensemble la mise rendue deux fois, +24 PV pour toujours (la vigueur : DB7-4 « +12 PV par victoire », doublé par DB11-6, compte aussi les défis), la compétence de l’adversaire, +1 niveau à une offensive (la leçon du sable), le premier palier de repérage et le rabais de Corvin. Mesuré au jour 1, kit de départ : 63 à 95 % de victoires (Corra 63, Orla 65, Piers 95) ; le curieux en fait 7,7 par partie et en gagne 94 % (+173 PV en fin de partie). Aucune autre action ne donne tout cela pour un créneau.',
+      rec: 'La vigueur pour les seuls combats du tournoi : le défi garde la compétence et la mise, le tournoi reste ce qui fait grandir Ren. Ce choix précise ta décision DB7-4 : il est marqué A3.',
+      opts: ['La vigueur pour les combats du tournoi seulement (décision A3 : précise DB7-4)', 'Le défi plus dur : l’adversaire à la force de l’étape du tournoi', 'Garder ainsi'], recIdx: 0,
+      src: 'src/simulation/v2town.ts:258, src/simulation/v2gear.ts:63 ; journal/83 (Passe DB8), journal/88 (Passe DB13) ; audit § 5' },
+    { id: 'GP-15', tag: 'GP-15', title: 'Un repérage qui garde sa valeur',
+      ctx: 'Les quatre compétences et le plan de chaque rival ne changent jamais : vus une fois, le repérage n’a plus de contre-jeu. La rumeur vend la santé (que le tableau donne gratis), une ligne « kit » qui répète le premier palier, et une forme qui double deux lignes gratuites. Proposé : les rivaux changent de plan à la coupe (jour 6) et après une défaite contre toi ; la rumeur annonce le changement ; la ligne « kit » et la santé sortent de la rumeur.',
+      shots: [['img/tournoi.png', 'Le tableau : « une observation apprend son style, une seconde son plan »']],
+      rec: 'Les rivaux qui s’adaptent : observer et écouter redeviennent utiles en seconde moitié.',
+      opts: ['Les rivaux s’adaptent, la rumeur le dit', 'Seulement retirer ce que la rumeur double', 'Garder ainsi'], recIdx: 0,
+      src: 'src/combat/autoData.ts (AUTO_FOES, AUTO_STYLES), src/simulation/v2scout.ts, v2intel.ts, src/ui/board.ts' },
+    { id: 'GP-16', tag: 'GP-16', title: 'Les défauts de la préparation',
+      ctx: 'Relevés et revérifiés dans le code : un défi de seconde phase contre un combattant de la ville monte une compétence au niveau 4 sans la leçon payante ; le carnet décrit un combattant de la ville avec le kit de Marek, sous son identifiant brut ; « Écouter » promet de la célébrité et donne de la réputation ; le rabais de Corvin après un défi ne touche pas les leçons ; le guide dit encore « watching tells you their skills » ; l’observation et la répétition ne portent ni losange ni ligne [Q].',
+      rec: 'Les corriger dans le premier chantier, avec leurs tests.',
+      opts: ['Les corriger', 'Les lister seulement'], recIdx: 0,
+      src: 'src/simulation/v2skills.ts:47, src/simulation/v2scout.ts:81, src/simulation/roles.ts (listen), src/ui/tutorial.ts' },
+  ]},
+  { id: 'or', title: 'L’or et l’équipement', sub: 'Gagner se découvre bien ; dépenser devient une évidence, puis plus rien après le jour 6.', fam: 'var(--cendre)', items: [
+    { id: 'GP-17', tag: 'GP-17', title: 'L’argent après le jour 6',
+      ctx: 'Mesuré sur cent parties (bourse médiane au matin du jour 10) : le planificateur 87 pièces, la référence 71, le curieux 79 ; plus rien ne vaut d’être acheté, et les bourses de la finale et du champion tombent après le dernier combat. Les paris et l’investissement sont hors de cette version (ta décision A3 AU-13, avec ECO-5 « a garder »).',
+      rec: 'Des pièces de fin de tournoi, chères, à partir du jour 6 (une par boutique), et une avance sur la bourse de la finale la veille : l’argent garde un but, sans toucher AU-13.',
+      opts: ['Des pièces de fin de tournoi et une avance sur la bourse', 'Les paris maintenant (décision A3 : change AU-13)', 'L’investissement maintenant : un atelier, un service (décision A3 : change AU-13)', 'Garder ainsi'], recIdx: 0,
+      src: 'src/tournament/pool.ts (PURSES), src/simulation/gear.ts ; journal/93 (Passe AU2, AU-13) ; audit § 7' },
+    { id: 'GP-18', tag: 'GP-18', title: 'Des choix d’équipement qui en soient',
+      ctx: 'Le haubert d’Edda (34 pièces, Défense +7) domine la cotte de Hilde (40, Défense +6, les mêmes effets) ; chaque pièce n’est vendue qu’à un endroit ; aucun prix ne suit l’étape du tournoi ; une seule pénurie (l’acier, après le sabotage). Les achats sont des évidences ; la vraie contrainte est le créneau. Le contrat veut une économie qui varie selon l’étape, les pénuries, les relations (§ 10).',
+      shots: [['img/edda-articles.png', 'Le haubert d’Edda : Défense +7 pour 34 pièces, plus que la cotte à 40']],
+      rec: 'Revoir le catalogue : chaque pièce un rôle (aucune dominée), des prix qui suivent l’étape et les pénuries, quelques pièces vendues à deux endroits.',
+      opts: ['Revoir le catalogue', 'Seulement le haubert et la cotte', 'Garder ainsi'], recIdx: 0,
+      src: 'src/simulation/gear.ts, v2gear.ts:98-105 ; contrat de gameplay § 10' },
+    { id: 'GP-19', tag: 'GP-19', title: 'Vendre',
+      ctx: 'On ne revend que ce qui est dans le sac, chez Mara, à moitié prix ; une pièce portée ne se déséquipe pas ; les paliers de forge ne se revendent pas. Aucune politique du laboratoire ne revend.',
+      rec: 'Pouvoir déséquiper et vendre une pièce portée : la revente devient un vrai moyen de changer d’équipement.',
+      opts: ['Déséquiper et vendre une pièce portée', 'Garder le sac seul'], recIdx: 0,
+      src: 'src/simulation/v2work.ts:73-92' },
+    { id: 'GP-20', tag: 'GP-20', title: 'Les défauts de l’or et de l’équipement',
+      ctx: 'Revérifiés : « deux à la fois » porte d’office une arme et efface les paliers payés à la forge, sans avertissement (acheter les bottes en paire chez Corvin ajoute le sabre). Lus : la trempe se vend encore au palier maximal, pour rien, et l’ordre trempe / paliers change le prix (45 ou 75) ; la page montre la Vitesse des pièces entière quand le duel la compte à moitié, dit « protections et renforts +30 % » quand seules les protections s’allongent, et ne nomme pas les effets de duel des pièces ; le rapport à Hale (+15) affiche « gratuit » ; le jeton du champion n’est donné par rien.',
+      rec: 'Les corriger dans le premier chantier, avec leurs tests.',
+      opts: ['Les corriger', 'Les lister seulement'], recIdx: 0,
+      src: 'src/simulation/v2barter.ts:42-45, v2gear.ts:125, src/simulation/roles.ts:157, src/simulation/preview.ts:41' },
+  ]},
+  { id: 'suite', title: 'La suite', sub: 'Rien n’est construit avant ta fiche ; chaque chantier dans sa séance.', fam: 'var(--voile)', items: [
+    { id: 'GP-21', tag: 'GP-21', title: 'L’ordre des chantiers',
+      ctx: 'Quatre chantiers, chacun dans sa séance, chacun avec sa fiche courte avant la fusion. Les trois outils de déroulé aux attentes périmées (deux défis dont l’issue a changé avec la course de SK4, un texte de la taverne) se réparent dans le premier.',
+      rec: '1. Le défi des PNJ et le vol (GP-01 à GP-08), avec les défauts (GP-16, GP-20) ; 2. la préparation (GP-12 à GP-15) ; 3. les quêtes et les événements (GP-09 à GP-11) ; 4. l’or et l’équipement (GP-17 à GP-19). Ta priorité d’abord, puis ce qui change le plus chaque partie.',
+      opts: ['Dans cet ordre', 'Les défauts d’abord, seuls', 'Un autre ordre (en note)'], recIdx: 0,
+      src: 'briefs/audit-gameplay-gp1.md ; JOURNAL.md, Passe GP1' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
