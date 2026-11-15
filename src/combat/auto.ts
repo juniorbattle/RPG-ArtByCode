@@ -24,6 +24,12 @@ export type AutoKind = 'light' | 'heavy' | 'skill';
 export type AutoFamily = 'offensive' | 'defensive' | 'support';
 /** what a skill does in the duel (PB-1; briefs/combat-auto.md § 32.2, the laboratory's BRUTE_ROLES) */
 export type AutoRole = 'exploit' | 'punish' | 'pierce' | 'breaker' | 'opener' | 'interrupt' | 'ward' | 'parry' | 'haste' | 'slow' | 'load';
+/** the roles the workshop of new skills proposes (journal Passe SK3, « proposé »: no skill of the game carries them until the operator's sheet): finish (×
+ *  under a share of the target's health), strip (the target's ward, haste and load lifted; it cannot be parried), evade (a stance: one's dodge ×), recover (one's
+ *  own gauge emptied by a share), sap (the target's skills and heavy blow wait longer) */
+export type AutoRoleSk3 = 'finisher' | 'strip' | 'evade' | 'recover' | 'sap';
+/** a role an action may carry: a decided one, or one of the workshop SK3 (the laboratory's) */
+export type AutoRoleAny = AutoRole | AutoRoleSk3;
 /** a ward (on oneself: the damage and the gauge one takes ×) or a support's effect, for `dur` seconds */
 export interface AutoEffect { dur: number; dmg: number; gauge: number }
 /** an action on the timeline */
@@ -51,11 +57,13 @@ export interface AutoAction {
   /** the heavy blow (kind 'heavy': the finisher that may wound Ren, the game's V2B1-1) */
   heavy?: boolean;
   /** a skill's role (PB-1) and its uses per duel by its level (PB-2) */
-  role?: AutoRole;
+  role?: AutoRoleAny;
   uses?: number;
   /** it cannot be dodged (Tourbillon, Rhosk's cleave); it goes through a ward too (the Thrust of Fente, Cassius's riposte) */
   undodge?: boolean;
   pierceWard?: boolean;
+  /** it cannot be parried (the strip of the workshop SK3: it lifts the ward before the ward can take it) */
+  unparry?: boolean;
 }
 /** who decides for a fighter: Ren (the player's side) or a rival; both play the same automatic unless `o.deciders` replaces one (the laboratory) */
 export type AutoBrain = 'player' | 'rival';
@@ -130,6 +138,10 @@ export const AUTO_RULES = {
   // before; one ultimate in ten under 150 outside an opening, a cinematic for a small number)
   exploit: { hi: 2, lo: 1 }, punish: 1.7, opener: 4, interrupt: { open: 6, stagger: 1 }, parry: { open: 6, dur: 3 },
   haste: { k: 0.7, dur: 15 }, slow: { k: 1.4, dur: 12 }, load: { dmg: 2, gauge: 1.5, dur: 15 },
+  /** the roles of the workshop SK3 (« proposé », journal Passe SK3; no skill of the game carries them): a finisher × `hi` on a target under `below` of its health,
+   *  × `lo` else (an ultimate at full strength at least, SK-6); (an evade stance dodges every blow that can be dodged, even while charging); a recover's share of one's gauge emptied; a sap's wait (s) on the
+   *  target's skills and heavy blow */
+  finisher: { hi: 2.5, lo: 1, below: 0.5 }, recover: { share: 0.35 }, sap: { delay: 15 },
   /** the light attack's charge × (fewer skills: the light fills the time; RY-1's forty blows a minute kept) */
   lightCharge: 1.35,
   /** the automatic: past this share of either health, a skill held for its moment leaves (a use never spent is lost); « au début »: the first `early` s */
@@ -142,7 +154,7 @@ export type AutoRules = typeof AUTO_RULES;
  *  whether the target's ward (1) weighed on it; on a break, `dur` its stun (s). 'parry': `who` parried the blow `act`; 'interrupt': `who` cut the action
  *  `act` its opponent charged; 'clash' (BL1-8): without `beat`, `who`'s blow `act` and its opponent's `vs` met, neither landing; with `beat`, `who`'s light
  *  attack `act` was lost to its opponent's big action `beat`, which lands. */
-export interface AutoEvent { t: number; who: string; ev: 'charge' | 'ward' | 'boost' | 'hit' | 'guarded' | 'dodged' | 'break' | 'parry' | 'interrupt' | 'clash'; act?: string; at?: number; dmg?: number; hp?: number; hit?: number; s?: [number, number]; g?: number; fx?: number; dur?: number; vs?: string; beat?: string }
+export interface AutoEvent { t: number; who: string; ev: 'charge' | 'ward' | 'boost' | 'hit' | 'guarded' | 'dodged' | 'break' | 'parry' | 'interrupt' | 'clash' | 'strip' | 'sap'; act?: string; at?: number; dmg?: number; hp?: number; hit?: number; s?: [number, number]; g?: number; fx?: number; dur?: number; vs?: string; beat?: string }
 export interface AutoCount { acts: number; skills: number; heavies: number; lights: number; dodged: number; guarded: number; hit: number; hits: number; breaks: number; dmg: number; dmgBroken: number; skillDmg: number; wasted: number; opened: number; interrupts: number; parried: number; clashes: number }
 export interface AutoResult {
   /** 0 or 1 by the K.O.; null past `maxT` (decide on the health shares: autoWinner) */
@@ -187,7 +199,7 @@ interface Load { until: number; dmg: number; gauge: number }
 interface Combo { a: AutoAction; hits: readonly number[]; i: number; k: number; load: Load | null }
 export interface AutoSide {
   i: 0 | 1; x: AutoFighter; hp: number; maxHp: number; g: number; gT: number; broken: boolean; stunEnd: number; cd: Record<string, number>;
-  ward: { until: number; dmg: number; gauge: number; parry: boolean } | null;
+  ward: { until: number; dmg: number; gauge: number; parry: boolean; evade?: boolean } | null;
   act: AutoAction | null; at: number; pending: boolean; combo: Combo | null; comboAt: number; form: number; n: AutoCount; dec: number;
   /** the gear's effects worn; a load waiting for the next offensive action; each skill's uses spent; the opening's end; the haste's and the slow's ends */
   gfx: AutoGearFx; next: Load | null; used: Record<string, number>; openUntil: number; hasteUntil: number; slowUntil: number;
@@ -269,13 +281,15 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
   function land(f: AutoSide): boolean {
     const a = f.act!; f.act = null;
     settle(f); settle(other(f));
-    if (a.role === 'haste' || a.role === 'slow' || a.role === 'load') {
+    if (a.role === 'haste' || a.role === 'slow' || a.role === 'load' || a.role === 'recover') {
       if (a.role === 'haste') f.hasteUntil = t + R.haste.dur;
       else if (a.role === 'slow') other(f).slowUntil = t + R.slow.dur;
+      // a recover (the workshop SK3): one's own gauge emptied by its share
+      else if (a.role === 'recover') { f.g = gaugeNow(f) * (1 - R.recover.share); f.gT = t; }
       else f.next = { until: t + R.load.dur, dmg: R.load.dmg, gauge: R.load.gauge };
       log && put({ t: T(), who: f.x.id, ev: 'boost', act: a.id }); return false;
     }
-    if (a.ward) { f.ward = { until: t + a.ward.dur, dmg: a.ward.dmg, gauge: a.ward.gauge, parry: a.role === 'parry' }; log && put({ t: T(), who: f.x.id, ev: 'ward', act: a.id }); return false; }
+    if (a.ward) { f.ward = { until: t + a.ward.dur, dmg: a.ward.dmg, gauge: a.ward.gauge, parry: a.role === 'parry', ...(a.role === 'evade' ? { evade: true } : {}) }; log && put({ t: T(), who: f.x.id, ev: 'ward', act: a.id }); return false; }
     // the clash (BL1-8): the opponent's blow leaves within w s of this one
     const g = other(f), ga = g.act, C = R.clash;
     if (C && !g.broken && ga && !g.combo && isBlow(ga) && g.at - t <= C.w + 1e-9) {
@@ -306,9 +320,11 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     const lastPierce = !!f.gfx.lastPierce && a.kind === 'light' && c.i === c.hits.length;
     const open = g.openUntil > t, st = g.x.style;
     let res: 'hit' | 'guarded' | 'dodged' = 'hit';
-    if (!g.broken && !exposed && !open) {
-      if (!a.undodge && autoDraw(s0, f.i, c.k, c.i, DRAW.dodge) < R.react.dodge * ratio(g.x.viv, f.x.viv) * (g.gfx.dodge ?? 1) * (st?.dodge ?? 1)) res = 'dodged';
-      else if (!a.pierce && !lastPierce && autoDraw(s0, f.i, c.k, c.i, DRAW.guard) < Math.min(R.react.cap, R.react.guard * ratio(g.x.def, f.x.atk) * (a.kind === 'light' ? 1 : R.react.skillGuard) * (g.gfx.guardChance ?? 1) * (st?.guard ?? 1))) res = 'guarded';
+    // (an evade stance of the workshop SK3 dodges every blow that can be dodged, even while its fighter charges)
+    const evading = !!g.ward?.evade && g.ward.until > t;
+    if (!g.broken && (!exposed || evading) && !open) {
+      if (!a.undodge && (evading || autoDraw(s0, f.i, c.k, c.i, DRAW.dodge) < R.react.dodge * ratio(g.x.viv, f.x.viv) * (g.gfx.dodge ?? 1) * (st?.dodge ?? 1))) res = 'dodged';
+      else if (!exposed && !a.pierce && !lastPierce && autoDraw(s0, f.i, c.k, c.i, DRAW.guard) < Math.min(R.react.cap, R.react.guard * ratio(g.x.def, f.x.atk) * (a.kind === 'light' ? 1 : R.react.skillGuard) * (g.gfx.guardChance ?? 1) * (st?.guard ?? 1))) res = 'guarded';
     }
     if (res === 'dodged') {
       g.n.dodged++; if (a.kind !== 'light') f.n.wasted++;
@@ -318,7 +334,7 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     }
     const wardOn = !!g.ward && g.ward.until > t;
     // a parry (a ward of the parry role) takes a big blow and leaves its striker open, the rest of its enchaînement lost (no counter-blow: AC-07)
-    if (wardOn && g.ward!.parry && a.kind !== 'light' && c.i === 1) {
+    if (wardOn && g.ward!.parry && a.kind !== 'light' && c.i === 1 && !a.unparry) {
       f.openUntil = Math.max(f.openUntil, t + R.parry.open); c.i = c.hits.length; g.n.parried++; g.n.opened++;
       log && put({ t: T(), who: g.x.id, ev: 'parry', act: a.id }); return;
     }
@@ -330,6 +346,7 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     if (open) k *= R.open.dmg;
     if (a.role === 'exploit') k *= open || g.broken || exposed ? R.exploit.hi : R.exploit.lo;
     if (a.role === 'punish' && exposed) k *= R.punish;
+    if (a.role === 'finisher') k *= g.hp / g.maxHp < R.finisher.below ? R.finisher.hi : R.finisher.lo;
     // a piercer through the ward: its × taken back (the laboratory's order of the operations, to the bit)
     if (wardOn && a.pierceWard) k /= g.ward!.dmg;
     if (a.kind === 'light' && g.gfx.lightTaken) k *= g.gfx.lightTaken;
@@ -349,6 +366,12 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     if (!g.broken) {
       const gm = res === 'guarded' ? g.gfx.guardGauge ?? R.gauge.guardMul : 1;
       addGauge(g, autoGaugeHit(a, share, g.x.end, R) * gm * (c.load ? c.load.gauge : 1) * (wardOn ? g.ward!.gauge : 1) * (f.gfx.gauge ?? 1));
+    }
+    // the workshop SK3: a strip lifts the target's ward, haste and load; a sap that lands makes its skills and heavy blow wait
+    if (c.i === 1 && a.role === 'strip' && (wardOn || g.hasteUntil > t || !!g.next)) { g.ward = null; g.hasteUntil = Math.min(g.hasteUntil, t); g.next = null; log && put({ t: T(), who: f.x.id, ev: 'strip', act: a.id }); }
+    if (c.i === 1 && a.role === 'sap' && res === 'hit') {
+      for (const s of [...g.x.skills, g.x.heavy]) g.cd[s.id] = Math.max(g.cd[s.id] ?? 0, t + R.sap.delay);
+      log && put({ t: T(), who: f.x.id, ev: 'sap', act: a.id });
     }
     if (line && o.trace) line.g = +gaugeNow(g).toFixed(2);
   }
@@ -472,6 +495,13 @@ export function autoRole(v: AutoView, x: AutoFighter, s: AutoAction): boolean {
       const foeLeft = foe.act ? foe.at - t : 0, foeBig = !!foe.act && foe.act.kind !== 'light';
       return (foeBig && foeLeft > v.chargeOf(me, s)) || v.gauge(me) >= (2 / 3) * v.rules.gauge.max;
     }
+    // the workshop SK3 (« proposé »): the finisher under its share of the opponent's health (or Ren nearly down); the strip when something is up to lift when it
+    // lands; the evade stance on a big action it can be up for; the recover past two thirds of one's gauge; the sap as soon as it is ready
+    case 'finisher': return foe.hp / foe.maxHp < v.rules.finisher.below || me.hp / me.maxHp < L * 0.6;
+    case 'strip': { const at = t + v.chargeOf(me, s); return active(foe.ward, at) || foe.hasteUntil > at || (!!foe.next && foe.next.until > at); }
+    case 'evade': { const foeLeft = foe.act ? foe.at - t : 0; return !!foe.act && foe.act.kind !== 'light' && foeLeft > v.chargeOf(me, s); }
+    case 'recover': return v.gauge(me) >= (2 / 3) * v.rules.gauge.max;
+    case 'sap': return true;
     default: return true;
   }
 }

@@ -48,7 +48,8 @@ export function learnOrRaise(s: GameState, id: string, cap = MAX_LEVEL): 'learnt
 /** the skill a challenge won against this fighter teaches today (the operator's SK-7 « Deux temps : le soutien au jour 1, la signature dès le jour 6 », journal Passe
  *  SK2): before day 6 the support or defence of Orla, Ilse and Vessa, from day 6 every rival's signature attack; a generic fighter none */
 export function challengeSkill(s: GameState, fighter: string): string | null {
-  return s.day >= SIGNATURE_DAY ? SIGNATURES[fighter] ?? null : taughtBy(fighter);
+  // (a fighter without a signature, a generic fighter, teaches what it teaches in both phases: none today; the workshop of journal Passe SK3 proposes one each)
+  return s.day >= SIGNATURE_DAY ? SIGNATURES[fighter] ?? taughtBy(fighter) : taughtBy(fighter);
 }
 
 /** a challenge won against this fighter (lot V4): its skill learnt, or raised; null when the fighter teaches none */

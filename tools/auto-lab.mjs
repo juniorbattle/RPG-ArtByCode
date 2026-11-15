@@ -31,6 +31,10 @@
 //       state (the shadow at tier 2, its own plan; at tier 1, its skills by their roles) against the bout's result: the mean chances and the bouts won, by stage,
 //       the Brier score, the bouts by tenths of chances
 //   (since journal Passe SK2 the rivals' signature attacks are in Ren's catalogue: AC-12's kits wear them, KITS)
+//   every command: --catalogue=sk3 adds the six candidates of the workshop of new skills (src/lab/skillsSk3.ts, journal Passe SK3; --only=n_a,n_b some of them)
+//       and their kits; --lessons=<from day>:<price of level 4>:<price of level 5> lets a policy of whole games take Master Corvin's lesson (a free slot by day, a
+//       skill of its four at level 3 or 4 raised by one, its price paid) in place of a job or a wait (the workshop SK3's way to levels 4 and 5); kits --equal: every
+//       offensive technique at the Flash cut's level, every ultimate at the Thrust's
 //   every command: --set=<TABLE>.<path>=<value>[,...] changes RULES (AUTO_RULES), SKILLS (AUTO_SKILLS), FOES (AUTO_FOES), RACE (AUTO_RACE), WEAPONS
 //       (AUTO_WEAPONS), LIGHT (AUTO_LIGHT); --race=<file.json> loads a race ({ norm, pool, stage })
 import fs from 'node:fs';
@@ -50,6 +54,13 @@ const load = (f) => server.ssrLoadModule(f);
 const AU = await load('/src/combat/auto.ts'), AD = await load('/src/combat/autoData.ts'), AM = await load('/src/combat/autoMatch.ts');
 const PR = await load('/src/simulation/v2prep.ts');
 const LAB = await load('/src/tournament/lab.ts'), ST = await load('/src/combat/stats.ts'), V2 = await load('/src/simulation/v2.ts');
+// the workshop of new skills (journal Passe SK3): the six candidates in the game's tables for this process only
+export const SK3 = arg('catalogue') === 'sk3' ? await load('/src/lab/skillsSk3.ts') : null;
+if (SK3) SK3.applySk3(arg('only') ? arg('only').split(',') : undefined);
+// --curious=same: the curious player brings a skill learnt in place of a start skill of its family and its rank only (src/tournament/lab.ts CURIOUS, the workshop SK3)
+if (arg('curious') === 'same') LAB.CURIOUS.sameRank = true;
+/** Master Corvin's lessons (the workshop SK3, levels 4 and 5): from a day, a skill of the four at level 3 (then 4) raised by one for a price, in a free slot by day */
+export const LESSONS = arg('lessons') ? (([from, p4, p5]) => ({ from: +from, price: { 4: +p4, 5: +p5 } }))(arg('lessons').split(':')) : null;
 const TABLES = { CADENCE: AD.AUTO_CADENCE, RULES: AU.AUTO_RULES, SKILLS: AD.AUTO_SKILLS, FOES: AD.AUTO_FOES, RACE: AD.AUTO_RACE, WEAPONS: AD.AUTO_WEAPONS, LIGHT: AD.AUTO_LIGHT, BRUTE: AD.AUTO_BRUTE, ROLES: AD.AUTO_ROLES, STYLES: AD.AUTO_STYLES, GEARFX: AD.AUTO_GEAR_FX };
 const RIVALS = Object.keys(ST.RIVAL_SHEETS);
 export const TAC = makeTactics(AU);
@@ -104,9 +115,14 @@ export const rhythmLine = (s) => `${s.duels} duels, durée méd. ${s.t.toFixed(0
 /** whole games of a policy in the new duel: each bout and challenge fought with its script kept (for the rhythm), the stages won, the titles */
 export function gamesOf(pn, seeds) {
   const P = LAB.POLICIES[pn]; if (!P) throw new Error(`no policy ${pn}`);
-  const bouts = [];
+  const bouts = [], purse = { 6: [], 8: [], 10: [] }, lessons = { 4: 0, 5: 0 }, seen = new Set();
   const wrap = { name: pn, skill: P.skill, choose: (st) => {
-    const a = P.choose(st);
+    let a = P.choose(st);
+    if (st.slot === 'morning' && purse[st.day] && !seen.has(`${st.seed}:${st.day}`)) { seen.add(`${st.seed}:${st.day}`); purse[st.day].push(st.player.coins); }
+    if (LESSONS && st.v2 && st.slot !== 'evening' && st.day >= LESSONS.from && (a.type === 'work' || a.type === 'wait')) {
+      const kit = st.v2.kit, id = AD.autoOrderOf(V2.v2KitOf(st)).find((k) => (kit.levels[k] ?? 0) >= 3 && (kit.levels[k] ?? 0) < 5 && st.player.coins >= LESSONS.price[(kit.levels[k] ?? 0) + 1]);
+      if (id) { const to = kit.levels[id] + 1; kit.levels[id] = to; st.player.coins -= LESSONS.price[to]; lessons[to]++; a = { type: 'wait' }; }
+    }
     if (a.type === 'fight' || a.type === 'challengeResult') {
       const kind = a.type === 'fight' ? 'bout' : 'challenge', o = AM.autoOutcome(st, kind, { log: true }), r = o.duel;
       bouts.push({ kind, day: st.day, stage: o.bout.stage, foe: o.bout.foeId, won: o.winner === 'player', t: r.t, skills: r.n[0].skills, hits: r.n[0].hits + r.n[1].hits, breaks: r.n[1].breaks, renBreaks: r.n[0].breaks, turns: r.leadChanges, rhythm: rhythmOf(r), ren: { hp: o.bout.ren.hp, atk: o.bout.ren.atk, def: o.bout.ren.def, end: o.bout.ren.end, viv: o.bout.ren.viv }, kit: o.bout.ren.skills.map((s) => s.id).join('.'), taken: o.bout.ren.taken });
@@ -125,7 +141,7 @@ export function gamesOf(pn, seeds) {
     if (mine.some((m) => m.stage === 'semi')) cut++;
     for (const m of mine) { const k = m.stage ?? `pool-j${m.day}`; (stageWins[k] ??= { w: 0, n: 0 }).n++; if (m.winner === 'player') stageWins[k].w++; }
   }
-  return { pn, n: seeds.length - skipped, crowns, finals, cut, stageWins, bouts, skipped };
+  return { pn, n: seeds.length - skipped, crowns, finals, cut, stageWins, bouts, skipped, purse, lessons };
 }
 const rate = (G, keys) => { let w = 0, n = 0; for (const k of keys) { const v = G.stageWins[k]; if (v) { w += v.w; n += v.n; } } return n ? w / n : NaN; };
 export function gamesLine(G) {
@@ -175,7 +191,11 @@ export function weaponSwap(R, weapon) {
 export function duelsOf({ day = 4, loadout = ['t1', 't4', 'd1', 's1'], weapon, foes = RIVALS, seeds = range('1..60'), stage, round, levels, log = false }) {
   const R = weaponSwap(REF[day], weapon), st = stage ?? (day >= 10 ? 2 : day >= 6 ? 1 : 0), rd = round ?? (st === 0 ? AD.autoRound(day) : 0);
   // a rival's signature (journal Passes SK1 / SK2) at the level of Ren's skill of its rank: an ultimate the Thrust's, a technique that strikes the Flash cut's (the reference drills those two)
-  const sig = (id) => /^m_/.test(id) && AD.AUTO_ROLES[id]?.role, rank = (id) => (id === 't1' || ['punish', 'pierce', 'opener'].includes(sig(id)) ? R.t1 : id === 't4' || sig(id) === 'exploit' ? R.t4 : 1);
+  // a candidate of the workshop SK3 likewise: its ultimate the Thrust's level, a technique that strikes the Flash cut's
+  const sig = (id) => /^m_/.test(id) && AD.AUTO_ROLES[id]?.role, nw = (id) => /^n_/.test(id) && AD.AUTO_SKILLS[id]?.family === 'offensive' && AD.skillRank(id);
+  // --equal: every offensive technique at the Flash cut's level and every ultimate at the Thrust's (the Feint, Breach and the Lunge too: the workshop SK3)
+  const rank = (id) => (process.argv.includes('--equal') && AD.AUTO_SKILLS[id]?.family === 'offensive' && id !== 'heavy' ? (AD.skillRank(id) === 'ultimate' ? R.t4 : AD.skillRank(id) === 'technique' ? R.t1 : 1)
+    : id === 't1' || ['punish', 'pierce', 'opener'].includes(sig(id)) || nw(id) === 'technique' ? R.t1 : id === 't4' || sig(id) === 'exploit' || nw(id) === 'ultimate' ? R.t4 : 1);
   const lv = levels ?? Object.fromEntries([...loadout, 'heavy'].map((id) => [id, rank(id)]));
   const rows = [];
   for (const id of foes) {
@@ -230,6 +250,14 @@ Object.assign(KITS, {
   'lame-vive': { loadout: ['m_lunge', 't4', 'd1', 's1'] }, 'riposte': { loadout: ['m_riposte', 't4', 'd1', 's1'] }, 'épaule': { loadout: ['m_shoulder', 't4', 'd1', 's1'] },
   'brèche': { loadout: ['k_sunder', 't4', 'd1', 's1'] }, 'casse': { loadout: ['k_sunder', 't4', 't3', 'm_wild'] },
 });
+// the workshop of new skills (journal Passe SK3): each candidate in place of the start skill of its family (the ultimate in place of the Thrust), the Leg Sweep
+// in the Feint's kit too
+// (a kit whose skills are not all applied, --only, is left out)
+if (SK3) for (const [k, v] of Object.entries({
+  'grâce': { loadout: ['t1', 'n_grace', 'd1', 's1'] }, 'désarme': { loadout: ['n_disarm', 't4', 'd1', 's1'] }, 'balayage': { loadout: ['n_sweep', 't4', 'd1', 's1'] },
+  'balay.-kit': { loadout: ['n_sweep', 't2', 't4', 's1'] }, 'pas': { loadout: ['t1', 't4', 'n_sidestep', 's1'] }, 'souffle': { loadout: ['t1', 't4', 'd1', 'n_wind'] },
+  'poignet': { loadout: ['n_wrist', 't4', 'd1', 's1'] }, 'feinte-dép.': { loadout: ['k_feint', 't4', 'd1', 's1'] },
+})) if (v.loadout.every((id) => AD.AUTO_SKILLS[id])) KITS[k] = v;
 /** the rivals' level scaled by `f` for one measure (the pool's factors, or the stage's), given back after */
 export function withLevel(stage, f, fn) {
   const R = AD.AUTO_RACE, keep = JSON.stringify({ norm: R.norm, stage: R.stage });
@@ -466,6 +494,8 @@ export const CINE_RULES = {
   'fort / touché / les deux': { tiers: [{ tier: 'ultra', roles: ['exploit', 'breaker'], land: 'hit' }], side: 'both' },
   'tous / touché / les deux': { tiers: [{ tier: 'ultra', roles: ['exploit', 'breaker', 'punish', 'pierce', 'opener', 'interrupt'], land: 'hit' }], side: 'both' },
 };
+// the workshop SK3: the Finishing Blow an ultimate, its cinematic every time it lands in full as the exploits' (SK-5)
+if (SK3) CINE_RULES['SK3 : la règle, les ultimes « finir » comprises'] = { ...CI.CINE_RULE, tiers: CI.CINE_RULE.tiers.map((x) => (x.tier === 'ultra' ? { ...x, roles: [...x.roles, 'finisher'] } : x)) };
 export function cineOf(pn, seeds, rules = CINE_RULES) {
   const P = LAB.POLICIES[pn], rows = [];
   const wrap = { name: pn, skill: P.skill, choose: (st) => {

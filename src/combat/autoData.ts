@@ -1,4 +1,4 @@
-import { AUTO_RULES, autoDuel, type AutoAction, type AutoBrain, type AutoCond, type AutoEffect, type AutoFamily, type AutoFighter, type AutoGearFx, type AutoResult, type AutoRole, type AutoStyle } from './auto';
+import { AUTO_RULES, autoDuel, type AutoAction, type AutoBrain, type AutoCond, type AutoEffect, type AutoFamily, type AutoFighter, type AutoGearFx, type AutoResult, type AutoRole, type AutoRoleAny, type AutoStyle } from './auto';
 import { POWER, RIVAL_SHEETS, type FighterStats, type Stage } from './stats';
 import { LEVEL_POWER, SKILLS, clampLevel, type Times } from './skills';
 
@@ -97,13 +97,13 @@ export const AUTO_BRUTE = {
   uses: [2, 2, 3, 3, 4] as readonly number[],
   gap: { R: 8, M: 16, L: 28 },
   // the exploits ×0.36 since journal Passe BE1 (×0.4 in the model: with the opener's opening of 4 s, the Estoc still fits in it)
-  charge: 0.6, roleCharge: { exploit: 0.6 } as Partial<Record<AutoRole, number>>,
+  charge: 0.6, roleCharge: { exploit: 0.6 } as Partial<Record<AutoRoleAny, number>>,
   // the model's 1.2 × AUTO_WEIGHT.skills (0.55), written out (1.2 × 0.55 is 0.6600000000000001 in floating point)
   usePower: 0.66,
   rivalLevel: [1, 2, 3] as readonly number[],
 };
 /** each skill's role, its gap's class and what it does besides (Ren's catalogue and the rivals' own; the laboratory's BRUTE_ROLES) */
-export const AUTO_ROLES: Record<string, { role: AutoRole; gap: keyof typeof AUTO_BRUTE.gap; undodge?: boolean; pierce?: boolean; pierceWard?: boolean }> = {
+export const AUTO_ROLES: Record<string, { role: AutoRole; gap: keyof typeof AUTO_BRUTE.gap; undodge?: boolean; pierce?: boolean; pierceWard?: boolean; unparry?: boolean }> = {
   t1: { role: 'punish', gap: 'R' }, t2: { role: 'pierce', gap: 'R', pierceWard: true }, t3: { role: 'breaker', gap: 'M', undodge: true }, t4: { role: 'exploit', gap: 'L' },
   d1: { role: 'ward', gap: 'M' }, s1: { role: 'haste', gap: 'L' },
   k_sunder: { role: 'opener', gap: 'M' }, k_feint: { role: 'interrupt', gap: 'R', pierce: true }, k_iron: { role: 'ward', gap: 'M' }, k_parry: { role: 'parry', gap: 'M' },
@@ -120,7 +120,10 @@ export const AUTO_ROLES: Record<string, { role: AutoRole; gap: keyof typeof AUTO
  *  super, every other skill a technique (a ward and a support never strike: techniques). Its family (offensive, defensive, support) says what it does, its role when
  *  the automatic plays it; an ultimate plays its cinematic in the black void, a super in the arena (src/arena/cineRule.ts) */
 export type SkillRank = 'technique' | 'super' | 'ultimate';
-export const rankOfRole = (role: AutoRole): SkillRank => (role === 'exploit' ? 'ultimate' : role === 'breaker' ? 'super' : 'technique');
+/** the roles that give a rank above a technique (SK-1: an exploit an ultimate, a breaker a super; the workshop of journal Passe SK3 proposes the finisher as an
+ *  ultimate, added by the laboratory only until the operator's sheet) */
+export const RANK_OF_ROLE: Partial<Record<AutoRoleAny, SkillRank>> = { exploit: 'ultimate', breaker: 'super' };
+export const rankOfRole = (role: AutoRoleAny): SkillRank => RANK_OF_ROLE[role] ?? 'technique';
 export const skillRank = (id: string): SkillRank => { const r = AUTO_ROLES[id]?.role; return r ? rankOfRole(r) : 'technique'; };
 /** the four brought (SK-2 « Quatre places : une ultime au plus, une super au plus »): at most this many of a rank; two ultimates won 73 % of the planner's finals
  *  instead of 50, two supers took his pool bouts to 1 min 26 (journal Passe SK1) */
@@ -183,11 +186,12 @@ export function autoGearFx(pieces: readonly (string | null | undefined)[]): Auto
 export function autoBrute(a: AutoAction, level: number, o: { parry?: boolean } = {}): AutoAction {
   const R = AUTO_ROLES[a.id];
   if (!R) throw new Error(`no role for the skill "${a.id}"`);
-  const role: AutoRole = o.parry ? 'parry' : R.role, B = AUTO_BRUTE, U = AUTO_RULES;
+  const role: AutoRoleAny = o.parry ? 'parry' : R.role, B = AUTO_BRUTE, U = AUTO_RULES;
   const b: AutoAction = { ...a, role, uses: B.uses[clampLevel(level) - 1], cooldown: B.gap[R.gap] };
   if (R.undodge) b.undodge = true;
   if (R.pierce) b.pierce = true;
   if (R.pierceWard) b.pierceWard = true;
+  if (R.unparry) b.unparry = true;
   if (b.power) b.power *= B.usePower;
   b.charge = a.charge * B.charge * (B.roleCharge[role] ?? 1);
   if (role === 'parry') b.ward = { ...(a.ward ?? { gauge: 0.5 }), dur: U.parry.dur, dmg: 0.05 };
@@ -287,7 +291,7 @@ export const AUTO_CONDS_OF: Record<AutoFamily, readonly AutoCond[]> = {
 /** the conditions a skill's line may take by its role (PB-1 « une condition par compétence parmi celles de son rôle », briefs/combat-auto.md § 32.2: the
  *  laboratory's CONDS_BY_ROLE, tools/auto-final/brute.mjs, as its plans were measured): what the plan's page offers since lot 2 of « La Brute », the
  *  automatic's first; « dans une faille » (`open`) and « au début » (`start`) among them */
-export const AUTO_CONDS_BY_ROLE: Record<AutoRole, readonly AutoCond[]> = {
+export const AUTO_CONDS_BY_ROLE: Partial<Record<AutoRoleAny, readonly AutoCond[]>> = {
   exploit: ['auto', 'ready', 'open', 'incoming', 'broken', 'finish'],
   punish: ['auto', 'ready', 'incoming', 'open', 'finish', 'never'],
   pierce: ['auto', 'warded', 'open', 'incoming', 'finish'],
@@ -303,7 +307,7 @@ export const AUTO_CONDS_BY_ROLE: Record<AutoRole, readonly AutoCond[]> = {
 /** the conditions the plan's page offers for a skill: its role's (a skill without one: its family's) */
 export function autoCondsFor(id: string): readonly AutoCond[] {
   const role = AUTO_ROLES[id]?.role, fam = AUTO_SKILLS[id]?.family;
-  return role ? AUTO_CONDS_BY_ROLE[role] : fam ? AUTO_CONDS_OF[fam] : ['auto'];
+  return (role && AUTO_CONDS_BY_ROLE[role]) || (fam ? AUTO_CONDS_OF[fam] : ['auto']);
 }
 /** a skill's condition in a kit's tactic (`kit.tactic`, set on the match sheet: setTactic); 'auto' when it has none or one it cannot take (its role's since lot 2
  *  of « La Brute », or its family's, a plan written before it) */

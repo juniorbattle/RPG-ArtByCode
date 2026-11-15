@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32) ; relue le même jour, six sur six à la recommandation, le modèle approuvé et sa construction en cinq lots, le lot 1 lancé (§ 33) ; le lot 1 construit le même jour, le duel « La Brute » dans le jeu par défaut, sa fiche courte relue le même jour, neuf sur neuf à la recommandation, l'entrechoc et la jauge réglés, le § 6.1 du contrat projet amendé (§ 34) ; la passe d'équilibre faite, le poids des coups, les protections, les armes et la faille réglés, sa fiche courte relue six sur six à la recommandation (§ 35) ; le lot 2, ce qui se voit, construit le 14/11/2026 (§ 36) ; le lot 3, la préparation, construit le même jour, sa fiche courte pour l'essai en jeu de l'opérateur (§ 37) ; les cinématiques des coups d'éclat construites le 15/11/2026 (§ 38) ; la structure des compétences, ses rangs, la règle du kit et les signatures des rivaux, construite le même jour (§ 39)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32) ; relue le même jour, six sur six à la recommandation, le modèle approuvé et sa construction en cinq lots, le lot 1 lancé (§ 33) ; le lot 1 construit le même jour, le duel « La Brute » dans le jeu par défaut, sa fiche courte relue le même jour, neuf sur neuf à la recommandation, l'entrechoc et la jauge réglés, le § 6.1 du contrat projet amendé (§ 34) ; la passe d'équilibre faite, le poids des coups, les protections, les armes et la faille réglés, sa fiche courte relue six sur six à la recommandation (§ 35) ; le lot 2, ce qui se voit, construit le 14/11/2026 (§ 36) ; le lot 3, la préparation, construit le même jour, sa fiche courte pour l'essai en jeu de l'opérateur (§ 37) ; les cinématiques des coups d'éclat construites le 15/11/2026 (§ 38) ; la structure des compétences, ses rangs, la règle du kit et les signatures des rivaux, construite le même jour (§ 39) ; l'atelier de nouvelles compétences et des niveaux 4 et 5 mené le même jour, sa fiche en attente (§ 40)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -1648,6 +1648,45 @@ La fiche https://claude.ai/artifact/2KKiD7u2rzxtWc6NE9CfVX (`briefs/fiche-struct
 - L'essai en jeu de l'opérateur, avec celui des cinématiques (§ 38).
 - La note de SK-1 : d'autres compétences, cohérentes avec ces étiquettes, pour la diversité et la stratégie ; avec elles, ce que deviennent les niveaux 4 et 5 : un atelier et une fiche à part.
 
+
+## 40. L'atelier de nouvelles compétences (15/11/2026, journal Passe SK3)
+
+Statut : **atelier mené, fiche publiée, en attente de l'opérateur.** Rien du jeu par défaut ne change : les rôles nouveaux sont des crochets du duel (`src/combat/auto.ts`) qu'aucune compétence ne porte ; les candidates n'existent que dans le laboratoire (`src/lab/skillsSk3.ts`, `tools/auto-lab.mjs --catalogue=sk3`). La demande, mot pour mot (la note de l'opérateur sur SK-1) : « il faudra prevoir d'autres competences tout ausi coherente pour apporter de la diversite et de la strategie » ; avec elle, ce que deviennent les niveaux 4 et 5 (§ 39.3).
+
+### 40.1 Les candidates
+
+| Compétence | Rang | Rôle (nouveau) | Le levier | Enseignée par |
+|---|---|---|---|---|
+| Coup de grâce (Finishing Blow) | Ultime | finir : ×2,5 sous la moitié de la santé adverse, ×1 sinon | la fin du combat, sans faille | Lucan Rook |
+| Désarmement (Disarm) | Technique | désarmer : un coup ×1,5 qui retire protection, accélération et charge ; imparable | ce que l'adversaire a levé | Ser Aldric Venn |
+| Pas de côté (Sidestep) | Défense | esquiver : une posture de 6 s, toute esquive assurée, même en chargeant | sa propre esquive | Piers Calloway |
+| Second souffle (Second Wind) | Soutien | reprendre son souffle : sa jauge vidée de 35 % | sa propre jauge | frère Ambrose |
+| Coup au poignet (Wrist Strike) | Technique | saper : 15 s d'attente pour les compétences et le coup puissant adverses | le rythme adverse | Kell Barrow |
+
+- Apprises par un défi gagné contre leur maître en première phase, montées d'un niveau en seconde ; l'entraînement jusqu'au niveau 3. « Finir » rejoint « exploiter » au rang Ultime (`RANK_OF_ROLE`) ; une défense ou un soutien reste une technique (SK-1).
+- Mesurées et écartées : le Balayage (Corra), une seconde interruption inesquivable, joue exactement les combats de la Feinte (une interruption frappe un combattant qui charge, qui ne garde ni n'esquive).
+
+### 40.2 Les mesures (journal Passe SK3)
+
+| Poule / tableau / finale (%) | Test AC-12, à niveau égal | Planificateur, même niveau | Référence, même niveau |
+|---|---|---|---|
+| Kit de départ (la compétence remplacée) | 86 / 66 / 50 | — | — |
+| Coup de grâce (pour l'Estoc, niv. 3) | 85 / 60 / 53 | 94 / 70 / 82 (Estoc 98 / 81 / 76) | 94 / 85 / 76 (98 / 91 / 71) |
+| Désarmement (pour la Taille éclair, niv. 3) | 87 / 67 / 54 | 90 / 64 / 54 (94 / 76 / 54) | 90 / 78 / 47 (94 / 87 / 57) |
+| Pas de côté (pour le Rempart, niv. 1) | 81 / 54 / 42 | 95 / 63 / 59 (93 / 63 / 54) | 96 / 73 / 60 (93 / 77 / 56) |
+| Second souffle (pour la Ferveur, niv. 1) | 87 / 64 / 54 | 91 / 60 / 55 (93 / 63 / 54) | 92 / 80 / 62 (93 / 77 / 56) |
+| Coup au poignet (pour la Taille éclair, niv. 3) | 87 / 65 / 45 | 94 / 73 / 56 (94 / 76 / 54) | 95 / 82 / 56 (94 / 87 / 57) |
+
+- Le test de AC-12 avec les cinq : tenu en poule et en finale ; au tableau, Orla n'a qu'une réponse (Brèche au niveau 3), un fait du jeu d'aujourd'hui à niveau égal. Relevé : à niveau égal, la Feinte au niveau 3 fait 70 % de moyenne en finale à la place de la Taille éclair et le kit Feinte 78 %.
+- Le curieux (qui porte tout ce qu'il apprend), avec la règle du même rang : 32 % de titres sans les cinq, 28 % avec (le Désarmement, compétence de spécialiste, porté contre tous).
+
+### 40.3 Les niveaux 4 et 5
+
+- Le niveau 4 vaut 2 à 8 points en finale pour une compétence, le niveau 5 (un quatrième usage) 16 à 23. Les leçons de maître Corvin (dès le jour 6, un créneau et 30 / 60 pièces, une compétence déjà au niveau 3) : les titres ne bougent pas (le planificateur 26 → 25 %, la référence 41 → 41 %), les créneaux libres limitent ; l'entraînement jusqu'au niveau 5 sans pièces : la référence 41 → 46 %, à recaler ; retirer les niveaux 4 et 5 ; un deuxième défi : incohérent.
+
+### 40.4 La fiche
+
+https://claude.ai/artifact/FJdfCEs4igBxqgtVeQj5pV (`briefs/fiche-nouvelles-competences.html`), douze cartes NC-1 à NC-12, en attente de l'opérateur.
 
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 

@@ -1,0 +1,404 @@
+<title>Nouvelles compétences</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--line); border-radius: 6px; }
+.shots.vids { grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.tblwrap { overflow-x: auto; max-width: 100%; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl th { font-weight: 600; color: var(--muted); font-size: 13px; }
+.tbl td:first-child { font-weight: 600; }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions du responsable · 15/11/2026</span>
+    <h1>Le duel « La Brute » : de nouvelles compétences</h1>
+    <p class="lede">Ta note sur la fiche de la structure : d’autres compétences, aussi cohérentes, pour la diversité et la stratégie ; et, avec elles, ce que deviennent les niveaux 4 et 5. Je propose cinq compétences, chacune sur un levier du duel qu’aucune compétence ne touche aujourd’hui, enseignées par les combattants de la ville, et une voie vers les niveaux 4 et 5. Tout est mesuré sur le jeu lui-même : le test « chaque adversaire a ses réponses, rien ne domine », les combats du planificateur et de la référence, les parties entières tenues à part. Rien du jeu par défaut ne change avant ta relecture. Pour chaque choix : ce qui est mesuré, ma recommandation et tes options. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne dans le journal et la spécification, puis je construis ce que la fiche décide dans le jeu par défaut, en anglais et en français, avec ses tests et ses preuves dans le navigateur, et je fusionne.</p>
+    <p class="src">Sources : journal Passe SK3 ; src/lab/skillsSk3.ts (les candidates et leurs nombres) ; src/combat/auto.ts (les rôles nouveaux, des crochets sans effet tant qu’aucune compétence ne les porte) ; tools/auto-lab.mjs (kits --catalogue=sk3 --equal, graines 1 à 60 ; price, cinematics et --lessons, 200 parties tenues à part, graines 101 à 300 ; --curious=same).</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Les apostrophes : typographiques (’) partout dans les chaînes.
+const GROUPS = [
+  { id: 'catalogue', title: 'Le catalogue et ses trous', sub: 'Ta note sur la carte SK-1, mot pour mot : « il faudra prevoir d’autres competences tout ausi coherente pour apporter de la diversite et de la strategie ». Rien du jeu par défaut ne change avant ta relecture : les candidates tournent seulement dans le laboratoire (tools/auto-lab.mjs --catalogue=sk3). Toutes les mesures sont faites sur le jeu lui-même.', fam: 'var(--astre)', items: [
+    { id: 'NC-1', tag: 'le principe', title: 'Une compétence nouvelle par levier du duel, enseignée par un combattant de la ville',
+      ctx: 'L’inventaire : 19 compétences, dont 13 attaques, 3 défenses et 3 soutiens. 4 au départ, 3 à l’achat, 2 à l’entraînement, 10 par défi (le soutien ou la défense d’Orla, d’Ilse et de Vessa, puis les 7 signatures). Les six combattants de la ville (Aldric, Corra, Ambrose, Lucan, Piers, Kell) n’enseignent rien. Cinq leviers du duel ne sont touchés par aucune compétence : la protection ou le soutien que l’adversaire a levés (la Fente et la Riposte dorée passent au travers, mais seulement pour leur coup) ; sa propre esquive ; sa propre jauge déjà pleine (le Rempart la ralentit, rien ne la vide) ; le rythme des compétences adverses ; la fin du combat comme moment d’une ultime (l’Estoc a besoin d’une faille). Je propose cinq compétences, chacune sur un de ces leviers. Elles gardent les trois étiquettes de SK-1, le rang toujours donné par le rôle. Chacune est enseignée par un combattant de la ville battu en défi : apprise en première phase, montée d’un niveau en seconde, puis l’entraînement jusqu’au niveau 3, comme toute compétence. Le catalogue passe de 19 à 24.',
+      table: [['Compétence', 'Rang', 'Rôle (nouveau)', 'Ce qu’elle fait', 'Enseignée par'],
+        ['Coup de grâce', 'Ultime', 'finir', '×2,5 sur un adversaire sous la moitié de sa santé, ×1 sinon', 'Lucan Rook (parvis, le soir)'],
+        ['Désarmement', 'Technique', 'désarmer', 'Un coup ×1,5 qui retire la protection, l’accélération et la charge adverses ; aucune parade ne le prend', 'Ser Aldric Venn (lices, le jour)'],
+        ['Pas de côté', 'Défense', 'esquiver', 'Une posture de 6 s : tout coup esquivable est esquivé, même en chargeant', 'Piers Calloway (quai, le jour)'],
+        ['Second souffle', 'Soutien', 'reprendre son souffle', 'Sa propre jauge vidée de 35 %', 'Frère Ambrose (place de la halle, après-midi et soir)'],
+        ['Coup au poignet', 'Technique', 'saper', 'Un coup qui, s’il touche, fait attendre 15 s les compétences et le coup puissant adverses', 'Kell Barrow (place de la halle, le matin)']],
+      rec: 'Adopter le principe et ces cinq compétences.',
+      opts: ['Adopter ces cinq, enseignées par les combattants de la ville', 'En adopter une partie (en note)', 'Garder le catalogue de dix-neuf'], recIdx: 0,
+      src: 'src/combat/skillbook.ts, autoData.ts (le catalogue) ; src/narrative/people.ts (les combattants de la ville) ; src/lab/skillsSk3.ts (les candidates) ; src/combat/auto.ts (les crochets, neutres)' },
+    { id: 'NC-2', tag: 'mesuré, écarté', title: 'Une seconde interruption n’apporte rien : le Balayage écarté',
+      ctx: 'J’ai mesuré une seconde interruption : le Balayage de Corra, inesquivable là où la Feinte passe la garde. À niveau égal, elle joue exactement les mêmes combats que la Feinte (les 420 duels de chaque étape, au chiffre près). La raison : une interruption frappe un adversaire qui charge, et un combattant qui charge ne garde ni n’esquive. « Inesquivable » ou « imparable » n’y change donc rien. Deux compétences d’un même rôle ne se distinguent que par ce que ce rôle laisse jouer. Constat au passage : à niveau égal (la Feinte au niveau 3, comme la Taille éclair que le joueur entraîne), la Feinte est très forte en finale. Le kit Feinte (Feinte, Fente, Estoc, Ferveur) fait 78 % en moyenne et figure parmi les bonnes réponses contre les sept rivaux ; le test des passes précédentes la comparait au niveau 1. Aucun joueur du laboratoire ne l’entraîne : je le note sans rien proposer ici.',
+      table: [['Finale, à niveau égal (le kit de départ à 50 % contre chaque rival)', 'Vessa', 'Tobin', 'Cassius', 'Orla', 'Ilse', 'Marek', 'Rhosk', 'Moyenne'],
+        ['Kit de départ (Taille éclair, Estoc, Rempart, Ferveur)', '52', '50', '52', '48', '50', '50', '50', '50'],
+        ['La Feinte à la place de la Taille éclair', '58', '62', '82', '62', '78', '52', '95', '70'],
+        ['Le Balayage à la place de la Taille éclair', '58', '62', '82', '62', '78', '52', '95', '70'],
+        ['Le kit Feinte (Feinte, Fente, Estoc, Ferveur)', '42', '72', '75', '87', '88', '80', '100', '78']],
+      rec: 'Écarter le Balayage : Corra, la gardienne de dettes du quai, n’enseigne rien. La force de la Feinte au niveau 3 sera à revoir avec ton essai.',
+      opts: ['L’écarter ; Corra n’enseigne rien', 'Donner à Corra une autre compétence (en note)'], recIdx: 0,
+      src: 'tools/auto-lab.mjs kits --catalogue=sk3 --only=n_sweep --equal (journal Passe SK3)' },
+  ]},
+  { id: 'cinq', title: 'Les cinq compétences', sub: 'Deux mesures pour chacune. Le test « chaque adversaire a ses réponses, rien ne domine » (AC-12) : chaque rival réglé pour que le kit de départ gagne 85 / 65 / 50 % contre lui, graines 1 à 60, la compétence à la place de celle de sa famille et au même niveau. Puis les combats du planificateur et de la référence (200 parties tenues à part, graines 101 à 300), rejoués avec la compétence à la place de celle de sa famille, au même niveau. Les nombres se lisent poule / tableau / finale (% de combats gagnés).', fam: 'var(--voile)', items: [
+    { id: 'NC-3', tag: 'Coup de grâce', title: 'Une ultime qui n’a pas besoin de faille',
+      ctx: 'Rôle « finir » : ×2,5 sur un adversaire sous la moitié de sa santé, ×1 ailleurs (une ultime frappe au moins à pleine force, SK-6). Elle charge comme l’Estoc et revient après un long délai (28 s). Sa différence avec l’Estoc : elle n’attend pas qu’une Brèche, une Feinte ou une parade ouvre une faille, mais elle peut être gardée ou esquivée. L’Estoc, lui, frappe ×2 dans une faille, où l’adversaire ne garde ni n’esquive. Un kit sans ouvreur trouve là son ultime. Sa cinématique se joue à chaque réussite, comme toute ultime (SK-5). Plus faible au tableau, plus forte en finale, où les combats sont longs. Je l’ai mesurée à ×2 sous 35 % : 24 % de moyenne en finale, beaucoup trop faible ; d’où ×2,5 sous la moitié.',
+      table: [['', 'Poule', 'Tableau', 'Finale'],
+        ['Test AC-12 : l’Estoc (kit de départ), moyenne', '86', '66', '50'],
+        ['Test AC-12 : le Coup de grâce à sa place, moyenne', '85', '60', '53 (Rhosk 80)'],
+        ['Planificateur : l’Estoc au niveau 3', '98', '81', '76'],
+        ['Planificateur : le Coup de grâce au niveau 3', '94', '70', '82'],
+        ['Référence : l’Estoc au niveau 3', '98', '91', '71'],
+        ['Référence : le Coup de grâce au niveau 3', '94', '85', '76'],
+        ['Touchées pleinement par combat (cinématiques) : l’Estoc', '1,50', '1,49', '1,87'],
+        ['Touchées pleinement par combat : le Coup de grâce', '1,19', '1,06', '1,41']],
+      rec: 'Ces nombres : ×2,5 sous la moitié de la santé adverse, ×1 sinon, la charge et le délai de l’Estoc.',
+      opts: ['Ces nombres', 'Plus forte (en note)', 'Ne pas l’ajouter'], recIdx: 0,
+      src: 'src/combat/auto.ts (AUTO_RULES.finisher) ; src/lab/skillsSk3.ts ; tools/auto-lab.mjs kits --equal et price ; scratchpad ults.mjs (les ultimes touchées)' },
+    { id: 'NC-4', tag: 'Désarmement', title: 'Retirer ce que l’adversaire a levé',
+      ctx: 'Rôle « désarmer » : un coup (×1,5 sur le temps de charge de la Taille éclair) qui retire la protection levée par l’adversaire, son accélération et la charge qu’il garde pour sa prochaine attaque. Aucune parade ne le prend : il lève la protection avant qu’elle pare. Délai moyen (16 s). Six rivaux sur sept lèvent une protection (Rempart, Égide, Rempart de fer, Peau de bête…) qui dure 18 à 21 s ; seul Tobin n’en a pas. C’est une compétence de spécialiste : la meilleure réponse contre Vessa en finale, forte contre Ilse, Marek et Rhosk, faible contre Tobin et Orla. À ×0,7, le curieux du laboratoire (qui porte tout ce qu’il apprend) perdait un tiers de ses titres ; d’où ×1,5, pour qu’elle ne soit plus un piège.',
+      table: [['', 'Poule', 'Tableau', 'Finale'],
+        ['Test AC-12 : la Taille éclair (kit de départ), moyenne', '86', '66', '50'],
+        ['Test AC-12 : le Désarmement à sa place, moyenne', '87', '67', '54'],
+        ['… finale par rival : Vessa 73, Tobin 28, Cassius 42, Orla 23, Ilse 73, Marek 70, Rhosk 70', '', '', ''],
+        ['Planificateur : Taille éclair / Désarmement (niveau 3)', '94 / 90', '76 / 64', '54 / 54'],
+        ['Référence : Taille éclair / Désarmement (niveau 3)', '94 / 90', '87 / 78', '57 / 47']],
+      rec: 'Ces nombres : un coup ×1,5 qui retire la protection, l’accélération et la charge ; aucune parade ne le prend.',
+      opts: ['Ces nombres', 'Retouches (en note)', 'Ne pas l’ajouter'], recIdx: 0,
+      src: 'src/combat/auto.ts (le rôle « strip », AutoAction.unparry) ; src/lab/skillsSk3.ts' },
+    { id: 'NC-5', tag: 'Pas de côté', title: 'Une posture d’esquive',
+      ctx: 'Rôle « esquiver » : une défense qui prend la place d’une protection, 6 s au niveau 1. Pendant la posture, Ren esquive tout coup esquivable, même en chargeant. Un gros coup esquivé ouvre son auteur 2,5 s (la règle du duel). Le Tourbillon et la Taille du Nord restent inesquivables, et rien n’est retiré de la jauge. Délai moyen (16 s). Bonne réponse contre Cassius au tableau, forte contre Orla et Cassius en finale, faible contre Rhosk. Mesurée d’abord comme une esquive ×3 puis ×5 : trop faible (40 % de moyenne en finale). Puis l’esquive assurée pendant 13,5 s (la durée du Rempart) : la finale de la référence passait de 56 à 81 %, trop forte. D’où 6 s.',
+      table: [['', 'Poule', 'Tableau', 'Finale'],
+        ['Test AC-12 : le Rempart (kit de départ), moyenne', '86', '66', '50'],
+        ['Test AC-12 : le Pas de côté (6 s) à sa place, moyenne', '81', '54', '42'],
+        ['… finale par rival : Vessa 32, Tobin 40, Cassius 65, Orla 68, Ilse 32, Marek 35, Rhosk 22', '', '', ''],
+        ['Planificateur : Rempart / Pas de côté (niveau 1)', '93 / 95', '63 / 63', '54 / 59'],
+        ['Référence : Rempart / Pas de côté (niveau 1)', '93 / 96', '77 / 73', '56 / 60']],
+      rec: 'Ces nombres : une posture de 6 s au niveau 1, toute esquive assurée, même en chargeant.',
+      opts: ['Ces nombres', 'Retouches (en note)', 'Ne pas l’ajouter'], recIdx: 0,
+      src: 'src/combat/auto.ts (le rôle « evade ») ; src/lab/skillsSk3.ts' },
+    { id: 'NC-6', tag: 'Second souffle', title: 'Vider sa propre jauge',
+      ctx: 'Rôle « reprendre son souffle » : un soutien qui vide de 35 % la jauge de rupture de Ren. Délai long (28 s). L’automatique le joue quand sa jauge dépasse les deux tiers. Il éloigne la rupture, donc la fenêtre où l’Estoc d’un rival ou une Frappe du Temple frappe ×2. Réponse contre Ilse (85 % en finale) et contre les casseurs. À parité avec la Ferveur ailleurs. Mesuré à 50 % : trop fort contre Ilse (92 %, sa seule bonne réponse) ; à 25 % : trop faible.',
+      table: [['', 'Poule', 'Tableau', 'Finale'],
+        ['Test AC-12 : la Ferveur (kit de départ), moyenne', '86', '66', '50'],
+        ['Test AC-12 : le Second souffle à sa place, moyenne', '87', '64', '54'],
+        ['Planificateur : Ferveur / Second souffle (niveau 1)', '93 / 91', '63 / 60', '54 / 55'],
+        ['Référence : Ferveur / Second souffle (niveau 1)', '93 / 92', '77 / 80', '56 / 62']],
+      rec: 'Ces nombres : la jauge vidée de 35 %, délai long.',
+      opts: ['Ces nombres', 'Retouches (en note)', 'Ne pas l’ajouter'], recIdx: 0,
+      src: 'src/combat/auto.ts (le rôle « recover », AUTO_RULES.recover) ; src/lab/skillsSk3.ts' },
+    { id: 'NC-7', tag: 'Coup au poignet', title: 'Retarder les compétences adverses',
+      ctx: 'Rôle « saper » : un coup (la charge de la Taille éclair) qui, s’il touche sans être gardé, fait attendre 15 s toutes les compétences et le coup puissant de l’adversaire. Délai rapide (8 s). Il casse le rythme d’un rival qui compte sur ses coups d’éclat : bonne réponse contre Vessa au tableau, forte contre Vessa et Orla en finale. À parité avec la Taille éclair dans les combats du planificateur. Mesuré à 10 s puis 15 s ; puissance relevée de ×0,7 à ×1.',
+      table: [['', 'Poule', 'Tableau', 'Finale'],
+        ['Test AC-12 : la Taille éclair (kit de départ), moyenne', '86', '66', '50'],
+        ['Test AC-12 : le Coup au poignet à sa place, moyenne', '87', '65', '45'],
+        ['Planificateur : Taille éclair / Coup au poignet (niveau 3)', '94 / 94', '76 / 73', '54 / 56'],
+        ['Référence : Taille éclair / Coup au poignet (niveau 3)', '94 / 95', '87 / 82', '57 / 56']],
+      rec: 'Ces nombres : 15 s d’attente, délai rapide.',
+      opts: ['Ces nombres', 'Retouches (en note)', 'Ne pas l’ajouter'], recIdx: 0,
+      src: 'src/combat/auto.ts (le rôle « sap », AUTO_RULES.sap) ; src/lab/skillsSk3.ts' },
+  ]},
+  { id: 'regles', title: 'Autour des cinq', sub: 'Ce qui les entoure : qui enseigne, quand, quel rang, ce que l’on voit.', fam: 'var(--ronce)', items: [
+    { id: 'NC-8', tag: 'qui enseigne', title: 'Les combattants de la ville enseignent dans les deux phases',
+      ctx: 'Les défis ne changent pas : un défi par combattant et par phase, avec un enjeu (10 pièces ou 5 de renom). Un combattant de la ville battu en première phase (jours 1 à 5) enseigne sa compétence au niveau 1 ; battu de nouveau en seconde phase (jours 6 à 10), il la monte au niveau 2. La ligne du défi dit ce qu’une victoire apprend (« … et Coup de grâce »), comme pour les signatures. Ils gardent leur façon de combattre : celle du rival dont ils sont le modèle. Mesuré sur le curieux, le seul joueur du laboratoire qui défie : avec la règle du même rang (une compétence apprise ne prend que la place d’une compétence de départ de sa famille et de son rang), 32 % de titres sans les cinq, 28 % avec. Il apprend surtout le Désarmement d’Aldric (porté dans 25 % de ses combats) et le Second souffle d’Ambrose (2 %) ; Lucan, Kell et Piers sont rarement défiés à leur heure. Comme il porte tout ce qu’il apprend contre tous les rivaux, le Désarmement, compétence de spécialiste, lui coûte au tableau et en finale (sa finale de 43 à 39 %). Sans la règle du même rang, il tombait à 20 % : une technique apprise prenait la place de l’Estoc.',
+      rec: 'Ainsi : apprise en première phase, montée en seconde, la ligne du défi la nomme ; leur façon de combattre ne change pas.',
+      opts: ['Ainsi', 'Chacun combat aussi avec la compétence qu’il enseigne', 'Seconde phase seulement'], recIdx: 0,
+      src: 'src/simulation/v2skills.ts (challengeSkill : le crochet, neutre) ; src/tournament/lab.ts (CURIOUS.sameRank) ; scratchpad games.mjs' },
+    { id: 'NC-9', tag: 'les rangs', title: 'Une défense ou un soutien reste une technique',
+      ctx: 'L’inventaire montre qu’aucune défense ni aucun soutien n’est super ou ultime. C’est voulu par SK-1 : le rang dit la force d’un coup et sa mise en scène (une ultime dans le vide noir, une super dans l’arène). Une défense ou un soutien ne frappe pas, et sa cinématique n’aurait rien à montrer. Le Coup de grâce est une ultime parce qu’il frappe et décide du combat : le rôle « finir » rejoint « exploiter » au rang Ultime, et la règle reste sans exception. Une défense ou un soutien de rang supérieur demanderait une règle de cinématique et des images nouvelles (CI-12).',
+      rec: 'Garder la règle de SK-1 : « finir » donne une ultime, une défense ou un soutien reste une technique.',
+      opts: ['Garder la règle', 'Une défense ou un soutien de rang super (en note)'], recIdx: 0,
+      src: 'src/combat/autoData.ts (RANK_OF_ROLE) ; briefs/combat-auto.md § 39.2' },
+    { id: 'NC-10', tag: 'ce qui se voit', title: 'Les mots, les images et les sons',
+      ctx: 'Sans art nouveau (CI-12, SK-9) : chacune joue les images d’attaque, de défense ou de soutien de Ren, avec la recette d’effets et le son d’une compétence existante. Le Coup de grâce prend l’or de l’Estoc, le Désarmement la fumée de la Feinte, le Pas de côté la défense du Rempart et les pas d’esquive du duel, le Second souffle l’éclat de la Ferveur, le Coup au poignet l’éclair de la Taille éclair. L’arène dit ce qui arrive, comme « Interrompu » : « Désarmé » au-dessus de la cible, « Sapé » quand ses compétences attendent. La jauge qui baisse se voit sur la carte du combattant. Les pages donnent le rôle (finir, désarmer, esquiver, reprendre son souffle, saper) et le maître (« Apprise de Lucan Rook »). Le guide et le carnet de maître Corvin en disent un mot.',
+      table: [['Français', 'English'], ['Coup de grâce', 'Finishing Blow'], ['Désarmement', 'Disarm'], ['Pas de côté', 'Sidestep'], ['Second souffle', 'Second Wind'], ['Coup au poignet', 'Wrist Strike']],
+      rec: 'Ainsi : ces noms, ces emprunts, ces mots dans l’arène et les pages.',
+      opts: ['Ainsi', 'D’autres noms ou emprunts (en note)'], recIdx: 0,
+      src: 'src/arena/fx/fxRecipes.ts (les recettes) ; src/arena/AutoHud.ts (les mots de l’arène) ; src/narrative/text/en.ts, fr-texts.ts' },
+  ]},
+  { id: 'niveaux', title: 'Les niveaux 4 et 5', sub: 'Depuis SK2, un défi gagné apprend une fois par phase et ne monte plus rien. L’entraînement s’arrête au niveau 3 : Ren n’atteint plus les niveaux 4 et 5, qui restent dans les tables (le niveau 4 +10 % de puissance, le niveau 5 un quatrième usage).', fam: 'var(--cendre)', items: [
+    { id: 'NC-11', tag: 'la voie', title: 'Les leçons de maître Corvin, à partir du jour 6',
+      ctx: 'Ce que vaut un niveau, dans les combats du planificateur et de la référence : le niveau 4 ajoute 2 à 8 points en finale à une compétence, le niveau 5 (un quatrième usage) 16 à 23 points. Quatre voies mesurées sur les parties entières (200 parties tenues à part). (a) La leçon de maître Corvin : un créneau et 30 pièces pour monter au niveau 4 une compétence déjà au niveau 3, 60 pièces pour le niveau 5, à partir du jour 6 (le tableau). Les titres ne bougent pas. Peu de leçons sont prises : 56 en 200 parties pour le planificateur, 36 pour la référence, aucune au niveau 5. Les créneaux libres limitent, pas le prix (20 et 40 pièces donnent la même chose). La bourse garde 70 à 90 pièces au matin du jour 10 : elle trouve un usage. (b) Le plafond de l’entraînement relevé à partir du jour 6, un créneau sans pièces : la référence passe de 41 à 46 % de titres et sa finale de 56 à 64 % ; la course serait à recaler. (c) Retirer les niveaux 4 et 5 : 2, 2, 3 usages, plus rien au-delà. (d) Un deuxième défi contre le même maître : incohérent, une signature apprise au jour 6 ne peut plus être remontée.',
+      table: [['200 parties tenues à part', 'Titres planificateur', 'Sa finale', 'Titres référence', 'Sa finale', 'Leçons prises (niv. 4 / 5)'],
+        ['Aujourd’hui', '26 %', '54 %', '41 %', '56 %', '—'],
+        ['(a) Leçons, 30 / 60 pièces, dès le jour 6', '25 %', '53 %', '41 %', '57 %', '56 / 0 et 36 / 0'],
+        ['(b) Entraînement jusqu’au 5, dès le jour 6', '27 %', '57 %', '46 %', '64 %', '56 / 30 et 41 / 36']],
+      rec: '(a) Les leçons de maître Corvin, à partir du jour 6 : un créneau et 30 pièces pour le niveau 4, 60 pour le niveau 5.',
+      opts: ['(a) Les leçons de maître Corvin, 30 / 60 pièces', '(b) L’entraînement jusqu’au niveau 5, dès le jour 6', '(c) Retirer les niveaux 4 et 5'], recIdx: 0,
+      src: 'tools/auto-lab.mjs --lessons=6:30:60 (la leçon prise à la place d’un travail ou d’une attente) et price (t1, t4 aux niveaux 3, 4 et 5) ; scratchpad games.mjs' },
+    { id: 'NC-12', tag: 'construction', title: 'Construire dans le jeu par défaut',
+      ctx: 'Ce que la fiche décide, dans le jeu par défaut, en anglais et en français. Les compétences et leurs rôles (le moteur les porte déjà, sans effet tant qu’aucune compétence ne les a) ; les combattants de la ville qui enseignent ; les leçons de maître Corvin ; les mots de l’arène, des pages, du guide et du carnet ; les recettes et les sons empruntés ; les cinématiques du Coup de grâce. Le curieux du laboratoire ne remplace plus une compétence que par une compétence de même rang. La course est recalée si elle s’écarte. Puis les tests, les preuves du navigateur, le journal et la fusion.',
+      rec: 'Construire, prouver et fusionner ; ton essai en jeu ensuite.',
+      opts: ['Construire, prouver, fusionner', 'La garder derrière un paramètre jusqu’à mon essai'], recIdx: 0,
+      src: 'AGENTS.md (« Git workflow ») ; briefs/combat-auto.md § 40' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  // un tableau de mesures : la première ligne en tête
+  if (it.table) {
+    const t = el('table', { class: 'tbl' }), [head, ...rows] = it.table;
+    t.append(el('thead', {}, el('tr', {}, ...head.map((h) => el('th', { scope: 'col' }, h)))));
+    t.append(el('tbody', {}, ...rows.map((r) => el('tr', {}, ...r.map((v) => el('td', {}, v))))));
+    c.append(el('div', { class: 'tblwrap' }, t));
+  }
+  if (it.shots) {
+    const grid = el('div', { class: 'shots vids' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      // un film : joué sur place, en boucle, sans son (les films de duel-clip n’en ont pas)
+      if (/.mp4$/.test(src)) { grid.append(el('figure', { class: 'shot' }, el('video', { src, controls: '', muted: '', loop: '', playsinline: '', preload: 'metadata', 'aria-label': cap }), el('figcaption', {}, cap))); continue; }
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

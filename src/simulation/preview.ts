@@ -92,7 +92,8 @@ export function skillFigures(s: GameState, id: string, level: number): SkillFigu
     // power, Tourbillon's three of 0.36 are 1.08 of it (journal Passe CO2)
     const off = !e, hits = a.hits ?? [1], k = hitFactor(ren.atk, foe.def);
     return {
-      ap: 0, role: a.role, uses: a.uses ?? 0, gapS: +((a.cooldown ?? 0) * (ren.gfx?.cd ?? 1)).toFixed(1), power: off ? +(a.power ?? 0).toFixed(1) : 0, hits: off ? hits.length : 0,
+      // (a role of the workshop SK3 never reaches a page: the laboratory alone carries one)
+      ap: 0, role: a.role as AutoRole | undefined, uses: a.uses ?? 0, gapS: +((a.cooldown ?? 0) * (ren.gfx?.cd ?? 1)).toFixed(1), power: off ? +(a.power ?? 0).toFixed(1) : 0, hits: off ? hits.length : 0,
       damage: off ? hits.reduce((n, sh) => n + Math.max(1, Math.round((a.power ?? 0) * sh * k)), 0) : 0,
       gauge: off ? +hits.reduce((n, sh) => n + autoGaugeHit(a, sh, foe.end), 0).toFixed(1) : 0, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2),
       dur: e?.dur ?? 0, ward: a.ward ? { damage: a.ward.dmg, resist: a.ward.gauge } : null, boost: a.boost ? { damage: a.boost.dmg, resist: a.boost.gauge } : null, pierce: !!a.pierce,
