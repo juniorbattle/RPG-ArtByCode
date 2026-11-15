@@ -171,7 +171,7 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   assert.match(DT.lessonText('gauge', D), new RegExp(`a guarded blow only ${Math.round(R.gauge.guardMul * 100)} % as much, a dodged one nothing`));
   assert.match(DT.lessonText('break', D), new RegExp(`stunned for ${R.brk.stun} seconds, and takes ${R.brk.dmg} times the damage`));
   // an opening: whose and how long (the event's), the duel's multiplier and the seconds of each way of opening; a clash's window
-  assert.match(DT.lessonText('open', D, { type: 'open', who: 'marek', why: 'parry', dur: R.parry.open }), new RegExp(`^Marek is open for ${R.parry.open} seconds: neither guard nor dodge, and every blow ${Math.round((R.open.dmg - 1) * 100)} % harder\. Sunder opens the opponent for ${R.opener} seconds, a Feint that cuts a big blow for ${R.interrupt.open}, a parry for ${R.parry.open}, a big blow dodged leaves its striker open for ${R.whiff}\.`));
+  assert.match(DT.lessonText('open', D, { type: 'open', who: 'marek', why: 'parry', dur: R.parry.open }), new RegExp(`^Marek is open for ${R.parry.open} seconds: neither guard nor dodge, and every blow ${Math.round((R.open.dmg - 1) * 100)} % harder\. Breach opens the opponent for ${R.opener} seconds, a Feint that cuts a big blow for ${R.interrupt.open}, a parry for ${R.parry.open}, a big blow dodged leaves its striker open for ${R.whiff}\.`));
   assert.match(DT.lessonText('clash', D), new RegExp(`leave within ${R.clash.w} seconds of each other meet`));
   // ×2 and « Skip » on the attack's and the dodge's keys (LC3-8), the duel's caps
   assert.match(TU.rich(DT.lessonText('speed', D)), /<kbd data-bind="attack" data-cap="arena">J<\/kbd> plays it twice as fast, and back; <kbd data-bind="dodge" data-cap="arena">L<\/kbd> skips to the result/);
@@ -286,7 +286,7 @@ test('the guide\'s « The duel » and « Preparing a bout » for the duel played
   assert.match(duel, /^The computer fights your bouts as you prepared them\./);
   assert.match(duel, new RegExp(`Each skill has a few uses in a bout, more at a higher level, the squares under its name, and a gap between two; a use spent never comes back\. Your heavy blow comes back ${AD.AUTO_COOLDOWN} times its first-level charge after its charge begins`));
   // the openings and the clash (lot 2 of « La Brute »), the duel's own numbers
-  assert.match(duel, new RegExp(`neither guard nor dodge, and every blow ${Math.round((R.open.dmg - 1) * 100)} % harder\. Sunder opens the opponent for ${R.opener} seconds; a Feint cuts a big blow being charged and opens its fighter for ${R.interrupt.open}; a parry takes a big blow and leaves its striker open for ${R.parry.open}; a big blow dodged leaves its striker open for ${R.whiff}\. Two blows that leave within ${R.clash.w} seconds clash`));
+  assert.match(duel, new RegExp(`neither guard nor dodge, and every blow ${Math.round((R.open.dmg - 1) * 100)} % harder\. Breach opens the opponent for ${R.opener} seconds; a Feint cuts a big blow being charged and opens its fighter for ${R.interrupt.open}; a parry takes a big blow and leaves its striker open for ${R.parry.open}; a big blow dodged leaves its striker open for ${R.whiff}\. Two blows that leave within ${R.clash.w} seconds clash`));
   assert.doesNotMatch(duel, /nothing cuts one/, 'a Feint cuts a big blow');
   assert.doesNotMatch(duel, /action point/, 'no AP since PB-1');
   assert.match(duel, new RegExp(`your light attack ${Math.min(...hits)} to ${Math.max(...hits)} by your weapon`));

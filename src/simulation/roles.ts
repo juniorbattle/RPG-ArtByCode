@@ -13,7 +13,6 @@ import { V2_LAW_ACTIONS } from './v2law';
 import { placeIn } from './v2watch';
 import { V2_BARTER_ACTIONS } from './v2barter';
 import { V2_INTEL_ACTIONS } from './v2intel';
-import { planText } from './v2scout';
 import { V2_RIVAL_ACTIONS, anwenBusy } from './v2rivals';
 import { V2_FESTIVAL_ACTIONS } from './v2festival';
 import { V2_WORK_ACTIONS } from './v2work';
@@ -262,7 +261,7 @@ export const ROLE_ACTIONS: T = {
       // the second watch, a version 2 game's: their plan (when they use each skill)
       if (isV2(s) && s.facts.includes(`scouted:${a.who}`)) {
         fact(s, `scouted2:${a.who}`);
-        emit({ kind: 'action', id: `scout2:${a.who}`, cause: 'action:scout', text: tx('v2.scout.log2', { name: RIVALS[a.who].name, plan: planText(a.who, RIVALS[a.who].name) }), visible: true });
+        emit({ kind: 'action', id: `scout2:${a.who}`, cause: 'action:scout', text: tx('v2.scout.log2', { name: RIVALS[a.who].name }), visible: true });
         return;
       }
       fact(s, `scouted:${a.who}`);

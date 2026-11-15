@@ -59,7 +59,10 @@ test('a version 2 game: every rival of the pool watched where and when they trai
   assert.equal(again.ok, false); assert.equal(again.reason, tx('v2.scout.today', { name: 'Orla Brask' }));
   const next = at(r.state, 4, 'morning', 'training'), r2 = act(next, { type: 'scout', who: 'orla' });
   assert.ok(r2.state.facts.includes('scouted2:orla'));
-  assert.match(r2.events[0].text, /Orla Brask's plan: /);
+  // the plan said where it is read, in the page's language (journal Passe SK2: a log line keeps its slots in English and a plan made of sentences is not said again
+  // in French from them): the line points to the match sheet and the notebook, which say it
+  assert.match(r2.events[0].text, /^You watch Orla Brask at practice again: their plan, .* is on your match sheet and in Master Corvin's notebook now.$/);
+  assert.match(U.foeIntel(r2.state, 'orla'), /Orla Brask's plan: /);
   const third = opt(at(r2.state, 5, 'morning', 'training'), (a) => a.type === 'scout' && a.who === 'orla');
   assert.equal(third.ok, false); assert.equal(third.reason, tx('v2.scout.knownPlan', { name: 'Orla Brask' }));
   // Cassius at night on the festival square, behind the hall's stage

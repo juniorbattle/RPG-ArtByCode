@@ -46,7 +46,17 @@ const SOURCE: Record<string, SkillDef['source']> = {
   // the six the version 2 adds (lot V2, src/combat/skillbook.ts: their actions and how they are obtained)
   k_sunder: 'buy', k_feint: 'train', k_iron: 'buy', k_parry: 'challenge', k_cry: 'challenge', k_focus: 'challenge',
 };
-export const SKILLS: Record<string, SkillDef> = Object.fromEntries(Object.entries(BASE_CHARGE).map(([id, t]) => [id, { id: id as DynActionId, charge: trimmed(t), source: SOURCE[id] }]));
+/** the rivals' signature attacks in Ren's catalogue (the operator's SK-7 « Deux temps : le soutien au jour 1, la signature dès le jour 6 » and SK-8 « Ces nombres »,
+ *  the sheet https://claude.ai/artifact/2KKiD7u2rzxtWc6NE9CfVX, journal Passe SK2): their rival's own charge at level 1 (src/combat/autoData.ts AUTO_FOES, not trimmed), each level on the pattern of Ren's skill of the same role (the
+ *  Flash cut's for a punish, the Lunge's for a pierce, Tourbillon's for a breaker, the Thrust's for an exploit, Breach's for an opener), to 0.05 s */
+export const SIGNATURE_CHARGE: Record<string, Times> = {
+  m_lunge: [3, 2.8, 2.65, 2.45, 2.25], m_wild: [3.9, 3.65, 3.35, 3.15, 2.95], m_riposte: [3.4, 3.15, 2.9, 2.7, 2.55], m_shoulder: [3.7, 3.4, 3.15, 2.95, 2.7],
+  m_smite: [3.8, 3.45, 3.15, 2.85, 2.55], m_ironfall: [4.3, 3.9, 3.55, 3.2, 2.85], m_cleave: [4.4, 4.1, 3.8, 3.55, 3.3],
+};
+export const SKILLS: Record<string, SkillDef> = {
+  ...Object.fromEntries(Object.entries(BASE_CHARGE).map(([id, t]) => [id, { id: id as DynActionId, charge: trimmed(t), source: SOURCE[id] }])),
+  ...Object.fromEntries(Object.entries(SIGNATURE_CHARGE).map(([id, t]) => [id, { id: id as DynActionId, charge: t, source: 'challenge' as const }])),
+};
 
 export const clampLevel = (n: number): number => Math.max(1, Math.min(MAX_LEVEL, Math.round(n)));
 

@@ -7,8 +7,6 @@ import type { ChargeTier } from '../combat/charge';
 import type { DynActionId } from '../combat/dynamic';
 import { matchSheetFor, playerMods, v2SheetData } from '../combat/match';
 import { DYN_PROFILES, PROFILES, duelData, dynDuelData } from '../combat/profiles';
-import { LATE_TEACHER, SKILL_BOOK } from '../combat/skillbook';
-import { MAX_LEVEL } from '../combat/skills';
 import { v2DuelData, type V2Duel, type V2Kit } from '../combat/v2duel';
 import { hitFactor, skillPower } from '../combat/stats';
 import { Rng } from '../core/rng';
@@ -16,7 +14,6 @@ import { AUTO_RULES, autoGaugeHit, type AutoFighter, type AutoRole } from '../co
 import { autoFoe, autoKitFor, autoOrderOf, autoRaceSheet, autoRen, autoSkill } from '../combat/autoData';
 import { autoBoutOf } from '../combat/autoMatch';
 import { piecesViv, v2Stats, wornPieces } from './v2gear';
-import { RIVALS_CHALLENGE_DAY } from './v2town';
 
 /** What a purchase or a change of gear would change (the operator's choice UM7-3 « Lot à part : héros, détail, comparaison », journal Passe UM9): no
  *  rule of its own, so it cannot drift from the game. The numbers are read from the duel's own data, built as a bout builds them; the « after » is the
@@ -121,15 +118,12 @@ export function autoOrderView(s: GameState, ids: string[], foe?: string | null):
   return order.map((id) => { const a = autoSkill(id, k.levels[id] ?? 1); return { id, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2), uses: a.uses ?? 0, gapS: +((a.cooldown ?? 0) * (ren.gfx?.cd ?? 1)).toFixed(1) }; });
 }
 
-/** the level a skill can still reach and how: drilling up to its cap, then only the fighter who teaches it; a skill only a rival out of the title teaches
- *  (LATE_TEACHER, lot L2b) from the day such a rival can be challenged (journal Passe CO1: the page said « No higher level » for Iron Skin, Feint, Sunder and
- *  the Piercing Lunge at level 3, though a challenge won from day 6 raises them, src/simulation/v2skills.ts learnFromChallenge) */
-export function nextLevel(s: GameState, id: string): { level: number; by: 'drill' | 'challenge'; teacher?: string; fromDay?: number } | null {
-  const lv = levelOf(s, id), teacher = SKILL_BOOK[id]?.teacher, late = Object.keys(LATE_TEACHER).find((f) => LATE_TEACHER[f] === id);
-  if (lv < TRAIN_CAP) return { level: lv + 1, by: 'drill' };
-  if (lv >= MAX_LEVEL) return null;
-  if (teacher) return { level: lv + 1, by: 'challenge', teacher };
-  return late ? { level: lv + 1, by: 'challenge', teacher: late, fromDay: RIVALS_CHALLENGE_DAY } : null;
+/** the level a skill can still reach: drilling up to its cap (TRAIN_CAP), then none. Since the operator's SK-7 (journal Passe SK2) a challenge won teaches the three's
+ *  support or defence before day 6 and a rival's signature from day 6, once per phase each: it no longer raises a skill above the cap (no player of the laboratory
+ *  had taken one there, journal Passe SK1) */
+export function nextLevel(s: GameState, id: string): { level: number; by: 'drill' } | null {
+  const lv = levelOf(s, id);
+  return lv < TRAIN_CAP ? { level: lv + 1, by: 'drill' } : null;
 }
 
 export interface StatChange { id: StatId; now: number; after: number; better: boolean }

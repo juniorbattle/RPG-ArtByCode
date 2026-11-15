@@ -15,6 +15,7 @@ import { REN_BASE, TRAIN_HP, TRAIN_POINT, VIGOUR_HP } from '../combat/stats';
 import { AUTO_RULES } from '../combat/auto';
 import { AUTO_COOLDOWN, AUTO_WEAPONS } from '../combat/autoData';
 import { CINE_RULE } from '../arena/cineRule';
+import { SIGNATURE_DAY } from '../combat/skillbook';
 import { REHEARSAL } from '../simulation/v2prep';
 import { SAND_LESSON } from '../simulation/v2skills';
 import { autoOrderView } from '../simulation/preview';
@@ -281,7 +282,7 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'challenges': return tx(c.body, { names: list(Object.keys(CHALLENGERS).map(nameOf)), coins: STAKE.coins, name: STAKE.name, day: dayOf('semis') });
     case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM });
     // the duel played by the computer (lot 3, journal Passe LC5): the order of the four, the match sheet, the health of a bout (AUTO_RULES.hpScale, DB5)
-    case 'prepare': return tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen'), rehearse: REHEARSAL.n, cap: SAND_LESSON.cap });
+    case 'prepare': return tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen'), rehearse: REHEARSAL.n, cap: SAND_LESSON.cap, sday: SIGNATURE_DAY });
     // its numbers the duel's own (src/combat/auto.ts AUTO_RULES, src/combat/autoData.ts: the cooldown, the weapons' chains of blows)
     case 'duel': {
       const R = AUTO_RULES, hits = Object.values(AUTO_WEAPONS).map((w) => w.hits.length);

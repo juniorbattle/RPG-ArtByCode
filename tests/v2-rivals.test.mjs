@@ -318,10 +318,11 @@ test('a friend warns of the forge\'s sabotage the afternoon after the hood bough
 
 test('the curious player tells Hale of Rhosk\'s plan before the sand day, and takes a friend\'s warning as a sign of its chain', () => {
   let signs = 0;
-  // the seeds re-read with the blows' weights and the race of journal Passe BE1: the sign on seeds 4, 6 and 13 among these (6, 9, 10 and 24 with lot 2's rhythm and
+  // the seeds re-read with the skills' structure of journal Passe SK2: the sign on seeds 3, 8 and 10 among these (4, 6 and 13 with the blows' weights and the race of
+  // journal Passe BE1; 6, 9, 10 and 24 with lot 2's rhythm and
   // break, journal Passe SL3; 4, 11 and 12 from the same rules for every fighter, journal Passe SL1; 6, 9, 12 and 13 from the duel played by the computer, journal
   // Passe LC3, to then)
-  for (const seed of [4, 6, 7, 9, 10, 13]) {
+  for (const seed of [3, 6, 8, 9, 10, 13]) {
     const st = LAB.autoplay(seed, LAB.POLICIES.curious, 'Ren', 400, 'v2').state;
     const sign = st.log.find((e) => e.id === 'v2-rhosk-offer');
     if (!sign) continue;

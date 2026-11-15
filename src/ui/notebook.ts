@@ -23,6 +23,7 @@ export function adviceText(a: Advice, foe: string): string {
   switch (a.k) {
     case 'feint': return foeSkill ? tx('advice.feint', { skill, foe: name, foeSkill, n: a.n ?? 0, of: a.of ?? 0 }) : tx('advice.feintAny', { skill, n: a.n ?? 0, of: a.of ?? 0 });
     case 'exploit': return tx('advice.exploit', { skill, n: a.n ?? 0, of: a.of ?? 0 });
+    case 'ultMiss': return tx('advice.ultMiss', { skill, n: a.n ?? 0, of: a.of ?? 0 });
     case 'dodged': return tx('advice.dodged', { foe: name, n: a.n ?? 0 });
     case 'foeSkill': return tx('advice.foeSkill', { foe: name, foeSkill, pct: a.pct ?? 0 });
     case 'unspent': return tx('advice.unspent', { skill, n: a.n ?? 0 });

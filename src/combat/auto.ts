@@ -126,7 +126,9 @@ export const AUTO_RULES = {
    *  opener's opening (s: 4; the laboratory's 8 shortened to 5 at AC-12's test, journal Passe BL1, then to 4 with the blows' weights, journal Passe BE1: in the final
    *  Sunder and the Estoc were the one good answer against Orla, Ilse and Marek); an interrupt's opening and the stagger before the interrupted one acts again; a parry's window and the striker's opening; the
    *  haste's and the slow's charges × and lengths; a load's × on the next offensive action and its window */
-  exploit: { hi: 2, lo: 0.6 }, punish: 1.7, opener: 4, interrupt: { open: 6, stagger: 1 }, parry: { open: 6, dur: 3 },
+  // an exploit, an ultimate, strikes at full strength at least (the operator's SK-6 « Une ultime frappe au moins à pleine force (×1 ailleurs) », journal Passe SK2: 0.6
+  // before; one ultimate in ten under 150 outside an opening, a cinematic for a small number)
+  exploit: { hi: 2, lo: 1 }, punish: 1.7, opener: 4, interrupt: { open: 6, stagger: 1 }, parry: { open: 6, dur: 3 },
   haste: { k: 0.7, dur: 15 }, slow: { k: 1.4, dur: 12 }, load: { dmg: 2, gauge: 1.5, dur: 15 },
   /** the light attack's charge × (fewer skills: the light fills the time; RY-1's forty blows a minute kept) */
   lightCharge: 1.35,

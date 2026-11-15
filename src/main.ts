@@ -61,9 +61,6 @@ function exploreInputs(look: TimeOfDay): void {
 async function startArena(): Promise<void> {
     try {
     const { ArenaApp } = await import('./arena/ArenaApp');
-    // DEV only (the workshop of journal Passe SK1): `cine=sk1` the candidate structure (its rule, the rivals' signatures in Ren's catalogue for `kit=t1,m_ironfall,d1,s1`,
-    // the openers at a normal weight on the gauge)
-    if (import.meta.env.DEV && params.get('cine') === 'sk1') (await import('./lab/skillStructure')).applySk1();
     const app = new ArenaApp({ canvas, params, onProgress: progressOn(label, bar) });
     (window as any).__arena = app;
     await app.init();

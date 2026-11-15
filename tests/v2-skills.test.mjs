@@ -19,9 +19,11 @@ const v2 = (name = 'day1-morning') => G.makeV2(G.namedState(name));
 const act = (st, a) => { const r = G.advance(st, a); assert.ok(r.ok, `${a.type}: ${r.reason}`); return r.state; };
 const refused = (st, a, re) => { const r = G.advance(st, a); assert.equal(r.ok, false, a.type); if (re) assert.match(r.reason, re); };
 
-test('the catalogue: at most twelve skills and the heavy attack (journal Passe CH1), the three families, each with its charge times (five levels, shorter as they rise) and its AP', () => {
-  const ids = Object.keys(SB.SKILL_BOOK);
-  assert.ok(ids.length <= 13 && ids.length >= 11, `${ids.length} skills`);
+test('the catalogue: twelve skills and the heavy attack (journal Passe CH1), and since journal Passe SK2 the rivals\' seven signatures (SK-12 « La lever : dix-neuf compétences »), the three families, each with its charge times (five levels, shorter as they rise) and its AP', () => {
+  const all = Object.keys(SB.SKILL_BOOK), sigs = Object.values(SB.SIGNATURES), ids = all.filter((id) => !sigs.includes(id));
+  assert.equal(all.length, 20, `${all.length} skills and the heavy attack`); assert.equal(sigs.length, 7);
+  // a signature is a rival\'s attack, its numbers the duel played by the computer\'s (tests/skill-structure.test.mjs); the three-button duel never carries it
+  for (const id of sigs) { assert.equal(SB.SKILL_BOOK[id].family, 'offensive'); assert.equal(SB.SKILL_BOOK[id].source, 'challenge'); for (let lv = 2; lv <= 5; lv++) assert.ok(K.chargeTime(id, lv) < K.chargeTime(id, lv - 1), id); }
   assert.deepEqual({ ...SB.SKILL_BOOK.heavy }, { id: 'heavy', family: 'offensive', source: 'start' });
   for (const f of ['offensive', 'defensive', 'support']) assert.ok(ids.filter((id) => SB.SKILL_BOOK[id].family === f).length >= 2, f);
   // the heavy attack costs its AP under the three buttons (1, « proposé »), free under the old scheme
@@ -38,6 +40,7 @@ test('the catalogue: at most twelve skills and the heavy attack (journal Passe C
   for (const src of ['start', 'buy', 'train', 'challenge']) assert.ok(ids.some((id) => SB.SKILL_BOOK[id].source === src), src);
   for (const id of ids.filter((x) => SB.SKILL_BOOK[x].source === 'buy')) assert.ok(SB.SKILL_BOOK[id].price >= 30, `${id} is dear`);
   for (const id of ids.filter((x) => SB.SKILL_BOOK[x].source === 'challenge')) assert.equal(SB.taughtBy(SB.SKILL_BOOK[id].teacher), id);
+  for (const [foe, id] of Object.entries(SB.SIGNATURES)) assert.equal(SB.SKILL_BOOK[id].signature, foe);
   assert.equal(SB.taughtBy('mara'), null);
   assert.throws(() => SB.skillAction('light'), /no skill/);
 });

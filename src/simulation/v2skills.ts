@@ -2,11 +2,11 @@ import { clamp, type GameState, type V2State } from './state';
 import type { Emit } from './advance';
 import type { ActionDef } from './actions';
 import { isV2, v2KitOf } from './v2';
-import { LATE_TEACHER, SKILL_BOOK, taughtBy } from '../combat/skillbook';
+import { SIGNATURES, SIGNATURE_DAY, SKILL_BOOK, taughtBy } from '../combat/skillbook';
 import { MAX_LEVEL, chargeTime } from '../combat/skills';
 import { joined, skillName, tx, type TextKey } from '../narrative/text';
 import { sandRefusal } from './v2rivals';
-import { AUTO_CONDS_OF, AUTO_SKILLS, autoCondsFor, autoOrderOf } from '../combat/autoData';
+import { AUTO_CONDS_OF, AUTO_SKILLS, autoCondsFor, autoOrderOf, kitRankFault } from '../combat/autoData';
 import type { AutoCond } from '../combat/auto';
 
 /** The skills of a version 2 game (lot V2, C4; the operator's decision AV-9 « Achat, entraînement et défi », journal Passe V2): the skills the
@@ -45,10 +45,15 @@ export function learnOrRaise(s: GameState, id: string, cap = MAX_LEVEL): 'learnt
   k.levels[id] = lv + 1; return 'raised';
 }
 
+/** the skill a challenge won against this fighter teaches today (the operator's SK-7 « Deux temps : le soutien au jour 1, la signature dès le jour 6 », journal Passe
+ *  SK2): before day 6 the support or defence of Orla, Ilse and Vessa, from day 6 every rival's signature attack; a generic fighter none */
+export function challengeSkill(s: GameState, fighter: string): string | null {
+  return s.day >= SIGNATURE_DAY ? SIGNATURES[fighter] ?? null : taughtBy(fighter);
+}
+
 /** a challenge won against this fighter (lot V4): its skill learnt, or raised; null when the fighter teaches none */
 export function learnFromChallenge(s: GameState, fighter: string, emit: Emit): string | null {
-  // (a rival out of the title teaches a skill of the catalogue from day 6, lot L2b)
-  const id = taughtBy(fighter) ?? LATE_TEACHER[fighter] ?? null;
+  const id = challengeSkill(s, fighter);
   if (!id) return null;
   const r = learnOrRaise(s, id);
   emit({ kind: 'action', id: `skill:${r}`, cause: `challenge:${fighter}`, visible: true, text: r === 'learnt' ? tx('v2.skill.learnt', { skill: skillName(id) }) : r === 'raised' ? tx('v2.skill.raised', { skill: skillName(id), level: levelOf(s, id) }) : tx('v2.skill.max', { skill: skillName(id) }) });
@@ -120,7 +125,7 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
     cost: () => 1,
     // lot L4 (EV-7 / EV-9): the sand shut the morning after a brawl, or taken by Rhosk (src/simulation/v2rivals.ts)
     check: (s, a) => (!isV2(s) ? tx('v2.only') : !atForecourt(s) ? tx('v2.train.notHere') : s.slot === 'evening' ? tx('train.closed') : sandRefusal(s) ?? (
-      !owns(s, a.skill) && SKILL_BOOK[a.skill]?.source !== 'train' ? tx('v2.drill.notBase') : levelOf(s, a.skill) >= TRAIN_CAP ? tx(SKILL_BOOK[a.skill]?.teacher || Object.values(LATE_TEACHER).includes(a.skill) ? 'v2.drill.cap' : 'v2.drill.capTop', { skill: skillName(a.skill), cap: TRAIN_CAP }) : null)),
+      !owns(s, a.skill) && SKILL_BOOK[a.skill]?.source !== 'train' ? tx('v2.drill.notBase') : levelOf(s, a.skill) >= TRAIN_CAP ? tx('v2.drill.capTop', { skill: skillName(a.skill), cap: TRAIN_CAP }) : null)),
     apply: (s, a, _r, emit) => {
       const r = learnOrRaise(s, a.skill, TRAIN_CAP);
       s.player.reputation = clamp(s.player.reputation + 1);
@@ -139,6 +144,9 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
       // the heavy attack, a base attack of every fighter since SY-02 (A3): never one of the four (SL1-7)
       if (a.skills.includes('heavy')) return tx('v2.loadout.heavy');
       for (const id of a.skills) if (!owns(s, id)) return tx('v2.loadout.notOwned', { skill: SKILL_BOOK[id] ? skillName(id) : id });
+      // one ultimate and one super at most among the four (the operator's SK-2 « Quatre places : une ultime au plus, une super au plus », journal Passe SK2)
+      const fault = kitRankFault(a.skills);
+      if (fault) return tx(fault === 'ultimate' ? 'v2.loadout.ultimate' : 'v2.loadout.super');
       return null;
     },
     apply: (s, a, _r, emit) => { v2State(s).kit.loadout = [...a.skills]; emit({ kind: 'action', id: 'loadout', cause: 'action:setLoadout', visible: false, text: tx('v2.loadout.log', { skills: joined(a.skills.map(skillName)) }) }); },

@@ -2,7 +2,7 @@ import { clamp, type GameState } from './state';
 import type { ActionDef } from './actions';
 import type { Emit } from './advance';
 import { isV2 } from './v2';
-import { learnFromChallenge, sandLesson } from './v2skills';
+import { learnFromChallenge, sandLesson, challengeSkill } from './v2skills';
 import { keepOutcomeNote } from './v2notes';
 import { GEAR, SHOPS, type ShopId } from './gear';
 import { gearOf, itemName } from './v2gear';
@@ -10,11 +10,10 @@ import { holds, recordTheft, registrarOnCatch, wanted } from './v2law';
 import { PASSERS, passerOpen, passersHere } from './v2barter';
 import { applyReprisal } from './v2law';
 import { GENERICS, MUSCLE } from '../narrative/generics';
-import { LATE_TEACHER, taughtBy } from '../combat/skillbook';
 import { playerMatch } from '../tournament/pool';
 import { PEOPLE, placeOf, presentAt } from '../narrative/people';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
-import { tx } from '../narrative/text';
+import { tx, skillName } from '../narrative/text';
 import { available } from './roles';
 import { watchPost } from './v2watch';
 import type { DuelOutcome } from '../tournament/pool';
@@ -163,7 +162,8 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
   challenge: {
     by: (a) => a.who,
     list: (s) => (isV2(s) ? candidates(s).flatMap((who) => (['coins', 'name'] as Stake[]).map((stake) => ({ type: 'challenge' as const, who, stake }))) : []),
-    label: (_s, a) => tx(a.stake === 'coins' ? (teacherOf(a.who) ? 'v2.challenge.labelCoins' : 'v2.challenge.labelCoinsPlain') : teacherOf(a.who) ? 'v2.challenge.labelName' : 'v2.challenge.labelNamePlain', { name: fighterName(a.who), n: STAKE[a.stake] }),
+    // the skill a win teaches, by its name (journal Passe SK2: a signature says who teaches it, SK-4)
+    label: (s, a) => { const k = teacherOf(s, a.who); return tx(a.stake === 'coins' ? (k ? 'v2.challenge.labelCoins' : 'v2.challenge.labelCoinsPlain') : k ? 'v2.challenge.labelName' : 'v2.challenge.labelNamePlain', { name: fighterName(a.who), n: STAKE[a.stake], skill: k ? skillName(k) : '' }); },
     cost: () => 0,
     // the slot is spent at the result (challengeResult); the tag says it now (rule P2, journal Passe EVL1); the coins staked are put on the table at once
     later: () => 1,
@@ -237,8 +237,9 @@ function take(s: GameState, item: string): void {
   g.bag.push(item);
 }
 
-/** does a challenge won against this fighter teach a skill (the three's own, a rival's of the catalogue from day 6; a generic fighter none) */
-const teacherOf = (who: string): boolean => !!(taughtBy(who) ?? LATE_TEACHER[who]);
+/** the skill a challenge won against this fighter teaches today (src/simulation/v2skills.ts challengeSkill: the three's support or defence, from day 6 a rival's
+ *  signature attack; a generic fighter none) */
+const teacherOf = (s: GameState, who: string): string | null => challengeSkill(s, who);
 
 /** a challenge's result (lot L2b, EV-3): won, the stake back twice and the fighter's skill learnt or raised; lost, the stake gone and never a wound (V2B1-1
  *  stays the only rule of wounds); a reprisal's bout has its own ends (v2law.ts) */

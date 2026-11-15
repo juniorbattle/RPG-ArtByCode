@@ -1,4 +1,5 @@
-// The cinematics of the duel « La Brute » (journal Passes CI1 / CI2; the operator's sheet https://claude.ai/artifact/2Ut19phdR8vySTVzAU1a98): the rule against his choices,
+// The cinematics of the duel « La Brute » (journal Passes CI1 / CI2; the operator's sheet https://claude.ai/artifact/2Ut19phdR8vySTVzAU1a98; since journal Passe SK2 the
+// skills' structure's https://claude.ai/artifact/2KKiD7u2rzxtWc6NE9CfVX, SK-5: an ultimate every time it lands in full, outside the cap): the rule against his choices,
 // the moments the arena plays against an oracle written from the duel's script and the decided rules alone (never from the replay that src/arena/cine.ts reads), the
 // blows a cinematic tells against the replay's own, the beats and the framings against CI-1's note and CI-8, the guide's line.
 import test from 'node:test';
@@ -25,7 +26,8 @@ function oracle({ d, F }) {
     const a = cur[seat]; cur[seat] = null;
     if (!a || !a.blows.length || a.cut || a.blows.some((b) => b.ev !== 'hit')) return;
     const role = skill(seat, a.id)?.role, ko = a.blows[a.blows.length - 1].hp <= 0;
-    if (role === 'exploit' && (a.inBreak || a.inOpen || ko)) out.push({ tier: 'ultra', who: seat, action: a.id, t: a.blows[0].t, ko });
+    // an ultimate (an exploit) every time it lands in full (SK-5, journal Passe SK2: in an opening, a break or neither)
+    if (role === 'exploit') out.push({ tier: 'ultra', who: seat, action: a.id, t: a.blows[0].t, ko });
     if (role === 'breaker') out.push({ tier: 'super', who: seat, action: a.id, t: a.blows[0].t, ko });
   };
   for (const e of log) {
@@ -46,11 +48,11 @@ function oracle({ d, F }) {
   return out.sort((x, y) => x.t - y.t);
 }
 
-test('the rule is the operator’s sheet: the ultras (exploitations) in an opening or a break, the supers (breakers) when every blow lands, both fighters, 3 a bout at most, 20 s apart, the K.O. always', () => {
-  assert.deepEqual(JSON.parse(JSON.stringify(C.CINE_RULE)), { tiers: [{ tier: 'ultra', roles: ['exploit'], land: 'open' }, { tier: 'super', roles: ['breaker'], land: 'hit' }], side: 'both', max: 3, gap: 20, ko: true });
+test('the rule is the operator’s: the ultras (exploitations) every time they land in full, outside the cap (SK-5), the supers (breakers) when every blow lands, both fighters, 3 supers a bout at most, 20 s apart, the K.O. always', () => {
+  assert.deepEqual(JSON.parse(JSON.stringify(C.CINE_RULE)), { tiers: [{ tier: 'ultra', roles: ['exploit'], land: 'hit', free: true }, { tier: 'super', roles: ['breaker'], land: 'hit' }], side: 'both', max: 3, gap: 20, ko: true });
   // the comment's lines joined (a quote may run over two of them)
   const cineRule = fs.readFileSync(path.join(ROOT, 'src/arena/cineRule.ts'), 'utf8').replace(/\r?\n\s*\*\s*/g, ' ');
-  for (const w of ['« Les ultimes seules (les exploitations) »', '« Et seulement dans une faille ou une rupture »', '« Super : chaque coup touche (Recommended) »', '« Les deux combattants »', '« Au plus 3, 20 s entre deux, le K.O. toujours »']) assert.ok(cineRule.includes(w), `quoted word for word: ${w}`);
+  for (const w of ['« Les ultimes seules (les exploitations) »', '« Et seulement dans une faille ou une rupture »', '« Super : chaque coup touche (Recommended) »', '« Les deux combattants »', '« Au plus 3, 20 s entre deux, le K.O. toujours »', '« si c\'est la competences ultime alors la cinematique doit se jouer en tout temps, des lors que\'elle reussit »', '« Sans plafond pour les ultimes ; les supers 3 au plus, 20 s entre deux »']) assert.ok(cineRule.includes(w), `quoted word for word: ${w}`);
 });
 
 test('each moment against the oracle written from the script: the actions that land in full, their tier, their striker, their first blow, on 63 duels', () => {
@@ -63,35 +65,43 @@ test('each moment against the oracle written from the script: the actions that l
   for (const [k, n] of Object.entries(seen)) assert.ok(n > 0, `${k} reached (${JSON.stringify(seen)})`);
 });
 
-test('a skill tried and failed never plays one: a guarded, dodged, parried, interrupted or clashed action; an exploitation outside an opening or a break but for the K.O.', () => {
+test('a skill tried and failed never plays one: a guarded, dodged, parried, interrupted or clashed action; an exploitation landing in full plays, in an opening or a break or not (SK-5)', () => {
   let failed = 0, outside = 0;
   for (const x of DUELS) {
     const ms = C.cineCandidates(x.d.result, x.F, { ...C.CINE_RULE, max: undefined, gap: undefined }), all = C.cineCandidates(x.d.result, x.F, { tiers: [{ tier: 'ultra', roles: ['exploit', 'breaker'], land: 'hit' }], side: 'both' });
     const evs = C.replayEvents(x.d.result, x.F);
     for (const e of evs) if (e.type === 'impact' && !e.follow && e.result !== 'hit' && ms.some((m) => m.who === e.from && m.t === e.t)) failed++;
-    for (const m of ms) if (m.tier === 'ultra') assert.ok(m.inBreak || m.inOpen || m.ko, `${x.foe} ${m.t}`);
-    outside += all.filter((m) => m.role === 'exploit' && !m.inBreak && !m.inOpen && !m.ko).length;
+    // every exploitation landing in full is a candidate, outside an opening too
+    assert.deepEqual(ms.filter((m) => m.tier === 'ultra').map((m) => m.t), all.filter((m) => m.role === 'exploit').map((m) => m.t), `${x.foe} ${x.seed}`);
+    outside += ms.filter((m) => m.tier === 'ultra' && !m.inBreak && !m.inOpen && !m.ko).length;
   }
   assert.equal(failed, 0);
-  assert.ok(outside > 0, 'exploitations landing in full outside an opening exist, and play none');
+  assert.ok(outside > 0, 'exploitations landing in full outside an opening exist, and play theirs');
 });
 
-test('the pick: 3 a bout at most, 20 s apart, the K.O. always', () => {
-  const m = (t, ko = false) => ({ tier: 'ultra', who: 'ren', to: 'marek', action: 't4', role: 'exploit', t, end: t, hits: 1, damage: 1, inBreak: true, inOpen: false, ko, blows: [] });
+test('the pick: every ultimate (SK-5); the supers 3 a bout at most, 20 s after any cinematic; the K.O. always', () => {
+  const m = (t, ko = false, tier = 'super') => ({ tier, who: 'ren', to: 'marek', action: tier === 'ultra' ? 't4' : 't3', role: tier === 'ultra' ? 'exploit' : 'breaker', t, end: t, hits: 1, damage: 1, inBreak: false, inOpen: false, ko, blows: [] });
   assert.deepEqual(C.cinePick([m(10), m(25), m(31), m(60), m(90), m(120)], C.CINE_RULE).map((x) => x.t), [10, 31, 60]);
   assert.deepEqual(C.cinePick([m(10), m(31), m(60), m(90), m(95, true)], C.CINE_RULE).map((x) => x.t), [10, 31, 60, 95]);
+  // the ultimates outside the cap: each plays, and counts for the supers\' 20 s, not for their 3
+  const u = (t) => m(t, false, 'ultra');
+  assert.deepEqual(C.cinePick([u(5), u(12), m(20), m(30), u(40), m(55), m(80), m(110), u(111)], C.CINE_RULE).map((x) => x.t), [5, 12, 40, 80, 110, 111]);
   for (const x of DUELS) {
-    const ms = C.cineMoments(x.d.result, x.F), ord = ms.filter((y) => !y.ko);
-    assert.ok(ord.length <= 3); for (let i = 1; i < ord.length; i++) assert.ok(ord[i].t - ord[i - 1].t >= 20);
+    const ms = C.cineMoments(x.d.result, x.F), sup = ms.filter((y) => !y.ko && y.tier === 'super');
+    assert.ok(sup.length <= 3);
+    for (const s of sup) { const prev = ms.filter((y) => y.t < s.t).pop(); assert.ok(!prev || s.t - prev.t >= 20, `${x.foe} ${x.seed}: a super ${s.t} after ${prev?.t}`); }
+    assert.deepEqual(ms.filter((y) => y.tier === 'ultra').map((y) => y.t), C.cineCandidates(x.d.result, x.F, C.CINE_RULE).filter((y) => y.tier === 'ultra').map((y) => y.t), 'every ultimate plays');
   }
 });
 
-test('the arena’s own page: Ren’s Thrust in Marek’s break (ultra), Rhosk’s Northern cleave (super), the Thrust that ends the bout against Ilse', () => {
+test('the arena’s own page: Ren’s Thrust in Marek’s break and outside an opening (ultras, SK-5), Rhosk’s Northern cleave (super), the Thrust that ends the bout against Ilse', () => {
   const one = (foe, seed, kit) => { const d = V.sceneAutoDuel(foe, seed, { loadout: kit }); return C.cineMoments(d.result, { ren: d.ren, marek: d.foe }).map((m) => `${m.t.toFixed(2)} ${m.tier} ${m.who} ${m.action}×${m.hits}${m.inBreak ? ' break' : m.inOpen ? ' open' : ''}${m.ko ? ' ko' : ''}`); };
-  assert.deepEqual(one('marek', 1337), ['62.35 ultra ren t4×1 break']);
+  assert.deepEqual(one('marek', 1337), ['62.35 ultra ren t4×1 break', '106.46 ultra ren t4×1']);
   assert.deepEqual(one('rhosk', 1337), ['15.21 super marek m_cleave×1', '96.39 ultra ren t4×1 break']);
   assert.deepEqual(one('ilse', 2), ['81.14 ultra ren t4×1 break', '118.24 ultra ren t4×1 ko']);
-  assert.deepEqual(one('rhosk', 1337, ['t3', 't4', 'k_sunder', 's1']), ['6.07 super ren t3×3', '32.83 super marek m_cleave×1']);
+  assert.deepEqual(one('rhosk', 1337, ['t3', 't4', 'k_sunder', 's1']), ['6.07 super ren t3×3', '32.83 super marek m_cleave×1', '106.82 ultra ren t4×1 break']);
+  // a rival's signature in Ren's four (journal Passe SK2): Marek's Iron Fall in his break, Ren's ultimate
+  assert.deepEqual(one('marek', 1337, ['t1', 'm_ironfall', 'd1', 's1']).slice(0, 1), ['60.18 ultra ren m_ironfall×1 break']);
 });
 
 test('what a cinematic tells is the duel’s own: its blows, their damage and health against the replay’s impacts of that action, its total the arena’s number', () => {
@@ -126,9 +136,9 @@ test('CI-1’s note: an ultra sees both fighters whole, the zoom slight; a super
 test('the guide says the cinematics with the rule’s numbers, in English and in French; the guide loads the rule alone, not the replay', async () => {
   const T = await load('/src/narrative/text/index.ts'), { FR } = await load('/src/narrative/text/fr.ts');
   const slots = { cool: 5, lo: 1, hi: 3, times: 2, glo: 30, ghi: 70, stun: 10, dmg: 1.4, form: 15, open: 25, opener: 4, cut: 6, parry: 6, whiff: 2.5, w: 0.3, cmax: C.CINE_RULE.max, cgap: C.CINE_RULE.gap };
-  assert.match(T.tx('tut.ch.duel.body', slots), /cinematic in the black.*3 a bout at most, 20 seconds apart.*\[L\] cuts one, \[J\] plays it twice as fast/s);
+  assert.match(T.tx('tut.ch.duel.body', slots), /An ultimate that lands in full plays its cinematic in the black, a super its own in the arena; 3 supers a bout at most, 20 seconds apart\. \[L\] cuts one, \[J\] plays it twice as fast/s);
   T.useLanguage('fr', FR);
-  try { assert.match(T.tx('tut.ch.duel.body', slots), /cinématique dans le noir.*3 par combat au plus, 20 secondes entre deux.*\[L\] en coupe une, \[J\] la joue deux fois plus vite/s); } finally { T.useLanguage('en'); }
+  try { assert.match(T.tx('tut.ch.duel.body', slots), /Une ultime qui touche pleinement joue sa cinématique dans le noir, une super la sienne dans l’arène ; au plus 3 supers par combat, 20 secondes entre deux\. \[L\] en coupe une, \[J\] la joue deux fois plus vite/s); } finally { T.useLanguage('en'); }
   const tut = fs.readFileSync(path.join(ROOT, 'src/ui/tutorial.ts'), 'utf8');
   assert.match(tut, /from '\.\.\/arena\/cineRule'/); assert.doesNotMatch(tut, /from '\.\.\/arena\/(cine|autoView)'/);
   assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'src/arena/cineRule.ts'), 'utf8'), /^import /m, 'data alone');

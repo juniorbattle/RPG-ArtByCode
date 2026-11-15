@@ -282,7 +282,7 @@ export class AutoReplay {
       case 'clash': {
         const end = (k: Seat): void => { const x = this.s[k]; if (x.charge) { x.charge = null; this.release(k, tell); } if (x.seq) { x.seq = false; if (tell) this.emit({ type: 'sequenceEnd', who: k }); } };
         end(seat);
-        if (!e.beat) { end(other); if (tell && a) this.emit({ type: 'clash', who: seat, to: other, action: a.id, kind: kindOf(a) }); }
+        if (!e.beat) { end(other); if (tell && a) this.emit({ type: 'clash', who: seat, to: other, action: a.id, vs: e.vs, kind: kindOf(a) }); }
         break;
       }
     }

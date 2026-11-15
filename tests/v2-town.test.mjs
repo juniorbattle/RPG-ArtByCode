@@ -57,7 +57,7 @@ test('stealing: easier at night and with a thin watch; taken, the cheapest piece
   for (let seed = 1; seed < 40; seed++) { const s = G.makeV2(G.newGame(seed, 'Ren')); s.player.coins = 4; const r = act(s, { type: 'steal', shop: 'mara' }); if (r.events[0].id === 'steal:caught') { assert.equal(r.state.player.coins, 0); assert.equal(r.state.player.reputation, Math.max(0, 10 - 12)); break; } }
 });
 
-test('a challenge (lot L2b, EV-3 / EV-4): put to a fighter who is there, a stake chosen, full health, once per phase, no wound; its bout takes a slot; won, the stake back twice and the skill learnt then raised', () => {
+test('a challenge (lot L2b, EV-3 / EV-4): put to a fighter who is there, a stake chosen, full health, once per phase, no wound; its bout takes a slot; won, the stake back twice and the skill learnt; from day 6 the fighter\'s signature instead (SK-7, journal Passe SK2)', () => {
   // the fighters who teach train at the training ground (lot V5); Marek takes no challenge before the cut
   refused(act(v2(), { type: 'move', to: 'forecourt' }).state, { type: 'challenge', who: 'orla', stake: 'coins' }, /not here|not.*now|isn't|is not/i);
   let st = act(v2(), { type: 'move', to: 'training' }).state;
@@ -73,10 +73,11 @@ test('a challenge (lot L2b, EV-3 / EV-4): put to a fighter who is there, a stake
   assert.notEqual(r.state.slot, slot, 'a slot');
   assert.equal(r.state.v2.kit.levels.k_cry, 1); assert.equal(r.state.v2.challenge, undefined);
   assert.equal(r.state.player.coins, coins - 10 + 20, 'twice back'); assert.equal(r.state.player.reputation, rep);
-  // once per phase: the same fighter again before the cut, refused; after it, once more, raised
+  // once per phase: the same fighter again before the cut, refused; after it, once more: her signature attack (SK-7 « Deux temps : le soutien au jour 1, la signature
+  // dès le jour 6 », journal Passe SK2)
   let s2 = structuredClone(r.state); s2.slot = 'morning'; s2.day = 3; refused(s2, { type: 'challenge', who: 'orla', stake: 'coins' }, /once before the cut/);
   s2.day = 7; s2 = act(s2, { type: 'challenge', who: 'orla', stake: 'name' }).state; s2 = act(s2, { type: 'challengeResult', outcome: WIN }).state;
-  assert.equal(s2.v2.kit.levels.k_cry, 2); assert.equal(s2.player.reputation, rep + 5, 'the name staked, as much again');
+  assert.equal(s2.v2.kit.levels.k_cry, 1); assert.equal(s2.v2.kit.levels.m_shoulder, 1, 'Orla\'s signature'); assert.equal(s2.player.reputation, rep + 5, 'the name staked, as much again');
   // lost: the stake gone, no wound, no skill
   let s3 = act(act(v2(), { type: 'move', to: 'training' }).state, { type: 'challenge', who: 'ilse', stake: 'name' }).state;
   s3 = act(s3, { type: 'challengeResult', outcome: LOSS }).state;
@@ -126,7 +127,7 @@ test('the three more generic fighters (GA-P1 to GA-P3 « Oui, ainsi », journal 
   assert.ok(!G.actions(def).some((x) => x.action.type === 'talk' && ['lucan', 'piers', 'kell'].includes(x.action.who)));
 });
 
-test('from day 6, a rival out of the title (one of the cut\'s four others) takes a challenge on a day without a bout of theirs and teaches a skill of the catalogue', () => {
+test('from day 6, a rival out of the title (one of the cut\'s four others) takes a challenge on a day without a bout of theirs and teaches its signature attack (SK-7, journal Passe SK2)', () => {
   const s = v2('day1-morning'); s.day = 7; s.place = 'training';
   for (const id of Object.keys(s.competitors)) s.competitors[id].phaseStatus = ['rhosk', 'tobin', 'marek', 'cassius'].includes(id) ? 'gate' : 'semi';
   s.competitors.vessa.phaseStatus = 'semi';
@@ -141,9 +142,10 @@ test('from day 6, a rival out of the title (one of the cut\'s four others) takes
   // a bout of theirs that day: refused
   const fight = structuredClone(s); fight.tournament.matches.push({ round: 5, a: 'rhosk', b: 'tobin', winner: null, close: false, day: 7, seen: false, stage: 'gateFinal' });
   assert.match(G.actions(fight).find((o) => o.action.type === 'challenge' && o.action.who === 'rhosk').reason, /fights in the tournament today/);
-  // won: Rhosk's sunder
+  // won: Rhosk's signature, his Northern Cleave (a super), named on the challenge's line
+  assert.match(G.actions(s).find((o) => o.action.type === 'challenge' && o.action.who === 'rhosk').label, /and Northern Cleave\)/);
   let w = act(s, { type: 'challenge', who: 'rhosk', stake: 'name' }).state; w = act(w, { type: 'challengeResult', outcome: WIN }).state;
-  assert.equal(w.v2.kit.levels.k_sunder, 1);
+  assert.equal(w.v2.kit.levels.m_cleave, 1); assert.equal(w.v2.kit.levels.k_sunder, undefined, 'Breach is bought, no longer taught');
   // before day 6 no rival but the three is offered
   const early = v2(); early.place = 'forecourt';
   assert.ok(!G.actions(early).some((o) => o.action.type === 'challenge' && o.action.who === 'marek'));

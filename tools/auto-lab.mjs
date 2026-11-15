@@ -30,9 +30,7 @@
 //       the rehearsal against the real bouts (lot 3 of « La Brute », journal Passe BL3): at each bout of the policy's whole games, the rehearsal's chances from that
 //       state (the shadow at tier 2, its own plan; at tier 1, its skills by their roles) against the bout's result: the mean chances and the bouts won, by stage,
 //       the Brier score, the bouts by tenths of chances
-//   --catalogue=signatures|sk1 (journal Passe SK1): the rivals' signature attacks in Ren's catalogue (src/lab/skillStructure.ts: each at its rival's numbers, its
-//       charge by level on the pattern of Ren's skill of the same role; sk1 the workshop's candidate, the ultimates tuned and the openers at a normal weight), and
-//       AC-12's kits that wear them; DEV and laboratory only
+//   (since journal Passe SK2 the rivals' signature attacks are in Ren's catalogue: AC-12's kits wear them, KITS)
 //   every command: --set=<TABLE>.<path>=<value>[,...] changes RULES (AUTO_RULES), SKILLS (AUTO_SKILLS), FOES (AUTO_FOES), RACE (AUTO_RACE), WEAPONS
 //       (AUTO_WEAPONS), LIGHT (AUTO_LIGHT); --race=<file.json> loads a race ({ norm, pool, stage })
 import fs from 'node:fs';
@@ -81,13 +79,6 @@ export function applySets(spec) {
 if (arg('race')) Object.assign(AD.AUTO_RACE, JSON.parse(fs.readFileSync(arg('race'), 'utf8')));
 
 // ------------------------------------------------------------------------------------------------------------------------------- the workshop of journal Passe SK1
-/** the rivals' signature attacks as skills of Ren's catalogue (src/lab/skillStructure.ts, the page's DEV `cine=sk1` reads the same): `--catalogue=signatures` at their
- *  rival's numbers, `--catalogue=sk1` the workshop's whole candidate (the ultimates tuned, the openers at a normal weight on the gauge) */
-const SKS = await load('/src/lab/skillStructure.ts');
-export const SIGNATURES = SKS.signatures();
-if (arg('catalogue') === 'signatures') SKS.injectSignatures({});
-else if (arg('catalogue') === 'sk1') SKS.applySk1();
-// the --set lines after the signatures (they may change one)
 applySets(arg('set'));
 
 // ------------------------------------------------------------------------------------------------------------------------------- the rhythm
@@ -183,8 +174,8 @@ export function weaponSwap(R, weapon) {
 }
 export function duelsOf({ day = 4, loadout = ['t1', 't4', 'd1', 's1'], weapon, foes = RIVALS, seeds = range('1..60'), stage, round, levels, log = false }) {
   const R = weaponSwap(REF[day], weapon), st = stage ?? (day >= 10 ? 2 : day >= 6 ? 1 : 0), rd = round ?? (st === 0 ? AD.autoRound(day) : 0);
-  // a signature of journal Passe SK1 at the level of Ren's skill of its rank: an ultimate the Thrust's, a technique that strikes the Flash cut's (the reference drills those two)
-  const rank = (id) => (id === 't1' || ['punish', 'pierce', 'opener'].includes(SIGNATURES[id]?.role) ? R.t1 : id === 't4' || SIGNATURES[id]?.role === 'exploit' ? R.t4 : 1);
+  // a rival's signature (journal Passes SK1 / SK2) at the level of Ren's skill of its rank: an ultimate the Thrust's, a technique that strikes the Flash cut's (the reference drills those two)
+  const sig = (id) => /^m_/.test(id) && AD.AUTO_ROLES[id]?.role, rank = (id) => (id === 't1' || ['punish', 'pierce', 'opener'].includes(sig(id)) ? R.t1 : id === 't4' || sig(id) === 'exploit' ? R.t4 : 1);
   const lv = levels ?? Object.fromEntries([...loadout, 'heavy'].map((id) => [id, rank(id)]));
   const rows = [];
   for (const id of foes) {
@@ -233,7 +224,7 @@ export const KITS = {
 };
 // the workshop of journal Passe SK1: the start kit with a rival's signature in place of the skill of its rank (an ultimate for the Thrust, a super for Fervour, a
 // technique for the Flash cut), and the kits of the three ranks
-if (['signatures', 'sk1'].includes(arg('catalogue'))) Object.assign(KITS, {
+Object.assign(KITS, {
   'chute': { loadout: ['t1', 'm_ironfall', 'd1', 's1'] }, 'frappe': { loadout: ['t1', 'm_smite', 'd1', 's1'] },
   'tourbillon': { loadout: ['t1', 't4', 'd1', 't3'] }, 'sauvage': { loadout: ['t1', 't4', 'd1', 'm_wild'] }, 'nord': { loadout: ['t1', 't4', 'd1', 'm_cleave'] },
   'lame-vive': { loadout: ['m_lunge', 't4', 'd1', 's1'] }, 'riposte': { loadout: ['m_riposte', 't4', 'd1', 's1'] }, 'épaule': { loadout: ['m_shoulder', 't4', 'd1', 's1'] },
@@ -464,13 +455,12 @@ function damage() {
 const CI = await load('/src/arena/cine.ts');
 export const CINE_RULES = {
   // the operator's sheet (journal Passe CI2): the ultras in an opening or a break, the supers when every blow lands, both fighters, 3 at most, 20 s apart, the K.O. always
-  'la fiche : ultra en faille ou rupture, super touché, 3 au plus, 20 s, le K.O.': CI.CINE_RULE,
-  'les ultra de la fiche seules': { ...CI.CINE_RULE, tiers: CI.CINE_RULE.tiers.filter((x) => x.tier === 'ultra') },
-  'les super de la fiche seules': { ...CI.CINE_RULE, tiers: CI.CINE_RULE.tiers.filter((x) => x.tier === 'super') },
-  // the workshop of journal Passe SK1: the operator's answer « si c'est la competences ultime alors la cinematique doit se jouer en tout temps, des lors que'elle reussit »
-  'SK1 : ultime à chaque réussite (sans plafond), super touché 3 / 20 s, le K.O.': { tiers: [{ tier: 'ultra', roles: ['exploit'], land: 'hit', free: true }, { tier: 'super', roles: ['breaker'], land: 'hit' }], side: 'both', max: 3, gap: 20, ko: true },
-  'SK1, les ultimes seules': { tiers: [{ tier: 'ultra', roles: ['exploit'], land: 'hit', free: true }], side: 'both', ko: true },
-  'SK1, tout plafonné : ultime touché, super touché, 3 / 20 s': { tiers: [{ tier: 'ultra', roles: ['exploit'], land: 'hit' }, { tier: 'super', roles: ['breaker'], land: 'hit' }], side: 'both', max: 3, gap: 20, ko: true },
+  // the operator's rule since journal Passe SK2 (SK-5): an ultimate every time it lands in full, outside the cap; the supers 3 at most, 20 s apart; the K.O. always
+  'la règle : ultime à chaque réussite, super touché 3 / 20 s, le K.O.': CI.CINE_RULE,
+  'les ultimes seules': { ...CI.CINE_RULE, tiers: CI.CINE_RULE.tiers.filter((x) => x.tier === 'ultra') },
+  'les supers seules': { ...CI.CINE_RULE, tiers: CI.CINE_RULE.tiers.filter((x) => x.tier === 'super') },
+  // the rule of journal Passe CI2 (CI-3: the ultras in an opening or a break), for comparison
+  'CI2 : ultra en faille ou rupture, super touché, 3 / 20 s': { tiers: [{ tier: 'ultra', roles: ['exploit'], land: 'open' }, { tier: 'super', roles: ['breaker'], land: 'hit' }], side: 'both', max: 3, gap: 20, ko: true },
   // the workshop's rules (journal Passe CI1)
   'ultime / touché / les deux': { tiers: [{ tier: 'ultra', roles: ['exploit'], land: 'hit' }], side: 'both' },
   'fort / touché / les deux': { tiers: [{ tier: 'ultra', roles: ['exploit', 'breaker'], land: 'hit' }], side: 'both' },

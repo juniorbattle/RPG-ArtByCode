@@ -1,6 +1,6 @@
 # Le combat joué par l'ordinateur — spécification (atelier de refonte du combat, 11/11/2026)
 
-**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32) ; relue le même jour, six sur six à la recommandation, le modèle approuvé et sa construction en cinq lots, le lot 1 lancé (§ 33) ; le lot 1 construit le même jour, le duel « La Brute » dans le jeu par défaut, sa fiche courte relue le même jour, neuf sur neuf à la recommandation, l'entrechoc et la jauge réglés, le § 6.1 du contrat projet amendé (§ 34) ; la passe d'équilibre faite, le poids des coups, les protections, les armes et la faille réglés, sa fiche courte relue six sur six à la recommandation (§ 35) ; le lot 2, ce qui se voit, construit le 14/11/2026 (§ 36) ; le lot 3, la préparation, construit le même jour, sa fiche courte pour l'essai en jeu de l'opérateur (§ 37)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
+**Statut : approuvée par l'opérateur le 11/11/2026 ; le lot 1 construit le 12/11/2026 (§ 18), sa fiche relue le même jour (§ 19) ; le lot 2 construit le même jour, le duel dans le jeu par défaut (§ 20), sa fiche d'essai relue le même jour, dix sur dix à la recommandation, et la relecture de l'arène rendue fluide (§ 21) ; le lot 3 construit le même jour, le guide et le tutoriel du premier duel (§ 22) ; le lot 4 construit le même jour, le son et les effets des nouveaux moments (§ 23), sa fiche d'écoute relue le même jour, huit sur huit à la recommandation, le signe de la forme du jour branché et la jauge prouvée au coup même (§ 24) ; ensuite l'essai en jeu de l'opérateur et le lot 5 (le retrait de l'ancien duel) ; puis la seconde refonte, ouverte par les directions de l'opérateur du 12/11 (les mêmes règles pour Ren et les rivaux ; les compétences automatiques, à la tactique ou à la main) : l'atelier SY1 mesuré et sa fiche publiée (§ 25), relue le même soir, quatorze sur quatorze à la recommandation, trois décisions A3 (§ 26) ; le lot 1 construit le 13/11/2026, les règles communes (§ 27), sa fiche publiée ; la première partie du lot 2 fusionnée (§§ 29, 30) ; puis l'atelier du système de combat final, mesuré au laboratoire, sa fiche publiée le 13/11/2026 (§ 31) ; puis, à sa demande, la proposition « La Brute », mesurée au laboratoire et publiée le même jour, qui remplace cette fiche (§ 32) ; relue le même jour, six sur six à la recommandation, le modèle approuvé et sa construction en cinq lots, le lot 1 lancé (§ 33) ; le lot 1 construit le même jour, le duel « La Brute » dans le jeu par défaut, sa fiche courte relue le même jour, neuf sur neuf à la recommandation, l'entrechoc et la jauge réglés, le § 6.1 du contrat projet amendé (§ 34) ; la passe d'équilibre faite, le poids des coups, les protections, les armes et la faille réglés, sa fiche courte relue six sur six à la recommandation (§ 35) ; le lot 2, ce qui se voit, construit le 14/11/2026 (§ 36) ; le lot 3, la préparation, construit le même jour, sa fiche courte pour l'essai en jeu de l'opérateur (§ 37) ; les cinématiques des coups d'éclat construites le 15/11/2026 (§ 38) ; la structure des compétences, ses rangs, la règle du kit et les signatures des rivaux, construite le même jour (§ 39)** (fiche de l'atelier, AC-20 « Approuvée avec mes choix ; en lots, dans le jeu par défaut, mon essai
 après le lot 2 » ; vingt choix sur vingt à la recommandation, journal Passe AC4). **Ce qui s'applique : le § 17**, qui l'emporte sur les §§ 1 à 16 là
 où ils diffèrent. Brouillon des Passes AC1 à AC3 avant cela.
 
@@ -1593,6 +1593,61 @@ Mesuré sur 200 parties tenues à part (graines 101 à 300), par combat du joueu
 - **Le son** (CI-11) : les sons approuvés aux battements de la cinématique (la note de la charge ou la menace d'un rival, le fouet de la ruée, le son de la compétence à chaque coup, la foule), les coups de l'action non redits au retour ; la musique continue.
 - **Aucun art nouveau** (CI-12) : les feuilles de combat approuvées (`CombatSheets.show`), les recettes (`CombatFx.play`, `palette`), le visage cuit du HUD.
 - **Le guide** (« Le duel ») dit les cinématiques en une ligne, avec les nombres de la règle ; pas de leçon (CI-9).
+
+## 39. La structure des compétences (15/11/2026, journal Passes SK1 et SK2)
+
+Statut : **construite et fusionnée dans le jeu par défaut.** La demande de l'opérateur, mot pour mot : « il est clair que nous pouvons avoir des plusieurs competences super mais aussi des competences ulttra obtenable par nos adversaires et donc equipables sans oublier les competences de soutien ... il faut bien structurer cela c'est essentiel », « on doit bien configurer notre strategie avec les competences, la configuration de notre setup et donc la mise en scene de notre gameplay defini avec efficacite et coherence » ; sur l'ultime : « si c'est la competences ultime alors la cinematique doit se jouer en tout temps, des lors que'elle reussit » ; sur Fracas : « oui donc a toi de determiner ce qui est le plus coherent.... c;est toi qui a amener cette proposition j'attends de toi une coherence totale ».
+
+### 39.1 La fiche relue : treize sur treize à la recommandation (15/11/2026)
+
+La fiche https://claude.ai/artifact/2KKiD7u2rzxtWc6NE9CfVX (`briefs/fiche-structure-competences.html`), l'opérateur : « Fiche remplie ».
+
+| Carte | Choix | Note |
+|---|---|---|
+| SK-1 les étiquettes | « Adopter ces trois étiquettes » | « il faudra prevoir d'autres competences tout ausi coherente pour apporter de la diversite et de la strategie » |
+| SK-2 le kit | « Quatre places : une ultime au plus, une super au plus » | « et que penses tu de : Cinq places, une ultime au plus et une super au plus ; les trois autres libres » |
+| SK-3 les usages | « Garder 2, 2, 3, 3, 4 » | — |
+| SK-4 les pages | « Ainsi » | — |
+| SK-5 l'ultime | « Sans plafond pour les ultimes ; les supers 3 au plus, 20 s entre deux » | — |
+| SK-6 hors faille | « Une ultime frappe au moins à pleine force (×1 ailleurs) » | « et qu;est ce que ceka donne lorsqu'il manque par exemple... si rien est prevu. determine une solution coherente » |
+| SK-7 qui enseigne | « Deux temps : le soutien au jour 1, la signature dès le jour 6 » | — |
+| SK-8 leurs nombres | « Ces nombres » | — |
+| SK-9 images et sons | « Ainsi, sans art nouveau » | — |
+| SK-10 Brèche | « Reçu » | — |
+| SK-11 les mots | « Ces mots » | — |
+| SK-12 le catalogue | « La lever : dix-neuf compétences » | — |
+| SK-13 la construction | « Construire, prouver, fusionner » | — |
+
+### 39.2 Trois étiquettes par compétence
+
+- **La famille** (ce qu'elle fait) : attaque, défense, soutien.
+- **Le rang** (sa puissance et sa mise en scène), donné par le rôle, sans exception : exploiter fait une **ultime**, casser une **super**, toute autre compétence une **technique** ; une défense et un soutien sont toujours des techniques (`skillRank`, `src/combat/autoData.ts`).
+- **Le rôle** (quand l'automatique la joue) : les onze de PB-1.
+
+| Rang | Rôle | De Ren | Apprises des rivaux (dès le jour 6) |
+|---|---|---|---|
+| Ultime | exploiter | Estoc (au départ) | Chute de Fer (Marek), Frappe du Temple (Ilse) |
+| Super | casser | Tourbillon (achat) | Coup sauvage (Tobin), Taille du Nord (Rhosk) |
+| Technique | ouvrir | Brèche, l'ancien Fracas (achat) | Coup d'épaule des docks (Orla) |
+| Technique | interrompre | Feinte (entraînement) | — |
+| Technique | punir | Taille éclair (au départ) | Fente de la Lame-Vive (Vessa) |
+| Technique | percer | Fente (entraînement) | Riposte dorée (Cassius) |
+| Défense | protéger, parer | Rempart (au départ), Peau de fer (achat), Garde de riposte (Ilse, jours 1 à 5) | — |
+| Soutien | accélérer, ralentir, charger | Ferveur (au départ), Cri de guerre (Orla, jours 1 à 5), Concentration (Vessa, jours 1 à 5) | — |
+
+### 39.3 Le kit, les cinématiques, les signatures
+
+- **Le kit** : quatre places, **une ultime au plus et une super au plus** (`KIT_RANK_MAX`, `kitRankFault` ; la page refuse et dit pourquoi). Deux ultimes : la finale du planificateur de 50 à 73 % ; deux supers : sa poule à 1 min 26 (journal Passe SK1).
+- **Les cinématiques** (`CINE_RULE`) : une ultime joue la sienne, dans le vide noir, **chaque fois que tous ses coups touchent**, hors du plafond ; une super dans l'arène quand tous ses coups touchent, 3 par combat au plus, 20 s après toute cinématique ; le coup du K.O. toujours. Une ultime ratée (gardée, esquivée, parée, coupée, perdue dans un entrechoc) n'en joue aucune : l'arène le dit au-dessus de son frappeur, le carnet de maître Corvin en tire son conseil.
+- **La force d'une ultime** : ×2 dans une faille, une rupture ou sur un adversaire qui charge un gros coup, ×1 ailleurs (`AUTO_RULES.exploit`, 0,6 avant).
+- **La jauge** : seul un casseur pèse plus qu'une compétence ordinaire (Brèche, le Coup d'épaule d'Orla et la Chute de Fer de Marek ramenés à un poids ordinaire).
+- **Les signatures** : chaque rival en a une ; avant le jour 6 un défi gagné apprend le soutien ou la défense d'Orla, d'Ilse ou de Vessa, à partir du jour 6 la signature de chaque rival (`challengeSkill`, `src/simulation/v2skills.ts`) ; aux nombres de leur rival au niveau 1, les niveaux sur le patron de la compétence de Ren du même rôle, les deux ultimes ×1,2 et ×1,4 pour la parité avec l'Estoc ; jouées par Ren avec ses propres images d'attaque, la recette d'effets et le son du rival. Une compétence ne monte plus au-delà du niveau 3 (l'entraînement) : les niveaux 4 et 5 ne sont plus atteignables par Ren.
+
+### 39.4 Ce qui reste
+
+- L'essai en jeu de l'opérateur, avec celui des cinématiques (§ 38).
+- La note de SK-1 : d'autres compétences, cohérentes avec ces étiquettes, pour la diversité et la stratégie ; avec elles, ce que deviennent les niveaux 4 et 5 : un atelier et une fiche à part.
+
 
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 

@@ -1,7 +1,7 @@
 // The duel played by the computer (src/combat/auto.ts, autoData.ts, autoMatch.ts): the model « La Brute » since lot 1 (the operator's PB-1 « Construire ce
 // modèle » and PB-2 « 2, 2, 3, 3, 4 selon le niveau », journal Passe CF3; briefs/combat-auto.md §§ 32-33; journal Passe BL1), on the same rules for every fighter
 // (SY-01). Three kinds of proof:
-// 1. the port: the final workshop's laboratory copy of the duel (tools/auto-final/sim.mjs) under the set of rules the game plays (`BE1`: `BK5`, the haste when
+// 1. the port: the final workshop's laboratory copy of the duel (tools/auto-final/sim.mjs) under the set of rules the game plays (`SK2`: `BE1` with an exploit at full strength at least, journal Passe SK2; `BE1`: `BK5`, the haste when
 //    hurt alone, the health of SL1-2, the clash and the gauge of BL1-8 and BL1-9, the opener's opening of journal Passe BE1), run beside the game on the game's own fighters, gives the same duels event for event, on inputs that reach every path
 //    (the principle of journal Passe P1); tools/auto-final/port-identity.mjs proves the fighters' building too, against the laboratory of the commit before;
 // 2. each rule and each table against an oracle written from the decisions (PB-1, PB-2, SY-01, SY-02, SY-04, AC-02, AC-05, AC-08, AC-11, AC-13, AC-16 with PB-3,
@@ -32,11 +32,11 @@ const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
 
 // ------------------------------------------------------------------------------------------------- 1. the port against the laboratory's copy
 
-test('the port: the same duels as the final workshop\'s copy under BE1, event for event, on kits, levels, gears, rivals, generic fighters, stages, plans and presses that reach every path', () => {
+test('the port: the same duels as the final workshop\'s copy under SK2, event for event, on kits, levels, gears, rivals, generic fighters, stages, plans and presses that reach every path', () => {
   // the laboratory's copy on the game's rules (its AP and its guard of before unused under BL1: no AP, the guard by the stats); the health ×4.08 is the game's
   // own (BL1's 2.04 on the old ×2), so the copy takes ×1 of it
   const SIM = makeSim({ hitFactor: ST.hitFactor, AUTO_RULES: { ...AU.AUTO_RULES, ap: { start: 1, max: 5, light: 1 }, guardReduce: 0.8 }, autoFormsOf: AU.autoFormsOf, autoDraw: AU.autoDraw });
-  const cfg = { ...VARIANTS.BE1.cfg, hp: 1 };
+  const cfg = { ...VARIANTS.SK2.cfg, hp: 1 };
   const kits = [['t1', 't4', 'd1', 's1'], ['t1', 't2', 't3', 't4'], ['k_sunder', 'k_feint', 't4', 'k_focus'], ['k_parry', 'k_feint', 't1', 't4'], ['k_iron', 'd1', 't4', 'k_cry'], ['t3', 'k_sunder', 't4', 'k_cry'], ['t2', 'k_feint', 't4', 's1']];
   const gears = [{ weapon: 'training-sword', armour: null, acc: [null, null] }, { weapon: 'duelist-sabre', armour: 'padded-jack', acc: ['swift-boots', 'lucky-ribbon'] }, { weapon: 'imported-blade', armour: 'mail-shirt', acc: ['iron-ring', 'champion-token'] }, { weapon: 'imported-blade', armour: 'dock-leathers', acc: ['fervour-charm', null] }];
   const viv = (g) => [g.weapon, g.armour, ...g.acc].reduce((n, id) => n + (id ? GEAR_MOD.GEAR[id]?.fx?.viv ?? 0 : 0), 0);
@@ -281,12 +281,12 @@ test('PB-1: the opening (« la faille ») — neither guard nor dodge, ×1.25 ta
   assert.ok(back.filter((e) => e.t < wh.t + 2.5 - 0.01).every((e) => e.ev === 'hit') && back.some((e) => e.t > wh.t + 2.5 + 0.01 && e.ev !== 'hit'));
 });
 
-test('PB-1: the roles in the blow — the exploit ×2 in an opening, a break or on a fighter charging a big action and ×0.6 else, the punish ×1.7 on a fighter charging a big action, the piercer through a ward, the supports on the charges and the next blow', () => {
-  assert.deepEqual([AU.AUTO_RULES.exploit, AU.AUTO_RULES.punish], [{ hi: 2, lo: 0.6 }, 1.7]);
+test('PB-1: the roles in the blow — the exploit ×2 in an opening, a break or on a fighter charging a big action and ×1 else (SK-6, journal Passe SK2; ×0.6 before), the punish ×1.7 on a fighter charging a big action, the piercer through a ward, the supports on the charges and the next blow', () => {
+  assert.deepEqual([AU.AUTO_RULES.exploit, AU.AUTO_RULES.punish], [{ hi: 2, lo: 1 }, 1.7]);
   const dmgOf = (A, B, id) => { const b = blows(duel(A, B, 7, rules({ maxT: 60 }))).find((e) => e.act === id); assert.ok(b, `${id} lands`); return b.dmg; };
   const ex = act({ id: 'ex', kind: 'skill', role: 'exploit', charge: 1, power: 100, uses: 1 }), pu = act({ id: 'pu', kind: 'skill', role: 'punish', charge: 1, power: 100, uses: 1 });
   const charging = dummy({ skills: [act({ id: 'big', kind: 'skill', charge: 50, uses: 1, power: 1 })], tactic: ['ready'] });
-  assert.equal(dmgOf(fighter({ skills: [ex], tactic: ['ready'], light: act({ charge: 9 }) }), dummy(), 'ex'), 60, 'the exploit ×0.6 on a fighter at rest');
+  assert.equal(dmgOf(fighter({ skills: [ex], tactic: ['ready'], light: act({ charge: 9 }) }), dummy(), 'ex'), 100, 'the exploit ×1 on a fighter at rest (SK-6, journal Passe SK2: at full strength at least)');
   assert.equal(dmgOf(fighter({ skills: [ex], tactic: ['ready'], light: act({ charge: 9 }) }), charging, 'ex'), 200, 'the exploit ×2 on a fighter charging a big action');
   assert.equal(dmgOf(fighter({ skills: [pu], tactic: ['ready'], light: act({ charge: 9 }) }), dummy(), 'pu'), 100);
   assert.equal(dmgOf(fighter({ skills: [pu], tactic: ['ready'], light: act({ charge: 9 }) }), charging, 'pu'), 170, 'the punish ×1.7');
@@ -328,7 +328,7 @@ test('DB5-4 (A3) with RY-3 (A3) and BL1-9 (A3): the break — a gauge of 70 brok
   assert.deepEqual([AU.AUTO_RULES.gauge.max, AU.AUTO_RULES.gauge.blows, AU.AUTO_RULES.gauge.guardMul, AU.AUTO_RULES.brk.stun, AU.AUTO_RULES.brk.dmg], [70, 14, 0.5, 10, 1.4]);
   const plain = (end) => { const x = duel(fighter({ light: act({ charge: 1, gauge: 1 }) }), dummy({ end }), 1, rules({ gauge: { decay: 0 }, maxT: 400 })); const k = x.log.find((e) => e.ev === 'break'); return blows(x).filter((e) => e.t <= k.t).length; };
   assert.deepEqual([plain(10), plain(20)], [14, 28]);
-  assert.equal(AD.autoLight('imported-blade').gauge, 1); assert.equal(AD.autoSkill('t4', 1).gauge, 2); assert.equal(AD.autoSkill('t3', 1).gauge, 3); assert.equal(AD.autoSkill('k_sunder', 1).gauge, 4);
+  assert.equal(AD.autoLight('imported-blade').gauge, 1); assert.equal(AD.autoSkill('t4', 1).gauge, 2); assert.equal(AD.autoSkill('t3', 1).gauge, 3); assert.equal(AD.autoSkill('k_sunder', 1).gauge, 2, 'Breach, an opener, at an ordinary weight (SK-10, journal Passe SK2)');
   // a traced blow carries its target's gauge right after it (the arena reads it)
   const tr = duel(fighter({ light: act({ gauge: 1 }) }), dummy(), 1, rules({ maxT: 5 }), { trace: true }), h = tr.log.find((e) => e.ev === 'hit');
   assert.ok(near(h.g, (70 / 14), 0.006) && h.s.length === 2);

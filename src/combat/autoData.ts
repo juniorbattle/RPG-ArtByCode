@@ -69,12 +69,19 @@ export const AUTO_SKILLS: Record<string, AutoSkillDef> = {
   d1: { family: 'defensive', ward: { dur: 4.5, dmg: 0.4, gauge: 0.3 } },
   s1: { family: 'support', boost: { dur: 12, dmg: 1.8, gauge: 2 } },
   // Sunder ×0.6 at AC-12's test under the model (journal Passe BL1: with the Thrust in an opening it was the best kit against nearly every rival, dominating the final)
-  k_sunder: { family: 'offensive', gaugeK: 2, powerK: 0.6 },
+  // Breach, Sunder before (the operator's SK-10 « Reçu », the sheet https://claude.ai/artifact/2KKiD7u2rzxtWc6NE9CfVX, journal Passe SK2): an opener weighs on the gauge as an ordinary skill (only a breaker weighs more; 2 before)
+  k_sunder: { family: 'offensive', powerK: 0.6 },
   k_feint: { family: 'offensive', pierce: true },
   k_iron: { family: 'defensive', ward: { dur: 5.6, dmg: 0.3, gauge: 0.15 } },
   k_parry: { family: 'defensive', ward: { dur: 6.5, dmg: 0.05, gauge: 0.5 } },
   k_cry: { family: 'support', boost: { dur: 7.5, dmg: 1.9, gauge: 1.5 } },
   k_focus: { family: 'support', boost: { dur: 13, dmg: 1.5, gauge: 4 } },
+  // the rivals' signature attacks in Ren's hands (the operator's SK-8 « Ces nombres », the sheet https://claude.ai/artifact/2KKiD7u2rzxtWc6NE9CfVX, journal Passe SK2): their rival's numbers at level 1 (its charge, src/combat/skills.ts
+  // SIGNATURE_CHARGE, and its weight on the gauge), the two ultimates ×1.2 and ×1.4 for the Thrust's parity at AC-12's test (88 / 66 / 51 and 88 / 69 / 48 % against
+  // its 86 / 66 / 51); Orla's shoulder and Marek's Iron Fall at an ordinary weight on the gauge (SK-10: only a breaker weighs more)
+  m_ironfall: { family: 'offensive', powerK: 1.2 }, m_smite: { family: 'offensive', powerK: 1.4 },
+  m_wild: { family: 'offensive', gaugeK: 1.6 }, m_cleave: { family: 'offensive', gaugeK: 2 },
+  m_riposte: { family: 'offensive' }, m_shoulder: { family: 'offensive' }, m_lunge: { family: 'offensive' },
 };
 /** DB5-3 « 5 × le temps de charge » (A3): the heavy blow comes back this many times its charge time at level 1 after its charge begins (SY-02); the skills since
  *  PB-1 their gap between two uses (AUTO_BRUTE.gap) */
@@ -94,8 +101,6 @@ export const AUTO_BRUTE = {
   // the model's 1.2 × AUTO_WEIGHT.skills (0.55), written out (1.2 × 0.55 is 0.6600000000000001 in floating point)
   usePower: 0.66,
   rivalLevel: [1, 2, 3] as readonly number[],
-  /** a role's own uses by level in place of `uses` (none: every role `uses`; the workshop of journal Passe SK1 measures the ultimate's) */
-  roleUses: {} as Partial<Record<AutoRole, readonly number[]>>,
 };
 /** each skill's role, its gap's class and what it does besides (Ren's catalogue and the rivals' own; the laboratory's BRUTE_ROLES) */
 export const AUTO_ROLES: Record<string, { role: AutoRole; gap: keyof typeof AUTO_BRUTE.gap; undodge?: boolean; pierce?: boolean; pierceWard?: boolean }> = {
@@ -111,6 +116,21 @@ export const AUTO_ROLES: Record<string, { role: AutoRole; gap: keyof typeof AUTO
   m_ironfall: { role: 'exploit', gap: 'L' }, m_bulwark: { role: 'ward', gap: 'M' }, m_resolve: { role: 'load', gap: 'L' },
   m_cleave: { role: 'breaker', gap: 'M', undodge: true }, m_roar: { role: 'slow', gap: 'L' }, m_hide: { role: 'ward', gap: 'M' },
 };
+/** a skill's rank (the operator's SK-1 « Adopter ces trois étiquettes », the sheet https://claude.ai/artifact/2KKiD7u2rzxtWc6NE9CfVX, journal Passe SK2): its role decides it, without exception: an exploit an ultimate, a breaker a
+ *  super, every other skill a technique (a ward and a support never strike: techniques). Its family (offensive, defensive, support) says what it does, its role when
+ *  the automatic plays it; an ultimate plays its cinematic in the black void, a super in the arena (src/arena/cineRule.ts) */
+export type SkillRank = 'technique' | 'super' | 'ultimate';
+export const rankOfRole = (role: AutoRole): SkillRank => (role === 'exploit' ? 'ultimate' : role === 'breaker' ? 'super' : 'technique');
+export const skillRank = (id: string): SkillRank => { const r = AUTO_ROLES[id]?.role; return r ? rankOfRole(r) : 'technique'; };
+/** the four brought (SK-2 « Quatre places : une ultime au plus, une super au plus »): at most this many of a rank; two ultimates won 73 % of the planner's finals
+ *  instead of 50, two supers took his pool bouts to 1 min 26 (journal Passe SK1) */
+export const KIT_RANK_MAX: Partial<Record<SkillRank, number>> = { ultimate: 1, super: 1 };
+/** the rank a set of skills holds too many of (null: the rule holds) */
+export function kitRankFault(ids: readonly string[]): SkillRank | null {
+  for (const [rank, max] of Object.entries(KIT_RANK_MAX) as [SkillRank, number][]) if (ids.filter((id) => skillRank(id) === rank).length > max) return rank;
+  return null;
+}
+
 /** each rival's style under the same rules (PB-1; the laboratory's BRUTE_STYLES): its guard and dodge × (its kit's pieces: a shield, light leathers), its heavy
  *  blow ('ready' a brawler's, else when the opponent cannot defend), the conditions of its skills by id ('auto' its role's automatic); Cassius's brace parries */
 export const AUTO_STYLES: Record<string, AutoStyle & { tactic: Record<string, AutoCond>; parry?: readonly string[] }> = {
@@ -164,7 +184,7 @@ export function autoBrute(a: AutoAction, level: number, o: { parry?: boolean } =
   const R = AUTO_ROLES[a.id];
   if (!R) throw new Error(`no role for the skill "${a.id}"`);
   const role: AutoRole = o.parry ? 'parry' : R.role, B = AUTO_BRUTE, U = AUTO_RULES;
-  const b: AutoAction = { ...a, role, uses: (B.roleUses[role] ?? B.uses)[clampLevel(level) - 1], cooldown: B.gap[R.gap] };
+  const b: AutoAction = { ...a, role, uses: B.uses[clampLevel(level) - 1], cooldown: B.gap[R.gap] };
   if (R.undodge) b.undodge = true;
   if (R.pierce) b.pierce = true;
   if (R.pierceWard) b.pierceWard = true;
@@ -312,9 +332,11 @@ export const AUTO_FOES: Record<string, AutoFoeDef> = {
   vessa: { weapon: weaponOf(4, 0.26), skills: [offS('m_lunge', 3), boostS('m_tempo', 7), wardS('m_brace', 6)] },
   tobin: { weapon: weaponOf(3, 0.38), skills: [offS('m_wild', 3.9, 1.6), boostS('m_grit', 6)] },
   cassius: { weapon: weaponOf(3, 0.36), skills: [offS('m_riposte', 3.4), boostS('m_gild', 8), wardS('m_brace', 6)] },
-  orla: { weapon: weaponOf(3, 0.33), skills: [offS('m_shoulder', 3.7, 2), wardS('m_brace', 6)] },
+  // her shoulder, an opener, at an ordinary weight on the gauge (the operator's SK-10 « Reçu », journal Passe SK2; ×2 before)
+  orla: { weapon: weaponOf(3, 0.33), skills: [offS('m_shoulder', 3.7), wardS('m_brace', 6)] },
   ilse: { weapon: weaponOf(3, 0.33), skills: [offS('m_smite', 3.8), wardS('m_aegis', 7), boostS('m_prayer', 6)] },
-  marek: { weapon: weaponOf(3, 0.33), skills: [offS('m_ironfall', 4.3, 1.6), wardS('m_bulwark', 7), boostS('m_resolve', 8)] },
+  // his Iron Fall, an exploit, at an ordinary weight on the gauge (the operator's SK-10 « Reçu », journal Passe SK2: only a breaker weighs more; ×1.6 before)
+  marek: { weapon: weaponOf(3, 0.33), skills: [offS('m_ironfall', 4.3), wardS('m_bulwark', 7), boostS('m_resolve', 8)] },
   rhosk: { weapon: weaponOf(3, 0.38), skills: [offS('m_cleave', 4.4, 2), boostS('m_roar', 8), wardS('m_hide', 7)] },
 };
 
@@ -354,11 +376,13 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
  *  fit): each rival's pool factor so that the planner's Ren of day 2 beats it 95 times in 100 (the bouts of 120 calibration games), the pool's slope of SL1-1, the
  *  bracket's and the final's factors on 200 whole games of the planner (seeds 1 to 100 and 301 to 400) for a semi-final and a final at 50 %, held out on seeds
  *  101 to 300; fitted again with the clash and the gauge of the operator's BL1-8 and BL1-9 (journal Passe BL1: the planner's semi-final 53 %, final 45 %), and with the
- *  blows' weights of journal Passe BE1 (AUTO_WEIGHT, the protections, the weapons, the opener's opening 4 s, every health ×3.6: the planner's semi-final 54 %, final 50 %). */
+ *  blows' weights of journal Passe BE1 (AUTO_WEIGHT, the protections, the weapons, the opener's opening 4 s, every health ×3.6: the planner's semi-final 54 %, final 50 %), and
+ *  with the skills' structure of journal Passe SK2 (an ultimate at full strength at least, the openers and Iron Fall at an ordinary weight on the gauge: the planner's
+ *  semi-final 47 %, final 54 %, the reference's titles 41 %, held out). */
 export const AUTO_RACE = {
-  norm: { vessa: 1.094, tobin: 1.416, cassius: 1.245, orla: 0.952, ilse: 0.937, marek: 0.92, rhosk: 1.235 } as Record<string, number>,
+  norm: { vessa: 1.102, tobin: 1.427, cassius: 1.245, orla: 0.974, ilse: 0.936, marek: 0.92, rhosk: 1.25 } as Record<string, number>,
   pool: [1, 1.075, 1.15] as readonly number[],
-  stage: { 1: 1.242, 2: 1.568 } as Record<1 | 2, number>,
+  stage: { 1: 1.252, 2: 1.554 } as Record<1 | 2, number>,
   prepFrom: 20, prepPer: 25,
 };
 /** a bout's round of the pool by its day: day 2 the first, day 4 the second, day 5 the third (a challenge of the pool by its day) */

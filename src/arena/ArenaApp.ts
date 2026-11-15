@@ -103,6 +103,9 @@ const SKIP_FADE = { down: 0.22, hold: 0.06, up: 0.3 };
 /** the duel played by the computer: the fastest a body moves on the floor (m/s), its lunge's own peak (2.4 m closed in 0.13 s on a smoothstep); a move the
  *  script asks faster (a lunge after a block or a dodge) runs at that speed instead of jumping (journal Passe LC4) */
 const AUTO_BODY_SPEED = 27;
+/** the duel played by the computer: the most a body moves in a frame at 60 fps, its lunge and its knock-back together (journal Passe LC4: 0.6 m); a knock-back that
+ *  meets a lunge's return (Ilse broken as her own enchaînement ended: 0.60 m, journal Passe SK2) arrives over the next frame */
+const AUTO_BODY_STEP = 0.58;
 const CHAR_SCALE = 1.42;
 const BASE_POSE: CamPose = { yaw: 0, pitch: THREE.MathUtils.degToRad(3.5), dist: 15.6, fov: 34, shift: 0, tx: 0, ty: 2.3, tz: -0.6 };
 /** the moon's colour (cool, faint), and a colour's luminance (the sprites' LUM) */
@@ -111,7 +114,8 @@ const lum = (c: THREE.Color): number => 0.3 * c.r + 0.55 * c.g + 0.15 * c.b;
 /** the low moon behind the grand gate, a little right of it: elevation 6.5 deg, azimuth 4 deg */
 const MOON_DIR = new THREE.Vector3(Math.sin(THREE.MathUtils.degToRad(4)) * Math.cos(THREE.MathUtils.degToRad(6.5)), Math.sin(THREE.MathUtils.degToRad(6.5)), -Math.cos(THREE.MathUtils.degToRad(4)) * Math.cos(THREE.MathUtils.degToRad(6.5))).normalize();
 
-interface Pres { off: number; knock: number; flash: number; guardHit: number; lastClip: string }
+/** `x` the body's place on the floor at the last frame (off + knock), for the duel played by the computer's step cap (AUTO_BODY_STEP) */
+interface Pres { off: number; knock: number; flash: number; guardHit: number; lastClip: string; x: number }
 interface Fx { act: Actor; kind: string; age: number; frames: number; step: number }
 
 export class ArenaApp {
@@ -176,7 +180,7 @@ export class ArenaApp {
   frameCount = 0;
   readonly fighters: Record<FighterId, Actor>;
   readonly fans: Actor[] = [];
-  private readonly pres: Record<FighterId, Pres> = { ren: { off: 0, knock: 0, flash: 0, guardHit: 0, lastClip: '' }, marek: { off: 0, knock: 0, flash: 0, guardHit: 0, lastClip: '' } };
+  private readonly pres: Record<FighterId, Pres> = { ren: { off: 0, knock: 0, flash: 0, guardHit: 0, lastClip: '', x: 0 }, marek: { off: 0, knock: 0, flash: 0, guardHit: 0, lastClip: '', x: 0 } };
   private fx: Fx[] = [];
   private fanCheer: number[] = [];
   private acc = 0;
@@ -215,8 +219,6 @@ export class ArenaApp {
    *  the one playing, an ultra's void's ground; the cinematic's action, whose blows the arena then tells without their sounds and effects (the cinematic told them) */
   private cineOn = false;
   private cineCalm = false;
-  /** the cinematics' rule (undefined: the operator's, CINE_RULE; DEV `cine=sk1` the workshop's of journal Passe SK1) */
-  private cineRule: import('./cineRule').CineRule | undefined;
   cineList: CineMoment[] = [];
   private cineNext = 0;
   cineRun: CineRun | null = null;
@@ -375,9 +377,7 @@ export class ArenaApp {
       this.cineOn = true; this.cineCalm = cq === 'calm';
       this.cineMod = await import('./cineDirector');
       this.cineBack = new this.cineMod.CineBackdrop(this.scene);
-      // DEV `cine=sk1`: the rule of the skills' structure workshop (journal Passe SK1: an ultimate every time it lands in full)
-      if (import.meta.env.DEV && cq === 'sk1') this.cineRule = (await import('../lab/skillStructure')).CINE_RULE_SK1;
-      this.cineList = (await import('./cine')).cineMoments(this.auto.result, this.auto.fighters, this.cineRule);
+      this.cineList = (await import('./cine')).cineMoments(this.auto.result, this.auto.fighters);
     }
     // a version 2 duel: the district's townsfolk on the stands (journal Passe PU1, the operator's sheet PU-1 to PU-8); `cast=generated` keeps today's spectators
     if (v2Rules(this.rules) && !this.opts.forecourt && !this.opts.match?.empty && this.opts.params.get('cast') !== 'generated') {
@@ -477,7 +477,7 @@ export class ArenaApp {
     const t = +(Math.max(a.t, a.lastLineT() + 0.006) + 1e-6).toFixed(6), p: AutoCommand = { t, skill: sk.id };
     this.presses.push(p);
     a.replace(autoDuel(a.fighters.ren, a.fighters.marek, this.autoSeed, { log: true, trace: true, commands: this.presses }), p);
-    if (this.cineOn) void import('./cine').then((c) => { this.cineList = c.cineMoments(a.result, a.fighters, this.cineRule); const k = this.cineList.findIndex((m) => m.t > a.t + 1e-6); this.cineNext = k < 0 ? this.cineList.length : k; });
+    if (this.cineOn) void import('./cine').then((c) => { this.cineList = c.cineMoments(a.result, a.fighters); const k = this.cineList.findIndex((m) => m.t > a.t + 1e-6); this.cineNext = k < 0 ? this.cineList.length : k; });
     this.snd?.duelEvent({ type: 'press', quiet });
     this.opts.match?.onPress?.(p);
     return true;
@@ -693,7 +693,7 @@ export class ArenaApp {
       else if (e.type === 'reset') {
         this.koT = -1; this.shake = 0; this.push = 0; this.endSkip();
         this.cineRun?.dispose(); this.cineRun = null; this.cineQuiet = null; this.cineNext = 0;
-        for (const p of Object.values(this.pres)) { p.off = p.knock = p.flash = p.guardHit = 0; }
+        for (const p of Object.values(this.pres)) { p.off = p.knock = p.flash = p.guardHit = p.x = 0; }
         for (const f of this.fx) f.act.hidden = true;
         this.fx = [];
       }
@@ -759,6 +759,8 @@ export class ArenaApp {
       else p.off *= Math.exp(-dt * (p.off < 0 ? 4 : 5));
       if (this.auto && dt > 0) { const d = p.off - before, L = AUTO_BODY_SPEED * dt; if (Math.abs(d) > L) p.off = before + Math.sign(d) * L; }
       p.knock *= Math.exp(-dt * 7); p.flash = Math.max(0, p.flash - dt / 0.14); p.guardHit = Math.max(0, p.guardHit - dt / 0.14);
+      if (this.auto && dt > 0) { const L = AUTO_BODY_STEP * Math.max(1, dt * 60), d = p.off + p.knock - p.x; if (Math.abs(d) > L) p.knock -= d - Math.sign(d) * L; }
+      p.x = p.off + p.knock;
       const facing = id === 'ren' ? 1 : -1;
       a.pos.x = HOME[id] + facing * (p.off + p.knock);
       // the acting fighter draws in front (its blade over the other's body)

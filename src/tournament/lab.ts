@@ -10,6 +10,7 @@ import { autoOutcome } from '../combat/autoMatch';
 import { isV2, makeV2, v2KitOf } from '../simulation/v2';
 import { v2Ranking } from './v2calendar';
 import { SKILL_BOOK } from '../combat/skillbook';
+import { kitRankFault, skillRank } from '../combat/autoData';
 import { marksOf, wanted } from '../simulation/v2law';
 import { argChance, PASSERS } from '../simulation/v2barter';
 import { pocketChance, stealChance } from '../simulation/v2town';
@@ -178,9 +179,15 @@ function curiousV2(st: GameState): Action {
   const first = (...xs: Array<() => Action | null>): Action | null => { for (const f of xs) { const a = f(); if (a) return a; } return null; };
   // a challenge accepted is fought at once (its bout takes the slot)
   if (st.v2?.challenge) return { type: 'challengeResult', outcome: challengeOutcome(st, 0.6) };
-  // brings what it learnt: a skill won by a challenge takes the place of the start skill of its family
+  // brings what it learnt: a skill won by a challenge takes the place of the start skill of its family; an ultimate, a rival's signature, the place of the start
+  // ultimate (the Thrust: one at most, the operator's SK-2, journal Passe SK2); never four that break the kit's rule
   const kit = v2KitOf(st), learnt = Object.values(SKILL_BOOK).filter((k) => k.source === 'challenge' && (kit.levels[k.id] ?? 0) > 0 && !(kit.loadout as string[]).includes(k.id));
-  for (const k of learnt) { const i = (kit.loadout as string[]).findIndex((id) => SKILL_BOOK[id]?.source === 'start' && SKILL_BOOK[id]?.family === k.family); if (i >= 0) { const four = [...kit.loadout] as string[]; four[i] = k.id; return { type: 'setLoadout', skills: four }; } }
+  for (const k of learnt) {
+    const ult = skillRank(k.id) === 'ultimate', i = (kit.loadout as string[]).findIndex((id) => SKILL_BOOK[id]?.source === 'start' && (ult ? skillRank(id) === 'ultimate' : SKILL_BOOK[id]?.family === k.family));
+    if (i < 0) continue;
+    const four = [...kit.loadout] as string[]; four[i] = k.id;
+    if (!kitRankFault(four)) return { type: 'setLoadout', skills: four };
+  }
   // the watch wants a word: settle with Sergeant Hale
   if (wanted(st)) { const r = at('district', { type: 'restitute' }) ?? at('district', { type: 'workDebt' }); if (r) return r; }
   // lot L3 (EV-10 « Une réponse par lieu »): the forge's signs send it to Hale's watch on the quay, the gear's to Clerk Odo's strongroom on the eve of a bout

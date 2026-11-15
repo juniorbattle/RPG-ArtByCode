@@ -6,7 +6,7 @@ import { v2KitOf } from '../simulation/v2';
 import { RIVALS } from '../narrative/roster';
 import { num, skillName, tx } from '../narrative/text';
 import { SKILL_BOOK } from '../combat/skillbook';
-import { AUTO_ROLES, AUTO_SKILLS, autoCondOf, autoCondsFor, autoKitFor } from '../combat/autoData';
+import { AUTO_ROLES, AUTO_SKILLS, autoCondOf, autoCondsFor, autoKitFor, kitRankFault, skillRank } from '../combat/autoData';
 import { AUTO_RULES, type AutoCond, type AutoRole } from '../combat/auto';
 import { COND_TEXT } from '../simulation/v2skills';
 import { figHtml, statsHtml } from './wares';
@@ -27,6 +27,11 @@ const ROLE: Record<AutoRole, 'ui.role.exploit' | 'ui.role.punish' | 'ui.role.pie
 export const roleName = (id: string): string => { const r = AUTO_ROLES[id]?.role; return r ? tx(ROLE[r]) : ''; };
 
 const FAMILY = { offensive: 'v2.family.offensive', defensive: 'v2.family.defensive', support: 'v2.family.support' } as const;
+/** a skill's rank in words (the operator's SK-1 and SK-11 « Ces mots », journal Passe SK2: technique, super, ultimate) */
+const RANK = { technique: 'ui.rank.technique', super: 'ui.rank.super', ultimate: 'ui.rank.ultimate' } as const;
+export const rankName = (id: string): string => tx(RANK[skillRank(id)]);
+/** what a line of the list says beside the level: an attack its rank, a defence or a support its family (a technique too) */
+const tagOf = (id: string): string => { const f = SKILL_BOOK[id]?.family ?? 'offensive'; return f === 'offensive' ? rankName(id) : tx(FAMILY[f]); };
 const pct = (k: number): number => Math.round(Math.abs(k - 1) * 100);
 const cap = (t: string): string => t[0].toUpperCase() + t.slice(1);
 
@@ -111,7 +116,8 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   const close = footBtn('Esc', tx('ui.close'), () => host.close());
   const go = sheet === null ? null : footBtn('Enter', tx('v2.skills.keep'), () => host.enter?.(), true);
   const four = (): string[] => { const was = v2KitOf(host.state()).loadout as string[]; return was.filter((x) => chosen.has(x)).concat([...chosen].filter((x) => !was.includes(x))); };
-  let now = '', full = false;
+  // `refused`: why the skill selected cannot join the four (SK-2: one ultimate and one super at most)
+  let now = '', full = false, refused = '';
 
   const foe = host.foe;
   const paint = (): void => {
@@ -122,14 +128,15 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     if (wide) wide.innerHTML = `<p class="ttl">${esc(foe && host.foeName ? tx('ui.order.vs', { name: host.foeName }) : tx('ui.order.title'))}</p><p class="pm-sub">${esc(planLine(host.state(), foe, host.foeName))}</p>${autoOrderView(host.state(), four(), foe).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${tx('ui.order.uses', { n: t.uses, gap: num(t.gapS) })}<br>${esc(tx(COND_TEXT[condOf(host.state(), t.id, foe)]))}</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
     if (go) go.disabled = chosen.size !== 4;
     const lv = kit.levels[now], st = host.state(), f = skillFigures(st, now, lv), up = nextLevel(st, now), k = SKILL_BOOK[now];
-    const said = !up ? tx('ui.skill.top') : up.by === 'drill' ? tx('ui.skill.drill', { level: up.level })
-      : up.fromDay ? tx('ui.skill.challengeLate', { name: RIVALS[up.teacher!].name, day: up.fromDay }) : tx('ui.skill.challenge', { name: RIVALS[up.teacher!].name });
+    const said = !up ? tx('ui.skill.top') : tx('ui.skill.drill', { level: up.level });
+    // a rival's signature says whom it was learnt from (SK-4)
+    const sig = k?.signature ? tx('ui.skill.signature', { name: RIVALS[k.signature]?.name ?? k.signature }) : '';
     const on = chosen.has(now), movable = on && chosen.size === 4;
     // the tactic (SY-08): when a skill brought leaves, its condition chosen with C (the pad's Y)
     // when it leaves, and on the skills page whose plan that is (the general one; a rival's is set on its match sheet)
     const when = on ? `<p class="ab pm-when">${esc(whenText(st, now, foe))}</p>${sheet === null ? `<p class="what">${esc(planLine(st, undefined, undefined))}</p>` : ''}` : '';
     const role = roleName(now);
-    detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))}${role ? ` · ${esc(tx('ui.skill.role', { role }))}` : ''} · ${tx('v2.skills.level', { level: lv })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, now, up.level) : null, up?.level ?? lv)}<p class="what">${esc(said)}</p>${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}`;
+    detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))} · ${esc(rankName(now))}${role ? ` · ${esc(tx('ui.skill.role', { role }))}` : ''} · ${tx('v2.skills.level', { level: lv })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, now, up.level) : null, up?.level ?? lv)}<p class="what">${esc(said)}</p>${sig ? `<p class="what">${esc(sig)}</p>` : ''}${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}${refused ? `<p class="no">${esc(refused)}</p>` : ''}<p class="what">${esc(tx('ui.skill.rule'))}</p>`;
     fit();
     fillFoot(foot, footBtn('Space', tx(on ? 'ui.skill.leave' : 'ui.skill.bring'), toggle), on ? footBtn('C', tx('ui.skill.when'), cycle) : null, movable ? moveBtn('left') : null, movable ? moveBtn('right') : null, go, close);
   };
@@ -178,15 +185,18 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     // the foot's button is drawn again: the selection keeps the keyboard
     list.querySelector<HTMLElement>('.pm-btn.on')?.focus();
     full = !chosen.has(now) && chosen.size >= 4;
-    if (chosen.has(now)) chosen.delete(now); else if (!full) chosen.add(now);
+    // one ultimate and one super at most among the four (the operator's SK-2, journal Passe SK2): refused, and said why
+    const fault = !chosen.has(now) && !full ? kitRankFault([...chosen, now]) : null;
+    refused = fault ? tx(fault === 'ultimate' ? 'v2.loadout.ultimate' : 'v2.loadout.super') : '';
+    if (chosen.has(now)) chosen.delete(now); else if (!full && !fault) chosen.add(now);
     list.querySelector('.pm-btn.on')?.setAttribute('aria-pressed', String(chosen.has(now)));
     // the four are the game's as soon as there are four: a page left by Esc keeps them too
     if (chosen.size === 4 && four().join() !== (v2KitOf(host.state()).loadout as string[]).join()) host.act({ type: 'setLoadout', skills: four() });
     paint();
   };
   for (const id of owned) {
-    const lv = kit.levels[id], k = SKILL_BOOK[id];
-    const b = pickRow(`<i class="pm-check"></i><span>${esc(skillName(id))}<span class="why">${tx('v2.skills.level', { level: lv })} · ${tx(FAMILY[k?.family ?? 'offensive'])}</span></span><span class="cost"></span>`, { select: () => { now = id; full = false; paint(); }, press: toggle });
+    const lv = kit.levels[id];
+    const b = pickRow(`<i class="pm-check"></i><span>${esc(skillName(id))}<span class="why">${tx('v2.skills.level', { level: lv })} · ${esc(tagOf(id))}</span></span><span class="cost"></span>`, { select: () => { now = id; full = false; refused = ''; paint(); }, press: toggle });
     b.setAttribute('aria-pressed', String(chosen.has(id)));
     list.appendChild(b);
   }

@@ -61,19 +61,15 @@ test('the order the page shows is the duel\'s: the four in the order the automat
   }
 });
 
-test('the next level says what the game allows: drilling to its cap, then the teacher alone, and the action agrees', () => {
+test('the next level says what the game allows: drilling to its cap, then none (since journal Passe SK2 a challenge teaches, it no longer raises), and the action agrees', () => {
   const s = G.makeV2(G.namedState('day1-morning'));
   s.v2.kit.levels.k_cry = 1; s.v2.kit.levels.t1 = 1;
   assert.deepEqual(P.nextLevel(s, 't1'), { level: 2, by: 'drill' });
-  s.v2.kit.levels.t1 = VS.TRAIN_CAP; assert.equal(P.nextLevel(s, 't1'), null, 'no teacher: the cap is the end');
-  s.v2.kit.levels.k_cry = VS.TRAIN_CAP; assert.deepEqual(P.nextLevel(s, 'k_cry'), { level: VS.TRAIN_CAP + 1, by: 'challenge', teacher: 'orla' });
-  s.v2.kit.levels.k_cry = SK.MAX_LEVEL; assert.equal(P.nextLevel(s, 'k_cry'), null);
-  // a skill only a rival out of the title teaches (LATE_TEACHER): raised by a challenge from the day such a rival can be challenged (journal Passe CO1), as
-  // learnFromChallenge raises it; « no higher level » only at the top
-  for (const [rival, id] of Object.entries(SB.LATE_TEACHER)) {
-    s.v2.kit.levels[id] = VS.TRAIN_CAP;
-    assert.deepEqual(P.nextLevel(s, id), { level: VS.TRAIN_CAP + 1, by: 'challenge', teacher: rival, fromDay: VT.RIVALS_CHALLENGE_DAY }, id);
-    s.v2.kit.levels[id] = SK.MAX_LEVEL; assert.equal(P.nextLevel(s, id), null, `${id} at the top`);
+  s.v2.kit.levels.t1 = VS.TRAIN_CAP; assert.equal(P.nextLevel(s, 't1'), null, 'the cap is the end');
+  // every skill alike: the first day's teachers' and the rivals' signatures (SK-7: a challenge won teaches once per phase, it raises nothing above the cap)
+  for (const id of ['k_cry', 'k_parry', 'k_iron', 'k_sunder', ...Object.values(SB.SIGNATURES)]) {
+    s.v2.kit.levels[id] = 1; assert.deepEqual(P.nextLevel(s, id), { level: 2, by: 'drill' }, id);
+    s.v2.kit.levels[id] = VS.TRAIN_CAP; assert.equal(P.nextLevel(s, id), null, `${id} at the cap`);
   }
   // the drill's own refusal at the cap, on the practice sand
   const t = structuredClone(s); t.place = 'training';

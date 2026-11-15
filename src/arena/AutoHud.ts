@@ -26,12 +26,17 @@ export interface AutoTexts extends DynTexts {
   charging: (name: string) => string; order: string; secs: (n: number) => string; waiting: string; clash: string;
   /** lot 2 of « La Brute »: the opening's tag and float, an interruption, a parry, where a blow landed (the duel's multiplier), a skill's uses */
   openOn: string; opened: string; interrupted: string; parried: string; inBreak: (k: number) => string; inOpen: (k: number) => string; uses: (left: number, all: number) => string;
+  /** an ultimate that failed, over its striker (the operator's note on SK-6, journal Passe SK2): guarded, dodged, parried, cut, lost in a clash */
+  ultMiss: Record<UltMiss, string>;
 }
+export type UltMiss = 'guarded' | 'dodged' | 'parried' | 'cut' | 'lost';
 const EN_EXTRA = { speed: '×2', speedSub: 'twice as fast', speedOn: 'back to ×1', skip: 'Skip', skipSub: 'to the result', charging: (n: string) => `Charging ${n}`, order: 'Your order', secs: (n: number) => `${n} s`, waiting: 'At your next choice', clash: 'Clash',
-  openOn: 'Open', opened: 'Open!', interrupted: 'Interrupted', parried: 'Parried', inBreak: (k: number) => `in the break ×${k}`, inOpen: (k: number) => `in the opening ×${k}`, uses: (l: number, a: number) => `${l} of ${a} uses left` };
+  openOn: 'Open', opened: 'Open!', interrupted: 'Interrupted', parried: 'Parried', inBreak: (k: number) => `in the break ×${k}`, inOpen: (k: number) => `in the opening ×${k}`, uses: (l: number, a: number) => `${l} of ${a} uses left`,
+  ultMiss: { guarded: 'Ultimate guarded', dodged: 'Ultimate dodged', parried: 'Ultimate parried', cut: 'Ultimate cut', lost: 'Ultimate lost' } };
 const comma = (k: number): string => String(k).replace('.', ',');
 const FR_EXTRA = { speed: '×2', speedSub: 'deux fois plus vite', speedOn: 'retour à ×1', skip: 'Passer', skipSub: 'au résultat', charging: (n: string) => `Charge : ${n}`, order: 'Votre ordre', secs: (n: number) => `${n} s`, waiting: 'À votre prochain choix', clash: 'Entrechoc',
-  openOn: 'Faille', opened: 'Faille !', interrupted: 'Interrompu', parried: 'Paré', inBreak: (k: number) => `dans la rupture ×${comma(k)}`, inOpen: (k: number) => `dans la faille ×${comma(k)}`, uses: (l: number, a: number) => `${l} usage${l > 1 ? 's' : ''} sur ${a}` };
+  openOn: 'Faille', opened: 'Faille !', interrupted: 'Interrompu', parried: 'Paré', inBreak: (k: number) => `dans la rupture ×${comma(k)}`, inOpen: (k: number) => `dans la faille ×${comma(k)}`, uses: (l: number, a: number) => `${l} usage${l > 1 ? 's' : ''} sur ${a}`,
+  ultMiss: { guarded: 'Ultime gardée', dodged: 'Ultime esquivée', parried: 'Ultime parée', cut: 'Ultime coupée', lost: 'Ultime perdue' } };
 export const AUTO_TEXTS_EN: AutoTexts = { ...DYN_TEXTS_EN, ...EN_EXTRA, restart: 'An official bout cannot be restarted' };
 export const AUTO_TEXTS_FR: AutoTexts = { ...DYN_TEXTS_FR_GAME, ...FR_EXTRA };
 
@@ -98,6 +103,8 @@ export class AutoHud {
     installDesign(time);
     this.ready = fontsReady();
     this.names = names;
+    // each fighter's ultimates (an exploit's rank, journal Passe SK2): a failed one is said over its striker
+    for (const k of ['ren', 'marek'] as Seat[]) this.ults[k] = new Set(replay.fighters[k].skills.filter((a) => a.role === 'exploit').map((a) => a.id));
     for (const [id, css] of [['arena-hud-css', CSS], ['arena-dyn-css', DYN_CSS], ['arena-auto-css', AUTO_CSS]] as const) {
       if (!document.getElementById(id)) { const st = document.createElement('style'); st.id = id; st.textContent = css; document.head.appendChild(st); }
     }
@@ -212,15 +219,23 @@ export class AutoHud {
     for (const e of evs) {
       if (e.type === 'impact') this.impact(e);
       // an interruption over the fighter cut, a parry over the striker parried: both left open (the duel's seconds); an opener's or a whiff's opening
-      else if (e.type === 'interrupt') this.float(e.who as Seat, t.interrupted, 'ap', -34, this.openLine(AUTO_RULES.interrupt.open));
-      else if (e.type === 'parry') this.float(e.to as Seat, t.parried, 'ap', -34, this.openLine(AUTO_RULES.parry.open));
+      else if (e.type === 'interrupt') { this.float(e.who as Seat, t.interrupted, 'ap', -34, this.openLine(AUTO_RULES.interrupt.open)); this.ultMiss(e.who as Seat, e.action, 'cut'); }
+      else if (e.type === 'parry') { this.float(e.to as Seat, t.parried, 'ap', -34, this.openLine(AUTO_RULES.parry.open)); this.ultMiss(e.to as Seat, e.action, 'parried'); }
       else if (e.type === 'open' && (e.why === 'opener' || e.why === 'whiff') && !e.again) this.float(e.who as Seat, t.opened, 'ap', -34, t.secs(Math.round(Number(e.dur))));
-      else if (e.type === 'clash') { this.float(e.who as Seat, t.clash, 'guarded'); this.float(e.to as Seat, t.clash, 'guarded'); }
+      else if (e.type === 'clash') { this.float(e.who as Seat, t.clash, 'guarded'); this.float(e.to as Seat, t.clash, 'guarded'); this.ultMiss(e.who as Seat, e.action, 'lost'); this.ultMiss(e.to as Seat, e.vs, 'lost'); }
       else if (e.type === 'break') this.float(e.who as Seat, t.breakFloat, 'guardbreak', -34);
       else if (e.type === 'effect') this.float(e.who as Seat, e.action ? this.name(e.action as string) : e.family === 'defensive' ? t.wardOn : t.boostOn, 'ap', -34);
       else if (e.type === 'ko') { const ko = this.q('#ah-ko'); ko.querySelector('b')!.textContent = e.who === 'marek' ? t.victory : t.defeat; ko.querySelector('span')!.textContent = t.isDown(this.names[e.who as Seat]); ko.classList.add('on'); this.el.classList.add('ko'); }
       else if (e.type === 'reset') { this.q('#ah-ko').classList.remove('on'); this.el.classList.remove('ko'); this.q('#ah-dmg').textContent = ''; }
     }
+  }
+
+  /** each fighter's ultimates (their ids) */
+  private ults: Partial<Record<Seat, Set<string>>> = {};
+  /** an ultimate that failed: no cinematic, its use spent; said over its striker, its name below (presentation only, the operator's note on SK-6) */
+  private ultMiss(who: Seat, action: unknown, how: UltMiss): void {
+    if (typeof action !== 'string' || !this.ults[who]?.has(action)) return;
+    this.float(who, this.t.ultMiss[how], 'ap', -60, this.name(action));
   }
 
   /** an interruption's or a parry's second line: the opening it leaves */
@@ -243,6 +258,7 @@ export class AutoHud {
       return;
     }
     const el = this.float(to, res === 'dodged' ? t.dodged : res === 'guarded' ? t.guarded(total) : `-${total}`, res, 26, sub);
+    if (res === 'dodged' || res === 'guarded') this.ultMiss(e.from as Seat, e.action, res);
     this.last[to] = { action: e.action as string, el };
   }
 
