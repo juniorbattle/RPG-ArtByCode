@@ -18,7 +18,7 @@ import { createServer } from 'vite';
 const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
 const [outDir, kind] = process.argv.slice(2);
-if (!outDir || !['cargo', 'sharps', 'encounter'].includes(kind)) throw new Error('usage: node tools/quest-flow.mjs <outDir> <cargo|sharps|encounter>');
+if (!outDir || !['cargo', 'sharps', 'encounter', 'fight', 'qfight'].includes(kind)) throw new Error('usage: node tools/quest-flow.mjs <outDir> <cargo|sharps|encounter|fight|qfight>');
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720), READY = +(process.env.READY_MS || 600000);
 const LANG = process.env.PAGE_LANG === 'fr' ? 'fr' : 'en';
 fs.mkdirSync(outDir, { recursive: true });
@@ -38,13 +38,26 @@ if (LANG === 'fr') T.useLanguage('fr', (await server.ssrLoadModule('/src/narrati
 const tx = T.tx;
 // the starting state, built in Node by the game's own actions
 let s0 = G.namedState(kind === 'cargo' ? 'v2-day1-morning' : 'v2-quest-sharps');
-if (kind === 'encounter') {
+if (kind === 'encounter' || kind === 'fight') {
   // the card sharps strike where the player is (GP-10, Q-08), their chance passed: the state the game writes at the evening's end, the next morning on the square
   s0 = G.advance(s0, { type: 'talk', who: 'lio' }).state;
   s0.flags['pulse:festivity'] = 100; s0.flags['pulse:security'] = -100;
   const lucky = { fork: () => ({ next: () => 0, fork: () => lucky.fork() }) };
   ENG.runEvents(s0, computePulse(s0), () => ({}), lucky, V2_EVENTS.filter((e) => e.id === 'v2-card-sharps'));
   s0.log.push({ seq: s0.log.length, day: s0.day, slot: s0.slot, kind: 'event', id: 'v2-card-sharps', cause: 'a festive night and a thin watch', text: 'A friendly game by the stage turns out to be played with marked cards: the sharp holds out his hand for your 5 coins.', visible: true });
+}
+// « qfight »: Lio's quest, the sharps' leader fought on the sand instead of paying (Q-05): Lio's word taken, the purse at 60
+if (kind === 'qfight') { s0 = G.advance(s0, { type: 'talk', who: 'lio' }).state; s0.player.coins = 60; }
+// « fight » (the operator's Q-05): the card sharps' leader fought on the sand; the seed taken is the first of 1 to 120 giving the result asked for (WANT=win|lose)
+const AM = await server.ssrLoadModule('/src/combat/autoMatch.ts');
+const want = process.env.WANT === 'lose' ? 'opponent' : 'player';
+if (kind === 'fight' || kind === 'qfight') {
+  // a lost fight needs a player the sharps' leader can beat: wounded, the sand's health halved
+  if (want === 'opponent') s0.player.injury = 2;
+  let found = 0;
+  for (let k = 1; k <= 120 && !found; k++) { const c = structuredClone(s0); c.seed = k; const r = G.advance(c, kind === 'qfight' ? { type: 'faceSharps', how: 'fight' } : { type: 'answer', how: 'fight' }); if (r.ok && AM.autoOutcome(r.state, 'challenge').winner === want) { s0.seed = k; found = k; } }
+  if (!found) { console.log(`KO  no seed of 1 to 120 gives « ${want} » against the sharps' leader`); await server.close(); process.exit(1); }
+  console.log(`Node: seed ${found}, the sharps' leader: ${want} wins`);
 }
 const saved = G.serialize(s0);
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 }, protocolTimeout: READY });
@@ -136,6 +149,65 @@ try {
     const toast = await page.evaluate(() => document.querySelector('#pm-toast')?.textContent ?? '');
     check(toast.includes(tx('v2.encounter.sharps.refuseLog', { n: 5 }).slice(0, 30)), `its words in the bandeau: ${JSON.stringify(toast.slice(0, 160))}`);
     await page.screenshot({ path: path.join(outDir, 'encounter-1-refused.png') });
+  }
+  if (kind === 'fight' || kind === 'qfight') {
+    const quest = kind === 'qfight';
+    await open(q); await sleep(400);
+    await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());
+    let c0;
+    if (!quest) {
+      await page.waitForFunction(() => !!document.querySelector('.pm-talk[data-encounter]'), { timeout: 8000 }).catch(() => {});
+      const band = await page.evaluate(() => { const r = document.querySelector('.pm-talk[data-encounter]'); return r ? { buttons: [...r.querySelectorAll('.opts .pm-btn')].map((x) => x.textContent) } : null; });
+      check(!!band && band.buttons.length === 3 && band.buttons[2].includes(tx('v2.encounter.sharps.fight', { n: 5 }).slice(0, 20)), `the three answers, the fight last: ${JSON.stringify(band)}`);
+      c0 = (await state()).player.coins;
+      await page.evaluate(() => [...document.querySelectorAll('.pm-talk[data-encounter] .opts .pm-btn')][2].click());
+      done.push({ type: 'answer', how: 'fight' });
+    } else {
+      // the quest's own list: the fight beside paying, its slot in its tag, then the sand's door
+      const labels = await page.evaluate(() => { window.__ui.openHere(); return [...document.querySelectorAll('.pm-talk .pm-btn')].map((x) => x.textContent); });
+      const lab = tx('v2.quest.sharps.fightLabel', { price: 15 });
+      check(labels.some((l) => l.includes(lab.slice(0, 30))), `the fight among the place's actions: ${JSON.stringify(labels).slice(0, 300)}`);
+      c0 = (await state()).player.coins;
+      await run({ type: 'faceSharps', how: 'fight' });
+      const door = await page.evaluate(() => { window.__ui.openHere(); const x = [...document.querySelectorAll('.pm-talk .pm-btn.primary')][0]; const t = x?.textContent ?? ''; x?.click(); return t; });
+      check(door.includes(tx('v2.encounter.enter', { name: 'Marrow Vane' })), `the sand's door: ${door}`);
+    }
+    // the short sheet before the sand (GP-13): the sharps' leader, what a win and a loss settle
+    await page.waitForFunction(() => !!document.querySelector('.pm-skills'), { timeout: 5000 }).catch(() => null);
+    const sheet = await page.evaluate(() => { const c = document.querySelector('.pm-skills'); return c ? { text: c.textContent, vs: !!c.querySelector('.pm-vs') } : null; });
+    check(!!sheet && sheet.text.includes('Marrow Vane') && sheet.vs, 'the sheet before the sand: Marrow Vane and the table of both fighters');
+    const settle = quest ? tx('prep.challenge.sharps', { price: 15 }) : tx('prep.challenge.encounter', { n: 5 });
+    check(!!sheet && sheet.text.includes(settle), 'what a win and a loss settle: ' + settle);
+    check(!!sheet && sheet.text.includes(tx('v2.encounter.fightTitle')), 'the sheet says which fight it is');
+    await sleep(500);
+    await page.screenshot({ path: path.join(outDir, 'fight-1-sheet.png') });
+    await page.evaluate(() => document.querySelector('.pm-skills .pm-glist .pm-btn')?.focus());
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => !!window.__go, { timeout: 20000 }).catch(() => null);
+    const to = await page.evaluate(() => window.__go);
+    check(/scene=arena/.test(to ?? '') && /challenge=1/.test(to ?? ''), `the town goes to ${to}`);
+    await open(to);
+    const seen = await page.evaluate(() => { const a = window.__arena; return { names: [a.sim.D.fighters.ren.name, a.sim.D.fighters.marek.name], hud: (document.querySelector('#arena-hud')?.getAttribute('aria-label') ?? '') + (document.querySelector('#arena-hud')?.textContent ?? ''), worn: a.sheets?.info.sheets.map((s) => `${s.id} ${s.runtimeUse}`).join(', ') ?? 'none' }; });
+    check(seen.names[1] === 'Marrow Vane', `the arena seats ${seen.names.join(' vs ')}`);
+    check(seen.hud.includes(tx('v2.encounter.fightTitle')), 'the HUD says it: ' + tx('v2.encounter.fightTitle'));
+    check(seen.worn === 'hero-x3-combat production, npc-m-x3-combat production', `the sheets worn: ${seen.worn}`);
+    await page.screenshot({ path: path.join(outDir, 'fight-2-gate.png') });
+    await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());
+    const atArena = await page.evaluate(() => window.__game.state()), node = AM.autoOutcome(atArena, 'challenge');
+    const end = await page.evaluate(() => { const a = window.__arena, s = a.sim; for (let i = 0; i < 60 * 600 && !(s.over && document.querySelector('.pm-overlay')); i++) a.update(1 / 60); return { over: s.over, t: s.t }; });
+    await page.waitForSelector('.pm-overlay .pm-btn', { timeout: 20000 });
+    const outcome = await page.evaluate(() => window.__outcome);
+    check(end.over && outcome.winner === want && outcome.winner === node.winner && outcome.playerHp === node.playerHp, `the bout ends: ${outcome.winner} wins at ${end.t.toFixed(1)} s, the game's own duel`);
+    await page.screenshot({ path: path.join(outDir, 'fight-3-result.png') });
+    await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn').click());
+    await open(await page.evaluate(() => window.__go));
+    await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());
+    const st = await state();
+    check(!st.v2.challenge && !st.v2.encounter, 'the fight is over');
+    if (quest) check(want === 'player' ? st.quests.sharps === 'done' && st.player.coins === c0 : st.quests.sharps === 'asked' && st.player.coins === c0 - 15, `Q-05: ${want === 'player' ? 'won, the sharps gone and the quest done' : 'lost, 15 coins taken and the quest open'}: ${c0} → ${st.player.coins}, ${st.quests.sharps}`);
+    else check(st.player.coins === (want === 'player' ? c0 + 5 : c0 - 5), `Q-05: ${want === 'player' ? 'won, the 5 coins back' : 'lost, 5 coins taken again'}: ${c0} → ${st.player.coins}`);
+    await page.screenshot({ path: path.join(outDir, 'fight-4-town.png') });
+    done.push({ type: 'challengeResult', outcome });
   }
   const h = await page.evaluate(() => window.__game.hash());
   let s = G.deserialize(saved);

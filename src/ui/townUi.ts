@@ -186,7 +186,7 @@ export function foeIntel(s: GameState, id: string): string {
 }
 
 /** a fighter's name: a person of the town, a fighter of the town, a rival */
-const fighterName = (who: string): string => PEOPLE[who]?.name ?? GENERICS[who]?.name ?? RIVALS[who]?.name ?? who;
+const fighterName = (who: string): string => PEOPLE[who]?.name ?? NPC_FIGHTERS[who]?.name ?? GENERICS[who]?.name ?? RIVALS[who]?.name ?? who;
 
 export class TownUi {
   private veils = [el('div', 'pm-veil'), el('div', 'pm-veil')];
