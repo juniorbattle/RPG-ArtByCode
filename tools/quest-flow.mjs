@@ -135,7 +135,7 @@ try {
     await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());
     await page.waitForFunction(() => !!document.querySelector('.pm-talk[data-encounter]'), { timeout: 8000 }).catch(() => {});
     const band = await page.evaluate(() => { const r = document.querySelector('.pm-talk[data-encounter]'); return r ? { text: r.textContent, buttons: [...r.querySelectorAll('.opts .pm-btn')].map((x) => x.textContent) } : null; });
-    check(!!band && band.text.includes(tx('v2.encounter.title')) && band.buttons.length === 2, `the answer asked once the news are read: ${JSON.stringify(band)}`);
+    check(!!band && band.text.includes(tx('v2.encounter.title')) && band.buttons.length === 3, `the answer asked once the news are read: ${JSON.stringify(band)}`);
     // the band rises as the dialogue's does: a fade, its 8 px slide scaled by --ds-move, none under the game's reduced motion whatever the system says (RG-5)
     const fx = await page.evaluate(() => ({ reduced: document.documentElement.classList.contains('cdt-reduced'), move: getComputedStyle(document.documentElement).getPropertyValue('--ds-move').trim() }));
     check(fx.reduced === !!process.env.REDUCED && (fx.reduced ? fx.move === '0' : fx.move !== '0'), `the game's reduced motion ${fx.reduced ? 'on' : 'off'} (the system's ${process.env.MOTION ?? 'as headless Chrome reports it'}), --ds-move ${JSON.stringify(fx.move)}`);

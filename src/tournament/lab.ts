@@ -118,8 +118,12 @@ function referenceV2(st: GameState): Action {
  *  taken when its giver is met on its days, then its steps walked as soon as they are open (the watch rather than the coins for the card sharps while Hale's ledger is
  *  clean; the treatise's form on the skill the kit brings at the highest level under the cap), a purse kept for the healer. `at` is the policy's own walk */
 /** the laboratory's quests (a measuring switch, never the game's: the quests a policy takes, all by default) */
+/** the curious player's spare purse (a measuring switch of the laboratory, never the game's) */
+export const CURIOUS_SPARE = { coins: 45 };
 export const LAB_QUESTS: { only: readonly string[] | null } = { only: null };
-function questStep(st: GameState, at: (place: PlaceId, a: Action) => Action | null, urgent = false): Action | null {
+/** `spare`: the purse the quests that only cost (the treatise, the sharps paid off) leave untouched: 8 for the planner, who earns by its jobs; the curious player, living on its
+ *  winnings that buy its gear, keeps its next piece's price (journal Passe QE2: with the treatise bought from the 8 coins kept, its titles fell from 17.5 to 8.75 % on 400 games) */
+function questStep(st: GameState, at: (place: PlaceId, a: Action) => Action | null, urgent = false, spare = 8): Action | null {
   for (const id of QUEST_IDS) {
     if (LAB_QUESTS.only && !LAB_QUESTS.only.includes(id)) continue;
     const giver = QUESTS[id].giver;
@@ -133,12 +137,12 @@ function questStep(st: GameState, at: (place: PlaceId, a: Action) => Action | nu
     () => (!due('herbs') ? null : q.herbs === 'asked' && purse >= QUEST.herbsPrice + keep ? at('district', { type: 'buyHerbs' }) : q.herbs === 'herbs' ? at('forecourt', { type: 'brewDraught' }) : null),
     () => {
       if (!due('treatise')) return null;
-      if (q.treatise === 'asked') return purse >= QUEST.treatisePrice + keep ? at('lanterns', { type: 'buyTreatise' }) : null;
+      if (q.treatise === 'asked') return purse >= QUEST.treatisePrice + spare ? at('lanterns', { type: 'buyTreatise' }) : null;
       if (q.treatise !== 'bought') return null;
       const four = v2KitOf(st).loadout as string[], best = [...four].filter((k) => levelOf(st, k) > 0 && levelOf(st, k) < QUEST.treatiseCap).sort((a, b) => levelOf(st, b) - levelOf(st, a))[0];
       return best ? at('training', { type: 'studyTreatise', skill: best }) : null;
     },
-    () => (!due('sharps') ? null : q.sharps === 'asked' ? (marksOf(st) === 0 ? at('district', { type: 'askWatch' }) : purse >= QUEST.sharpsPrice + keep ? at('lanterns', { type: 'faceSharps', how: 'pay' }) : null) : q.sharps === 'watch' ? at('lanterns', { type: 'faceSharps', how: 'watch' }) : null),
+    () => (!due('sharps') ? null : q.sharps === 'asked' ? (marksOf(st) === 0 ? at('district', { type: 'askWatch' }) : purse >= QUEST.sharpsPrice + spare ? at('lanterns', { type: 'faceSharps', how: 'pay' }) : null) : q.sharps === 'watch' ? at('lanterns', { type: 'faceSharps', how: 'watch' }) : null),
   ];
   for (const f of steps) { const a = f(); if (a) return a; }
   return null;
@@ -278,8 +282,8 @@ function curiousV2(st: GameState): Action {
   };
   // the muscle a robbed owner paid waits on the quay at night (lot L2b): faced when the player is whole, else paid off when the purse allows
   const reprisal = (): Action | null => (!st.v2?.reprisal ? null : (hurt && st.player.coins >= 30 ? at('district', { type: 'payMuscle' }) : null) ?? at('district', { type: 'faceMuscle' }) ?? at('district', { type: 'payMuscle' }));
-  const quest = (): Action | null => questStep(st, at as (place: PlaceId, a: Action) => Action | null);
-  const urgent = (): Action | null => questStep(st, at as (place: PlaceId, a: Action) => Action | null, true);
+  const quest = (): Action | null => questStep(st, at as (place: PlaceId, a: Action) => Action | null, false, CURIOUS_SPARE.coins);
+  const urgent = (): Action | null => questStep(st, at as (place: PlaceId, a: Action) => Action | null, true, CURIOUS_SPARE.coins);
   if (st.slot === 'evening') return first(reprisal, sand, () => (forgeSigns ? at('district', { type: 'payWatch' }) : null), investigate, quest, barter, steal, seize, () => (hurt && has(st, { type: 'rest' }) ? { type: 'rest' } : null)) ?? fallback(st, 0.6);
   if (bout) return fallback(st, 0.6);
   if (hurt) { const h = at('forecourt', { type: 'heal' }); if (h) return h; if (has(st, { type: 'rest' })) return { type: 'rest' }; }
