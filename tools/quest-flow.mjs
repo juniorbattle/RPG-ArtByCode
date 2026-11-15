@@ -92,7 +92,10 @@ try {
     await run({ type: 'temper' }); await openTown();
     const after = await state();
     check(after.quests.cargo === 'done' && VG.v2Stats(after).atk - before === Q.QUEST.wyrmAtk, `the Wyrmsteel: Attack +${VG.v2Stats(after).atk - before} on top of the forge's tiers`);
-    const j2 = await journal();
+    // no quest open: the journal opens on the last day (Q-07); its « In progress » row says the quest done
+    await journal();
+    check(await page.evaluate(() => document.querySelector('.pm-days .pm-btn.on')?.dataset.quests !== '1'), 'no quest open: the journal opens on the last day');
+    const j2 = await page.evaluate(() => { document.querySelector('.pm-days [data-quests]')?.focus(); return document.querySelector('.pm-days')?.textContent ?? ''; });
     check(j2.includes(tx('ui.quests.done')), `the page says the quest done: ${JSON.stringify(j2.slice(0, 200))}`);
     await page.screenshot({ path: path.join(outDir, 'cargo-3-done.png') });
     await closeBand();
