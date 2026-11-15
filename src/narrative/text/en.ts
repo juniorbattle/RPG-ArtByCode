@@ -541,6 +541,7 @@ export const EN = {
   'v2.sheet.hp.vigour': '+{n} of vigour ({per} for each bout of the tournament won)',
   'v2.sheet.hp.gear': '+{n} from your gear',
   'v2.sheet.hp.train': '+{n} from training',
+  'v2.sheet.hp.draught': '+{n} from Sister Anwen\'s draught',
   'v2.sheet.hp.wound': '−{n} for your wound',
   'v2.skills.title': 'Your skills',
   'v2.skills.sub': 'Bring four to a bout: the duel uses them in your order. A skill\'s level sets its power and its charge.',

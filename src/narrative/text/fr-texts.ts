@@ -515,6 +515,7 @@ export const FR_TEXTS: Record<string, string> = {
   "v2.sheet.hp.vigour": "+{n} de vigueur ({per} par combat du tournoi gagné)",
   "v2.sheet.hp.gear": "+{n} de votre équipement",
   "v2.sheet.hp.train": "+{n} de l’entraînement",
+  "v2.sheet.hp.draught": "+{n} grâce à la potion de Sœur Anwen",
   "v2.sheet.hp.wound": "−{n} pour votre blessure",
   "v2.skills.title": "Vos compétences",
   "v2.skills.sub": "Emportez-en quatre au combat : le duel les lance dans votre ordre. Le niveau d’une compétence en fixe la puissance et le temps de charge.",

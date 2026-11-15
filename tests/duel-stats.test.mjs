@@ -163,7 +163,8 @@ test('Ren\'s stats from his state (DB7-2, DB7-3, DB7-4): the gear in points, the
   // a session given to health (DB11-5): +20 at the next bout; where the health comes from, as the match sheet says it (journal Passe DB13)
   const h = structuredClone(s); h.v2.prep = ['hp', 'end']; h.player.injury = 1;
   assert.equal(VG.v2Stats(h).hp, 300 + 96 + 36 + 20);
-  assert.deepEqual(VG.healthParts(h), { base: 300, vigour: 96, gear: 36, train: 20, wound: 452 - Math.round(452 * 0.8), total: Math.round(452 * 0.8) });
+  // (`draught`: Sister Anwen's draught for the next bout, none here; the town's quests, journal Passe QE2)
+  assert.deepEqual(VG.healthParts(h), { base: 300, vigour: 96, gear: 36, train: 20, draught: 0, wound: 452 - Math.round(452 * 0.8), total: Math.round(452 * 0.8) });
   // a session recorded before DB7 counts as Attack (its +5 % damage of before); two at most
   const old = structuredClone(st); old.player.training = 2; delete old.v2.prep;
   assert.equal(VG.v2Stats(old).atk, 12);

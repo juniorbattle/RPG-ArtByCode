@@ -43,9 +43,9 @@ export const forgeTier = (s: GameState): number => Math.min(MAX_WEAPON_TIER, gea
 export function weaponTier(s: GameState): number {
   return forgeTier(s);
 }
-/** the Wyrmsteel's Attack is worn (QUEST.wyrm: `beyond` at once, on top of the forge's tiers, even the last; `fourth` once the forge's three are bought; `edge` never:
- *  its edge in the duel instead, src/combat/autoMatch.ts) */
-export const wyrmTier = (s: GameState): boolean => s.player.items.includes('tempered-blade') && (QUEST.wyrm === 'beyond' || (QUEST.wyrm === 'fourth' && forgeTier(s) >= MAX_WEAPON_TIER));
+/** the Wyrmsteel's Attack is worn once Bram tempered the blade: at once, on top of the forge's tiers, even the last (Q-02 « Attaque +1, en plus des paliers, tout de
+ *  suite », journal Passe QE2) */
+export const wyrmTier = (s: GameState): boolean => s.player.items.includes('tempered-blade');
 
 /** every effect the player wears (the weapon and its tiers, the armour, both accessories): the stat points added, the AP added, the effect multiplied */
 export function wornFx(s: GameState): Required<GearFx> {
@@ -80,11 +80,12 @@ export function v2Stats(s: GameState): FighterStats {
 
 /** where Ren's health in his next bout comes from (the operator's DB11-5 « Le dire partout », journal Passe DB13: the match sheet says it): his start, his
  *  vigour (VIGOUR_HP a bout won), his gear, his training sessions given to health, and what a wound takes; `total` is the bout's health (v2Stats × v2Mods) */
-export function healthParts(s: GameState): { base: number; vigour: number; gear: number; train: number; wound: number; total: number } {
+/** `draught`: Sister Anwen's draught waiting for the next bout or challenge (the town's quests, Q-03 « Ainsi : +45 de santé, une fois », journal Passe QE2) */
+export function healthParts(s: GameState): { base: number; vigour: number; gear: number; train: number; draught: number; wound: number; total: number } {
   const st = v2Stats(s), share = 1 - INJURY_HP * s.player.injury, total = Math.max(1, Math.round(st.hp * share));
   return {
     base: REN_BASE.hp, vigour: VIGOUR_HP * (s.v2?.wins ?? 0), gear: wornFx(s).hp,
-    train: trainedStats(s).filter((k) => k === 'hp').length * trainGain('hp'), wound: Math.round(st.hp) - total, total,
+    train: trainedStats(s).filter((k) => k === 'hp').length * trainGain('hp'), draught: draughtHp(s), wound: Math.round(st.hp) - total, total,
   };
 }
 

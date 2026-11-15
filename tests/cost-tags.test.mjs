@@ -54,7 +54,9 @@ function rule(st, a) {
       const markup = (st.v2?.shops?.[a.shop]?.markup ?? 0) >= st.day ? 1.25 : 1;
       return Math.max(1, Math.round(LISTV2[a.item] * FACTOR[a.shop] * (1 - k) * rel * steel * night * markup));
     }
-    case 'upgradeWeapon': { const tier = Math.min(3, st.v2.gear.tier + (st.player.items.includes('tempered-blade') ? 1 : 0)); return tier >= 3 ? 0 : [10, 25, 40][tier]; }
+    // the forge's own tiers: the Wyrmsteel is no tier since the steel cargo was rewritten (the operator's Q-02 « Attaque +1, en plus des paliers, tout de suite », journal
+    // Passe QE2)
+    case 'upgradeWeapon': { const tier = Math.min(3, st.v2.gear.tier); return tier >= 3 ? 0 : [10, 25, 40][tier]; }
     case 'buySkill': return Math.round({ t3: 45, k_sunder: 40, k_iron: 35 }[a.skill] * (st.player.reputation >= 40 ? 0.9 : 1) * (st.flags[`lesson:${st.day}`] ? 0.8 : 1));
     case 'checkGear': return 5;
     // lot L3 (journal Passe EVL5): a rumour of the next opponent, a round at Lio's 3, the stranger's word 8; Clerk Odo's strongroom on the eve of a bout 5
@@ -62,6 +64,11 @@ function rule(st, a) {
     case 'lockGear': return 5;
     // lot L6 (the festival of day 9, FE-3): a round at Lio's for the festival 10; the hall's lanterns hung and Brother Ambrose's flame carried take a slot, no coin
     case 'festDeed': return a.deed === 'round' ? 10 : 0;
+    // the town's quests (journal Passe QE2: Q-03, Q-04, Q-05): Fenwick's river moss 5, Pip's price for Master Corvin's treatise 15, the card sharps paid off 15, faced with
+    // the watch nothing
+    case 'buyHerbs': return 5;
+    case 'buyTreatise': return 15;
+    case 'faceSharps': return a.how === 'pay' ? 15 : 0;
     default: return 0;
   }
 }

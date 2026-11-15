@@ -72,17 +72,23 @@ test('buying: at the shop\'s district and hours, worn at once when the place is 
   assert.ok(!G.actions(G.namedState('day1-morning')).some((o) => o.action.type === 'shopBuy' || o.action.type === 'upgradeWeapon'));
 });
 
-test('the weapon\'s tiers: Bram raises it by day at the forge (a slot, 10 / 25 / 40 coins), the Wyrmsteel temper is a tier, at most three', () => {
+test('the weapon\'s tiers: Bram raises it by day at the forge (a slot, 10 / 25 / 40 coins), three at most; the Wyrmsteel an Attack on top of them, even the last (Q-02)', () => {
   let st = v2(); st.player.coins = 200;
   const o = G.actions(st).find((x) => x.action.type === 'upgradeWeapon');
   assert.ok(o.ok && o.coins === 10 && o.cost === 1);
   st = act(st, { type: 'upgradeWeapon' });
   assert.equal(st.v2.gear.tier, 1); assert.equal(st.player.coins, 190);
   assert.equal(G.actions({ ...st, slot: 'morning' }).find((x) => x.action.type === 'upgradeWeapon').coins, 25, 'the second tier: 25 coins');
+  // the steel cargo rewritten (the operator's Q-02 « Attaque +1, en plus des paliers, tout de suite », journal Passe QE2): the Wyrmsteel is no tier any more but an
+  // Attack on top of the forge's three; before it the temper was the forge's first tier, at most three in all
+  const atk = (s) => VG.v2Stats(s).atk, before = atk(st);
   st.player.items.push('tempered-blade');
-  assert.equal(VG.weaponTier(st), 2);
-  st.slot = 'morning'; st = act(st, { type: 'upgradeWeapon' });
-  assert.equal(VG.weaponTier(st), 3); assert.equal(st.player.coins, 190 - 40);
+  assert.equal(VG.weaponTier(st), 1, 'the Wyrmsteel is no tier');
+  assert.equal(atk(st) - before, 1, 'the Wyrmsteel: Attack +1');
+  assert.equal(G.actions({ ...st, slot: 'morning' }).find((x) => x.action.type === 'upgradeWeapon').coins, 25, 'the forge\'s second tier still 25 coins');
+  st.slot = 'morning'; st = act(st, { type: 'upgradeWeapon' }); st.slot = 'morning'; st = act(st, { type: 'upgradeWeapon' });
+  assert.equal(VG.weaponTier(st), 3); assert.equal(st.player.coins, 190 - 25 - 40);
+  assert.equal(atk(st) - before, 2 * 2 + 1, 'two more tiers (+2 each) and the Wyrmsteel beyond the last');
   st.slot = 'morning'; refused(st, { type: 'upgradeWeapon' }, /as fine/);
   const burnt = v2(); burnt.services.forge = 'sabotaged'; burnt.player.coins = 99; refused(burnt, { type: 'upgradeWeapon' }, /cold/);
 });

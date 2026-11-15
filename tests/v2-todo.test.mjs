@@ -17,11 +17,15 @@ const at = (st, place, slot, day) => { const s = structuredClone(st); s.place = 
 const act = (st, a) => { const r = G.advance(st, a); assert.ok(r.ok, `${a.type}: ${r.reason}`); return r.state; };
 const ok = (st, type) => G.actions(st).filter((o) => o.ok && o.action.type === type);
 
-test('the first morning on the quay: what follows, an event, what pays, an item, in that order; never a theft nor the wait (LA-5, LA-6)', () => {
+// Tam's steel cargo is a quest to take since journal Passe QE2 (the operator's Q-07 « Ainsi »: a quest offered wears the filled diamond, an event; before it the talk's
+// quest was a follow-up)
+test('the first morning on the quay: the events (Tam\'s quest to take, a challenge), what pays, an item, in that order; never a theft nor the wait (LA-5, LA-6, Q-07)', () => {
   const st = v2(), list = T.todoHere(st);
   assert.ok(ok(st, 'steal').length && ok(st, 'wait').length, 'a theft and the wait are open on the quay (the case is reached)');
   // Nell, the quay's passer-by in the morning (journal Passe PN1, GP-06 « Un passant par lieu et par moment (douze) »), her piece an item
-  assert.deepEqual(list.map((t) => [t.who ?? t.what, t.kind]), [['tam', 'follow'], ['piers', 'event'], ['mara', 'item'], ['bram', 'item'], ['nell', 'item']]);
+  assert.deepEqual(list.map((t) => [t.who ?? t.what, t.kind]), [['tam', 'event'], ['piers', 'event'], ['mara', 'item'], ['bram', 'item'], ['nell', 'item']]);
+  // the list says what (GP-11, Q-07): Tam's quest by its name, Mara's job before her goods
+  assert.deepEqual(list.map((t) => t.act), ['quest:cargo', 'challenge', 'work', 'upgradeWeapon', 'TODO']);
   assert.equal(list[2].gain, ok(st, 'work')[0]?.gain, 'Mara\'s job: what it pays, as the action says');
   assert.ok(!list.some((t) => /steal|wait|rest|scout/.test(t.key)), JSON.stringify(list.map((t) => t.key)));
 });

@@ -52,9 +52,9 @@ test('the texts: in the table, numbers only through slots, every cap known (TU-5
   assert.match(html, /&lt;b&gt;x&lt;\/b&gt;/, 'the rest is escaped');
 });
 
-test('the guide: thirteen chapters (« Earning coins » since journal Passe ECO2, ECO-7), each filled from the game\'s data (TU-1, TU-6)', () => {
+test('the guide: fourteen chapters (« Earning coins » since journal Passe ECO2, ECO-7; « Events and sabotage » since journal Passe QE2, GP-11 and Q-07), each filled from the game\'s data (TU-1, TU-6)', () => {
   const s = v2();
-  assert.deepEqual(TU.CHAPTERS.map((c) => c.id), ['tournament', 'time', 'moving', 'places', 'shops', 'money', 'law', 'challenges', 'intel', 'renown', 'prepare', 'duel', 'keys']);
+  assert.deepEqual(TU.CHAPTERS.map((c) => c.id), ['tournament', 'time', 'moving', 'places', 'shops', 'money', 'law', 'challenges', 'intel', 'events', 'renown', 'prepare', 'duel', 'keys']);
   const text = Object.fromEntries(TU.CHAPTERS.map((c) => [c.id, TU.chapterText(s, c)]));
   for (const [id, t] of Object.entries(text)) assert.doesNotMatch(t, /[{}]/, id);
   assert.match(text.tournament, new RegExp(`a win is worth ${POINTS.win} points, a close defeat ${POINTS.close}`));

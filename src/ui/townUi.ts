@@ -617,7 +617,7 @@ export class TownUi {
     // the operator's DB11-5 « Le dire partout » (journal Passe DB13): where Ren's health comes from
     const hp = healthParts(s);
     const from = [tx('v2.sheet.hp.base', { n: hp.base }), hp.vigour ? tx('v2.sheet.hp.vigour', { n: hp.vigour, per: VIGOUR_HP }) : '', hp.gear ? tx('v2.sheet.hp.gear', { n: hp.gear }) : '',
-      hp.train ? tx('v2.sheet.hp.train', { n: hp.train }) : '', hp.wound ? tx('v2.sheet.hp.wound', { n: hp.wound }) : ''].filter(Boolean).join(', ') + '.';
+      hp.train ? tx('v2.sheet.hp.train', { n: hp.train }) : '', hp.draught ? tx('v2.sheet.hp.draught', { n: hp.draught }) : '', hp.wound ? tx('v2.sheet.hp.wound', { n: hp.wound }) : ''].filter(Boolean).join(', ') + '.';
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)} · ${esc(tx('ui.dayN', { day: nb.day }))}</p>${ahead ? `<p class="pm-sub">${esc(ahead)}</p>` : ''}<div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
       + vs + (prep ? `<p class="pm-sub pm-fstats">${esc(prep)}</p>` : '') + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('') + (rehLine ? `<p class="pm-sub">${esc(rehLine)}</p>` : '') + (noteLine ? `<p class="pm-sub">${esc(noteLine)}</p>` : '') + `<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p><p class="pm-sub">${esc(tx('auto.sheet.hpWhy'))}</p><p class="pm-sub">${esc(from)}</p>`

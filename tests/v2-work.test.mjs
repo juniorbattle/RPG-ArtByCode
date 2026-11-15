@@ -113,11 +113,20 @@ test('the tag in the list: what an action pays beside what it costs (ECO-7)', ()
 });
 
 test('the planner of the laboratory: it works and reaches the DB7 curve\'s gear; the three others unchanged (ECO-8)', () => {
-  const S = Array.from({ length: 12 }, (_, i) => i + 1), plan = LAB.labReport(S, LAB.POLICIES.planner, 'v2');
+  const S = Array.from({ length: 12 }, (_, i) => i + 1);
+  // the gear's path alone: the planner without the town's quests (the laboratory's switch; it does them since journal Passe QE2)
+  LAB.LAB_QUESTS.only = [];
+  const plan = LAB.labReport(S, LAB.POLICIES.planner, 'v2');
+  LAB.LAB_QUESTS.only = null;
   // the blade at tier 1, the mail shirt and the wrap by day 6 (four pieces or tiers), the three tiers and the ring by day 10 (seven)
   assert.ok(plan.v2.money.jobs >= 8, `${plan.v2.money.jobs} jobs a game`);
   assert.ok(plan.v2.money.gearD6 >= 3.5, `${plan.v2.money.gearD6} pieces by day 6`);
   assert.ok(plan.v2.money.gearD10 >= 6.5, `${plan.v2.money.gearD10} pieces by day 10`);
+  // with the quests (the operator's Q-01 « Adopter ces quatre quêtes », journal Passe QE2): their coins and slots by day 6 cost about half a piece then (3.25 against
+  // 3.83 on these seeds), their rewards in its place; the curve's gear reached all the same by day 10
+  const quests = LAB.labReport(S, LAB.POLICIES.planner, 'v2');
+  assert.ok(quests.v2.money.gearD6 >= 3 && quests.v2.money.gearD10 >= 6.5, `${quests.v2.money.gearD6} / ${quests.v2.money.gearD10} pieces with the quests`);
+  assert.equal(quests.v2.quests['cargo:done'], S.length, 'the planner hauls and tempers the Wyrmsteel in every game');
   // the others take no job (their choices are theirs: ECO-8)
   for (const p of ['idle', 'diligent', 'curious']) assert.equal(LAB.labReport(S.slice(0, 4), LAB.POLICIES[p], 'v2').v2.money.jobs, 0, p);
 });

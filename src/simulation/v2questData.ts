@@ -42,9 +42,9 @@ export const QUEST = {
   failPrep: 25, failGoodwill: -10,
   /** a quest done: the giver's goodwill */
   doneGoodwill: 10,
-  /** the Wyrmsteel (the cargo's reward, src/simulation/v2gear.ts wyrmTier): `beyond` a tier beyond the forge's at once, `fourth` a fourth tier once the forge's three
-   *  are bought, `edge` no tier but its edge in the duel (src/combat/autoMatch.ts); its Attack as a tier */
-  wyrm: 'beyond' as 'beyond' | 'fourth' | 'edge', wyrmAtk: 1,
+  /** the Wyrmsteel (the cargo's reward, src/simulation/v2gear.ts wyrmTier): its Attack, on top of the forge's tiers, even the last, at once (the operator's Q-02
+   *  « Attaque +1, en plus des paliers, tout de suite », journal Passe QE2) */
+  wyrmAtk: 1,
 };
 
 /** the quests' names (keys written whole: tests/texts.test.mjs) */
