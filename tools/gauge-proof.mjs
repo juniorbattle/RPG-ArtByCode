@@ -7,6 +7,8 @@
 //   - each blow that moves a bar moves it ON ITS OWN FRAME (the frame that tells the blow), counted by kind: an enchaînement's later blows, the last blow of an
 //     enchaînement of two and of three, a blow on a ward, a blow under its striker's boost.
 // On a base before lot 4 (journal Passe LC6) it must fail: an enchaînement's blows showed the blow before.
+// A cinematic (journal Passe CI2) hides the HUD and plays its action's blows after it (under an ultra's black): its frames are set aside and counted, the frame that
+// gives the HUD back must show the script's gauge (the check of every frame), and every cinematic of the page's list must have played.
 //   node tools/gauge-proof.mjs [--secs=240] ["<foe>[|<extra query>]" ...]     (DEV server: `weapon=` / `kit=` for Ren's three-blow enchaînements; BASE_URL, CHROME_PATH)
 // Exit 1 on a failure.
 import { createRequire } from 'node:module';
@@ -20,6 +22,7 @@ const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Applicatio
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: ['--use-gl=angle', '--use-angle=d3d11', '--ignore-gpu-blocklist', '--no-sandbox', '--window-size=1280,720'], defaultViewport: { width: 1280, height: 720 }, protocolTimeout: 600000 });
 let failed = 0, errors = 0;
 const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (!ok) failed++; };
+const cineRuns = [];
 const total = { blows: 0, moved: 0, onFrame: 0, later: 0, last2: 0, last3: 0, ward: 0, boost: 0, frames: 0, off: 0 };
 try {
   for (const c of CASES) {
@@ -41,9 +44,10 @@ try {
       const A = window.__arena, out = [];
       let q = []; A.onDuelEvents = (evs) => { for (const e of evs) if (e.type === 'impact' || e.type === 'break' || e.type === 'ko') q.push({ type: e.type, from: e.from, to: e.to, who: e.who, result: e.result, follow: !!e.follow, action: e.action }); };
       const bar = (who) => { const i = document.querySelector(`#ah-${who} .ah-rb i`), t = document.querySelector(`#ah-${who} .ah-rb`); return t && i ? Math.round((i.getBoundingClientRect().width / t.getBoundingClientRect().width) * 1000) / 10 : null; };
-      for (let k = 0; k < secs * 60 && !A.auto.over; k++) { A.update(1 / 60); out.push({ t: A.auto.t, evs: q, ren: bar('ren'), marek: bar('marek') }); q = []; }
-      return out;
-    }, SECS);
+      const cines = []; let was = null;
+      for (let k = 0; k < secs * 60 && !A.auto.over; k++) { const c = A.cineRun; A.update(1 / 60); const now = A.cineRun ?? null; if (now && now !== was) cines.push({ tier: now.m.tier, action: now.m.action, t: now.m.t }); was = now; out.push({ t: A.auto.t, evs: q, ren: bar('ren'), marek: bar('marek'), cine: !!(c || now) }); q = []; }
+      return { out, cines, list: (A.cineList ?? []).filter((m) => m.t <= A.auto.t + 1e-6).map((m) => ({ tier: m.tier, action: m.action, t: m.t })) };
+    }, SECS).then((r) => { cineRuns.push({ c, played: r.cines, list: r.list }); return r.out; });
     // the script's gauge after each line, for each seat (index 0 Ren, 1 the opponent in the trace: both gauges since the model « La Brute », journal Passe BL1), and its value at a time
     const L = script.log, seatOf = (who) => (who === script.ids.ren ? 'ren' : 'marek'), K = { ren: 0, marek: 1 }, MAX = script.rules.max, DECAY = script.rules.decay, STUN = script.rules.stun; // the page's own rules (journal Passe SL3: the decay of RY-3)
     // a line's trace is written before its blow fills the target's gauge (src/combat/auto.ts): after a blow on that seat, the next line's trace with its decay undone (full
@@ -73,7 +77,9 @@ try {
     const blowLines = L.map((e, i) => ({ e, i })).filter(({ e }) => e.ev === 'hit' || e.ev === 'guarded' || e.ev === 'dodged');
     let bi = 0, off = 0, worst = 0; const offs = [];
     const n = { blows: 0, moved: 0, onFrame: 0, later: 0, last2: 0, last3: 0, ward: 0, boost: 0 }, misses = [];
+    let inCine = 0;
     frames.forEach((fr, k) => {
+      if (fr.cine) { inCine += fr.evs.filter((ev) => ev.type === 'impact').length; for (const ev of fr.evs) if (ev.type === 'impact') bi++; return; }
       for (const seat of ['ren', 'marek']) { const x = expected(seat, fr.t), d = Math.abs(fr[seat] - Math.round(x)); worst = Math.max(worst, d); if (d > 1.05) { off++; if (offs.length < 4) offs.push(`${seat} at ${fr.t.toFixed(3)}: bar ${fr[seat]}, the script ${x.toFixed(2)}`); } }
       for (const ev of fr.evs) {
         if (ev.type !== 'impact') continue;
@@ -96,7 +102,8 @@ try {
         if (ok && on(seatOf(e.who), 'boost', e.t)) n.boost++;
       }
     });
-    check(off === 0, `${c}: each bar shows the script's gauge at every frame (${frames.length} frames, ${off} off by more than a percent, the largest gap ${worst.toFixed(1)})${offs.length ? '\n     ' + offs.join('\n     ') : ''}`);
+    check(off === 0, `${c}: each bar shows the script's gauge at every frame (${frames.length} frames, ${frames.filter((x) => x.cine).length} in ${cineRuns[cineRuns.length - 1].played.length} cinematics set aside with their ${inCine} blows, ${off} off by more than a percent, the largest gap ${worst.toFixed(1)})${offs.length ? '\n     ' + offs.join('\n     ') : ''}`);
+    { const r = cineRuns[cineRuns.length - 1]; check(JSON.stringify(r.played) === JSON.stringify(r.list), `${c}: every cinematic of the page's list played, in its order (${r.played.map((x) => `${x.tier} ${x.action} ${x.t}`).join(', ') || 'none'})`); }
     check(n.moved > 10 && n.onFrame === n.moved, `${c}: each blow that moves a bar moves it on its own frame: ${n.onFrame} of ${n.moved} (${n.blows} blows; later blows ${n.later}, last of two ${n.last2}, last of three ${n.last3}, on a ward ${n.ward}, under a boost ${n.boost})${misses.length ? '\n     ' + misses.slice(0, 4).join('\n     ') : ''}`);
     for (const k of Object.keys(n)) total[k] += n[k];
     total.frames += frames.length; total.off += off;

@@ -1546,6 +1546,54 @@ L'opérateur a dit « fiche remplie » ; ses choix, mot pour mot, sans note : BL
 - L'essai en jeu de l'opérateur, lancé (BL3-6) ; ses remarques sur une fiche, avant le lot 4.
 - Le lot 4 (le build : le choix du vainqueur, les talents, les armes à propriété ; au test de AC-12, Marek, Cassius et Rhosk n'ont qu'une bonne réponse en finale, § 35.4), puis le lot 5.
 
+## 38. Les cinématiques des coups d'éclat (14-15/11/2026, journal Passes CI1 et CI2)
+
+Statut : **construites et fusionnées dans le jeu par défaut**, dans tout duel joué par l'ordinateur sur ses feuilles (les combats du tournoi, les défis, les représailles, une répétition revue, la page de l'arène seule). De la présentation : le duel, son script et son résultat ne changent pas. La demande de l'opérateur, mot pour mot (14/11/2026) : « dans notre combat, j'aimerai integrer animation runtime ( cinematics ) pour notre competences forts/ultimes qui touche totalement l'adversaire un peu comme un street fighter par exemple ou un tales of/trials of mana pour rester dans l'esprit rpg donc avec jun decor independant fond noire et des mouvements/effets intenses lors de l'animation de l'attaque hit&dash avec vfx claquants ».
+
+### 38.1 La fiche relue (15/11/2026)
+
+La fiche https://claude.ai/artifact/2Ut19phdR8vySTVzAU1a98 (`briefs/fiche-combat-cinematiques.html`), l'opérateur : « Sheet filled ». Ses choix, mot pour mot, et ses notes :
+
+| Carte | Choix | Note |
+|---|---|---|
+| CI-1 la mise en scène | « Bonne direction, avec des retouches (en note) » | « le zoom in est un peu trop important ... on doit pouvoir garder une vue globale de la scene avec un leger zoom in eventuellement » |
+| CI-1b les rivaux | « Reçu » | « je repete encore le zoom in est un peu trop important.. on doit pouvoir garder une vue globale de la scene avec un leger zoom in eventuellement » |
+| CI-2 quelles compétences | « Les ultimes seules (les exploitations) » | « Mais on peut comme dans street fighter, utiliser nos cinematiques pour les super et les ultra, nous avons deja notre direction valide pour le ultime ( ultra ) et pour les super dans competences forts, ce serait des cinematiques legerement plus simple/soft tout en gardant la coherence generale, donc par exemple l'ecran noir ne serait pas integre lors du super mais l'animation plus simple serait tout de meme bien orchester ! » |
+| CI-3 « touche totalement » | « Et seulement dans une faille ou une rupture » | « oui touche totalement donc dans le cas ou l'ennemie est le plus vulnerable... donc si un competences est tente mais echoue forceemnt onn aura pas notre cinematiques qui se lance » |
+| CI-4 qui | « Les deux combattants » | — |
+| CI-5 combien | « Au plus 3, 20 s entre deux, le K.O. toujours » | — |
+| CI-6 la durée | « Complète à chaque fois » | — |
+| CI-7 « Passer » et ×2 | « « Passer » coupe la cinématique, ×2 la joue deux fois plus vite » | — |
+| CI-8 le mouvement réduit | « La version calme » | — |
+| CI-9 où | « Partout où l’arène joue un duel » | — |
+| CI-10 le fond noir et les couleurs | « En exception : la couleur de chaque compétence (comme FX4) » | — |
+| CI-11 le son | « Les sons approuvés, la musique continue » | — |
+| CI-12 l'art nouveau | « Aucun pour la construction » | — |
+| CI-13 la construction | « Construire, prouver, fusionner » | — |
+
+La question posée ensuite (la condition de CI-3 appliquée aux « super » de la note de CI-2 ? un casseur ne tombe jamais dans une faille ni une rupture, 0 par combat mesuré) ; sa réponse, mot pour mot : « Super : chaque coup touche (Recommended) ». Aucune décision A3 n'est touchée ; CI-10 change la direction artistique verrouillée d'`AGENTS.md` par une exception, comme FX4, avec son choix cité mot pour mot.
+
+### 38.2 La règle (`src/arena/cineRule.ts`, `CINE_RULE` ; `src/arena/cine.ts`)
+
+| Palier | Compétences (rôle) | Quand | Où |
+|---|---|---|---|
+| ultra | les exploitations : l'Estoc ; la Chute de fer de Marek, le Châtiment d'Ilse | chaque coup de l'action touche, dans une faille ou une rupture, ou le coup du K.O. | dans le vide noir |
+| super | les casseurs : le Tourbillon ; la Taille du Nord de Rhosk, le Coup sauvage de Tobin | chaque coup de l'action touche | dans l'arène, sans noir |
+
+Les deux combattants ; au plus 3 par combat, 20 s de duel entre deux, et toujours le coup du K.O. d'une compétence d'un palier. « Touche » : ni gardé, ni esquivé, ni paré, ni interrompu, ni perdu dans un entrechoc, pour chacun des coups de l'action. La lecture est celle de la relecture de l'arène (`replayEvents`), l'action suivie par combattant (un coup de l'autre peut tomber entre deux des siens).
+
+Mesuré sur 200 parties tenues à part (graines 101 à 300), par combat du joueur, en poule / au tableau / en finale : le planificateur 1,27 / 1,57 / 1,61 (84 % à Ren, 11 % de super, 11 % sur un K.O.) ; la référence 1,27 / 1,58 / 1,86 ; le curieux 1,44 / 2,28 / 2,51. La première vers 68 s, une toutes les 40 s. Les super sont les casseurs des rivaux : aucun joueur du laboratoire ne porte le Tourbillon ; quand Ren le porte, 1,2 à 1,9 super par combat (duels isolés).
+
+### 38.3 La mise en scène (`src/arena/cineDirector.ts`)
+
+- **Une ultra** (3,46 s regardées) : le rideau à l'encre descend sur l'arène ; l'arène, son ciel, ses gradins, son sol et ses feux se cachent, l'in-scatter des lumières se coupe (le fond sans profondeur était lu comme le ciel lointain et doré) ; le vide à la couleur de la compétence (CI-10) ; les deux combattants vus en entier, la caméra à 11,4 m, 10,4 m au rassemblement, 9,9 m au coup (la note de CI-1 : un léger zoom) ; le rassemblement (la charge haute de Ren, la préparation d'un rival ; la recette de charge ; la bande, son visage et le nom de la compétence), la ruée et sa traînée, le coup tenu dans une image blanche (une seule par cinématique), la recette de la compétence, la projection au ralenti, le nombre et sa place ; le rideau redescend, le duel est joué sous lui jusqu'après l'action, l'arène reprend. Un K.O. : la cinématique finit sur la chute, l'arène reprend sur son propre K.O.
+- **Une super** (2,2 s) : les mêmes temps dans l'arène, la caméra rapprochée de 2,2 m vers le frappeur ; ni noir, ni image blanche ; la bande plus basse et plus petite ; la ruée et sa traînée depuis la place du frappeur ; l'arène reprend les combattants où la super les a laissés (l'élan, le recul), sans saut.
+- **La version calme** (le mouvement réduit, réglage du jeu, CI-8) : les fondus restent ; ni mouvement de caméra, ni ruée dans le vide (le frappeur déjà au contact), ni traînée, ni secousse, ni image blanche ; 2,55 s pour une ultra, 1,72 s pour une super.
+- **« Passer »** pendant une cinématique la coupe (CI-7), le duel continue ; un second appui passe le combat. **×2** la joue deux fois plus vite. Après « Passer » vers le résultat, aucune. Une leçon du premier combat que le rattrapage atteint s'ouvre sur l'arène, la cinématique finit autour d'elle. « [L] Passer » dans le coin pendant la cinématique.
+- **Le son** (CI-11) : les sons approuvés aux battements de la cinématique (la note de la charge ou la menace d'un rival, le fouet de la ruée, le son de la compétence à chaque coup, la foule), les coups de l'action non redits au retour ; la musique continue.
+- **Aucun art nouveau** (CI-12) : les feuilles de combat approuvées (`CombatSheets.show`), les recettes (`CombatFx.play`, `palette`), le visage cuit du HUD.
+- **Le guide** (« Le duel ») dit les cinématiques en une ligne, avec les nombres de la règle ; pas de leçon (CI-9).
+
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
 Passe AU3, en réponse au chantier n° 1 de la Passe AU2 :

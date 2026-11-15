@@ -14,6 +14,7 @@ import { INJURY_HP, TRAIN_MAX } from '../simulation/v2gear';
 import { REN_BASE, TRAIN_HP, TRAIN_POINT, VIGOUR_HP } from '../combat/stats';
 import { AUTO_RULES } from '../combat/auto';
 import { AUTO_COOLDOWN, AUTO_WEAPONS } from '../combat/autoData';
+import { CINE_RULE } from '../arena/cineRule';
 import { REHEARSAL } from '../simulation/v2prep';
 import { SAND_LESSON } from '../simulation/v2skills';
 import { autoOrderView } from '../simulation/preview';
@@ -286,7 +287,7 @@ export function chapterText(s: GameState, c: Chapter): string {
       const R = AUTO_RULES, hits = Object.values(AUTO_WEAPONS).map((w) => w.hits.length);
       // the openings and the clash (lot 2 of « La Brute »): the duel's own seconds and multiplier
       return tx(c.body, { cool: AUTO_COOLDOWN, lo: Math.min(...hits), hi: Math.max(...hits), times: R.react.skillGuard, glo: pct(R.guard.lo), ghi: pct(R.guard.hi), stun: R.brk.stun, dmg: R.brk.dmg, form: pct(R.form),
-        open: Math.round((R.open.dmg - 1) * 100), opener: R.opener, cut: R.interrupt.open, parry: R.parry.open, whiff: R.whiff, w: R.clash.w });
+        open: Math.round((R.open.dmg - 1) * 100), opener: R.opener, cut: R.interrupt.open, parry: R.parry.open, whiff: R.whiff, w: R.clash.w, cmax: CINE_RULE.max ?? 0, cgap: CINE_RULE.gap ?? 0 });
     }
     case 'renown': return tx(c.body, { hale: nameOf('hale'), parade: Math.max(...daysOfKind('free')) });
     case 'time': return tx(c.body, { slot: tx('ui.oneSlot') });

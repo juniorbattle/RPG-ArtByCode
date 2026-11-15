@@ -36,8 +36,9 @@ import { lang } from '../narrative/text';
 import type { ChargedDuel, ChargeTier } from '../combat/charge';
 import type { CombatFx } from './fx/combatFx';
 import type { PieceId } from '../audio/plan';
-import type { CineMoment, CineRule } from './cine';
-import type { CineBackdrop, CineRun, CineStyle } from './cineDirector';
+import type { CineMoment } from './cine';
+import type { CineBackdrop, CineRun } from './cineDirector';
+import { bindCap } from '../input/caps';
 
 /** The arena scene of the game (journal Passe P1): `?scene=arena`. The prototype's duel (CombatSim, ported rule for rule) staged with
  *  the town's renderer: the same materials, lights (LightRig), sky, moon shadow, planar reflection in the puddles and post chain (in-scatter,
@@ -209,10 +210,11 @@ export class ArenaApp {
   private foe: string;
   /** the sky (hidden in a cinematic's void) */
   private sky: THREE.Object3D | null = null;
-  /** the cinematics of the skills that land in full (journal Passe CI1, src/arena/cine.ts, cineDirector.ts): their style and rule, the duel's moments, the one
-   *  playing, its void's ground; the cinematic's action, whose blows the arena then tells without their sounds and effects (the cinematic told them) */
-  private cineStyle: CineStyle | null = null;
-  private cineRule: CineRule | null = null;
+  /** the cinematics of the skills that land in full (journal Passes CI1 / CI2, src/arena/cine.ts, cineDirector.ts; the operator's sheet, CI-9 « Partout où l’arène joue
+   *  un duel »): on in every duel played by the computer on its sheets, DEV `cine=off` (none) or `cine=calm` (the reduced motion's) for the tools; the duel's moments,
+   *  the one playing, an ultra's void's ground; the cinematic's action, whose blows the arena then tells without their sounds and effects (the cinematic told them) */
+  private cineOn = false;
+  private cineCalm = false;
   cineList: CineMoment[] = [];
   private cineNext = 0;
   cineRun: CineRun | null = null;
@@ -364,19 +366,14 @@ export class ArenaApp {
     this.scene.add(this.sprites.group);
     this.scene.add(this.floor.mesh);
     if (fxOn(this.rules, this.opts.params)) this.combatFx = (await import('./fx/combatFx')).installCombatFx(this.scene, this.camera, this.opts.params, { foe: this.foe, guardReach: (who) => { const r = ((import.meta.env.DEV && this.densityTrial) || this.sheets) && this.set.reach[`${who}/block.0`]; return r ? r * PIXEL_WORLD * CHAR_SCALE : null; }, lights: this.lights, shake: (k) => { this.shake = Math.max(this.shake, k); }, timeScale: (k) => { this.timeScale = k; }, renderHeight: () => this.post.height });
-    // the cinematics of the skills that land in full (journal Passe CI1): DEV `cine=full|short|calm` on the duel played by the computer and its sheets (the trial of
-    // the workshop; `cineset=ultimate|strong|all`, `cineland=hit|open|ko`, `cineside=ren|both`, `cinemax=`, `cinegap=`, `cineko=0`)
-    if (import.meta.env.DEV && this.auto && this.sheets && this.combatFx) {
-      const c = this.opts.params.get('cine');
-      if (c === 'full' || c === 'short' || c === 'calm') {
-        const q = this.opts.params, num = (k: string) => (q.has(k) ? +q.get(k)! : undefined);
-        const set = q.get('cineset'), land = q.get('cineland'), side = q.get('cineside');
-        this.cineStyle = c;
-        this.cineRule = { set: set === 'ultimate' || set === 'all' ? set : 'strong', land: land === 'open' || land === 'ko' ? land : 'hit', side: side === 'ren' ? 'ren' : 'both', max: num('cinemax'), gap: num('cinegap') ?? 20, ko: q.get('cineko') !== '0' };
-        this.cineMod = await import('./cineDirector');
-        this.cineBack = new this.cineMod.CineBackdrop(this.scene);
-        this.cineList = (await import('./cine')).cineMoments(this.auto.result, this.auto.fighters, this.cineRule);
-      }
+    // the cinematics of the skills that land in full (journal Passes CI1 / CI2): every duel played by the computer on its sheets and effects (CI-9), the operator's rule
+    // (src/arena/cine.ts CINE_RULE); DEV `cine=off` none, `cine=calm` the reduced motion's (captures)
+    const cq = import.meta.env.DEV ? this.opts.params.get('cine') : null;
+    if (this.auto && this.sheets && this.combatFx && cq !== 'off') {
+      this.cineOn = true; this.cineCalm = cq === 'calm';
+      this.cineMod = await import('./cineDirector');
+      this.cineBack = new this.cineMod.CineBackdrop(this.scene);
+      this.cineList = (await import('./cine')).cineMoments(this.auto.result, this.auto.fighters);
     }
     // a version 2 duel: the district's townsfolk on the stands (journal Passe PU1, the operator's sheet PU-1 to PU-8); `cast=generated` keeps today's spectators
     if (v2Rules(this.rules) && !this.opts.forecourt && !this.opts.match?.empty && this.opts.params.get('cast') !== 'generated') {
@@ -476,7 +473,7 @@ export class ArenaApp {
     const t = +(Math.max(a.t, a.lastLineT() + 0.006) + 1e-6).toFixed(6), p: AutoCommand = { t, skill: sk.id };
     this.presses.push(p);
     a.replace(autoDuel(a.fighters.ren, a.fighters.marek, this.autoSeed, { log: true, trace: true, commands: this.presses }), p);
-    if (this.cineRule) void import('./cine').then((c) => { this.cineList = c.cineMoments(a.result, a.fighters, this.cineRule!); const k = this.cineList.findIndex((m) => m.t > a.t + 1e-6); this.cineNext = k < 0 ? this.cineList.length : k; });
+    if (this.cineOn) void import('./cine').then((c) => { this.cineList = c.cineMoments(a.result, a.fighters); const k = this.cineList.findIndex((m) => m.t > a.t + 1e-6); this.cineNext = k < 0 ? this.cineList.length : k; });
     this.snd?.duelEvent({ type: 'press', quiet });
     this.opts.match?.onPress?.(p);
     return true;
@@ -585,7 +582,7 @@ export class ArenaApp {
     // the moments already behind the replay (a moment sought, « Skip », a press replayed) are passed over
     while (a && this.cineList[this.cineNext] && this.cineList[this.cineNext].t < a.t - 1e-6) this.cineNext++;
     const m = this.cineList[this.cineNext];
-    if (!a || !m || !this.cineMod || !this.cineStyle || this.skipFade || a.over) return false;
+    if (!a || !m || !this.cineMod || !this.cineOn || this.skipFade || a.over) return false;
     const w = a.wins[m.who].find((x) => !x.follow && x.id === m.action && Math.abs(x.t0 + x.impactAt - m.t) < 1e-6), start = w ? w.t0 : m.t - 0.3;
     if (a.t + step < start - 1e-9) return false;
     this.cineNext++;
@@ -595,15 +592,18 @@ export class ArenaApp {
       world: (on) => this.cineWorld(on),
       play: (id, on, from) => this.combatFx?.play(id, on, from, this.fighters),
       palette: (id, who) => this.combatFx?.palette(id, who) ?? { edge: '#ffb52a', light: '#ffd66a' },
+      skipLine: () => `${bindCap('dodge')}<span>${this.autoTexts().skip}</span>`,
+      basePose: () => ({ ...BASE_POSE }), home: (seat) => HOME[seat], lunge: (seat) => this.lungeOf(seat),
+      settle: (striker, off, struck, knock) => { this.pres[striker].off = off; this.pres[struck].knock = knock; },
       sound: (e) => this.snd?.duelEvent(e as { type: string }),
       portrait: (seat) => this.set.portraits[seat] ?? null,
       skillName: (id) => autoActionName(id), fighterName: (seat) => this.hudNames()[seat],
-      place: (mm) => { const T = (this.opts.match?.texts as AutoTexts | undefined) ?? (lang() === 'fr' ? AUTO_TEXTS_FR : AUTO_TEXTS_EN); return mm.inBreak ? T.inBreak(AUTO_RULES.brk.dmg) : mm.inOpen ? T.inOpen(AUTO_RULES.open.dmg) : ''; },
-      reduced: () => this.reducedMotion,
+      place: (mm) => { const T = this.autoTexts(); return mm.inBreak ? T.inBreak(AUTO_RULES.brk.dmg) : mm.inOpen ? T.inOpen(AUTO_RULES.open.dmg) : ''; },
       catchUp: (mm) => this.cineCatchUp(mm),
       tier: (mm) => (mm.who === 'ren' ? a.tierOf(mm.action) : 0),
     };
-    this.cineRun = new this.cineMod.CineRun(m, host, this.reducedMotion ? 'calm' : this.cineStyle, this.cineBack!);
+    // the reduced motion (the game's own setting, CI-8 « La version calme »)
+    this.cineRun = new this.cineMod.CineRun(m, host, this.reducedMotion || this.cineCalm, this.cineBack!);
     return true;
   }
   /** the arena, its sky, stands, floor and fires shown or hidden (a cinematic's void) */
@@ -619,8 +619,7 @@ export class ArenaApp {
     this.cineQuiet = { who: m.who, action: m.action, until: m.end + 1e-6 };
     const step = a.D.dt, until = m.end + 0.18;
     while (!a.over && !this.paused && a.t < until - 1e-9) { a.step(step); this.onEvents(a.drain()); }
-    this.cineQuiet = null;
-    for (const p of Object.values(this.pres)) { p.off = 0; p.knock = 0; p.flash = 0; }
+    this.acc = 0;
     this.presentFighters(0); this.applyCamera(0);
   }
   /** an event a cinematic already told (its action's blows and release) */
@@ -628,6 +627,12 @@ export class ArenaApp {
     const q = this.cineQuiet; if (!q) return false;
     return (e.type === 'impact' && e.from === q.who && e.action === q.action && (e.t ?? 0) <= q.until) || (e.type === 'chargeRelease' && e.who === q.who && (e.t ?? 0) <= q.until);
   }
+  /** how far a fighter's offensive skill lunges toward the other (presentFighters' own reach: its strike frame's reach on its sheet) */
+  private lungeOf(seat: FighterId): number {
+    const other: FighterId = seat === 'ren' ? 'marek' : 'ren', reach = (this.set.reach[`${seat}/skillOff.2`] ?? this.set.reach[`${seat}/heavy.2`] ?? 20) * PIXEL_WORLD * CHAR_SCALE;
+    return Math.max(0, Math.min(2.4, Math.abs(HOME[other] - HOME[seat]) - reach - 0.12));
+  }
+  private autoTexts(): AutoTexts { return (this.opts.match?.texts as AutoTexts | undefined) ?? (lang() === 'fr' ? AUTO_TEXTS_FR : AUTO_TEXTS_EN); }
   private hudNames(): Record<FighterId, string> { return this.opts.match?.auto?.names ?? { ren: 'Ren', marek: this.foe[0].toUpperCase() + this.foe.slice(1) }; }
 
   // ---------------------------------------------------------------- simulation -> presentation
@@ -781,7 +786,7 @@ export class ArenaApp {
       f.act.anim = `${f.kind}.${i}` as Anim;
     }
     this.fx = this.fx.filter((f) => !f.act.hidden);
-    this.combatFx?.present(dt, this.fighters, (this.cineRun?.inVoid() ? null : this.charge?.view() ?? this.auto?.chargeFx() ?? null) as ReturnType<ChargedDuel['view']> | null);
+    this.combatFx?.present(dt, this.fighters, (this.cineRun?.stages() ? null : this.charge?.view() ?? this.auto?.chargeFx() ?? null) as ReturnType<ChargedDuel['view']> | null);
   }
 
   /** the contextual camera: the base framing; a push-in toward Marek while he charges a heavy (scaled by the assistance), held through the
@@ -854,8 +859,11 @@ export class ArenaApp {
     U.uMoonDir.value.copy(this.keyDir);
     this.pollPad();
     this.stepSkip(dt);
+    // a cinematic's clock: ×2 twice as fast (CI-7), its slow motion; it runs on under a lesson of the first duel its catch-up opened (the lesson shows on the arena)
     const cr = this.cineRun;
-    if (cr && !this.paused) { cr.update(dt * (this.speed > 1 ? 2 : 1) * (cr.inVoid() ? cr.scale() : 1)); if (cr.done) this.cineRun = null; }
+    if (cr && (!this.paused || this.lesson)) { cr.update(dt * (this.speed > 1 ? 2 : 1) * cr.scale()); if (cr.done) this.cineRun = null; }
+    // the quiet blows told: past the cinematic's action, the arena tells every blow again
+    if (this.cineQuiet && this.auto && this.auto.t > this.cineQuiet.until + 0.05) this.cineQuiet = null;
     if (!this.paused && !this.cineRun) {
       this.acc += dt * this.timeScale * this.speed;
       const step = this.sim.D.dt;
@@ -867,7 +875,7 @@ export class ArenaApp {
       }
       if (n >= 24) this.acc = 0;
     }
-    const pdt = this.paused ? 0 : dt, voidOn = !!this.cineRun?.inVoid(), vdt = voidOn ? pdt * this.cineRun!.scale() * (this.speed > 1 ? 2 : 1) : pdt;
+    const pdt = this.paused ? 0 : dt, voidOn = !!this.cineRun?.stages(), vdt = voidOn ? pdt * this.cineRun!.scale() * (this.speed > 1 ? 2 : 1) : pdt;
     if (this.opts.forecourt) this.presentForecourt(dt); else if (!voidOn) this.presentFighters(this.cineRun ? 0 : pdt);
     this.presentFans();
     this.presentFx(vdt);
@@ -875,10 +883,10 @@ export class ArenaApp {
     if (!voidOn) this.applyCamera(this.cineRun ? 0 : pdt);
     this.updateFloor();
     // depth of field on the duel (in a cinematic's void, on the fighters)
-    const v = voidOn ? this.fighters.ren.pos.clone().setY(1.6).applyMatrix4(this.camera.matrixWorldInverse) : new THREE.Vector3(0, 1.2, 0).applyMatrix4(this.camera.matrixWorldInverse);
+    const v = voidOn && this.cineRun?.ultra ? this.fighters.ren.pos.clone().setY(1.6).applyMatrix4(this.camera.matrixWorldInverse) : new THREE.Vector3(0, 1.2, 0).applyMatrix4(this.camera.matrixWorldInverse);
     this.post.params.dofFocus = THREE.MathUtils.clamp(-v.z, 6, 40);
     this.lights.update(this.time, pdt, this.camera);
-    this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...(this.cineRun?.ghosts ?? []), ...(voidOn ? [] : this.fans)], this.lights, this.camera, this.keyDir, null, this.fighters.ren);
+    this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...(this.cineRun?.ghosts ?? []), ...(voidOn && this.cineRun?.ultra ? [] : this.fans)], this.lights, this.camera, this.keyDir, null, this.fighters.ren);
     this.stands?.update(this.sim.t, this.lights, this.camera, this.keyDir);
     this.particles.update(pdt, this.time, this.camera, this.post.height, this.lights, null);
     if (this.hud instanceof AutoHud) this.hud.update(this.auto!.hud(), this.hudVisible && !this.cineRun, this.paused && !this.moment, this.speed > 1, this.auto!.over);

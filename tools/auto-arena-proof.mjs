@@ -4,6 +4,10 @@
 //    only (no generated frame beside a sheet, as tools/arena-sheet-proof.mjs), every scripted moment (`jump`) without a page error, the replay ending on the
 //    duel's own result, ×2 doubling the duel's clock on the page's own loop, « Skip » reaching the K.O. under its black curtain; the bodies on the floor never
 //    jumping between two frames (journal Passe LC4: the lunge and the knock-back, at most 0.6 m a frame at 60 fps) and each blow landing drawn;
+// 1b. the cinematics (journal Passe CI2, the operator's sheet CI-1 to CI-13): on duels of the arena's own page, each cinematic Node's rule plays (src/arena/cine.ts), at
+//    its moment, in its order; an ultra under the black (the curtain down, the arena hidden, the void's ground, both fighters in frame, one white frame), a super in
+//    the arena (nothing hidden, no black, no white frame); the HUD hidden meanwhile, the band (the striker's name, its skill's) and the number (its damage, its place);
+//    the duel's result Node's; « Skip » cutting a cinematic and the duel going on, ×2 playing it twice as fast; the reduced motion's calm version;
 // 2. a version 2 game's match sheet (the named state `v2-day2-afternoon`): its table of both fighters against Node's own fighters for that bout (the health of the
 //    bout, the four stats, the forms of the day, the dodge and the guard), the rival's training points, the order shown; the order set with the player's left
 //    key, kept in the game; the arena then plays the duel of that order (its result against Node's on the same state), « Skip », the result in the state, and
@@ -63,9 +67,11 @@ try {
       const on = A.onEvents; A.onEvents = function (evs) { on.call(this, evs); for (const e of evs) if (e.type === 'impact') impacts.push(e); };
       for (let i = 0; !A.auto.over && i < 3e5; i++) {
         impacts.length = 0;
+        // a cinematic draws its action's blows itself, then plays them under its black or at its end (journal Passe CI2): those are set aside
+        const inCine = !!A.cineRun;
         A.update(1 / 60); drawn(`t ${A.auto.t.toFixed(1)}`);
         for (const id of ['ren', 'marek']) { const x = P[id].off + P[id].knock, o = body[id]; if (o.prev !== null) { const d = Math.abs(x - o.prev); o.max = Math.max(o.max, d); if (d > 0.6) o.snaps++; } o.prev = x; }
-        for (const e of impacts) { landed.n++; if (A.sim.f[e.from].state !== 'acting' && landed.bad.length < 3) landed.bad.push(`${A.auto.t.toFixed(2)} ${e.from} ${e.action} ${A.sim.f[e.from].anim.name}`); }
+        if (!inCine) for (const e of impacts) { landed.n++; if (A.sim.f[e.from].state !== 'acting' && landed.bad.length < 3) landed.bad.push(`${A.auto.t.toFixed(2)} ${e.from} ${e.action} ${A.sim.f[e.from].anim.name}`); }
         ['#ah-ren .ah-ch', '#ah-marek .ah-ch'].forEach((q, k) => { const c = hud.querySelector(q); if (!c.classList.contains('off') && /^(Charging|Charge\s?:)\s?\S/.test(c.textContent)) cards[k] = (cards[k] ?? 0) + 1; });
         steps = i + 1;
       }
@@ -112,6 +118,76 @@ try {
       const pz = await page.evaluate(() => { const A = window.__arena; A.auto.reset(); A.paused = false; A.moment = false; A.action('pause', true); A.update(0); return document.querySelector('#ah-pause')?.classList.contains('on'); });
       check(pz, 'the pause: its screen');
       await page.screenshot({ path: path.join(outDir, 'arena-pause.png') });
+    }
+    await page.close();
+  }
+
+  // 1b. the cinematics
+  const CI = await server.ssrLoadModule('/src/arena/cine.ts'), { FOE_SKILLS } = await server.ssrLoadModule('/src/combat/v2duel.ts');
+  const CASES = [['marek', 1337, ''], ['rhosk', 1337, ''], ['rhosk', 1337, 't3,t4,k_sunder,s1'], ['ilse', 2, ''], ['marek', 1, '']];
+  for (const [foe, seed, kit] of CASES) {
+    const tag = `${foe} ${seed}${kit ? ' ' + kit : ''}`, page = await b.newPage(), errors = [];
+    await prepare(page);
+    await page.evaluateOnNewDocument(() => Object.defineProperty(Navigator.prototype, 'getGamepads', { configurable: true, value: () => [] }));
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.evaluateOnNewDocument(`Object.defineProperty(window, '__arena', { configurable: true, get() { return undefined; }, set(v) { v.start = () => {}; Object.defineProperty(window, '__arena', { value: v, writable: true, configurable: true }); } })`);
+    await page.goto(`${BASE}?scene=arena&foe=${foe}&duelseed=${seed}${kit ? '&kit=' + kit : ''}&vis=0&fps=off&lang=${L}`, { waitUntil: 'load', timeout: READY });
+    await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY });
+    const d = AV.sceneAutoDuel(foe, seed, { loadout: kit ? kit.split(',') : undefined }), want = CI.cineMoments(d.result, { ren: d.ren, marek: d.foe });
+    const name = (seat) => (seat === 'ren' ? 'Ren' : foe[0].toUpperCase() + foe.slice(1)), skill = (id) => inLang(() => (FOE_SKILLS[id] ? T.word(FOE_SKILLS[id].name) : T.skillName(id)));
+    const r = await page.evaluate(() => {
+      const A = window.__arena, runs = [], hud = document.querySelector('#arena-hud');
+      let cur = null, frames = 0;
+      for (let i = 0; i < 3e5 && !(A.auto.over && !A.cineRun && A.auto.t - A.auto.end > 2); i++) {
+        A.update(1 / 60); frames++;
+        const c = A.cineRun;
+        if (c && c !== cur) { cur = c; runs.push({ tier: c.m.tier, who: c.m.who, action: c.m.action, t: c.m.t, startT: A.auto.t, frames: 0, hidden: 0, voidF: 0, black: 0, hudOff: 0, both: 0, ultra: c.ultra, calm: c.calm, band: '', num: '' }); }
+        if (c) {
+          const x = runs[runs.length - 1]; x.frames++;
+          if (!A.arena.group.visible) x.hidden++;
+          if (A.cineBack?.mesh.visible) x.voidF++;
+          if (+(document.querySelector('.ci-curtain')?.style.opacity ?? 0) >= 0.9) x.black++;
+          if (hud.classList.contains('off')) x.hudOff++;
+          // both fighters inside the frame while the cinematic stages them
+          if (c.stages()) { const inF = (a) => { const v = a.pos.clone().setY(1.4).project(A.camera); return Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1; }; if (inF(A.fighters.ren) && inF(A.fighters.marek)) x.both++; }
+          const band = document.querySelector('.ci-band'), num = document.querySelector('.ci-num');
+          if (band && +band.style.opacity > 0.9) x.band = band.textContent; if (num && +num.style.opacity > 0.9) x.num = [...num.children].map((e) => e.textContent).join(' ');
+          x.white = c.seen.white; x.flashes = c.seen.flashes; x.stages = (x.stages ?? 0) + (c.stages() ? 1 : 0);
+        } else cur = null;
+      }
+      return { runs, end: { t: A.auto.end, hp: A.auto.result.hp, winner: A.auto.winner }, frames };
+    });
+    const got = r.runs.map((x) => `${x.tier} ${x.who} ${x.action} ${x.t}`), exp = want.map((m) => `${m.tier} ${m.who} ${m.action} ${m.t}`);
+    check(JSON.stringify(got) === JSON.stringify(exp), `${tag}: the cinematics Node's rule plays, in order: ${got.join(', ') || 'none'}`);
+    check(JSON.stringify(r.end) === JSON.stringify({ t: d.result.t, hp: d.result.hp, winner: d.result.winner === 0 ? 'ren' : 'marek' }), `${tag}: the duel's result is Node's (${r.end.winner} at ${r.end.t} s)`);
+    r.runs.forEach((x, k) => {
+      const m = want[k]; if (!m) return;
+      const wall = x.frames / 60, place = m.inBreak ? 'break' : m.inOpen ? 'open' : '';
+      check(x.startT <= m.t + 1e-6 && m.t - x.startT < 0.6, `${tag} #${k + 1}: it starts before the blow lands (${x.startT.toFixed(2)} s, the blow at ${m.t} s)`);
+      if (x.ultra) check(x.hidden > 0 && x.voidF === x.hidden && x.black >= 2 && (REDUCED ? x.white === 0 : x.flashes === 1 && x.white <= 8), `${tag} #${k + 1} ultra: the arena hidden ${x.hidden} frames on the void's ground, the black down ${x.black} frames, ${x.flashes ?? 0} white flash of ${x.white} frames (0.1 s at most)`);
+      else check(x.hidden === 0 && x.voidF === 0 && x.black === 0 && !x.white, `${tag} #${k + 1} super: in the arena (nothing hidden, no black, no white frame)`);
+      check(x.stages > 0 && x.both === x.stages, `${tag} #${k + 1}: both fighters in the frame all along (${x.both} of ${x.stages} frames: CI-1's note)`);
+      check(x.hudOff >= x.frames - 2, `${tag} #${k + 1}: the HUD hidden meanwhile (${x.hudOff} of ${x.frames} frames)`);
+      check(x.band === `${name(m.who)}${skill(m.action)}` && x.num.startsWith(String(Math.round(m.damage))), `${tag} #${k + 1}: the band « ${x.band} », the number « ${x.num} »${place ? ` (${place})` : ''}`);
+      check(x.calm === REDUCED && wall > 1.4 && wall < 4.5, `${tag} #${k + 1}: ${x.calm ? 'the calm version' : 'the full version'}, ${wall.toFixed(2)} s watched`);
+    });
+    check(errors.length === 0, `${tag}: no page error${errors.length ? `: ${errors.slice(0, 2).join(' | ')}` : ''}`);
+    if (foe === 'marek' && seed === 1337) {
+      // « Skip » in a cinematic cuts it, the duel goes on; ×2 plays it twice as fast
+      const sk = await page.evaluate((t0) => {
+        const A = window.__arena; A.auto.seek(Math.max(0, t0 - 1)); A.onEvents(A.auto.drain()); A.paused = false; A.moment = false; A.speed = 1;
+        let n = 0; while (!A.cineRun && n++ < 600) A.update(1 / 60);
+        for (let i = 0; i < 40; i++) A.update(1 / 60);
+        const tIn = A.auto.t; A.action('dodge', true); let f = 0; while (A.cineRun && f++ < 600) A.update(1 / 60);
+        for (let i = 0; i < 60; i++) A.update(1 / 60);
+        const cut = { frames: f, over: A.auto.over, moved: A.auto.t - tIn, black: !!document.querySelector('.ar-skip-fade') };
+        A.auto.seek(Math.max(0, t0 - 1)); A.onEvents(A.auto.drain()); A.speed = 2; n = 0; while (!A.cineRun && n++ < 600) A.update(1 / 60);
+        let g = 0; while (A.cineRun && g++ < 600) A.update(1 / 60); A.speed = 1;
+        return { cut, fast: g };
+      }, want[0].t);
+      check(sk.cut.frames <= 40 && !sk.cut.over && sk.cut.moved > 0.5 && !sk.cut.black, `${tag}: « Skip » cuts the cinematic in ${sk.cut.frames} frames, the duel goes on (${sk.cut.moved.toFixed(2)} s later, not skipped to its end)`);
+      const full = r.runs[0].frames;
+      check(Math.abs(sk.fast - full / 2) <= 6, `${tag}: ×2 plays it twice as fast (${sk.fast} frames against ${full})`);
     }
     await page.close();
   }

@@ -441,15 +441,14 @@ function damage() {
 /** the cinematics of the duel (journal Passe CI1): each rule's moments at each bout of the policies' whole games (src/arena/cine.ts, read by the arena's own replay) */
 const CI = await load('/src/arena/cine.ts');
 export const CINE_RULES = {
-  'ultime / touché / Ren': { set: 'ultimate', land: 'hit', side: 'ren' },
-  'ultime / touché / les deux': { set: 'ultimate', land: 'hit', side: 'both' },
-  'fort / touché / Ren': { set: 'strong', land: 'hit', side: 'ren' },
-  'fort / touché / les deux': { set: 'strong', land: 'hit', side: 'both' },
-  'fort / faille ou rupture / les deux': { set: 'strong', land: 'open', side: 'both' },
-  'fort / K.O. / les deux': { set: 'strong', land: 'ko', side: 'both' },
-  'tous / touché / les deux': { set: 'all', land: 'hit', side: 'both' },
-  'fort / touché / les deux, 3 au plus, 20 s entre deux, le K.O. toujours': { set: 'strong', land: 'hit', side: 'both', max: 3, gap: 20, ko: true },
-  'ultime / touché / les deux, le K.O. fort toujours': { set: 'ultimate', land: 'hit', side: 'both', ko: true },
+  // the operator's sheet (journal Passe CI2): the ultras in an opening or a break, the supers when every blow lands, both fighters, 3 at most, 20 s apart, the K.O. always
+  'la fiche : ultra en faille ou rupture, super touché, 3 au plus, 20 s, le K.O.': CI.CINE_RULE,
+  'les ultra de la fiche seules': { ...CI.CINE_RULE, tiers: CI.CINE_RULE.tiers.filter((x) => x.tier === 'ultra') },
+  'les super de la fiche seules': { ...CI.CINE_RULE, tiers: CI.CINE_RULE.tiers.filter((x) => x.tier === 'super') },
+  // the workshop's rules (journal Passe CI1)
+  'ultime / touché / les deux': { tiers: [{ tier: 'ultra', roles: ['exploit'], land: 'hit' }], side: 'both' },
+  'fort / touché / les deux': { tiers: [{ tier: 'ultra', roles: ['exploit', 'breaker'], land: 'hit' }], side: 'both' },
+  'tous / touché / les deux': { tiers: [{ tier: 'ultra', roles: ['exploit', 'breaker', 'punish', 'pierce', 'opener', 'interrupt'], land: 'hit' }], side: 'both' },
 };
 export function cineOf(pn, seeds, rules = CINE_RULES) {
   const P = LAB.POLICIES[pn], rows = [];
@@ -458,12 +457,8 @@ export function cineOf(pn, seeds, rules = CINE_RULES) {
     if (a.type === 'fight' || a.type === 'challengeResult') {
       const kind = a.type === 'fight' ? 'bout' : 'challenge', o = AM.autoOutcome(st, kind, { log: true }), F = { ren: o.bout.ren, marek: o.bout.foe };
       if (kind === 'bout') {
-        const by = {};
-        for (const [k, r] of Object.entries(rules)) {
-          // a K.O. rule plays the K.O. of a skill of the set: the stronger set's candidates when the rule's own set is narrower
-          const c = r.ko && r.set === 'ultimate' ? [...CI.cineCandidates(o.duel, F, r), ...CI.cineCandidates(o.duel, F, { ...r, set: 'strong', land: 'ko' })].sort((x, y) => x.t - y.t).filter((m, i, a) => a.findIndex((n) => n.t === m.t && n.who === m.who) === i) : CI.cineCandidates(o.duel, F, r);
-          by[k] = CI.cinePick(c, r);
-        }
+        const evs = CI.replayEvents(o.duel, F), by = {};
+        for (const [k, r] of Object.entries(rules)) by[k] = CI.cinePick(CI.cineCandidates(o.duel, F, r, evs), r);
         rows.push({ stage: o.bout.stage, t: o.duel.t, foe: o.bout.foeId, by });
       }
       return { ...a, outcome: { winner: o.winner, playerHp: o.playerHp, playerMaxHp: o.playerMaxHp, opponentHp: o.opponentHp, opponentMaxHp: o.opponentMaxHp, finisher: o.finisher } };
@@ -483,10 +478,10 @@ function cinematics() {
       const per = (R) => R.map((r) => r.by[k].length), mean = (a) => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
       const st = [0, 1, 2].map((s) => { const R = rows.filter((r) => r.stage === s), n = per(R); return { n: R.length, mean: mean(n), med: med(n), p90: q(n, 0.9), max: Math.max(0, ...n), none: pct(n.filter((x) => x === 0).length, n.length) }; });
       const all = rows.flatMap((r) => r.by[k]), first = rows.filter((r) => r.by[k].length).map((r) => r.by[k][0].t), gaps = rows.flatMap((r) => r.by[k].slice(1).map((m, i) => m.t - r.by[k][i].t));
-      const who = pct(all.filter((m) => m.who === 'ren').length, all.length), kos = pct(all.filter((m) => m.ko).length, all.length), acts = {};
+      const who = pct(all.filter((m) => m.who === 'ren').length, all.length), kos = pct(all.filter((m) => m.ko).length, all.length), sup = pct(all.filter((m) => m.tier === 'super').length, all.length), acts = {};
       for (const m of all) acts[m.action] = (acts[m.action] ?? 0) + 1;
       out[pn][k] = { stages: st, first: med(first), gap: med(gaps), ren: who, acts };
-      console.log(`  ${k} : par combat ${st.map((x) => `${x.mean.toFixed(2)} (méd. ${x.med}, p90 ${x.p90}, max ${x.max}, aucun ${x.none} %)`).join(' / ')} ; le premier à ${(first.length ? med(first) : NaN).toFixed(0)} s, entre deux ${(gaps.length ? med(gaps) : NaN).toFixed(0)} s ; Ren ${who} %, K.O. ${kos} % ; ${Object.entries(acts).sort((a, b) => b[1] - a[1]).map(([a, n]) => `${a} ${n}`).join(' ')}`);
+      console.log(`  ${k} : par combat ${st.map((x) => `${x.mean.toFixed(2)} (méd. ${x.med}, p90 ${x.p90}, max ${x.max}, aucun ${x.none} %)`).join(' / ')} ; le premier à ${(first.length ? med(first) : NaN).toFixed(0)} s, entre deux ${(gaps.length ? med(gaps) : NaN).toFixed(0)} s ; Ren ${who} %, K.O. ${kos} %, super ${sup} % ; ${Object.entries(acts).sort((a, b) => b[1] - a[1]).map(([a, n]) => `${a} ${n}`).join(' ')}`);
     }
   }
   if (arg('json')) fs.writeFileSync(arg('json'), JSON.stringify(out, null, 1));

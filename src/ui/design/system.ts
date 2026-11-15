@@ -39,7 +39,7 @@ const BASE = `
 @keyframes ds-rise{from{opacity:0;transform:translateY(calc(32px * var(--ds-move,1)))}}
 @keyframes ds-rule{from{transform:scaleX(calc(1 - var(--ds-move,1)))}}
 html.cdt-reduced{--ds-move:0}
-.pm kbd,#arena-hud kbd,#ex-prompt kbd{flex:none;display:inline-block;box-sizing:border-box;min-width:30px;padding:0 8px;font:600 var(--ds-fs-small)/26px var(--ds-text);text-align:center;color:inherit;background:none;border:1px solid var(--ds-muted);border-radius:3px}`;
+.pm kbd,#arena-hud kbd,#ex-prompt kbd,.ci-skip kbd{flex:none;display:inline-block;box-sizing:border-box;min-width:30px;padding:0 8px;font:600 var(--ds-fs-small)/26px var(--ds-text);text-align:center;color:inherit;background:none;border:1px solid var(--ds-muted);border-radius:3px}`;
 
 function sizes(d: 'desktop' | 'phone'): string {
   const t = TYPE[d];
