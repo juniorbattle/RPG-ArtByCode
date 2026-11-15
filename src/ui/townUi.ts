@@ -34,7 +34,7 @@ import { CAUGHT_LOST, SEIZE, STAKE } from '../simulation/v2town';
 import { PASSERS } from '../simulation/v2barter';
 import { challengeSkill, levelOf } from '../simulation/v2skills';
 import { AUTO_RULES, type AutoAction, type AutoFighter } from '../combat/auto';
-import { AUTO_STYLES } from '../combat/autoData';
+import { AUTO_STYLES, autoResistsOf, autoStatesOf } from '../combat/autoData';
 import { roleName } from './skills';
 import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
 import { tabTo } from '../input/pad';
@@ -46,7 +46,7 @@ import type { Act } from '../settings/keys';
 import { bindCap, keyCap } from '../input/caps';
 import { leavePage } from './curtain';
 import { notebookPage, adviceText } from './notebook';
-import { hasFought, scoutLines, styleText } from '../simulation/v2scout';
+import { hasFought, resistListText, scoutLines, scoutTier, stateListText, styleText } from '../simulation/v2scout';
 import { rehearsalFresh, rehearsalOf } from '../simulation/v2prep';
 import { notesOf } from '../simulation/v2notes';
 
@@ -594,7 +594,7 @@ export class TownUi {
       : ch.kind === 'encounter' && ch.encounter ? (ch.encounter.quest ? tx('prep.challenge.sharps', { price: QUEST.sharpsPrice }) : tx('prep.challenge.encounter', { n: ENCOUNTERS[ch.encounter.id].coins }))
       : ch.reprisal ? tx('prep.challenge.reprisal') : ch.stake === 'coins' ? tx('prep.challenge.stakeCoins', { n: STAKE.coins, back: 2 * STAKE.coins }) : tx('prep.challenge.stakeName', { n: STAKE.name });
     const win = teach ? tx(levelOf(s, teach) > 0 ? 'prep.challenge.raise' : 'prep.challenge.teach', { skill: skillName(teach) }) : '';
-    const vs = b ? this.autoVsHtml(b.ren, b.foe, autoForms(b), name) : '';
+    const vs = b ? this.autoVsHtml(b.ren, b.foe, autoForms(b), name, known.length > 0 && (!r || scoutTier(s, who) >= 1)) : '';
     return `<p class="pm-sub">${esc(tx(ch.kind === 'caught' ? 'v2.caught.title' : ch.kind === 'seize' ? 'v2.seize.title' : ch.kind === 'encounter' ? 'v2.encounter.fightTitle' : ch.reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title'))} · ${esc(tx('ui.dayN', { day: s.day }))}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(name)}</h2><p class="pm-sub">${esc(title)}</p></div></div>`
       + (like ? `<p class="pm-sub">${esc(like)}</p>` : '') + vs + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('')
       + `<p class="pm-sub">${esc(stake)}</p>${win ? `<p class="pm-sub">${esc(win)}</p>` : ''}${ch.reprisal || ch.kind ? '' : `<p class="pm-sub">${esc(tx('v2.result.noVigour'))}</p>`}<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p>`;
@@ -609,7 +609,7 @@ export class TownUi {
     // the duel played by the computer (lot 2, journal Passe LC3): what decides it, side by side (briefs/combat-auto.md § 7: « les stats des deux, les chances de
     // garde et d'esquive, la préparation du rival, sa forme du jour »), the numbers the duel itself will play (autoBoutOf: the same fighters); ahead of the day, as
     // the duel would build them now (GP-12), the form of the day drawn on the day
-    const b = nb, vs = this.autoVsHtml(b.ren, b.foe, b.seed !== null ? autoForms({ seed: b.seed }) : null, r.name);
+    const b = nb, vs = this.autoVsHtml(b.ren, b.foe, b.seed !== null ? autoForms({ seed: b.seed }) : null, r.name, scoutTier(s, id) >= 1);
     const ahead = nb.today && s.slot === 'afternoon' ? '' : tx('prep.sheet.ahead', { day: nb.day, name: r.name });
     // what the player knows of the rival (lot 3 of « La Brute », the scouting by tiers: its style, its plan, its kit), the last rehearsal against its shadow and
     // Master Corvin's last note on it (src/simulation/v2scout.ts, v2prep.ts)
@@ -629,7 +629,7 @@ export class TownUi {
 
   /** the two fighters side by side as the duel played by the computer reads them: the health of the bout (each one's doubled, DB5), the four stats, the form of the
    *  day (AC-08), the dodge and the guard each has against the other (AC-05, the duel's own formulas, the traits in them) */
-  private autoVsHtml(ren: AutoFighter, foe: AutoFighter, formOf: [number, number] | null, foeName: string): string {
+  private autoVsHtml(ren: AutoFighter, foe: AutoFighter, formOf: [number, number] | null, foeName: string, foeKnown = true): string {
     // ahead of the bout's day its form of the day is not drawn yet (GP-12): « on the day », the blows' shares without it
     const form: [number, number] = formOf ?? [1, 1];
     const pc = (k: number) => tx('auto.sheet.pct', { n: Math.round(k * 100) });
@@ -650,6 +650,9 @@ export class TownUi {
       // BL1-10 (« Garder ; le dire au lot 2 sur la fiche de match »): what one light attack (its blows together, § 35.6) and one heavy blow take from the other's bar
       [tx('auto.sheet.lightRow'), bar(ren.light, ren, foe, form[0]), bar(foe.light, foe, ren, form[1])],
       [tx('auto.sheet.heavyRow'), bar(ren.heavy, ren, foe, form[0]), bar(foe.heavy, foe, ren, form[1])],
+      // the harmful states each puts on the other and resists (the operator's GE-8 « Ainsi », journal Passe GP4-2): the opponent's read from the scouting (its style, tier 1)
+      [tx('auto.sheet.states'), stateListText(autoStatesOf(ren)) || '—', foeKnown ? stateListText(autoStatesOf(foe)) || '—' : '?'],
+      [tx('auto.sheet.resist'), resistListText(autoResistsOf(ren)) || '—', foeKnown ? resistListText(autoResistsOf(foe)) || '—' : '?'],
     ];
     return `<table class="pm-vs"><thead><tr><th></th><th>${esc(tx('auto.sheet.you'))}</th><th>${esc(foeName)}</th></tr></thead><tbody>${rows.map(([l, a, c]) => `<tr><td>${esc(l)}</td><td>${esc(a)}</td><td>${esc(c)}</td></tr>`).join('')}</tbody></table>`;
   }

@@ -223,7 +223,7 @@ test('the pages read the stats (DB7-7): the gear page Ren\'s five, the skills pa
   assert.equal(P.skillFigures(st, 'd1', 1).power, 0, 'a ward has no power');
   // the match sheet: both fighters as the duel builds them (src/combat/autoMatch.ts autoBoutOf), side by side
   // (since GP-12 the next bout's, its form of the day said on the day: src/combat/autoMatch.ts autoNextBout)
-  assert.match(src('src/ui/townUi.ts'), /const b = nb, vs = this\.autoVsHtml\(b\.ren, b\.foe, b\.seed !== null \? autoForms\(\{ seed: b\.seed \}\) : null, r\.name\);/);
+  assert.match(src('src/ui/townUi.ts'), /const b = nb, vs = this\.autoVsHtml\(b\.ren, b\.foe, b\.seed !== null \? autoForms\(\{ seed: b\.seed \}\) : null, r\.name, scoutTier\(s, id\) >= 1\);/); // (the harmful states' rows read the scouting: journal Passe GP4-2)
   const FR = src('src/narrative/text/fr-texts.ts');
   for (const key of ['auto.sheet.hp', 'auto.sheet.form', 'auto.sheet.dodge', 'auto.sheet.guard', 'auto.sheet.prep', 'ui.skill.power', 'stat.atk', 'stat.def', 'stat.end', 'stat.viv', 'v2.train.stat', 'v2.spar.stat']) { assert.ok(EN[key], key); assert.match(FR, new RegExp(`"${key.replace(/\./g, '\\.')}": `), key); }
   assert.equal(EN['stat.viv'], 'Speed'); assert.match(FR, /"stat\.viv": "Vivacité"/);

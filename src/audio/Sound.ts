@@ -269,6 +269,8 @@ export class Sound {
       return;
     }
     if (e.type === 'formSign') { this.formSign(String(e.who), e.sign === 'down' ? 'formDown' : 'formUp'); return; }
+    // the poison taking hold: the form's sign going down, the look it borrows (the operator's GE-9 « Ces emprunts », journal Passe GP4-2)
+    if (e.type === 'state' && e.state === 'poison') { this.formSign(String(e.who), 'formDown'); return; }
     if (this.bank) this.duelSounds(e);
     // the bank not (yet) decoded, or not decodable here: lot S0's recipes, so that a duel never goes silent
     else { const q = duelCue(e); if (q) this.play(q.effect, q.gain ?? 1, q); }

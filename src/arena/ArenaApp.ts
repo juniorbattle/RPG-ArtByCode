@@ -236,7 +236,8 @@ export class ArenaApp {
       if (this.rules === 'auto') {
         // the duel played by the computer: decided before the page (the game's own result), played from its script; the arena's own page plays Ren against Marek
         // DEV `weapon=` and `kit=a,b,c,d`: Ren's weapon and four skills on the arena's own page (the gauge's proofs on enchaînements of two and three blows, journal Passe LC7)
-        const dev = import.meta.env.DEV ? { weapon: opts.params.get('weapon'), loadout: opts.params.get('kit')?.split(',').filter(Boolean) } : {};
+        // DEV `states=`: the trial of the harmful states (src/lab/states.ts, the workshop of journal Passe GP4-1) passes Ren's pieces so that their states and resistances count
+        const dev = import.meta.env.DEV ? { weapon: opts.params.get('weapon'), loadout: opts.params.get('kit')?.split(',').filter(Boolean), ...(opts.params.has('states') ? { gear: [opts.params.get('weapon') ?? 'training-sword'] } : {}) } : {};
         const a = opts.match?.auto ?? sceneAutoDuel(this.foe, (parseInt(opts.params.get('duelseed') ?? '1337', 10) >>> 0) || 1337, dev);
         this.auto = new AutoReplay(a.result, { ren: a.ren, marek: a.foe }, opts.match?.auto?.names ?? { ren: 'Ren', marek: this.foe[0].toUpperCase() + this.foe.slice(1) }); this.sim = this.auto as unknown as DuelSim;
         this.autoSeed = a.seed ?? null;

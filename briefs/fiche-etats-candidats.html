@@ -1,0 +1,622 @@
+<title>États candidats</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--line); border-radius: 6px; }
+.shots.vids { grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.tblwrap { overflow-x: auto; max-width: 100%; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl th { font-weight: 600; color: var(--muted); font-size: 13px; }
+.tbl td:first-child { font-weight: 600; }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · fiche courte · 15/11/2026 · chantier 4 du gameplay général</span>
+    <h1>Les états néfastes : les trois de ta note</h1>
+    <p class="lede">Les quatre états de la fiche (poison, brûlure, aveuglement, saignement) sont construits dans le jeu par défaut. Ta note y ajoutait la paralysie, la baisse d’attaque (la malédiction) et la baisse de défense (l’affaiblissement). Je les ai mesurés sur le jeu lui-même, comme les quatre ; rien ne change avant ta relecture. Six cartes.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je consigne tes choix mot pour mot, je construis ceux que tu retiens avec les quatre, je recale la course une fois et je fusionne.</p>
+    <p class="src">Sources : journal Passe GP4-2 ; briefs/combat-auto.md § 41.7 ; src/lab/states.ts ; tools/auto-states.mjs.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Les apostrophes : typographiques (’) partout dans les chaînes.
+const GROUPS = [
+ {
+  "id": "cand",
+  "fam": "var(--cendre)",
+  "title": "Les trois états de ta note",
+  "sub": "Ta note sur GE-1, mot pour mot : « paralysie, baisse attaque ( malediction ), baisse defense ( affaiblissement ) peuvent etre des options aussi interessante » ; ta réponse à ma question : « Les mesurer, fiche courte (Recommandé) ». Les quatre états de la fiche sont construits ; ces trois-là tournent seulement dans le laboratoire. Chacun est mesuré comme les quatre : une arme de sa famille sur la lame importée, d’abord sans contrepartie (ce qu’il vaut), puis avec −2 en Attaque (ce qu’il serait dans une pièce du chantier 5). Repère : deux points d’Attaque valent 13 points de victoire en finale.",
+  "items": [
+   {
+    "id": "GC-1",
+    "tag": "la malédiction",
+    "title": "L’Attaque de l’adversaire baisse d’un quart pendant 8 s",
+    "ctx": "Un levier neuf : rien ne baisse aujourd’hui ce que l’adversaire inflige, sauf une protection levée par soi-même. Une malédiction baisse son Attaque de 25 % pendant 8 s : ses coups font moins mal, et Ren les garde plus souvent (la garde se tire sur la Défense contre l’Attaque). Arme « maudite » : 40 % par coup de la poser (sans cumul, une nouvelle relance la durée). Mesurée sur 60 graines : sans contrepartie elle gagne contre tous (+16 points de moyenne en finale), surtout contre Tobin et Rhosk ; avec −2 en Attaque, elle reste au-dessus de la lame nue en moyenne (53 contre 51 en finale, 67 contre 67 au tableau, 87 contre 86 en poule) et devient faible contre Cassius et Marek : une réponse, comme le poison.",
+    "table": [
+     [
+      "Finale, à niveau égal (%)",
+      "Vessa",
+      "Tobin",
+      "Cassius",
+      "Orla",
+      "Ilse",
+      "Marek",
+      "Rhosk",
+      "Moyenne"
+     ],
+     [
+      "La lame importée",
+      "50",
+      "50",
+      "52",
+      "48",
+      "50",
+      "53",
+      "52",
+      "51"
+     ],
+     [
+      "Maudite (sans contrepartie)",
+      "60",
+      "80",
+      "62",
+      "68",
+      "65",
+      "62",
+      "70",
+      "67"
+     ],
+     [
+      "Maudite, −2 Atq",
+      "58",
+      "70",
+      "40",
+      "58",
+      "53",
+      "42",
+      "50",
+      "53"
+     ],
+     [
+      "Moyenne contre les sept (%)",
+      "Poule",
+      "Tableau",
+      "Finale"
+     ],
+     [
+      "Maudite (sans contrepartie)",
+      "92",
+      "81",
+      "67"
+     ],
+     [
+      "Maudite, −2 Atq",
+      "87",
+      "67",
+      "53"
+     ]
+    ],
+    "rec": "L’adopter, comme une cinquième famille d’armes.",
+    "opts": [
+     "L’adopter",
+     "L’écarter",
+     "Plus tard (en note)"
+    ],
+    "recIdx": 0,
+    "src": "tools/auto-states.mjs ac12 (graines 1 à 60, le jeu avec ses quatre états, chaque rival à son niveau : le kit de départ à la lame importée gagne 85 / 65 / 50 % contre lui) ; src/lab/states.ts (CANDIDATE_FAMILIES) ; src/combat/auto.ts (les crochets, neutres)"
+   },
+   {
+    "id": "GC-2",
+    "tag": "l’affaiblissement",
+    "title": "La Défense de l’adversaire baisse d’un quart pendant 8 s",
+    "ctx": "Une Défense plus basse : chaque coup porte plus, et l’adversaire garde moins souvent et moins fort. Arme « mordante » : 25 % par coup (à 30 % elle est déjà toujours active : plus haut n’ajoute rien). Mesuré sur 60 graines : la plus faible des trois (+10 en finale sans contrepartie) ; avec −2 en Attaque, sous la lame nue en moyenne à chaque étape (49 contre 51 en finale, 62 contre 67 au tableau). Aucun rival n’y résiste, et elle agit comme un gain d’Attaque presque permanent : elle ne change pas la façon de combattre.",
+    "table": [
+     [
+      "Finale, à niveau égal (%)",
+      "Vessa",
+      "Tobin",
+      "Cassius",
+      "Orla",
+      "Ilse",
+      "Marek",
+      "Rhosk",
+      "Moyenne"
+     ],
+     [
+      "La lame importée",
+      "50",
+      "50",
+      "52",
+      "48",
+      "50",
+      "53",
+      "52",
+      "51"
+     ],
+     [
+      "Mordante (sans contrepartie)",
+      "58",
+      "62",
+      "62",
+      "60",
+      "58",
+      "63",
+      "67",
+      "61"
+     ],
+     [
+      "Mordante, −2 Atq",
+      "48",
+      "47",
+      "48",
+      "53",
+      "38",
+      "58",
+      "48",
+      "49"
+     ],
+     [
+      "Moyenne contre les sept (%)",
+      "Poule",
+      "Tableau",
+      "Finale"
+     ],
+     [
+      "Mordante (sans contrepartie)",
+      "91",
+      "76",
+      "61"
+     ],
+     [
+      "Mordante, −2 Atq",
+      "82",
+      "62",
+      "49"
+     ]
+    ],
+    "rec": "L’écarter : avec la contrepartie des autres familles, elle perd en moyenne, et elle ne fait qu’imiter un gain d’Attaque.",
+    "opts": [
+     "L’écarter",
+     "L’adopter (avec −2)",
+     "Plus tard (en note)"
+    ],
+    "recIdx": 0,
+    "src": "tools/auto-states.mjs ac12 (graines 1 à 60, le jeu avec ses quatre états, chaque rival à son niveau : le kit de départ à la lame importée gagne 85 / 65 / 50 % contre lui) ; src/lab/states.ts (CANDIDATE_FAMILIES) ; src/combat/auto.ts (les crochets, neutres)"
+   },
+   {
+    "id": "GC-3",
+    "tag": "la paralysie",
+    "title": "Une action sur trois se fige au lieu de partir",
+    "ctx": "Distincte de la lenteur (la Clameur, le Rugissement de Rhosk : toutes les charges ×1,4, sûrement) : un paralysé voit 30 % des actions qu’il lance se figer 1,5 s au lieu de partir, sans garde ni esquive le temps du gel (une compétence figée n’est pas dépensée), pendant 8 s. Arme « engourdissante » : 40 % par coup. Mesurée sur 60 graines : sans contrepartie +13 en finale, surtout contre Vessa et Ilse ; avec −2 en Attaque, forte contre Vessa (68 en finale), faible contre Cassius et Marek, juste sous la lame nue en moyenne en finale (49 contre 51) mais au-dessus au tableau (71 contre 67) : une réponse contre les combattants qui enchaînent les actions.",
+    "table": [
+     [
+      "Finale, à niveau égal (%)",
+      "Vessa",
+      "Tobin",
+      "Cassius",
+      "Orla",
+      "Ilse",
+      "Marek",
+      "Rhosk",
+      "Moyenne"
+     ],
+     [
+      "La lame importée",
+      "50",
+      "50",
+      "52",
+      "48",
+      "50",
+      "53",
+      "52",
+      "51"
+     ],
+     [
+      "Engourdissante (sans contrepartie)",
+      "72",
+      "63",
+      "58",
+      "65",
+      "73",
+      "53",
+      "65",
+      "64"
+     ],
+     [
+      "Engourdissante, −2 Atq",
+      "68",
+      "53",
+      "40",
+      "45",
+      "52",
+      "42",
+      "45",
+      "49"
+     ],
+     [
+      "Moyenne contre les sept (%)",
+      "Poule",
+      "Tableau",
+      "Finale"
+     ],
+     [
+      "Engourdissante (sans contrepartie)",
+      "93",
+      "80",
+      "64"
+     ],
+     [
+      "Engourdissante, −2 Atq",
+      "85",
+      "71",
+      "49"
+     ]
+    ],
+    "rec": "L’adopter, comme une sixième famille d’armes.",
+    "opts": [
+     "L’adopter",
+     "L’écarter",
+     "Plus tard (en note)"
+    ],
+    "recIdx": 0,
+    "src": "tools/auto-states.mjs ac12 (graines 1 à 60, le jeu avec ses quatre états, chaque rival à son niveau : le kit de départ à la lame importée gagne 85 / 65 / 50 % contre lui) ; src/lab/states.ts (CANDIDATE_FAMILIES) ; src/combat/auto.ts (les crochets, neutres)"
+   }
+  ]
+ },
+ {
+  "id": "suite",
+  "fam": "var(--astre)",
+  "title": "Qui les porte, ce qui se voit, la suite",
+  "sub": "Les combats du planificateur rejoués (200 parties tenues à part, graines 101 à 300, la course d’aujourd’hui, les rivaux avec leurs quatre états), une arme de chaque famille sans contrepartie.",
+  "items": [
+   {
+    "id": "GC-4",
+    "tag": "qui les porte",
+    "title": "Des familles d’armes pour Ren ; aucun rival ne les pose pour l’instant",
+    "ctx": "Je propose les états retenus comme des familles d’armes que le chantier 5 met dans ses pièces, avec la même contrepartie que les quatre (−2 en Attaque). Aucun rival ne les porte : la course des rivaux ne bouge pas pour eux, et aucune protection n’est nécessaire (rien à arrêter). L’autre voie : un rival chacun (par exemple Tobin la paralysie de ses coups de masse), et un accessoire qui l’écarte ; cela ajoute au tournoi et à la course. Dans le tableau, la finale rejouée du planificateur est basse (12 % avec la lame nue) : les rivaux portent déjà leurs quatre états et adaptent leurs plans (chantier 2), et la course n’est pas encore recalée (elle le sera à la construction, GE-11) ; ce qui compte, c’est l’écart entre les lignes.",
+    "table": [
+     [
+      "Planificateur, ses combats rejoués (%)",
+      "Poule",
+      "Tableau",
+      "Finale",
+      "Durées"
+     ],
+     [
+      "Rivaux armés, Ren sans rien",
+      "89",
+      "60",
+      "12",
+      "119 / 174 / 188 s"
+     ],
+     [
+      "… avec une lame envenimée (pour comparer)",
+      "91",
+      "67",
+      "19",
+      "115 / 168 / 179 s"
+     ],
+     [
+      "… avec une lame maudite",
+      "94",
+      "74",
+      "21",
+      "120 / 183 / 190 s"
+     ],
+     [
+      "… avec une lame mordante",
+      "93",
+      "69",
+      "25",
+      "115 / 171 / 183 s"
+     ],
+     [
+      "… avec une lame engourdissante",
+      "93",
+      "72",
+      "36",
+      "117 / 177 / 193 s"
+     ]
+    ],
+    "rec": "Des familles d’armes seulement ; aucun rival ne les porte, pas de protection.",
+    "opts": [
+     "Des familles d’armes seulement",
+     "Un rival chacun et un accessoire (en note)"
+    ],
+    "recIdx": 0,
+    "src": "tools/auto-states.mjs price (le planificateur)"
+   },
+   {
+    "id": "GC-5",
+    "tag": "ce qui se voit",
+    "title": "Leurs mots et leurs emprunts",
+    "ctx": "Comme les quatre : un mot au-dessus du combattant et sur sa carte (« Maudit », « Affaibli », « Paralysé »), « Figé » quand une action se fige ; les recettes et les sons empruntés : la malédiction le Cri de guerre (acier), l’affaiblissement l’Obstination de Tobin (terre), la paralysie le Tempo de Vessa (glace). La fiche de match, le repérage et le carnet les disent comme les quatre. En anglais et en français.",
+    "rec": "Ainsi.",
+    "opts": [
+     "Ainsi",
+     "D’autres emprunts (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/arena/fx/fxRecipes.ts (k_cry, m_grit, m_tempo) ; src/audio/sfx.ts"
+   },
+   {
+    "id": "GC-6",
+    "tag": "la suite",
+    "title": "Construire avec les quatre, recaler la course une fois, fusionner",
+    "ctx": "Ce que tu retiens est construit sur la même branche que les quatre (le duel, les familles nommées pour le chantier 5, la lecture, leurs tests et leurs preuves dans le navigateur) ; puis la course est recalée une fois sur le planificateur (PB-3), et la branche fusionne.",
+    "rec": "Construire, recaler, fusionner.",
+    "opts": [
+     "Construire, recaler, fusionner",
+     "Attendre (en note)"
+    ],
+    "recIdx": 0,
+    "src": "note de coordination des chantiers"
+   }
+  ]
+ }
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  // un tableau de mesures : la première ligne en tête
+  if (it.table) {
+    const t = el('table', { class: 'tbl' }), [head, ...rows] = it.table;
+    t.append(el('thead', {}, el('tr', {}, ...head.map((h) => el('th', { scope: 'col' }, h)))));
+    t.append(el('tbody', {}, ...rows.map((r) => el('tr', {}, ...r.map((v) => el('td', {}, v))))));
+    c.append(el('div', { class: 'tblwrap' }, t));
+  }
+  if (it.shots) {
+    const grid = el('div', { class: 'shots vids' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      // un film : joué sur place, en boucle, sans son (les films de duel-clip n’en ont pas)
+      if (/.mp4$/.test(src)) { grid.append(el('figure', { class: 'shot' }, el('video', { src, controls: '', muted: '', loop: '', playsinline: '', preload: 'metadata', 'aria-label': cap }), el('figcaption', {}, cap))); continue; }
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

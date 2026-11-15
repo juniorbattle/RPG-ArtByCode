@@ -1,4 +1,4 @@
-import { AUTO_RULES, autoDuel, type AutoAction, type AutoEvent, type AutoFighter, type AutoResult } from '../combat/auto';
+import { AUTO_RULES, autoDuel, type AutoAction, type AutoEvent, type AutoFighter, type AutoResult, type AutoStateId } from '../combat/auto';
 import { autoFoe, autoRaceSheet, autoRen } from '../combat/autoData';
 import { REN_BASE } from '../combat/stats';
 import { V2_START_KIT } from '../combat/v2duel';
@@ -65,6 +65,8 @@ interface State {
   openUntil: number;
   /** the damage of the action striking now, its blows added up (an enchaînement's total: the arena shows one number, § 35.6) */
   hitSum: number;
+  /** the harmful states on it (the operator's GE-8 « Ainsi », journal Passe GP4-2): until when, their doses */
+  sts: Partial<Record<AutoStateId, { until: number; dose: number }>>;
 }
 
 /** the HUD's reading of one fighter */
@@ -77,6 +79,8 @@ export interface AutoGauge {
   wardId?: string; boostId?: string;
   /** the opening's seconds left (0 when not open) */
   open: number;
+  /** the harmful states on it, their doses and seconds left (GE-8; absent without one) */
+  states?: Array<{ id: AutoStateId; dose: number; left: number }>;
   charge: { id: string; kind: string; family: string | null; pct: number; left: number } | null;
 }
 export interface AutoHudModel {
@@ -139,7 +143,7 @@ export class AutoReplay {
       void x;
       const side: AutoSide = { hp: maxHp, maxHp, ap: 0, state: 'idle', stateT: 0, guarding: false, anim: { name: 'ready', t: 0, dur: 1, loop: true }, act: null };
       this.f[seat] = side;
-      this.s[seat] = { side, charge: null, g: 0, gT: 0, broken: false, stunEnd: 0, stunDur: AUTO_RULES.brk.stun, ward: null, boost: null, cd: {}, used: {}, seq: false, tier: 0, openUntil: 0, hitSum: 0 };
+      this.s[seat] = { side, charge: null, g: 0, gT: 0, broken: false, stunEnd: 0, stunDur: AUTO_RULES.brk.stun, ward: null, boost: null, cd: {}, used: {}, seq: false, tier: 0, openUntil: 0, hitSum: 0, sts: {} };
     });
     this.out.push({ type: 'reset' });
     this.refresh();
@@ -201,6 +205,7 @@ export class AutoReplay {
       }
       if (s.ward && t >= s.ward.until) { s.ward = null; if (tell) this.emit({ type: 'wardEnd', who: seat }); }
       if (s.boost && t >= s.boost.until) { s.boost = null; if (tell) this.emit({ type: 'boostEnd', who: seat }); }
+      for (const [k, v] of Object.entries(s.sts)) if (v && t >= v.until - 1e-9) { delete s.sts[k as AutoStateId]; if (tell) this.emit({ type: 'stateEnd', who: seat, state: k }); }
     }
   }
 
@@ -252,10 +257,11 @@ export class AutoReplay {
         // where it lands (the duel's own order: a break, an opening, before this blow's own effects) and its action's damage so far
         const inBreak = o.broken, inOpen = !o.broken && o.openUntil > e.t + 1e-9;
         s.hitSum = first ? dmg : s.hitSum + dmg;
-        if (tell && e.ev === 'dodged' && other === 'ren') this.emit({ type: 'reactStart', who: other, kind: 'dodge', cost: 0, early: false });
+        // (a blow its striker's blindness made miss, `miss`: the target does not dodge it, the arena says « Missed »: GE-8)
+        if (tell && e.ev === 'dodged' && !e.miss && other === 'ren') this.emit({ type: 'reactStart', who: other, kind: 'dodge', cost: 0, early: false });
         // `follow`: an enchaînement's next blow (not its action's first); the first duel's tutorial reads it (lot 3, src/ui/duelTutorial.ts), the arena, the
         // effects, the stands and the sound do not; no AP since PB-1 (`apGain` 0)
-        if (tell) this.emit({ type: 'impact', from: seat, to: other, action: a.id, kind, result: e.ev === 'hit' ? 'hit' : e.ev, damage: dmg, mitigated: 0, hp: o.side.hp, resist: o.g, follow: !first, apGain: 0, total: s.hitSum, inBreak, inOpen });
+        if (tell) this.emit({ type: 'impact', from: seat, to: other, action: a.id, kind, result: e.ev === 'hit' ? 'hit' : e.ev, ...(e.miss ? { miss: true } : {}), damage: dmg, mitigated: 0, hp: o.side.hp, resist: o.g, follow: !first, apGain: 0, total: s.hitSum, inBreak, inOpen });
         if (e.hp !== undefined && e.hp <= 0) { this.ko(other, true); break; }
         // the openings the duel makes (src/combat/auto.ts hitOnce): an opener's first blow that lands opens its target; a big action dodged opens its striker
         if (first && e.ev !== 'dodged' && a.role === 'opener') this.open(other, e.t + AUTO_RULES.opener, 'opener', tell);
@@ -291,6 +297,25 @@ export class AutoReplay {
         const until = e.t + AUTO_RULES.sap.delay;
         for (const x of [...this.fighters[other].skills, this.fighters[other].heavy]) { const c = o.cd[x.id]; if (!c || c.until < until) o.cd[x.id] = { until, dur: Math.max(c?.dur ?? 0, until - e.t) }; }
         if (tell) this.emit({ type: 'sap', who: other, by: seat, action: e.act, dur: AUTO_RULES.sap.delay });
+        break;
+      }
+      // a harmful state takes hold on the striker's opponent (GE-8): its card's tag, told (`state`: its word over the fighter, its borrowed look and sound, GE-9); a
+      // poison's, a burn's or a bleeding's damage (`tick`: `who` the one it hurts), told as a number
+      case 'afflict': {
+        if (!e.state) break;
+        o.sts[e.state] = { until: e.t + (e.len ?? 0), dose: e.dose ?? 1 };
+        if (tell) this.emit({ type: 'state', who: other, by: seat, state: e.state, dose: e.dose ?? 1, dur: e.len ?? 0, action: e.act });
+        break;
+      }
+      // an action frozen by a paralysis (GC-3): the fighter does not start it, its length told (the word over it)
+      case 'freeze': {
+        if (tell) this.emit({ type: 'freeze', who: seat, action: e.act, dur: e.len ?? 0 });
+        break;
+      }
+      case 'tick': {
+        if (e.hp !== undefined) s.side.hp = e.hp;
+        if (tell) this.emit({ type: 'stateTick', who: seat, state: e.state, damage: e.dmg ?? 0, hp: s.side.hp });
+        if (e.hp !== undefined && e.hp <= 0) this.ko(seat, true);
         break;
       }
       // a clash (BL1-8): two blows met, both charges end there without damage, told once (the guard's sparks and sound, « Clash »); a light attack lost to a
@@ -412,6 +437,7 @@ export class AutoReplay {
         gaugePct: pct(gauge, max), broken: s.broken && this.t < s.stunEnd, stunLeft: s.broken ? Math.max(0, s.stunEnd - this.t) : 0, stunDur: s.stunDur,
         ward: s.ward ? Math.max(0, s.ward.until - this.t) : 0, boost: s.boost ? Math.max(0, s.boost.until - this.t) : 0,
         open: !this.over && s.openUntil > this.t ? s.openUntil - this.t : 0,
+        ...(Object.keys(s.sts).length ? { states: (Object.entries(s.sts) as Array<[AutoStateId, { until: number; dose: number }]>).filter(([, v]) => v.until > this.t).map(([id, v]) => ({ id, dose: v.dose, left: v.until - this.t })) } : {}),
         ...(s.ward?.id ? { wardId: s.ward.id } : {}), ...(s.boost?.id ? { boostId: s.boost.id } : {}),
         // a stun pauses the charge: the card says the stun, not a charge that does not move
         charge: c && !this.over && !(s.broken && this.t < s.stunEnd) ? { id: c.id, kind: c.kind, family: c.family, pct: pct(this.t - c.start, c.leave - c.start), left: Math.max(0, c.leave - this.t) } : null,
@@ -482,6 +508,8 @@ export function windowsOf(log: AutoEvent[] | undefined, ids: Record<string, Seat
     // a charge cut by an interruption (its fighter the other's): no blow drawn for it; a blow parried (lot 2): the striker's blow drawn reaching the parrier, who
     // blocks it
     if (e.ev === 'interrupt') { charge[other] = null; continue; }
+    // a harmful state taking hold or ticking (GE-8): nothing drawn (its blow is the line before it)
+    if (e.ev === 'afflict' || e.ev === 'tick' || e.ev === 'freeze') continue;
     if (e.ev === 'parry') {
       const x = e.act ? acts[other].get(e.act) : undefined, c = charge[other];
       if (x && c) { const free = e.t - stunEnd[other], w = Math.min(kindOf(x) === 'heavy' ? WIND.heavy : WIND.skill, 0.6 * Math.max(0, c.leave - c.start)), lead = free > 0 ? Math.min(Math.max(0.04, w), free) : Math.max(0.04, w); wins[other].push({ name: animOf(x), t0: e.t - lead, impactAt: lead, dur: lead + WIND.follow, id: x.id, kind: kindOf(x), family: familyOf(x) ?? 'offensive' }); prevHit[other] = e.t; }
@@ -512,6 +540,8 @@ export function windowsOf(log: AutoEvent[] | undefined, ids: Record<string, Seat
     const lead = first ? cap(Math.min(kind === 'light' ? WIND.light : kind === 'heavy' ? WIND.heavy : WIND.skill, 0.6 * len)) : cap(Math.min(WIND.nextHit, 0.8 * (e.t - prevHit[seat])));
     wins[seat].push({ name: animOf(a), t0: e.t - lead, impactAt: lead, dur: lead + WIND.follow, ...(first ? {} : { follow: true }), id, kind, family: familyOf(a) ?? 'offensive' });
     prevHit[seat] = e.t; charge[seat] = null;
+    // (a blow missed by its striker's blindness: the target does nothing)
+    if (e.miss) continue;
     if (e.ev === 'dodged') reacts[other].push({ name: 'dodge', t0: e.t - 0.1, impactAt: 0.1, dur: WIND.dodge, id: 'dodge', kind: 'light', family: 'defensive' });
     else if (e.ev === 'guarded') reacts[other].push({ name: 'block', t0: e.t, impactAt: 1e6, dur: WIND.block, id: 'block', kind: 'light', family: 'defensive' });
     else reacts[other].push({ name: 'hit', t0: e.t, impactAt: 0, dur: WIND.flinch, id: 'hit', kind: 'light', family: 'defensive' });
@@ -529,9 +559,10 @@ function actionsOf(x: AutoFighter): Map<string, AutoAction> {
 /** the arena's own page (`?scene=arena`, outside a game): Ren of a new game (his start, the four of the start kit at level 1, the training sword) against
  *  the pool's Marek (or `foe`, a rival's sheet in its own duel; DEV a generic fighter, or a townsperson who fights themselves, journal Passe PN1), a fixed seed; `seed` another duel; DEV `o` another weapon or four skills
  *  (the proofs of the gauge's enchaînements, journal Passe LC7) */
-export function sceneAutoDuel(foe = 'marek', seed = 1337, o: { weapon?: string | null; loadout?: readonly string[] } = {}): { result: AutoResult; ren: AutoFighter; foe: AutoFighter; seed: number } {
+export function sceneAutoDuel(foe = 'marek', seed = 1337, o: { weapon?: string | null; loadout?: readonly string[]; gear?: readonly string[] } = {}): { result: AutoResult; ren: AutoFighter; foe: AutoFighter; seed: number } {
   const loadout = o.loadout?.length ? [...o.loadout] : V2_START_KIT.loadout;
-  const ren = autoRen({ ...REN_BASE }, { loadout, levels: o.loadout?.length ? Object.fromEntries(loadout.map((id) => [id, 1])) : V2_START_KIT.levels }, o.weapon ? { weapon: o.weapon } : {});
+  // (`gear`: the pieces' effects, only the DEV trial of the harmful states passes it: journal Passe GP4-1)
+  const ren = autoRen({ ...REN_BASE }, { loadout, levels: o.loadout?.length ? Object.fromEntries(loadout.map((id) => [id, 1])) : V2_START_KIT.levels }, { ...(o.weapon ? { weapon: o.weapon } : {}), ...(o.gear ? { gear: o.gear } : {}) });
   const g = GENERICS[foe], npc = NPC_FIGHTERS[foe];
   const f = npc ? autoFoe(foe, autoGenericSheet(NPC_BASE, npc, 0, 0), { kitOf: npc.look.weapon }) : g ? autoFoe(foe, autoGenericSheet(g.profile, g, 0, 0), { kitOf: g.profile }) : autoFoe(foe, autoRaceSheet(foe, 0, 0));
   return { result: autoDuel(ren, f, seed, { log: true, trace: true }), ren, foe: f, seed };

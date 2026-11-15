@@ -250,9 +250,9 @@ test('Rhosk out of the title takes the training sand on the free day before the 
   assert.ok(sign && sign.day === 8 && sign.slot === 'evening' && sign.visible && /Corra Dunmere/.test(sign.text) && /training sand tomorrow/.test(sign.text));
   assert.ok(st.flags['sand:9'] && st.facts.includes('rhosk-offer'));
   // the sign's causes, written out: Rhosk at the Gate, the player one of the semi-finals' four, the next bout in exactly two days, nothing cleared yet
-  // seed 6 since the blows' weights and the race of journal Passe BE1 (seed 18 from lot 2's rhythm and break, journal Passe SL3; seed 6 from the same rules for every
+  // seed 4 since the harmful states and the race fitted again on the quests, journal Passe GP4-2 (seed 6 since the blows' weights and the race of journal Passe BE1; seed 18 from lot 2's rhythm and break, journal Passe SL3; seed 6 from the same rules for every
   // fighter, journal Passe SL1; seed 11 from the duel played by the computer, journal Passe LC3)
-  const eve = G.play(G.makeV2(G.newGame(6, 'Ren')), [...POOL, W, WON, W, W, W, W, W, W]); // day 8's evening
+  const eve = G.play(G.makeV2(G.newGame(4, 'Ren')), [...POOL, W, WON, W, W, W, W, W, W]); // day 8's evening
   assert.equal(eve.day, 8); assert.equal(eve.slot, 'evening');
   const fires = (mut) => { const s = structuredClone(eve); mut(s); s.pulse = computePulse(s); return run(s, ['v2-rhosk-offer']).length === 1; };
   assert.ok(fires(() => {}));
@@ -262,7 +262,7 @@ test('Rhosk out of the title takes the training sand on the free day before the 
   assert.ok(!fires((s) => { s.day = 6; }), 'the bout in four days');
   assert.ok(!fires((s) => { for (const m of s.tournament.matches) if (m.stage === 'semi') { if (m.a === 'player') m.a = 'tobin'; if (m.b === 'player') m.b = 'tobin'; } }), 'not in the bracket\'s four');
   // the semi lost: the third place on day 8, the sand on day 7
-  const lost = G.play(G.makeV2(G.newGame(6, 'Ren')), [...POOL, W, LOST, W, W]);
+  const lost = G.play(G.makeV2(G.newGame(4, 'Ren')), [...POOL, W, LOST, W, W]);
   assert.equal(lost.day, 7); assert.ok(lost.flags['sand:7']);
 });
 
@@ -323,7 +323,9 @@ test('the curious player tells Hale of Rhosk\'s plan before the sand day, and ta
   // journal Passe BE1; 6, 9, 10 and 24 with lot 2's rhythm and
   // break, journal Passe SL3; 4, 11 and 12 from the same rules for every fighter, journal Passe SL1; 6, 9, 12 and 13 from the duel played by the computer, journal
   // Passe LC3, to then)
-  for (const seed of [3, 6, 8, 9, 10, 13]) {
+  // (the sign on seeds 2, 7, 17 and 20 among the first 30 with the harmful states and the race fitted again, journal Passe GP4-2, GE-11; 3, 8 and 10 before)
+  // (the sign on seeds 1, 3, 4, 6, 11 and 12, among 13 of the first 30, with the quests of journal Passe QE2 on top of the states and the race: 2, 7, 17 and 20 before)
+  for (const seed of [1, 3, 4, 6, 11, 12]) {
     const st = LAB.autoplay(seed, LAB.POLICIES.curious, 'Ren', 400, 'v2').state;
     const sign = st.log.find((e) => e.id === 'v2-rhosk-offer');
     if (!sign) continue;

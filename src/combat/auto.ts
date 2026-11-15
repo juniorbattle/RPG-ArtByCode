@@ -29,6 +29,24 @@ export type AutoFamily = 'offensive' | 'defensive' | 'support';
 export type AutoRole = 'exploit' | 'punish' | 'pierce' | 'breaker' | 'opener' | 'interrupt' | 'ward' | 'parry' | 'haste' | 'slow' | 'load' | 'finisher' | 'strip' | 'evade' | 'recover' | 'sap';
 /** a ward (on oneself: the damage and the gauge one takes ×) or a support's effect, for `dur` seconds */
 export interface AutoEffect { dur: number; dmg: number; gauge: number }
+/** A harmful state (the operator's note on GP-21, word for word « prevoit aussi un chantier d'optimisation concernant les stats d'etat nefastes comme poison,
+ *  brulure, blind etc... qui peuvent etre utile dans un combat et devrait etre integre ainsi des competences mais surtout des armes equipes donnera des effets
+ *  avantageux ou des armures/accessoires qui donnent des protections a ces effets », journal Passe GP2; the workshop of journal Passe GP4-1, briefs/combat-auto.md
+ *  § 41; the operator's sheet https://claude.ai/artifact/DqsBjqLm1UQG4ChPC2EeRW, thirteen of thirteen at the recommendation, journal Passe GP4-2: GE-1 « Ces quatre »): the poison (doses that take a share of the health each second, stopped by a guard), the burn (a share each second, through the
+ *  guard, no doses), the blindness (one's own blows miss), the bleeding (each action one starts reopens it). Carried by the rivals' weapons and four signatures
+ *  (autoData.ts AUTO_STYLES, AUTO_SKILL_STATES), resisted by the rivals and by pieces (AutoGearFx.resist); no piece of the game carries one yet (GE-12: workstream 5). */
+export type AutoStateId = 'poison' | 'burn' | 'blind' | 'bleed' | 'curse' | 'paralysis';
+export const AUTO_STATE_IDS: readonly AutoStateId[] = ['poison', 'burn', 'blind', 'bleed', 'curse', 'paralysis'];
+/** the two states of the operator's note on GE-1 (« paralysie, baisse attaque ( malediction ), baisse defense ( affaiblissement ) peuvent etre des options aussi interessante »,
+ *  his answer « Les mesurer, fiche courte (Recommandé) »), measured and put on the short sheet https://claude.ai/artifact/VojskHCbRGGbZQSdEaGaoq, read back (journal Passe GP4-2):
+ *  GC-1 « L’adopter » the curse (its Attack lowered a quarter), GC-3 « L’adopter » the paralysis (an action started may freeze instead, its fighter neither guarding nor dodging
+ *  while it lasts: not the slow, which lengthens every charge), GC-2 « L’écarter » the weakness (no hook left), GC-4 « Des familles d’armes seulement » (weapon families for
+ *  workstream 5, no rival and no protection) */
+/** what a blow carries: on each of its hits that lands (`on` 'hit': neither guarded nor dodged, the default; 'any': a guarded hit too), this chance (before the
+ *  target's resistance) of the state; `dose` the doses it puts at once (1), `dur` its length × (1) */
+export interface AutoInflict { state: AutoStateId; chance: number; on?: 'hit' | 'any'; dose?: number; dur?: number }
+/** a state on a fighter: until when, its doses, its next tick (the poison and the burn, each `tick` s) */
+export interface AutoStateOn { until: number; dose: number; next: number }
 /** an action on the timeline */
 export interface AutoAction {
   id: string;
@@ -61,13 +79,20 @@ export interface AutoAction {
   pierceWard?: boolean;
   /** it cannot be parried (Disarm, NC-4: it lifts the ward before the ward can take it) */
   unparry?: boolean;
+  /** a harmful state it carries (a skill's own; the weapon's is the gear's: AutoGearFx.inflict; GE-5) */
+  inflict?: AutoInflict;
 }
 /** who decides for a fighter: Ren (the player's side) or a rival; both play the same automatic unless `o.deciders` replaces one (the laboratory) */
 export type AutoBrain = 'player' | 'rival';
 /** the gear's effects a fighter wears on top of its stat points (briefs/combat-auto.md § 31.4, the laboratory's GEAR_FX): the sabre's last cut through the
  *  guard, a blow's weight on the gauge, the light attack's charge, a guarded blow's weight on one's own gauge, the light blows' damage taken, the dodge and the
  *  guard ×, one's break shorter, the cooldowns and gaps shorter, the first charge of the duel at once */
-export interface AutoGearFx { lastPierce?: boolean; gauge?: number; lightCharge?: number; guardGauge?: number; lightTaken?: number; dodge?: number; guardChance?: number; stun?: number; cd?: number; firstFast?: boolean }
+export interface AutoGearFx {
+  lastPierce?: boolean; gauge?: number; lightCharge?: number; guardGauge?: number; lightTaken?: number; dodge?: number; guardChance?: number; stun?: number; cd?: number; firstFast?: boolean;
+  /** the weapon's harmful state, on the hits of its light attack and its heavy blow (GE-4); the resistance of the pieces worn to each state (0 to 1: the chance of being
+   *  afflicted × 1 − it; GE-7) */
+  inflict?: AutoInflict; resist?: Partial<Record<AutoStateId, number>>;
+}
 /** a rival's style (PB-1, the laboratory's BRUTE_STYLES): its pieces' dodge and guard ×, its heavy blow as soon as it is ready ('ready', a brawler's) */
 export interface AutoStyle { dodge: number; guard: number; heavy?: 'ready' }
 export interface AutoFighter {
@@ -139,6 +164,20 @@ export const AUTO_RULES = {
    *  (an ultimate at full strength at least, SK-6; the Finishing Blow); a recover's share of one's gauge emptied (Second Wind); a sap's wait (s) on the target's
    *  skills and heavy blow (Wrist Strike); an evade stance dodges every blow that can be dodged, even while charging (Sidestep) */
   finisher: { hi: 2.5, lo: 1, below: 0.5 }, recover: { share: 0.35 }, sap: { delay: 15 },
+  /** the harmful states (the operator's sheet https://claude.ai/artifact/DqsBjqLm1UQG4ChPC2EeRW, thirteen of thirteen at the recommendation, journal Passe GP4-2; GE-1 « Ces quatre », GE-2 « Ces nombres », GE-3 « Un état n’achève pas »; briefs/combat-auto.md § 41): their length (s), their doses
+   *  at most (a new one refreshes the length), the poison's and the burn's share of the target's maximum health each `tick` s by dose, the blindness's miss, the
+   *  bleeding's share of the maximum health each action its fighter starts, by dose; `lethal` false: a state leaves its fighter at 1 health at least (a blow ends the
+   *  duel) */
+  states: {
+    poison: { dur: 10, max: 3, pct: 0.0011, tick: 1 },
+    burn: { dur: 6, max: 1, pct: 0.0033, tick: 1 },
+    blind: { dur: 6, max: 1, miss: 0.35 },
+    // (the short sheet's GC-1 and GC-3, journal Passe GP4-2: the curse's share of the Attack taken off; the paralysis's chance an action freezes and the freeze's length)
+    curse: { dur: 8, max: 1, k: 0.25 },
+    paralysis: { dur: 8, max: 1, chance: 0.3, freeze: 1.5 },
+    bleed: { dur: 10, max: 2, pct: 0.01 },
+    lethal: false,
+  },
   /** the light attack's charge × (fewer skills: the light fills the time; RY-1's forty blows a minute kept) */
   lightCharge: 1.35,
   /** the automatic: past this share of either health, a skill held for its moment leaves (a use never spent is lost); « au début »: the first `early` s */
@@ -149,15 +188,20 @@ export type AutoRules = typeof AUTO_RULES;
 /** one line of a duel's script (the arena shows it): t the time (s, two decimals), who the fighter's id. With `trace`: `s` both fighters' gauge just after it
  *  ([the first's, the second's], settled at that time, a broken one full); on a blow, `g` its target's gauge right after it (full when it broke) and `fx`
  *  whether the target's ward (1) weighed on it; on a break, `dur` its stun (s). 'parry': `who` parried the blow `act`; 'interrupt': `who` cut the action
- *  `act` its opponent charged; 'clash' (BL1-8): without `beat`, `who`'s blow `act` and its opponent's `vs` met, neither landing; with `beat`, `who`'s light
+ *  `act` its opponent charged; 'afflict': `who`'s blow `act` put the state `state` on its opponent, its doses `dose` and its length `len` (s); 'tick': the state `state` took `dmg` from `who`; a
+ *  blow `dodged` with `miss` missed by its striker's blindness; 'clash' (BL1-8): without `beat`, `who`'s blow `act` and its opponent's `vs` met, neither landing; with `beat`, `who`'s light
  *  attack `act` was lost to its opponent's big action `beat`, which lands. */
-export interface AutoEvent { t: number; who: string; ev: 'charge' | 'ward' | 'boost' | 'hit' | 'guarded' | 'dodged' | 'break' | 'parry' | 'interrupt' | 'clash' | 'strip' | 'sap'; act?: string; at?: number; dmg?: number; hp?: number; hit?: number; s?: [number, number]; g?: number; fx?: number; dur?: number; vs?: string; beat?: string }
+export interface AutoEvent { t: number; who: string; ev: 'charge' | 'ward' | 'boost' | 'hit' | 'guarded' | 'dodged' | 'break' | 'parry' | 'interrupt' | 'clash' | 'strip' | 'sap' | 'afflict' | 'tick' | 'freeze'; act?: string; at?: number; dmg?: number; hp?: number; hit?: number; s?: [number, number]; g?: number; fx?: number; dur?: number; vs?: string; beat?: string; state?: AutoStateId; dose?: number; len?: number; miss?: number }
 export interface AutoCount { acts: number; skills: number; heavies: number; lights: number; dodged: number; guarded: number; hit: number; hits: number; breaks: number; dmg: number; dmgBroken: number; skillDmg: number; wasted: number; opened: number; interrupts: number; parried: number; clashes: number }
+/** the harmful states' counts of a fighter (GE-1), apart from AutoCount: the states it put on its opponent, the damage they did, its blows
+ *  its blindness made miss */
+export interface AutoStateCount { afflicted: Partial<Record<AutoStateId, number>>; dmg: Partial<Record<AutoStateId, number>>; missed: number; frozen?: number }
 export interface AutoResult {
   /** 0 or 1 by the K.O.; null past `maxT` (decide on the health shares: autoWinner) */
   winner: 0 | 1 | null;
-  /** the blow that ended it: 'light', 'heavy' (a heavy blow) or 'skill' */
-  finisher: 'light' | 'heavy' | 'skill' | null;
+  /** the blow that ended it: 'light', 'heavy' (a heavy blow) or 'skill'; 'state' a harmful state's damage, only when the states are lethal (the workshop of journal
+   *  Passe GP4-1; never in the game) */
+  finisher: 'light' | 'heavy' | 'skill' | 'state' | null;
   t: number;
   hp: [number, number]; maxHp: [number, number];
   /** each fighter's form of the day (its blows ×) */
@@ -166,6 +210,8 @@ export interface AutoResult {
   /** how many times the lead in health share changed hands */
   leadChanges: number;
   log: AutoEvent[] | null;
+  /** the harmful states' counts, only when a state took hold in this duel (GE-1) */
+  sn?: [AutoStateCount, AutoStateCount];
 }
 
 /** what one hit adds to its target's gauge before a guard, a ward, a load or the striker's gear (RY-3, A3): a light attack's hit one blow of the `blows` the gauge
@@ -185,7 +231,9 @@ export function autoDraw(seed: number, a: number, b: number, c: number, d: numbe
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 /** the purposes of a keyed draw */
-const DRAW = { dodge: 1, guard: 2, start: 3, decide: 4, recoil: 5 } as const;
+const DRAW = { dodge: 1, guard: 2, start: 3, decide: 4, recoil: 5, inflict: 6, blind: 7, freeze: 8 } as const;
+/** the states that tick (the poison, the burn) */
+const DOT: readonly AutoStateId[] = ['poison', 'burn'];
 
 /** an action that strikes (neither a ward nor a support): what can clash (BL1-8) */
 const isBlow = (a: AutoAction): boolean => !a.ward && a.role !== 'haste' && a.role !== 'slow' && a.role !== 'load' && (a.power ?? 0) > 0;
@@ -200,6 +248,10 @@ export interface AutoSide {
   act: AutoAction | null; at: number; pending: boolean; combo: Combo | null; comboAt: number; form: number; n: AutoCount; dec: number;
   /** the gear's effects worn; a load waiting for the next offensive action; each skill's uses spent; the opening's end; the haste's and the slow's ends */
   gfx: AutoGearFx; next: Load | null; used: Record<string, number>; openUntil: number; hasteUntil: number; slowUntil: number;
+  /** frozen by a paralysis until (GC-3) */
+  frozenUntil?: number;
+  /** the harmful states on it (GE-1) and its counts of them */
+  sts: Partial<Record<AutoStateId, AutoStateOn>>; sn: AutoStateCount;
 }
 
 /** what a decider sees: the time, its side and the other, and the duel's own helpers */
@@ -228,8 +280,9 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
   const put = (e: AutoEvent): void => { if (o.trace) e.s = [+gaugeNow(F[0]).toFixed(2), +gaugeNow(F[1]).toFixed(2)]; log!.push(e); };
   const mk = (x: AutoFighter, i: 0 | 1): AutoSide => {
     const hp = Math.round(x.hp * R.hpScale);
-    return { i, x, hp, maxHp: hp, g: 0, gT: 0, broken: false, stunEnd: 0, cd: {}, ward: null, act: null, at: 0, pending: false, combo: null, comboAt: 0, form: 1, n: zero(), dec: 0, gfx: x.gfx ?? {}, next: null, used: {}, openUntil: 0, hasteUntil: 0, slowUntil: 0 };
+    return { i, x, hp, maxHp: hp, g: 0, gT: 0, broken: false, stunEnd: 0, cd: {}, ward: null, act: null, at: 0, pending: false, combo: null, comboAt: 0, form: 1, n: zero(), dec: 0, gfx: x.gfx ?? {}, next: null, used: {}, openUntil: 0, hasteUntil: 0, slowUntil: 0, sts: {}, sn: { afflicted: {}, dmg: {}, missed: 0 } };
   };
+  let anyState = false;
   const F: [AutoSide, AutoSide] = [mk(A, 0), mk(B, 1)];
   { const fm = autoFormsOf(s0, R); F[0].form = fm[0]; F[1].form = fm[1]; }
   const other = (f: AutoSide): AutoSide => (f === F[0] ? F[1] : F[0]);
@@ -265,6 +318,12 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
 
   function start(f: AutoSide, a: AutoAction): void {
     settle(f);
+    // a paralysis (GC-3): the action may freeze instead of starting, its own keyed draw; its fighter neither guards nor dodges while frozen
+    const pz = f.sts.paralysis;
+    if (pz && pz.until > t && autoDraw(s0, f.i, f.n.acts, f.dec, DRAW.freeze) < R.states.paralysis.chance) {
+      f.frozenUntil = t + R.states.paralysis.freeze; f.pending = true; f.at = f.frozenUntil; f.sn.frozen = (f.sn.frozen ?? 0) + 1;
+      log && put({ t: T(), who: f.x.id, ev: 'freeze', act: a.id, len: R.states.paralysis.freeze }); return;
+    }
     if (a.kind === 'skill') f.used[a.id] = (f.used[a.id] ?? 0) + 1;
     if (a.cooldown) f.cd[a.id] = t + a.cooldown * (f.gfx.cd ?? 1);
     let ch = chargeFor(f, a);
@@ -273,6 +332,44 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     f.act = a; f.at = t + ch; f.n.acts++;
     if (a.kind === 'light') f.n.lights++; else if (a.kind === 'heavy') f.n.heavies++; else f.n.skills++;
     log && put({ t: T(), who: f.x.id, ev: 'charge', act: a.id, at: +f.at.toFixed(2) });
+    // the bleeding (GE-1): each action its fighter starts reopens it
+    const bl = f.sts.bleed;
+    if (bl && bl.until > t) stateDmg(f, 'bleed', R.states.bleed.pct * bl.dose);
+  }
+  /** a harmful state's damage on a fighter: its share of the health, at 1 health at least unless the states are lethal; counted to its opponent apart from its blows' (sn, not n.dmg) */
+  function stateDmg(f: AutoSide, st: AutoStateId, share: number): void {
+    const floor = R.states.lethal ? 0 : 1, dmg = Math.min(Math.max(1, Math.round(f.maxHp * share)), Math.max(0, f.hp - floor));
+    if (dmg <= 0) return;
+    const o = other(f);
+    f.hp -= dmg; o.sn.dmg[st] = (o.sn.dmg[st] ?? 0) + dmg;
+    log && put({ t: T(), who: f.x.id, ev: 'tick', state: st, dmg, hp: f.hp });
+    if (f.hp <= 0) { over = true; winner = f === F[0] ? 1 : 0; finisher = 'state'; }
+  }
+  /** a harmful state carried by a blow takes hold on its target: its chance × 1 − the target's resistance (one keyed draw per hit, SY-04); a new dose refreshes its
+   *  length; the poison's and the burn's first tick a tick after it first takes hold */
+  function afflict(f: AutoSide, g: AutoSide, a: AutoAction, inf: AutoInflict, c: Combo): void {
+    const res = Math.min(1, Math.max(0, g.gfx.resist?.[inf.state] ?? 0)), p = inf.chance * (1 - res);
+    if (p <= 0 || autoDraw(s0, f.i, c.k, c.i, DRAW.inflict) >= p) return;
+    const S = R.states[inf.state], cur = g.sts[inf.state], live = !!cur && cur.until > t;
+    const add = inf.dose ?? 1, dose = Math.min(S.max, (live ? cur!.dose : 0) + add), tick = 'tick' in S ? (S as { tick: number }).tick : 0;
+    g.sts[inf.state] = { until: Math.max(live ? cur!.until : 0, t + S.dur * (inf.dur ?? 1)), dose, next: live ? cur!.next : t + tick };
+    anyState = true; f.sn.afflicted[inf.state] = (f.sn.afflicted[inf.state] ?? 0) + 1;
+    log && put({ t: T(), who: f.x.id, ev: 'afflict', act: a.id, state: inf.state, dose, len: +(g.sts[inf.state]!.until - t).toFixed(2) });
+  }
+  /** a fighter's Attack as a blow reads it: lowered by a curse (GC-1) */
+  const atkOf = (f: AutoSide): number => (f.sts.curse && f.sts.curse.until > t ? f.x.atk * (1 - R.states.curse.k) : f.x.atk);
+  /** the next tick of a fighter's poison or burn (Infinity: none) */
+  const tickAt = (f: AutoSide): number => { let m = Infinity; for (const k of DOT) { const s = f.sts[k]; if (s && s.next < m) m = s.next; } return m; };
+  /** a fighter's poison and burn tick: each whose tick is now takes its share × its doses; one past its length is gone */
+  function tickStates(f: AutoSide): void {
+    for (const k of DOT) {
+      const s = f.sts[k]; if (!s || s.next > t + 1e-9) continue;
+      if (s.next > s.until + 1e-9) { delete f.sts[k]; continue; }
+      const S = R.states[k] as { pct: number; tick: number };
+      s.next += S.tick;
+      stateDmg(f, k, S.pct * s.dose); if (over) return;
+      if (s.next > s.until + 1e-9) delete f.sts[k];
+    }
   }
   /** an action leaves: a support or a ward takes hold; a blow strikes its first hit (true while an enchaînement goes on) */
   function land(f: AutoSide): boolean {
@@ -313,7 +410,15 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
   function hitOnce(f: AutoSide): void {
     const c = f.combo!, a = c.a, share = c.hits[c.i], g = other(f); c.i++;
     settle(g);
-    const exposed = R.exposed && ((!!g.act && g.act.kind !== 'light') || !!g.combo);
+    // the blindness (GE-1): a blinded fighter's hit misses by its own keyed draw, told as dodged with `miss` (the arena says « Missed »); a big action missed opens its
+    // striker as one dodged does; it is not a blow the opponent dodged (`wasted`, the notebook's word, does not count it)
+    const bd = f.sts.blind;
+    if (bd && bd.until > t && autoDraw(s0, f.i, c.k, c.i, DRAW.blind) < R.states.blind.miss) {
+      f.sn.missed++;
+      if (a.kind !== 'light' && c.i === 1 && R.whiff) { f.openUntil = Math.max(f.openUntil, t + R.whiff); g.n.opened++; }
+      log && put({ t: T(), who: f.x.id, ev: 'dodged', act: a.id, miss: 1 }); return;
+    }
+    const exposed = R.exposed && ((!!g.act && g.act.kind !== 'light') || !!g.combo || (g.frozenUntil ?? 0) > t);
     const lastPierce = !!f.gfx.lastPierce && a.kind === 'light' && c.i === c.hits.length;
     const open = g.openUntil > t, st = g.x.style;
     let res: 'hit' | 'guarded' | 'dodged' = 'hit';
@@ -321,7 +426,7 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     const evading = !!g.ward?.evade && g.ward.until > t;
     if (!g.broken && (!exposed || evading) && !open) {
       if (!a.undodge && (evading || autoDraw(s0, f.i, c.k, c.i, DRAW.dodge) < R.react.dodge * ratio(g.x.viv, f.x.viv) * (g.gfx.dodge ?? 1) * (st?.dodge ?? 1))) res = 'dodged';
-      else if (!exposed && !a.pierce && !lastPierce && autoDraw(s0, f.i, c.k, c.i, DRAW.guard) < Math.min(R.react.cap, R.react.guard * ratio(g.x.def, f.x.atk) * (a.kind === 'light' ? 1 : R.react.skillGuard) * (g.gfx.guardChance ?? 1) * (st?.guard ?? 1))) res = 'guarded';
+      else if (!exposed && !a.pierce && !lastPierce && autoDraw(s0, f.i, c.k, c.i, DRAW.guard) < Math.min(R.react.cap, R.react.guard * ratio(g.x.def, atkOf(f)) * (a.kind === 'light' ? 1 : R.react.skillGuard) * (g.gfx.guardChance ?? 1) * (st?.guard ?? 1))) res = 'guarded';
     }
     if (res === 'dodged') {
       g.n.dodged++; if (a.kind !== 'light') f.n.wasted++;
@@ -335,8 +440,8 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
       f.openUntil = Math.max(f.openUntil, t + R.parry.open); c.i = c.hits.length; g.n.parried++; g.n.opened++;
       log && put({ t: T(), who: g.x.id, ev: 'parry', act: a.id }); return;
     }
-    const red = Math.min(R.guard.hi, Math.max(R.guard.lo, R.guard.base * ratio(g.x.def, f.x.atk)));
-    let k = hitFactor(f.x.atk, g.x.def) * (res === 'guarded' ? 1 - red : 1) * (g.x.taken ?? 1) * f.form;
+    const red = Math.min(R.guard.hi, Math.max(R.guard.lo, R.guard.base * ratio(g.x.def, atkOf(f))));
+    let k = hitFactor(atkOf(f), g.x.def) * (res === 'guarded' ? 1 - red : 1) * (g.x.taken ?? 1) * f.form;
     if (c.load) k *= c.load.dmg;
     if (wardOn) k *= g.ward!.dmg;
     if (g.broken) k *= R.brk.dmg;
@@ -370,6 +475,10 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
       for (const s of [...g.x.skills, g.x.heavy]) g.cd[s.id] = Math.max(g.cd[s.id] ?? 0, t + R.sap.delay);
       log && put({ t: T(), who: f.x.id, ev: 'sap', act: a.id });
     }
+    // a harmful state carried by the blow: a skill's own, else the weapon's on the light attack and the heavy blow (GE-4, GE-5); after the blow's gauge, so that its line's
+    // traced gauges carry the blow
+    const inf = a.inflict ?? (a.kind !== 'skill' ? f.gfx.inflict : undefined);
+    if (inf && (res === 'hit' || inf.on === 'any')) afflict(f, g, a, inf, c);
     if (line && o.trace) line.g = +gaugeNow(g).toFixed(2);
   }
   function addGauge(g: AutoSide, add: number): void {
@@ -394,6 +503,16 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     // first on a tie
     let next: AutoSide = F[0], nt = Infinity;
     for (const f of F) { const ft = f.combo ? f.comboAt : f.pending ? Math.max(f.at, f.broken ? f.stunEnd : 0) : f.at; if (ft < nt - 1e-12) { nt = ft; next = f; } }
+    // a poison's or a burn's tick comes before an action at the same time (none without a state: the duel as before)
+    if (anyState) {
+      let tf: AutoSide | null = null, tt = Infinity;
+      for (const f of F) { const x = tickAt(f); if (x < tt - 1e-12) { tt = x; tf = f; } }
+      if (tf && tt <= nt + 1e-12) {
+        t = tt;
+        if (t > R.maxT) break;
+        tickStates(tf); if (over) break; leadNow(); continue;
+      }
+    }
     t = nt;
     if (t > R.maxT) break;
     if (next.combo) {
@@ -408,7 +527,7 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     leadNow();
     if (!inCombo) after(next);
   }
-  return { winner, finisher, t: T(), hp: [F[0].hp, F[1].hp], maxHp: [F[0].maxHp, F[1].maxHp], form: [F[0].form, F[1].form], n: [F[0].n, F[1].n], leadChanges, log };
+  return { winner, finisher, t: T(), hp: [F[0].hp, F[1].hp], maxHp: [F[0].maxHp, F[1].maxHp], form: [F[0].form, F[1].form], n: [F[0].n, F[1].n], leadChanges, log, ...(anyState ? { sn: [F[0].sn, F[1].sn] as [AutoStateCount, AutoStateCount] } : {}) };
 }
 
 /** the forms of the day a duel of this seed draws, before it (AC-08: said on the match sheet), from their own stream: the duel's other draws stay the same

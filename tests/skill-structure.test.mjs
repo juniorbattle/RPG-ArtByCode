@@ -117,7 +117,7 @@ test('SK-11: the ranks and the signatures by their names, in English and in Fren
 });
 
 test('the operator\'s note on SK-6: a failed ultimate plays no cinematic, its use spent; said over its striker, and the notebook\'s advice', () => {
-  for (const t of [H.AUTO_TEXTS_EN, H.AUTO_TEXTS_FR]) assert.deepEqual(Object.keys(t.ultMiss).sort(), ['cut', 'dodged', 'guarded', 'lost', 'parried']);
+  for (const t of [H.AUTO_TEXTS_EN, H.AUTO_TEXTS_FR]) assert.deepEqual(Object.keys(t.ultMiss).sort(), ['cut', 'dodged', 'guarded', 'lost', 'missed', 'parried']); // (missed: a blindness, journal Passe GP4-2)
   assert.equal(H.AUTO_TEXTS_FR.ultMiss.dodged, 'Ultime esquivée');
   // the notebook: an ultimate dodged, parried, cut or lost in a clash, after a Feint wasted and an exploit landed without an opening
   const ren = { skills: [{ id: 't4', role: 'exploit' }, { id: 't1', role: 'punish' }] };

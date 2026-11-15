@@ -16,7 +16,10 @@ import { FX_EXPOSURE, FxEngine, type FxHooks } from './FxEngine';
 import { FxDirector, type FxPlayContext, type FxUnitRef } from './FxDirector';
 import { onSettings, reducedMotion } from '../../settings/settings';
 import { FX_PALETTES } from './fxPalettes';
-import { RECIPES, blowRecipe, chargeLevel, effectRecipe, formRecipe, type FxRecipe } from './fxRecipes';
+import { FORM_RECIPES, RECIPES, blowRecipe, chargeLevel, effectRecipe, formRecipe, type FxRecipe } from './fxRecipes';
+/** the harmful states' looks, borrowed (no new art: the operator's GE-9 « Ces emprunts », journal Passe GP4-2): the poison the form's grey motes sinking, the burn
+ *  Marek's fire, the blindness the holy light of Ilse's prayer, the bleeding Rhosk's blood */
+const STATE_LOOKS: Record<string, FxRecipe | undefined> = { poison: FORM_RECIPES.formDown, burn: RECIPES.m_resolve, blind: RECIPES.m_prayer, bleed: RECIPES.m_roar, curse: RECIPES.k_cry, paralysis: RECIPES.m_tempo };
 
 /** the figure's height (m), and how far before a fighter the blades meet on generated art (`cast=generated`): Ren holds his sword close, Marek's art at arm's length, Vessa on Ren's clips
  *  (the other rivals wear Marek's there, FighterArt's `FOES`); on the baked sheets, what the guard's frame reaches (`guardReach`) */
@@ -142,6 +145,8 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
         else if (e.type === 'effect') self(effectRecipe(e.action, e.family), F[e.who as FighterId]);
         // the form of the day's sign at the start of the bout (LC6-7 « Les deux signes », journal Passe LC7)
         else if (e.type === 'formSign') self(formRecipe(e.sign, e.who), F[e.who as FighterId]);
+        // a harmful state taking hold (GE-9): an approved recipe borrowed on the fighter it takes hold of
+        else if (e.type === 'state') { const r = STATE_LOOKS[e.state as string]; if (r) self(r, F[e.who as FighterId]); }
         else if (e.type === 'chargeTier') { const level = chargeLevel(e.idx, tiers); if (e.open && level > 0) director.play(RECIPES[`charge${level}`], { source: unit(F.ren), target: unit(F.marek) }); }
         else if (e.type === 'chargeRelease') { if (e.ok && e.idx >= 1) self(RECIPES.release, F.ren); }
         else if (e.type === 'reset') { engine.clear(); flash.dur = lines.dur = punch.dur = 0; flashEl.style.opacity = linesEl.style.opacity = '0'; slowLeft = 0; fxScale = 1; arena.timeScale(1); for (const s of slots) { s.dur = 0; s.src.scale = s.src.targetScale = 0; } }

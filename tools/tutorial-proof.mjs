@@ -273,8 +273,8 @@ try {
   await page.evaluate(() => window.__ui.openSkills(true));
   await sleep(600);
   const sheet = await page.evaluate(() => [...document.querySelectorAll('.pm-vs tbody tr')].map((tr) => [...tr.children].map((td) => td.textContent.trim())));
-  // (eight lines, and since lot 2 of « La Brute » what one light attack and one heavy blow take from each bar: BL1-10, journal Passe BL2)
-  check(sheet.length === 10, `the match sheet's two fighters: ${sheet.map((r) => r.join(' ')).join(' | ')}`);
+  // (eight lines, and since lot 2 of « La Brute » what one light attack and one heavy blow take from each bar: BL1-10, journal Passe BL2; since the harmful states two more, what each puts on the other and resists: journal Passe GP4-2)
+  check(sheet.length === 12, `the match sheet's two fighters: ${sheet.map((r) => r.join(' ')).join(' | ')}`);
   await page.evaluate(() => [...document.querySelectorAll('.pm-overlay .pm-foot .pm-btn.primary')].pop()?.click());
   await sleep(300);
   const arenaAt = await page.evaluate(() => window.__go);

@@ -203,6 +203,8 @@ try {
   const st0 = await page.evaluate(() => window.__game.state());
   await page.evaluate((enter) => { document.querySelectorAll('.pm-news .pm-btn, .pm-overlay .pm-btn.primary').forEach((x) => x.click()); window.__ui.openHere(); [...document.querySelectorAll('.pm-talk .pm-btn')].find((x) => x.textContent.includes(enter))?.click(); }, inLang(() => T.tx('ui.enterArena')));
   const sheet = await page.evaluate(() => ({ rows: [...document.querySelectorAll('.pm-vs tbody tr')].map((tr) => [...tr.children].map((td) => td.textContent)), order: [...document.querySelectorAll('.pm-ladder2 dt')].map((x) => x.textContent), text: document.querySelector('.pm-skills')?.textContent ?? '', foe: document.querySelector('.pm-foe .pm-h')?.textContent ?? '' }));
+  // the harmful states' two rows (journal Passe GP4-2): what each puts on the other and resists, the opponent's read from the scouting (its style, tier 1), « ? » before
+  const SCO = await server.ssrLoadModule('/src/simulation/v2scout.ts'), ADS = await server.ssrLoadModule('/src/combat/autoData.ts');
   const bout = AM.autoBoutOf(st0), forms = AM.autoForms(bout), rr = AM.autoReactions(bout.ren, bout.foe), fr = AM.autoReactions(bout.foe, bout.ren);
   const pc = (k) => inLang(() => T.tx('auto.sheet.pct', { n: Math.round(k * 100) })), sg = (f) => `${f >= 1 ? '+' : '−'}${pc(Math.abs(f - 1))}`, n1 = (x) => inLang(() => T.num(+x.toFixed(1)));
   const lb = (k) => inLang(() => T.tx(k));
@@ -216,6 +218,8 @@ try {
     // written here from src/combat/auto.ts hitOnce: each hit its share of the power, at least 1; the Attack against the Defence, the share taken, the form)
     [lb('auto.sheet.lightRow'), bar(bout.ren.light, bout.ren, bout.foe, forms[0]), bar(bout.foe.light, bout.foe, bout.ren, forms[1])],
     [lb('auto.sheet.heavyRow'), bar(bout.ren.heavy, bout.ren, bout.foe, forms[0]), bar(bout.foe.heavy, bout.foe, bout.ren, forms[1])],
+    [lb('auto.sheet.states'), inLang(() => SCO.stateListText(ADS.autoStatesOf(bout.ren))) || '—', SCO.scoutTier(st0, bout.foeId) >= 1 ? inLang(() => SCO.stateListText(ADS.autoStatesOf(bout.foe))) || '—' : '?'],
+    [lb('auto.sheet.resist'), inLang(() => SCO.resistListText(ADS.autoResistsOf(bout.ren))) || '—', SCO.scoutTier(st0, bout.foeId) >= 1 ? inLang(() => SCO.resistListText(ADS.autoResistsOf(bout.foe))) || '—' : '?'],
   ];
   check(JSON.stringify(sheet.rows) === JSON.stringify(want), `the match sheet's table is the duel's fighters: ${sheet.rows.map((r) => r.join(' ')).join(' | ')}`);
   check(bout.prep < 0.05 || sheet.text.includes(inLang(() => T.tx('auto.sheet.prep', { name: sheet.foe, n: T.num(+bout.prep.toFixed(1)) }))), `the rival's training as Attack points (${+bout.prep.toFixed(1)})`);

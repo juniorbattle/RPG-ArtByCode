@@ -43,6 +43,11 @@ test('the port: the same duels as the final workshop\'s copy under SK2, event fo
   const tactics = [undefined, { 0: 'open', 2: 'ready' }, { 1: 'start', 3: 'hurt' }, { 0: 'never', 1: 'follow' }];
   const seen = { ward: 0, boost: 0, dodged: 0, guarded: 0, break: 0, parry: 0, interrupt: 0, clash: 0, beat: 0, chain: 0, heavy: 0, ko: 0, foeWins: 0 };
   let n = 0;
+  // the port stands for the rules ported (BL1, SK2): the harmful states, a layer of their own since journal Passe GP4-2 (tests/harmful-states.test.mjs), are set aside here
+  const keepStates = { skills: { ...AD.AUTO_SKILL_STATES }, styles: Object.fromEntries(Object.entries(AD.AUTO_STYLES).map(([k, v]) => [k, { inflict: v.inflict, resist: v.resist }])) };
+  for (const id of Object.keys(AD.AUTO_SKILL_STATES)) delete AD.AUTO_SKILL_STATES[id];
+  for (const st of Object.values(AD.AUTO_STYLES)) { delete st.inflict; delete st.resist; }
+  try {
   for (const [ki, loadout] of kits.entries()) for (const foe of [...RIVALS, 'aldric', 'corra']) for (let gi = 0; gi < gears.length; gi++) {
     const stage = (ki + gi + foe.length) % 3, g = gears[gi], lv = 1 + ((ki + gi) % 5);
     const levels = Object.fromEntries([...loadout, 'heavy'].map((id, j) => [id, 1 + ((lv + j) % 5)]));
@@ -62,6 +67,7 @@ test('the port: the same duels as the final workshop\'s copy under SK2, event fo
     }
   }
   for (const [k, v] of Object.entries(seen)) assert.ok(v > 0, `${k} reached (${JSON.stringify(seen)}, ${n} duels)`);
+  } finally { Object.assign(AD.AUTO_SKILL_STATES, keepStates.skills); for (const [k, v] of Object.entries(keepStates.styles)) { if (v.inflict) AD.AUTO_STYLES[k].inflict = v.inflict; if (v.resist) AD.AUTO_STYLES[k].resist = v.resist; } }
 });
 
 // ------------------------------------------------------------------------------------------------- 2. the tables against the decisions

@@ -97,12 +97,16 @@ test('the pick: every ultimate (SK-5); the supers 3 a bout at most, 20 s after a
 
 test('the arena’s own page: Ren’s Thrust in Marek’s break and outside an opening (ultras, SK-5), Rhosk’s Northern cleave (super), the Thrust that ends the bout against Ilse', () => {
   const one = (foe, seed, kit) => { const d = V.sceneAutoDuel(foe, seed, { loadout: kit }); return C.cineMoments(d.result, { ren: d.ren, marek: d.foe }).map((m) => `${m.t.toFixed(2)} ${m.tier} ${m.who} ${m.action}×${m.hits}${m.inBreak ? ' break' : m.inOpen ? ' open' : ''}${m.ko ? ' ko' : ''}`); };
-  assert.deepEqual(one('marek', 1337), ['62.35 ultra ren t4×1 break', '106.46 ultra ren t4×1']);
+  // the moments re-read with the harmful states and the race fitted again (journal Passe GP4-2, GE-11): the rivals now burn, bleed, blind or poison and resist their own
+  // state, Marek's, Rhosk's and Ilse's duels run longer by a few seconds to a half-minute; the same phenomena on the seeds that still show them (Marek 13 for the Thrust
+  // in his break then outside an opening, Ilse 1337 for the Thrust that ends the bout; 62.35 / 106.46 on Marek 1337, 81.14 / 118.24 on Ilse 2 before)
+  assert.deepEqual(one('marek', 13), ['44.52 ultra ren t4×1 break', '74.86 ultra ren t4×1']);
+  // (the race fitted once more on the quests, journal Passe GP4-2: Rhosk's duel back to two moments, 15.21 / 96.39 as before the states; 156.42 gone)
   assert.deepEqual(one('rhosk', 1337), ['15.21 super marek m_cleave×1', '96.39 ultra ren t4×1 break']);
-  assert.deepEqual(one('ilse', 2), ['81.14 ultra ren t4×1 break', '118.24 ultra ren t4×1 ko']);
-  assert.deepEqual(one('rhosk', 1337, ['t3', 't4', 'k_sunder', 's1']), ['6.07 super ren t3×3', '32.83 super marek m_cleave×1', '106.82 ultra ren t4×1 break']);
+  assert.deepEqual(one('ilse', 1337), ['95.39 ultra ren t4×1 break', '132.49 ultra ren t4×1 ko']);
+  assert.deepEqual(one('rhosk', 1337, ['t3', 't4', 'k_sunder', 's1']), ['6.07 super ren t3×3', '32.83 super marek m_cleave×1', '96.96 ultra ren t4×1 break']);
   // a rival's signature in Ren's four (journal Passe SK2): Marek's Iron Fall in his break, Ren's ultimate
-  assert.deepEqual(one('marek', 1337, ['t1', 'm_ironfall', 'd1', 's1']).slice(0, 1), ['60.18 ultra ren m_ironfall×1 break']);
+  assert.deepEqual(one('marek', 1337, ['t1', 'm_ironfall', 'd1', 's1']).slice(0, 1), ['53.12 ultra ren m_ironfall×1 break']);
 });
 
 test('what a cinematic tells is the duel’s own: its blows, their damage and health against the replay’s impacts of that action, its total the arena’s number', () => {

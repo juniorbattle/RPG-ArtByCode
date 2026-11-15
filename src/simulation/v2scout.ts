@@ -5,8 +5,8 @@ import { GENERICS } from '../narrative/generics';
 import { tx, word, skillName, type TextKey } from '../narrative/text';
 import { pendingFinal } from '../tournament/v2calendar';
 import { stageOf, type Stage } from '../combat/stats';
-import { AUTO_BRUTE, AUTO_FOES, AUTO_ROLES, AUTO_STYLES, autoPlanOf, autoRivalLevel } from '../combat/autoData';
-import type { AutoCond, AutoRole } from '../combat/auto';
+import { AUTO_BRUTE, AUTO_FOES, AUTO_ROLES, AUTO_STYLES, autoKitStates, autoPlanOf, autoRivalLevel } from '../combat/autoData';
+import type { AutoCond, AutoRole, AutoStateId } from '../combat/auto';
 import { FOE_SKILLS } from '../combat/v2duel';
 
 /** The scouting by tiers (lot 3 of « La Brute », the operator's PB-4 « Toutes », briefs/combat-auto.md § 33.5; the proposition's « Le repérage qui révèle le style puis
@@ -97,7 +97,24 @@ export const scoutName = (id: string): string => RIVALS[id]?.name ?? (GENERICS[i
 export function styleText(id: string, name: string): string {
   const k = kitOf(id), st = AUTO_STYLES[k], skills = AUTO_FOES[k].skills.map((x) => { const r = AUTO_ROLES[x.id]?.role; return r ? tx('auto.style.skill', { skill: anySkillName(x.id), role: tx(ROLE_WORD[r]) }) : anySkillName(x.id); });
   const pieces = st.dodge >= 1.5 ? tx('scout.pieces.light', { name }) : st.guard >= 1.5 ? tx('scout.pieces.shield', { name }) : st.dodge <= 0.5 ? tx('scout.pieces.heavy', { name }) : '';
-  return [tx('auto.style.skills', { name, list: skills.join(', ') }), st.heavy === 'ready' ? tx('auto.style.heavy', { name }) : '', pieces].filter(Boolean).join(' ');
+  return [tx('auto.style.skills', { name, list: skills.join(', ') }), st.heavy === 'ready' ? tx('auto.style.heavy', { name }) : '', pieces, ...statesText(name, autoKitStates(k))].filter(Boolean).join(' ');
+}
+
+/** each harmful state's name (GE-8) */
+export const STATE_NAME: Partial<Record<AutoStateId, TextKey>> = { poison: 'state.name.poison', burn: 'state.name.burn', blind: 'state.name.blind', bleed: 'state.name.bleed', curse: 'state.name.curse', paralysis: 'state.name.paralysis' };
+/** the harmful states in words (the operator's GE-8 « Ainsi », journal Passe GP4-2): each state's name, then where it comes from ('weapon' the fighter's weapon, else a skill) */
+export function stateListText(poses: ReadonlyArray<{ state: AutoStateId; from: string }>): string {
+  const by = new Map<AutoStateId, string[]>();
+  for (const p of poses) { const l = by.get(p.state) ?? []; l.push(p.from === 'weapon' ? tx('state.src.weapon') : anySkillName(p.from)); by.set(p.state, l); }
+  return [...by].map(([st, from]) => tx('state.with', { state: tx(STATE_NAME[st]!), from: from.join(', ') })).join(', ');
+}
+/** the states a fighter resists in words, « (half) » under a full resistance */
+export function resistListText(resists: ReadonlyArray<{ state: AutoStateId; k: number }>): string {
+  return resists.map((r) => (r.k >= 1 ? tx(STATE_NAME[r.state]!) : tx('state.half', { state: tx(STATE_NAME[r.state]!) }))).join(', ');
+}
+/** a rival's states and resistances as the scouting says them (tier 1, its style) */
+export function statesText(name: string, ks: { poses: ReadonlyArray<{ state: AutoStateId; from: string }>; resists: ReadonlyArray<{ state: AutoStateId; k: number }> }): string[] {
+  return [ks.poses.length ? tx('scout.states.poses', { name, list: stateListText(ks.poses) }) : tx('scout.states.none', { name }), ks.resists.length ? tx('scout.states.resists', { name, list: resistListText(ks.resists) }) : ''].filter(Boolean);
 }
 
 /** tier 2: when they use each skill (a plan of theirs, `plan` its index, GP-15: the one the player saw; its conditions, 'auto' its role's own rule); `day` the day it was

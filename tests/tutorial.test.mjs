@@ -213,6 +213,8 @@ function oracle(d) {
   const koAt = log.find((e) => e.hp !== undefined && e.hp <= 0)?.t ?? Infinity;
   for (const [i, e] of log.entries()) {
     if (e.t >= koAt) break;
+    // (a harmful state taking hold or ticking is no blow: journal Passe GP4-2)
+    if (e.ev === 'afflict' || e.ev === 'tick') continue;
     if (e.ev === 'charge') { fresh[e.who] = true; if (e.who === d.ren.id && e.act !== d.ren.light.id) put('charge', e.t); continue; }
     if (e.ev === 'break') { put('break', e.t); continue; }
     // a clash of two blows of the same weight (BL1-8; a light attack beaten by a big action is not one); an interruption or a parry opens a fighter (lot 2)
@@ -224,7 +226,8 @@ function oracle(d) {
     const act = acts.get(e.act);
     if (!follow && act && ((e.ev !== 'dodged' && act.role === 'opener') || (e.ev === 'dodged' && act.kind !== 'light'))) put('open', e.t);
     if (follow) put('combo', e.t);
-    if (e.ev !== 'hit') put('react', e.t);
+    // (a blow its striker's blindness made miss is no guard nor dodge: journal Passe GP4-2)
+    if (e.ev !== 'hit' && !e.miss) put('react', e.t);
     if (e.ev === 'hit' && !light.has(e.act)) put('form', e.t);
     if (e.ev !== 'dodged' && after(i, e.who === d.ren.id ? 1 : 0) >= R.gauge.max / 3) put('gauge', e.t);
   }

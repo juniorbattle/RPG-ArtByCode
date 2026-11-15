@@ -1,4 +1,4 @@
-import { AUTO_RULES, autoDuel, type AutoAction, type AutoBrain, type AutoCond, type AutoEffect, type AutoFamily, type AutoFighter, type AutoGearFx, type AutoResult, type AutoRole, type AutoStyle } from './auto';
+import { AUTO_RULES, autoDuel, type AutoAction, type AutoBrain, type AutoCond, type AutoEffect, type AutoFamily, type AutoFighter, type AutoGearFx, type AutoInflict, type AutoResult, type AutoRole, type AutoStateId, type AutoStyle } from './auto';
 import { POWER, RIVAL_SHEETS, type FighterStats, type Stage } from './stats';
 import { LEVEL_POWER, SKILLS, clampLevel, type Times } from './skills';
 
@@ -148,14 +148,18 @@ export function kitRankFault(ids: readonly string[]): SkillRank | null {
 
 /** each rival's style under the same rules (PB-1; the laboratory's BRUTE_STYLES): its guard and dodge × (its kit's pieces: a shield, light leathers), its heavy
  *  blow ('ready' a brawler's, else when the opponent cannot defend), the conditions of its skills by id ('auto' its role's automatic); Cassius's brace parries */
-export const AUTO_STYLES: Record<string, AutoStyle & { tactic: Record<string, AutoCond>; parry?: readonly string[] }> = {
-  vessa: { dodge: 2, guard: 0.5, tactic: { m_tempo: 'ready', m_lunge: 'auto', m_brace: 'incoming' } },
-  tobin: { dodge: 0.8, guard: 0.4, heavy: 'ready', tactic: { m_grit: 'follow', m_wild: 'ready' } },
-  cassius: { dodge: 1.3, guard: 1.2, parry: ['m_brace'], tactic: { m_brace: 'incoming', m_riposte: 'auto', m_gild: 'follow' } },
-  orla: { dodge: 0.6, guard: 1, heavy: 'ready', tactic: { m_shoulder: 'ready', m_brace: 'incoming' } },
-  ilse: { dodge: 0.5, guard: 1.6, tactic: { m_aegis: 'ready', m_smite: 'auto', m_prayer: 'follow' } },
-  marek: { dodge: 0.3, guard: 1.3, tactic: { m_resolve: 'follow', m_ironfall: 'auto', m_bulwark: 'incoming' } },
-  rhosk: { dodge: 0.3, guard: 0.8, tactic: { m_hide: 'gauge', m_roar: 'ready', m_cleave: 'ready' } },
+export const AUTO_STYLES: Record<string, AutoStyle & { tactic: Record<string, AutoCond>; parry?: readonly string[]; inflict?: AutoInflict; resist?: Partial<Record<AutoStateId, number>> }> = {
+  // the harmful states each carries on its weapon and resists (the operator's sheet https://claude.ai/artifact/DqsBjqLm1UQG4ChPC2EeRW, thirteen of thirteen at the recommendation, journal Passe GP4-2: GE-6 « Ces porteurs et ces résistances »): Vessa's two blades bleed and she resists nothing in
+  // her light leathers, Tobin throws dust and half resists it, Cassius poisons his blade (and his Golden Riposte) and carries its antidote, Marek strikes with a hot iron
+  // (and his Iron Fall) and does not fear his fire, Ilse (her Smite blinds) does not fear the light, Rhosk (his Northern Cleave bleeds) has his furs, Orla poses none and
+  // her mail halves the bleeding; a generic fighter takes its rival's
+  vessa: { dodge: 2, guard: 0.5, tactic: { m_tempo: 'ready', m_lunge: 'auto', m_brace: 'incoming' }, inflict: { state: 'bleed', chance: 0.04 } },
+  tobin: { dodge: 0.8, guard: 0.4, heavy: 'ready', tactic: { m_grit: 'follow', m_wild: 'ready' }, inflict: { state: 'blind', chance: 0.05 }, resist: { blind: 0.5 } },
+  cassius: { dodge: 1.3, guard: 1.2, parry: ['m_brace'], tactic: { m_brace: 'incoming', m_riposte: 'auto', m_gild: 'follow' }, inflict: { state: 'poison', chance: 0.06 }, resist: { poison: 1 } },
+  orla: { dodge: 0.6, guard: 1, heavy: 'ready', tactic: { m_shoulder: 'ready', m_brace: 'incoming' }, resist: { bleed: 0.5 } },
+  ilse: { dodge: 0.5, guard: 1.6, tactic: { m_aegis: 'ready', m_smite: 'auto', m_prayer: 'follow' }, resist: { blind: 1 } },
+  marek: { dodge: 0.3, guard: 1.3, tactic: { m_resolve: 'follow', m_ironfall: 'auto', m_bulwark: 'incoming' }, inflict: { state: 'burn', chance: 0.08, on: 'any' }, resist: { burn: 1 } },
+  rhosk: { dodge: 0.3, guard: 0.8, tactic: { m_hide: 'gauge', m_roar: 'ready', m_cleave: 'ready' }, resist: { bleed: 1 } },
 };
 /** each rival's three plans (the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », 15/11/2026, journal Passe GP2): the conditions of its skills, the
  *  first its plan of the pool (AUTO_STYLES' tactic), each next one taken at the cut (day 6) and after each defeat against Ren, in this order, the first again after
@@ -202,16 +206,81 @@ export const AUTO_GEAR_FX: Record<string, AutoGearFx> = {
  *  at full Speed the sabre and the boots were the best piece of their slot against nearly every rival) */
 export const AUTO_PIECE_VIV = 0.5;
 
-/** the effects of the pieces worn, merged in their order (the weapon, the armour, the accessories): a number multiplied, a flag set */
+/** the effects of the pieces worn, merged in their order (the weapon, the armour, the accessories): a number multiplied, a flag set; the workshop of journal Passe
+ *  GP4-1: a harmful state the first piece's that carries one (the weapon), each state's resistance the highest worn */
 export function autoGearFx(pieces: readonly (string | null | undefined)[]): AutoGearFx {
-  const out: Record<string, number | boolean> = {};
+  const out: Record<string, unknown> = {};
   for (const id of pieces) {
     const e = id ? AUTO_GEAR_FX[id] : undefined;
     if (!e) continue;
-    for (const [k, v] of Object.entries(e)) out[k] = typeof v === 'number' && typeof out[k] === 'number' ? (out[k] as number) * v : v;
+    for (const [k, v] of Object.entries(e)) {
+      if (k === 'resist') { const r = (out.resist ??= {}) as Record<string, number>; for (const [st, x] of Object.entries(v as Record<string, number>)) r[st] = Math.max(r[st] ?? 0, x); }
+      else if (k === 'inflict') out.inflict ??= v;
+      else out[k] = typeof v === 'number' && typeof out[k] === 'number' ? (out[k] as number) * v : v;
+    }
   }
   return out as AutoGearFx;
 }
+/** the harmful state a skill carries, by its id: the four rivals' signatures (the operator's sheet https://claude.ai/artifact/DqsBjqLm1UQG4ChPC2EeRW, thirteen of thirteen at the recommendation, journal Passe GP4-2: GE-5 « Ces quatre signatures »), each time it lands; the rival plays it, and Ren
+ *  once he has learnt it (SK-7). Iron Fall burns half as long again, Smite blinds half as long again, the Northern Cleave puts a dose of bleeding (measured at two, it was
+ *  the one good answer in three cases, journal Passe GP4-1), the Golden Riposte two doses of poison */
+export const AUTO_SKILL_STATES: Record<string, AutoInflict> = {
+  m_ironfall: { state: 'burn', chance: 1, on: 'any', dur: 1.5 },
+  m_smite: { state: 'blind', chance: 1, dur: 1.5 },
+  m_cleave: { state: 'bleed', chance: 1 },
+  m_riposte: { state: 'poison', chance: 1, dose: 2 },
+};
+
+/** The families of pieces that carry or keep off a harmful state (the operator's sheet https://claude.ai/artifact/DqsBjqLm1UQG4ChPC2EeRW, thirteen of thirteen at the recommendation, journal Passe GP4-2: GE-4 « Ces familles, avec une contrepartie », GE-7 « Ces sept familles », GE-12 « Ainsi »):
+ *  workstream 5 (the gold and the gear, GP-17 to GP-19) makes them pieces, with their names, prices, shops and counterparts; until then no piece of the game carries one
+ *  (`AUTO_GEAR_FX` takes a family's `inflict` or `resist`). A weapon's state goes on each hit of its light attack and on its heavy blow, its chance per hit; an armour
+ *  halves the chance of being afflicted, an accessory keeps the state off. */
+export type StateWeaponFamily = 'venom' | 'ember' | 'glare' | 'serrated' | 'hex' | 'numb';
+export type StateArmourFamily = 'leather' | 'padded' | 'mail';
+export type StateCharmFamily = 'bezoar' | 'salamander' | 'hood' | 'tourniquet';
+export const STATE_WEAPON_FAMILIES: Record<StateWeaponFamily, AutoInflict> = {
+  /** envenimée: the poison, 12 % a hit (stopped by a guard) */
+  venom: { state: 'poison', chance: 0.12 },
+  /** ardente: the burn, 8 % a hit, a guarded hit too */
+  ember: { state: 'burn', chance: 0.08, on: 'any' },
+  /** éblouissante: the blindness, 15 % a hit */
+  glare: { state: 'blind', chance: 0.15 },
+  /** dentelée: the bleeding, 12 % a hit */
+  serrated: { state: 'bleed', chance: 0.12 },
+  /** maudite (the short sheet's GC-1 « L’adopter », journal Passe GP4-2): the curse, 40 % a hit, the target's Attack −25 % for 8 s (no cumulation: a new one renews the length) */
+  hex: { state: 'curse', chance: 0.4 },
+  /** engourdissante (GC-3 « L’adopter »): the paralysis, 40 % a hit, 30 % of the target's actions freeze 1.5 s for 8 s */
+  numb: { state: 'paralysis', chance: 0.4 },
+};
+/** a weapon of a family against the plain piece of its price: Attack points (GE-4's counterpart; doubled as every piece's, AC-11) */
+export const STATE_WEAPON_COUNTERPART = -2;
+export const STATE_ARMOUR_FAMILIES: Record<StateArmourFamily, Partial<Record<AutoStateId, number>>> = {
+  /** cuir: the poison's chance halved */
+  leather: { poison: 0.5 },
+  /** matelassé: the burn's */
+  padded: { burn: 0.5 },
+  /** maille: the bleeding's (no armour keeps off the blindness: no helmet slot) */
+  mail: { bleed: 0.5 },
+};
+export const STATE_CHARM_FAMILIES: Record<StateCharmFamily, Partial<Record<AutoStateId, number>>> = {
+  bezoar: { poison: 1 }, salamander: { burn: 1 }, hood: { blind: 1 }, tourniquet: { bleed: 1 },
+};
+/** the states a fighter puts on its opponent, each with where it comes from ('weapon' its light attack and heavy blow, else a skill's id), in the order weapon then skills */
+export function autoStatesOf(f: Pick<AutoFighter, 'skills' | 'gfx'>): Array<{ state: AutoStateId; from: string }> {
+  const out: Array<{ state: AutoStateId; from: string }> = [];
+  if (f.gfx?.inflict) out.push({ state: f.gfx.inflict.state, from: 'weapon' });
+  for (const s of f.skills) if (s.inflict) out.push({ state: s.inflict.state, from: s.id });
+  return out;
+}
+/** what a rival's kit and style put on its opponent and resist (its weapon's state, its skills' that carry one, its resistances), from the data alone (the scouting reads it:
+ *  GE-8); a generic fighter fights with its rival's */
+export function autoKitStates(kitOf: string): { poses: Array<{ state: AutoStateId; from: string }>; resists: Array<{ state: AutoStateId; k: number }> } {
+  const k = AUTO_FOES[kitOf] ? kitOf : 'marek', S = AUTO_STYLES[k];
+  const poses = [...(S?.inflict ? [{ state: S.inflict.state, from: 'weapon' }] : []), ...AUTO_FOES[k].skills.filter((x) => AUTO_SKILL_STATES[x.id]).map((x) => ({ state: AUTO_SKILL_STATES[x.id].state, from: x.id }))];
+  return { poses, resists: (Object.entries(S?.resist ?? {}) as Array<[AutoStateId, number]>).filter(([, v]) => v > 0).map(([state, v]) => ({ state, k: v })) };
+}
+/** a fighter's resistances (its pieces', a rival's own), the states it resists and how much (0 to 1) */
+export const autoResistsOf = (f: Pick<AutoFighter, 'gfx'>): Array<{ state: AutoStateId; k: number }> => (Object.entries(f.gfx?.resist ?? {}) as Array<[AutoStateId, number]>).filter(([, k]) => k > 0).map(([state, k]) => ({ state, k }));
 
 /** a skill under the model (PB-1): its role, its uses at its level (a rival's by its stage), its gap, its power and charge; a parry's ward (a 3 s window that
  *  takes a big blow); a support's effect its role's (the haste, the slow, the load) */
@@ -224,6 +293,7 @@ export function autoBrute(a: AutoAction, level: number, o: { parry?: boolean } =
   if (R.pierce) b.pierce = true;
   if (R.pierceWard) b.pierceWard = true;
   if (R.unparry) b.unparry = true;
+  if (AUTO_SKILL_STATES[a.id] && !a.ward && !a.boost) b.inflict = AUTO_SKILL_STATES[a.id];
   if (b.power) b.power *= B.usePower;
   b.charge = a.charge * B.charge * (B.roleCharge[role] ?? 1);
   if (role === 'parry') b.ward = { ...(a.ward ?? { gauge: 0.5 }), dur: U.parry.dur, dmg: 0.05 };
@@ -421,7 +491,9 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
   const kitOf = o.kitOf ?? (AUTO_FOES[id] ? id : 'marek'), acts = autoFoeActions(kitOf, o.stage ?? 0), S = styleOfId(kitOf);
   const style: AutoStyle | undefined = S ? { dodge: S.dodge, guard: S.guard, ...(S.heavy ? { heavy: S.heavy } : {}) } : undefined;
   const plan = AUTO_PLANS[kitOf] ? autoPlanOf(kitOf, o.plan ?? 0) : S.tactic;
-  return { id, side: o.side ?? 'foe', hp: sheet.hp, atk: sheet.atk, def: sheet.def, end: sheet.end, viv: sheet.viv, tempo: 10, taken: 1, ...acts, brain: o.brain ?? 'rival', ...(S ? { style, tactic: acts.skills.map((s) => plan[s.id] ?? 'auto') } : {}) };
+  // a style's harmful state on its weapon's blows and its resistances (GE-6 « Ces porteurs et ces résistances »)
+  const gfx: AutoGearFx | null = S && (S.inflict || S.resist) ? { ...(S.inflict ? { inflict: S.inflict } : {}), ...(S.resist ? { resist: S.resist } : {}) } : null;
+  return { id, side: o.side ?? 'foe', hp: sheet.hp, atk: sheet.atk, def: sheet.def, end: sheet.end, viv: sheet.viv, tempo: 10, taken: 1, ...acts, brain: o.brain ?? 'rival', ...(S ? { style, tactic: acts.skills.map((s) => plan[s.id] ?? 'auto') } : {}), ...(gfx ? { gfx } : {}) };
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------- the race
@@ -437,11 +509,15 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
  *  101 to 300; fitted again with the clash and the gauge of the operator's BL1-8 and BL1-9 (journal Passe BL1: the planner's semi-final 53 %, final 45 %), and with the
  *  blows' weights of journal Passe BE1 (AUTO_WEIGHT, the protections, the weapons, the opener's opening 4 s, every health ×3.6: the planner's semi-final 54 %, final 50 %), and
  *  with the skills' structure of journal Passe SK2 (an ultimate at full strength at least, the openers and Iron Fall at an ordinary weight on the gauge: the planner's
- *  semi-final 47 %, final 54 %, the reference's titles 41 %, held out). */
+ *  semi-final 47 %, final 54 %, the reference's titles 41 %, held out); and with the harmful states (the operator's GE-11 « Recaler la course à la construction », journal
+ *  Passe GP4-2: the rivals' states and resistances, on main f55f412 with the rivals' adapting plans: the planner's semi-final 43 %, final 47 %, titles 20 %; the reference's
+ *  titles 33 %; held out, seeds 101 to 300); then again on main 5d46dd8 with the townsfolk's duels (journal Passe PN1) and the town's quests (journal Passe QE2, which cost the
+ *  pool: the planner's day-2 bouts 91 % before this fit) underneath: the planner's semi-final 51 %, final 52 %, titles 24 %; the reference's titles 33 %, 109 / 178 / 190 s;
+ *  held out, seeds 101 to 300). */
 export const AUTO_RACE = {
-  norm: { vessa: 1.102, tobin: 1.427, cassius: 1.245, orla: 0.974, ilse: 0.936, marek: 0.92, rhosk: 1.25 } as Record<string, number>,
+  norm: { vessa: 1.079, tobin: 1.37, cassius: 1.195, orla: 0.975, ilse: 0.914, marek: 0.851, rhosk: 1.219 } as Record<string, number>,
   pool: [1, 1.075, 1.15] as readonly number[],
-  stage: { 1: 1.252, 2: 1.554 } as Record<1 | 2, number>,
+  stage: { 1: 1.271, 2: 1.628 } as Record<1 | 2, number>,
   prepFrom: 20, prepPer: 25,
 };
 /** a bout's round of the pool by its day: day 2 the first, day 4 the second, day 5 the third (a challenge of the pool by its day) */

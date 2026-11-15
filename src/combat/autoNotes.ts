@@ -1,4 +1,5 @@
-import { AUTO_RULES, type AutoAction, type AutoEvent, type AutoFighter, type AutoResult } from './auto';
+import { autoStatesOf } from './autoData';
+import { AUTO_RULES, type AutoAction, type AutoEvent, type AutoFighter, type AutoResult, type AutoStateId } from './auto';
 
 /** Master Corvin's notebook (lot 3 of « La Brute », the operator's PB-4 « Toutes », briefs/combat-auto.md § 33.5; the proposition's « Le carnet du maître d'armes :
  *  après chaque combat, ce qui l'a décidé (dégâts par source, failles créées et manquées, coups d'éclat gâchés, interruptions, parades) et un conseil »): what a
@@ -11,8 +12,8 @@ export type NoteKind = 'bout' | 'challenge' | 'rehearsal';
  *  or on an opponent charging a big action (where an exploit is twice as strong), those that came to nothing (dodged, parried, cut by an interruption, lost in a
  *  clash), and its damage */
 export interface NoteSkill { id: string; used: number; max: number; landed: number; clean: number; void: number; dmg: number }
-export type AdviceKey = 'feint' | 'exploit' | 'ultMiss' | 'dodged' | 'foeSkill' | 'unspent' | 'broken' | 'noOpen' | 'keep' | 'rehearse';
-export interface Advice { k: AdviceKey; skill?: string; foeSkill?: string; n?: number; of?: number; pct?: number }
+export type AdviceKey = 'feint' | 'exploit' | 'ultMiss' | 'dodged' | 'foeSkill' | 'state' | 'resisted' | 'unspent' | 'broken' | 'noOpen' | 'keep' | 'rehearse';
+export interface Advice { k: AdviceKey; skill?: string; foeSkill?: string; n?: number; of?: number; pct?: number; state?: AutoStateId; from?: string }
 export interface BoutNote {
   day: number; foe: string; kind: NoteKind; won: boolean;
   /** the duel's length (s) */
@@ -30,13 +31,17 @@ export interface BoutNote {
   /** the opponent's offensive skill that did Ren the most harm */
   foeTop?: { id: string; dmg: number };
   clashes: number;
+  /** the harmful states (the operator's GE-8 « Ainsi », journal Passe GP4-2): the damage the opponent's did to Ren by state, Ren's to the opponent, and the blows each
+   *  side's blindness made miss; absent when no state took hold */
+  states?: { taken: Partial<Record<AutoStateId, number>>; dealt: Partial<Record<AutoStateId, number>>; missed: [number, number] };
   advice: Advice;
 }
 
 /** the advice's thresholds (« proposé »): a Feint wasted when half of them cut nothing (from two fired), an opponent's skill heavy from 35 % of Ren's wounds, two
  *  uses left unspent, two big blows dodged */
 // (`broken`: Ren's gauge broken this many times, the notebook's word on Second Wind: the operator's NC-10 « Ainsi », journal Passe SK4)
-export const NOTE_RULES = { feintFrom: 2, foeShare: 0.35, unspent: 2, dodged: 2, ultMiss: 1, broken: 2 };
+// (`stateShare`: the opponent's harmful states this share of Ren's wounds, GE-8's advice of a protection; « proposé »)
+export const NOTE_RULES = { feintFrom: 2, foeShare: 0.35, unspent: 2, dodged: 2, ultMiss: 1, broken: 2, stateShare: 0.12 };
 
 const kindOf = (a: AutoAction): 0 | 1 | 2 => (a.kind === 'light' ? 0 : a.kind === 'heavy' ? 1 : 2);
 
@@ -51,11 +56,15 @@ export function boutNote(r: AutoResult, ren: AutoFighter, foe: AutoFighter, meta
   const sk = (id?: string) => skills.find((x) => x.id === id);
   const dmg: [number, number, number] = [0, 0, 0], taken: [number, number, number] = [0, 0, 0], breaks: [number, number] = [0, 0];
   const foeDmg = new Map<string, number>();
-  let inOpen = 0, clashes = 0, cut = 0;
+  let inOpen = 0, clashes = 0, cut = 0, anyState = false;
+  const st = { taken: {} as Partial<Record<AutoStateId, number>>, dealt: {} as Partial<Record<AutoStateId, number>>, missed: [0, 0] as [number, number] };
   const feint = ren.skills.find((a) => a.role === 'interrupt');
   for (const e of r.log as AutoEvent[]) {
     const i = side(e.who), o = (1 - i) as 0 | 1, me = S[i], it = S[o], a = e.act ? acts[i].get(e.act) : undefined;
     switch (e.ev) {
+      // a harmful state's damage (`who` the one it hurts) and a state taking hold
+      case 'tick': if (e.state) { const box = i === 0 ? st.taken : st.dealt; box[e.state] = (box[e.state] ?? 0) + (e.dmg ?? 0); anyState = true; } break;
+      case 'afflict': anyState = true; break;
       case 'charge':
         if (a) { me.charging = a.kind !== 'light' ? a : null; me.combo = null; if (i === 0 && a.kind === 'skill') { const x = sk(a.id); if (x) x.used++; } }
         break;
@@ -68,6 +77,7 @@ export function boutNote(r: AutoResult, ren: AutoFighter, foe: AutoFighter, meta
         const broken = it.stunEnd > e.t + 1e-9, open = !broken && it.openUntil > e.t + 1e-9;
         const exposed = R.exposed && (!!it.charging || (!!it.combo && it.combo.left > 0));
         const d = e.ev === 'dodged' ? 0 : e.dmg ?? 0, k = kindOf(a);
+        if (e.miss) st.missed[i]++;
         if (i === 0) { dmg[k] += d; if (broken || open) inOpen += d; } else { taken[k] += d; if (k === 2 && !a.ward && !a.boost) foeDmg.set(a.id, (foeDmg.get(a.id) ?? 0) + d); }
         if (i === 0 && a.kind === 'skill') {
           const x = sk(a.id)!;
@@ -114,14 +124,14 @@ export function boutNote(r: AutoResult, ren: AutoFighter, foe: AutoFighter, meta
   let foeTop: BoutNote['foeTop'];
   for (const [id, d] of foeDmg) if (d > 0 && (!foeTop || d > foeTop.dmg)) foeTop = { id, dmg: d };
   const won = (r.winner ?? (r.hp[0] / r.maxHp[0] >= r.hp[1] / r.maxHp[1] ? 0 : 1)) === 0;
-  const note: BoutNote = { day: meta.day, foe: meta.foe, kind: meta.kind, won, t: r.t, dmg, taken, open: [r.n[0].opened, r.n[1].opened], breaks, inOpen, skills, ...(foeTop ? { foeTop } : {}), clashes, advice: { k: 'keep' } };
-  note.advice = adviceOf(note, ren, feint?.id, cut, r.n[0].wasted);
+  const note: BoutNote = { day: meta.day, foe: meta.foe, kind: meta.kind, won, t: r.t, dmg, taken, open: [r.n[0].opened, r.n[1].opened], breaks, inOpen, skills, ...(foeTop ? { foeTop } : {}), clashes, ...(anyState ? { states: st } : {}), advice: { k: 'keep' } };
+  note.advice = adviceOf(note, ren, feint?.id, cut, r.n[0].wasted, foe);
   return note;
 }
 
 /** the advice of a note: the first that holds, in this order (a Feint wasted, an exploit spent without an opening, an ultimate that failed, big blows dodged, an opponent's skill that did
  *  the harm, uses left unspent, no opening made; else keep the plan, or rehearse it after a defeat) */
-export function adviceOf(n: BoutNote, ren: AutoFighter, feint: string | undefined, cut: number, dodged: number): Advice {
+export function adviceOf(n: BoutNote, ren: AutoFighter, feint: string | undefined, cut: number, dodged: number, foe?: AutoFighter): Advice {
   const N = NOTE_RULES, f = feint ? n.skills.find((x) => x.id === feint) : undefined;
   const role = (id: string) => ren.skills.find((a) => a.id === id);
   const isExploit = (id: string) => role(id)?.role === 'exploit', isUlt = (id: string) => role(id)?.role === 'exploit' || role(id)?.role === 'finisher', isBlow = (id: string) => { const a = role(id); return !!a && !a.ward && !a.boost && a.role !== 'haste' && a.role !== 'slow' && a.role !== 'load'; };
@@ -133,6 +143,10 @@ export function adviceOf(n: BoutNote, ren: AutoFighter, feint: string | undefine
   if (dodged >= N.dodged) return { k: 'dodged', n: dodged };
   const hurt = n.taken[0] + n.taken[1] + n.taken[2];
   if (n.foeTop && hurt > 0 && n.foeTop.dmg / hurt >= N.foeShare) return { k: 'foeSkill', foeSkill: n.foeTop.id, pct: Math.round((100 * n.foeTop.dmg) / hurt) };
+  // the opponent's harmful states a good share of Ren's wounds, the one that hurt most (GE-8: a protection); Ren's state that the opponent resists in full (it put none)
+  const stTaken = Object.entries(n.states?.taken ?? {}) as Array<[AutoStateId, number]>, stHurt = stTaken.reduce((x, [, d]) => x + d, 0);
+  if (stTaken.length && hurt + stHurt > 0 && stHurt / (hurt + stHurt) >= N.stateShare) { const [top] = stTaken.sort((a, b) => b[1] - a[1])[0]; return { k: 'state', state: top, pct: Math.round((100 * stHurt) / (hurt + stHurt)) }; }
+  if (foe) for (const p of autoStatesOf(ren)) if ((foe.gfx?.resist?.[p.state] ?? 0) >= 1) return { k: 'resisted', state: p.state, from: p.from };
   for (const x of n.skills) if (isBlow(x.id) && x.max - x.used >= N.unspent) return { k: 'unspent', skill: x.id, n: x.max - x.used };
   // Ren's gauge broken again and again: Second Wind empties it (NC-10), unless he brings it already
   if ((n.breaks?.[0] ?? 0) >= N.broken && !ren.skills.some((a) => a.role === 'recover')) return { k: 'broken', n: n.breaks[0] };

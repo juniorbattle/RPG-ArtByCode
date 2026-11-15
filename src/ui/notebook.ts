@@ -5,7 +5,7 @@ import { NPC_FIGHTERS } from '../narrative/npcFighters';
 import { num, tx, word } from '../narrative/text';
 import type { GameState } from '../simulation';
 import type { Advice, BoutNote, NoteSum } from '../combat/autoNotes';
-import { anySkillName, nextBoutOf, scoutLines, scoutTier, tierWord } from '../simulation/v2scout';
+import { STATE_NAME, anySkillName, nextBoutOf, scoutLines, scoutTier, tierWord } from '../simulation/v2scout';
 import { rehearsalFresh, rehearsalOf, type Rehearsal } from '../simulation/v2prep';
 import { notesOf } from '../simulation/v2notes';
 import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
@@ -30,6 +30,9 @@ export function adviceText(a: Advice, foe: string): string {
     case 'foeSkill': return tx('advice.foeSkill', { foe: name, foeSkill, pct: a.pct ?? 0 });
     case 'unspent': return tx('advice.unspent', { skill, n: a.n ?? 0 });
     case 'broken': return tx('advice.broken', { n: a.n ?? 0 });
+    // the harmful states (GE-8): a protection against the one that hurt; Ren's state the opponent resists
+    case 'state': return tx('advice.state', { foe: name, state: tx(STATE_NAME[a.state!]!), pct: a.pct ?? 0 });
+    case 'resisted': return tx('advice.resisted', { foe: name, state: tx(STATE_NAME[a.state!]!), from: a.from === 'weapon' ? tx('state.src.weapon') : anySkillName(a.from ?? '') });
     case 'noOpen': return tx('advice.noOpen');
     case 'keep': return tx('advice.keep', { foe: name });
     default: return tx('advice.rehearse', { foe: name });
@@ -42,6 +45,7 @@ const shares = (xs: readonly number[]): number[] => { const t = xs.reduce((a, b)
 const timeOf = (t: number): string => { const s = Math.round(t); return tx('note.time', { m: Math.floor(s / 60), s: String(s % 60).padStart(2, '0') }); };
 
 /** a note's lines: the result and its length, Ren's damage by source, the openings, the uses, the advice */
+const sum = (o: Partial<Record<string, number>>): number => Object.values(o).reduce((x: number, y) => x + (y ?? 0), 0);
 export function noteLines(n: BoutNote): string[] {
   const name = fighterName(n.foe), [a, b, c] = shares(n.dmg), total = n.dmg[0] + n.dmg[1] + n.dmg[2];
   const used = n.skills.reduce((x, s) => x + s.used, 0), max = n.skills.reduce((x, s) => x + s.max, 0), wasted = n.skills.reduce((x, s) => x + s.void, 0);
@@ -50,6 +54,8 @@ export function noteLines(n: BoutNote): string[] {
     tx('note.dmg', { a, b, c }),
     tx('note.open', { x: n.open[0], y: n.open[1], name, p: total > 0 ? Math.round((100 * n.inOpen) / total) : 0 }),
     wasted ? tx('note.usesVoid', { used, max, n: wasted }) : tx('note.uses', { used, max }),
+    // the harmful states (GE-8): what the opponent's took from Ren's health, his from theirs
+    ...(n.states ? [tx('note.states', { name, a: sum(n.states.taken), b: sum(n.states.dealt) })] : []),
     tx('note.advice', { advice: adviceText(n.advice, n.foe) }),
   ];
 }

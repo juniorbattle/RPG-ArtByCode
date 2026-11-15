@@ -279,7 +279,8 @@ test('the note travels with the result: kept in the notebook outside the fingerp
   assert.equal(many.v2.$notes.length, NO.NOTES_KEPT); assert.equal(many.v2.$notes.at(-1).day, 39);
   // its lines, English and French, every slot filled
   for (const lines of [NB.noteLines(withNote.v2.$notes[0]), inFrench(() => NB.noteLines(withNote.v2.$notes[0]))]) {
-    assert.equal(lines.length, 5);
+    // (a sixth line when a harmful state took hold: journal Passe GP4-2)
+    assert.equal(lines.length, withNote.v2.$notes[0].states ? 6 : 5);
     for (const l of lines) assert.ok(!/[{}]/.test(l), l);
   }
   for (const k of ['feint', 'exploit', 'dodged', 'foeSkill', 'unspent', 'noOpen', 'keep', 'rehearse']) {

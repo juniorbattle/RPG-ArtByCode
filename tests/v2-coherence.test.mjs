@@ -46,7 +46,8 @@ test('the signs come strictly before the attempt they announce: a slot at least 
   // the game of seed 34 among them; since lot 2 of the duel played by the computer, journal Passe LC3, the diligent game of seed 23: the attempt in 1 diligent game in 60; since the blows' weights and
   // the race of journal Passe BE1, the diligent game of seed 39, 1 in 80; since the skills' structure of journal Passe SK2, the diligent game of seed 9, the first of 120)
   let attempts = 0;
-  for (const g of [...Object.values(games), diligent, L.autoplay(9, L.POLICIES.diligent, 'Ren', 600, 'v2')]) {
+  // (since the harmful states and the race fitted again, journal Passe GP4-2, GE-11: none of the games above, the attempt in the diligent games of seeds 25 and 37, two of 60)
+  for (const g of [...Object.values(games), diligent, L.autoplay(25, L.POLICIES.diligent, 'Ren', 600, 'v2'), L.autoplay(37, L.POLICIES.diligent, 'Ren', 600, 'v2')]) {
     const at = (id) => { const e = g.state.log.find((x) => x.id === id); return e ? slotNumber(e) : null; };
     const t = at('v2-gear-tamper'); if (t === null) continue;
     attempts++; assert.ok(at('v2-sign-armourer') < at('v2-sign-locker') && at('v2-sign-locker') < t, `seed ${g.seed}`);

@@ -101,6 +101,8 @@ test('each blow drawn from before it lands (journal Passe LC4): its run-up read 
       // action none)
       const o2 = s === 'ren' ? 'marek' : 'ren';
       if (e.ev === 'interrupt' || e.ev === 'parry') { charge[o2] = null; continue; }
+      // (a harmful state taking hold or ticking draws nothing: journal Passe GP4-2)
+      if (e.ev === 'afflict' || e.ev === 'tick') continue;
       if (e.ev === 'clash') {
         if (e.beat) { charge[s] = null; continue; }
         for (const [k, act] of [[s, e.act], [o2, e.vs]]) { const c = charge[k]; want[k].push({ t: e.t, first: !!c, len: c ? c.at - c.t : 0, gap: e.t - prev[k], effect: false, act }); prev[k] = e.t; charge[k] = null; }

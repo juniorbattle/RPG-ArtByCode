@@ -30,15 +30,17 @@ export interface AutoTexts extends DynTexts {
   ultMiss: Record<UltMiss, string>;
   /** the new skills (the operator's NC-10 « Ainsi », journal Passe SK4): Disarm's lifting and Wrist Strike's wait, over the target */
   stripped: string; sapped: string;
+  /** the harmful states (the operator's GE-8 « Ainsi », journal Passe GP4-2): each one's word over its fighter and on its card; a blow its striker's blindness made miss */
+  states: Record<string, string>; missed: string; frozen: string;
 }
-export type UltMiss = 'guarded' | 'dodged' | 'parried' | 'cut' | 'lost';
+export type UltMiss = 'guarded' | 'dodged' | 'parried' | 'cut' | 'lost' | 'missed';
 const EN_EXTRA = { speed: '×2', speedSub: 'twice as fast', speedOn: 'back to ×1', skip: 'Skip', skipSub: 'to the result', charging: (n: string) => `Charging ${n}`, order: 'Your order', secs: (n: number) => `${n} s`, waiting: 'At your next choice', clash: 'Clash',
   openOn: 'Open', opened: 'Open!', interrupted: 'Interrupted', parried: 'Parried', inBreak: (k: number) => `in the break ×${k}`, inOpen: (k: number) => `in the opening ×${k}`, uses: (l: number, a: number) => `${l} of ${a} uses left`,
-  ultMiss: { guarded: 'Ultimate guarded', dodged: 'Ultimate dodged', parried: 'Ultimate parried', cut: 'Ultimate cut', lost: 'Ultimate lost' }, stripped: 'Disarmed', sapped: 'Sapped' };
+  ultMiss: { guarded: 'Ultimate guarded', dodged: 'Ultimate dodged', parried: 'Ultimate parried', cut: 'Ultimate cut', lost: 'Ultimate lost', missed: 'Ultimate missed' }, stripped: 'Disarmed', sapped: 'Sapped', states: { poison: 'Poison', burn: 'Burn', blind: 'Blinded', bleed: 'Bleeding', curse: 'Cursed', paralysis: 'Paralysed' }, missed: 'Missed', frozen: 'Frozen' };
 const comma = (k: number): string => String(k).replace('.', ',');
 const FR_EXTRA = { speed: '×2', speedSub: 'deux fois plus vite', speedOn: 'retour à ×1', skip: 'Passer', skipSub: 'au résultat', charging: (n: string) => `Charge : ${n}`, order: 'Votre ordre', secs: (n: number) => `${n} s`, waiting: 'À votre prochain choix', clash: 'Entrechoc',
   openOn: 'Faille', opened: 'Faille !', interrupted: 'Interrompu', parried: 'Paré', inBreak: (k: number) => `dans la rupture ×${comma(k)}`, inOpen: (k: number) => `dans la faille ×${comma(k)}`, uses: (l: number, a: number) => `${l} usage${l > 1 ? 's' : ''} sur ${a}`,
-  ultMiss: { guarded: 'Ultime gardée', dodged: 'Ultime esquivée', parried: 'Ultime parée', cut: 'Ultime coupée', lost: 'Ultime perdue' }, stripped: 'Désarmé', sapped: 'Sapé' };
+  ultMiss: { guarded: 'Ultime gardée', dodged: 'Ultime esquivée', parried: 'Ultime parée', cut: 'Ultime coupée', lost: 'Ultime perdue', missed: 'Ultime manquée' }, stripped: 'Désarmé', sapped: 'Sapé', states: { poison: 'Poison', burn: 'Brûlure', blind: 'Aveuglé', bleed: 'Saignement', curse: 'Maudit', paralysis: 'Paralysé' }, missed: 'Manqué', frozen: 'Figé' };
 export const AUTO_TEXTS_EN: AutoTexts = { ...DYN_TEXTS_EN, ...EN_EXTRA, restart: 'An official bout cannot be restarted' };
 export const AUTO_TEXTS_FR: AutoTexts = { ...DYN_TEXTS_FR_GAME, ...FR_EXTRA };
 
@@ -114,7 +116,7 @@ export class AutoHud {
     const M = replay.hud();
     const slots = M.slots.map((s, i) => `<button class="ah-b slot wide" type="button" tabindex="-1" data-slot="${s.id}" data-label="${i + 1}. ${this.name(s.id)}" aria-label="${i + 1}. ${this.name(s.id)}"><span class="ord">${bindCap(`skill${i + 1}` as 'skill1')}</span><b>${this.name(s.id)}</b><em><span class="pips" aria-hidden="true">${'<i></i>'.repeat(s.uses)}</span><span class="fam">${t.families[s.family] ?? ''}</span><span class="cdn"></span></em><i class="pg"></i><i class="cdv"></i></button>`).join('');
     const ctl = (id: 'speed' | 'skip', act: 'attack' | 'dodge', label: string, sub: string) => `<button class="ah-b ctl wide" type="button" data-act="${id}" aria-label="${label} (${actName(act)})">${bindCap(act)}<b>${label}</b><em>${sub}</em></button>`;
-    const card = (who: Seat, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}" aria-label="${names[who]}, ${sub}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${names[who]}<em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(names[who])}" aria-valuemin="0" aria-valuemax="${M[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div><div class="ah-ch off" aria-live="off"><span></span><div class="ah-cb"><i></i></div></div><div class="ah-tags"><b class="op"></b><b class="wd"></b><b class="bs"></b></div><div class="ah-state"></div></div></div>`;
+    const card = (who: Seat, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}" aria-label="${names[who]}, ${sub}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${names[who]}<em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(names[who])}" aria-valuemin="0" aria-valuemax="${M[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div><div class="ah-ch off" aria-live="off"><span></span><div class="ah-cb"><i></i></div></div><div class="ah-tags"><b class="op"></b><b class="wd"></b><b class="bs"></b><b class="st"></b></div><div class="ah-state"></div></div></div>`;
     this.el.setAttribute('aria-label', t.subtitle);
     this.el.innerHTML = `<div class="top"></div><div class="bot"></div>
       ${card('ren', 'l', t.subRen)}${card('marek', 'r', t.subMarek)}
@@ -174,6 +176,9 @@ export class AutoHud {
     // the opening (PB-1's faille): its seconds left, while it lasts
     const op = root.querySelector('.ah-tags .op')!, o = g.open > 0 ? `${t.openOn} ${Math.ceil(g.open)} s` : '';
     this.set(`op${id}`, o, () => { op.textContent = o; op.classList.toggle('on', !!o); });
+    // the harmful states on it (GE-8): each one's word, its doses, its seconds left
+    const stEl = root.querySelector('.ah-tags .st')!, sl = (g.states ?? []).map((x) => `${t.states[x.id] ?? x.id}${x.dose > 1 ? ` ×${x.dose}` : ''} ${Math.ceil(x.left)} s`).join(' · ');
+    this.set(`st${id}`, sl, () => { stEl.textContent = sl; stEl.classList.toggle('on', !!sl); });
     // the charge on the timeline: what it charges, filling until it leaves (a skill or a heavy blow in the accent)
     const ch = root.querySelector('.ah-ch')!, c = g.charge, big = !!c && c.kind !== 'light';
     this.cls(`cho${id}`, ch, 'off', !c);
@@ -228,6 +233,11 @@ export class AutoHud {
       // Disarm's lifting and Wrist Strike's wait over the target (NC-10), the wait's seconds below
       else if (e.type === 'strip') this.float(e.who as Seat, t.stripped, 'ap', -34);
       else if (e.type === 'sap') this.float(e.who as Seat, t.sapped, 'ap', -34, t.secs(Math.round(Number(e.dur))));
+      // a harmful state over the fighter it takes hold of, its seconds below; a poison's, a burn's or a bleeding's damage as a number (GE-8)
+      else if (e.type === 'state') this.float(e.who as Seat, `${t.states[e.state as string] ?? String(e.state)}${Number(e.dose) > 1 ? ` ×${e.dose}` : ''}`, 'ap', -34, t.secs(Math.round(Number(e.dur))));
+      else if (e.type === 'stateTick') this.float(e.who as Seat, `-${e.damage}`, 'hit', 4);
+      // an action frozen by a paralysis: the word over its fighter, the seconds it lasts below (GC-3, GC-5)
+      else if (e.type === 'freeze') this.float(e.who as Seat, t.frozen, 'ap', -34, t.secs(Math.round(Number(e.dur) * 10) / 10));
       else if (e.type === 'break') this.float(e.who as Seat, t.breakFloat, 'guardbreak', -34);
       else if (e.type === 'effect') this.float(e.who as Seat, e.action ? this.name(e.action as string) : e.family === 'defensive' ? t.wardOn : t.boostOn, 'ap', -34);
       else if (e.type === 'ko') { const ko = this.q('#ah-ko'); ko.querySelector('b')!.textContent = e.who === 'marek' ? t.victory : t.defeat; ko.querySelector('span')!.textContent = t.isDown(this.names[e.who as Seat]); ko.classList.add('on'); this.el.classList.add('ko'); }
@@ -262,8 +272,9 @@ export class AutoHud {
       prev.el.style.animation = 'none'; void prev.el.offsetWidth; prev.el.style.animation = '';
       return;
     }
-    const el = this.float(to, res === 'dodged' ? t.dodged : res === 'guarded' ? t.guarded(total) : `-${total}`, res, 26, sub);
-    if (res === 'dodged' || res === 'guarded') this.ultMiss(e.from as Seat, e.action, res);
+    // (a blow its striker's blindness made miss: « Missed », GE-8)
+    const el = this.float(to, res === 'dodged' ? (e.miss ? t.missed : t.dodged) : res === 'guarded' ? t.guarded(total) : `-${total}`, res, 26, sub);
+    if (res === 'dodged' || res === 'guarded') this.ultMiss(e.from as Seat, e.action, e.miss ? 'missed' : res);
     this.last[to] = { action: e.action as string, el };
   }
 

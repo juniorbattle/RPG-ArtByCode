@@ -28,6 +28,9 @@ export interface SfxCue { id: string; pan: number; vary: Vary; duck?: Effect }
 const SIDE = (who: unknown): number => (who === 'ren' ? -0.28 : 0.28);
 /** the skills with a sound of their own; the plain blows take their side's */
 const OWN = new Set(['t1', 't2', 't3', 't4', 'k_sunder', 'k_feint', 'm_ironfall', 'm_lunge', 'm_shoulder', 'm_riposte', 'm_smite', 'm_wild', 'm_cleave']);
+/** the harmful states' sounds, their borrowed recipes' (GE-9): the burn Marek's Resolve, the blindness Ilse's Prayer, the bleeding Rhosk's Roar; the poison the form's
+ *  sign going down, computed in the page (Sound.ts) */
+export const STATE_SOUND: Record<string, string> = { burn: 'm_resolve', blind: 'm_prayer', bleed: 'm_roar', curse: 'k_cry', paralysis: 'm_tempo' };
 const SUPPORT = new Set(['d1', 'm_bulwark', 'm_brace', 'm_aegis', 'm_hide', 'k_iron', 'k_parry', 's1', 'k_cry', 'k_focus', 'm_resolve', 'm_tempo', 'm_gild', 'm_prayer', 'm_grit', 'm_roar']);
 const PITCHED_BLOWS = new Set(['light', 'heavy', 'm_slash', 'm_heavy', 'guard', 'guardHeavy', 'whiff']);
 const SILENT_VARY = new Set(['threat', 'window', 'dodge', 'stun', 'pushed', 'charge1', 'charge2', 'charge3', 'hold1', 'hold2', 'hold3', 'release', 'denied']);
@@ -59,6 +62,8 @@ export function sfxOf(e: { type: string } & Record<string, unknown>, tiers: numb
       return [cue(id, pan, e.kind === 'heavy' || e.kind === 'skill' || (e.damage as number) >= 20 ? 'heavy' : 'hit')];
     }
     case 'effect': { const a = looksOf(String(e.action)); return [cue(SUPPORT.has(a) ? a : e.family === 'defensive' ? 'd1' : 's1', SIDE(e.who))]; }
+    // a harmful state taking hold (the operator's GE-9 « Ces emprunts », journal Passe GP4-2): the sound of the recipe it borrows (the poison's, the form's sign, in Sound.ts)
+    case 'state': { const a = STATE_SOUND[String(e.state)]; return a ? [cue(a, SIDE(e.who))] : []; }
     // a clash (BL1-8): the guard's sound, both blades in the middle of the stage
     case 'clash': return [cue(e.kind === 'light' ? 'guard' : 'guardHeavy', 0, 'guard')];
     // a parry (lot 2 of « La Brute »): a big blow guarded, where the parrier stands

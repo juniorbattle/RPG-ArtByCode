@@ -81,7 +81,8 @@ export function lessonsOf(e: DuelEvent): LessonId[] {
   if (e.type === 'commandStart' && e.who === 'ren' && e.kind !== 'light') out.push('charge');
   else if (e.type === 'impact') {
     if (e.follow === true) out.push('combo');
-    if (e.result === 'guarded' || e.result === 'dodged') out.push('react');
+    // (a blow its striker's blindness made miss is not a dodge: GE-8)
+    if (e.result === 'guarded' || (e.result === 'dodged' && !e.miss)) out.push('react');
     // a skill or a heavy blow that lands: the biggest number of the bout so far, the form in it
     if (e.kind !== 'light' && e.result === 'hit') out.push('form');
     // the target's gauge as the HUD shows it at this blow, this blow's share in it (the replay's `resist`, lot 4), a third full

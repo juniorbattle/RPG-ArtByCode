@@ -1,0 +1,995 @@
+<title>États néfastes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--line); border-radius: 6px; }
+.shots.vids { grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.tblwrap { overflow-x: auto; max-width: 100%; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl th { font-weight: 600; color: var(--muted); font-size: 13px; }
+.tbl td:first-child { font-weight: 600; }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions du responsable · 15/11/2026 · chantier 4 du gameplay général</span>
+    <h1>Le duel « La Brute » : les états néfastes</h1>
+    <p class="lede">Ta note sur GP-21 : des états néfastes (poison, brûlure, aveuglement…) utiles au combat, donnés par des compétences et surtout par les armes, et des armures et accessoires qui en protègent. Je propose quatre états, chacun sur un levier qu’aucune règle du duel ne touche aujourd’hui ; quatre familles d’armes qui les donnent, les signatures de quatre rivaux qui les portent, et sept familles de protections. Tout est mesuré sur le jeu lui-même (le duel du jeu par défaut, dans le laboratoire), et rien du jeu par défaut ne change avant ta relecture. Les clips viennent de l’arène, avec le prototype d’affichage de l’atelier (paramètre DEV <code>states=</code>).</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot dans le journal et la spécification (les décisions A3 aussi), puis je construis ce que la fiche décide dans le jeu par défaut, en anglais et en français : les règles, les armes, les signatures, les résistances, ce qui se lit et ce qui se voit, avec leurs tests et leurs preuves dans le navigateur ; je recale la course en dernier, sur la base à jour, et je fusionne. Le chantier 5 (l’or et l’équipement) prend ensuite les familles que tu retiens pour son catalogue.</p>
+    <p class="src">Sources : journal Passe GP4-1 ; briefs/combat-auto.md § 41 ; src/lab/states.ts (les candidats, leurs nombres) ; src/combat/auto.ts et autoData.ts (des crochets sans effet tant que rien ne porte d’état) ; tools/auto-states.mjs (ac12 : le test de AC-12 à niveau égal, chaque rival à son niveau, graines 1 à 60 ; price : les combats du planificateur et de la référence rejoués, 200 parties tenues à part, graines 101 à 300 ; games : des parties entières, mêmes graines) ; tools/duel-clip.mjs (les clips, l’arène avec le prototype DEV <code>states=</code>).</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Les apostrophes : typographiques (’) partout dans les chaînes.
+const GROUPS = [
+ {
+  "id": "etats",
+  "fam": "var(--cendre)",
+  "title": "Les états et leurs règles",
+  "sub": "Ta note sur GP-21, mot pour mot : « prevoit aussi un chantier d’optimisation concernant les stats d’etat nefastes comme poison, brulure, blind etc... qui peuvent etre utile dans un combat et devrait etre integre ainsi des competences mais surtout des armes equipes donnera des effets avantageux ou des armures/accessoires qui donnent des protections a ces effets ». Rien du jeu par défaut ne change avant ta relecture : les états tournent dans le laboratoire (src/lab/states.ts) et dans l’arène derrière un paramètre DEV. Une part « de la santé » est toujours celle de la santé maximale de celui qui subit l’état.",
+  "items": [
+   {
+    "id": "GE-1",
+    "tag": "le principe",
+    "title": "Quatre états, chacun sur un levier qu’aucune règle du duel ne touche",
+    "ctx": "Le duel a déjà des états sans le nom : la faille (ni garde ni esquive, 4 à 6 s), la rupture (étourdi 10 s), la lenteur (la Clameur, le Rugissement de Rhosk : les charges ×1,4), la sape (le Coup au poignet : 15 s d’attente), le Désarmement (ce qui est levé tombe), les protections. Trois choses manquent : des dégâts hors d’un coup (ni la garde, ni l’esquive, ni une protection ne les arrêtent), ses propres coups qui manquent, et une action qui coûte à celui qui la lance. D’où quatre états : le poison et la brûlure (les dégâts dans la durée, différents par la garde et le cumul), l’aveuglement (on manque), le saignement (chaque action rouvre la plaie). Écartés parce qu’ils existent déjà : le gel ou la paralysie (la lenteur), le silence (la sape), le brise-armure (la Fente, le Désarmement), l’étourdissement (la rupture). L’atelier du combat (CB1) avait laissé de côté « les effets d’état » de ton ancien combat Unity et les gardait « plus tard, si l’arme ou les compétences en demandent » ; ta note les demande maintenant. Le § 6.1 du contrat projet n’a pas à changer : « les écarts de force viennent des statistiques, de l’équipement, de l’entraînement et de la course des rivaux », et les états viennent de l’équipement et des compétences.",
+    "table": [
+     [
+      "État",
+      "Ce qu’il fait",
+      "Cumul",
+      "Durée",
+      "La garde l’arrête ?"
+     ],
+     [
+      "Poison",
+      "0,11 % de la santé chaque seconde, par dose",
+      "3 doses (une nouvelle relance la durée)",
+      "10 s",
+      "oui : seul un coup qui touche sans être gardé empoisonne"
+     ],
+     [
+      "Brûlure",
+      "0,33 % de la santé chaque seconde",
+      "non (une nouvelle relance la durée)",
+      "6 s",
+      "non : un coup gardé brûle aussi"
+     ],
+     [
+      "Aveuglement",
+      "35 % de ses propres coups manquent ; un gros coup manqué l’ouvre 2,5 s (comme un gros coup esquivé)",
+      "non",
+      "6 s",
+      "oui"
+     ],
+     [
+      "Saignement",
+      "chaque action qu’il lance lui coûte 1 % de sa santé, par dose",
+      "2 doses",
+      "10 s",
+      "oui"
+     ]
+    ],
+    "rec": "Adopter ces quatre états : chacun change quelque chose que rien d’autre ne change, et chacun se lit en un mot.",
+    "opts": [
+     "Ces quatre",
+     "Les trois que tu nommes seulement (poison, brûlure, aveuglement)",
+     "Un autre jeu d’états (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/combat/auto.ts (les crochets : AUTO_RULES.states, AutoInflict, les lignes afflict et tick ; neutres) ; src/lab/states.ts (STATE_RULES) ; briefs/combat-system.md §§ 0 et 15 (CB1, G2) ; contracts/PROJECT_MASTER_CONTRACT.md § 6.1"
+   },
+   {
+    "id": "GE-2",
+    "tag": "les nombres",
+    "title": "Des nombres calés pour qu’un état vaille environ deux points d’Attaque",
+    "ctx": "Le poison de départ (0,4 % par seconde et par dose, 30 % de chance par coup) faisait 18 % de la barre adverse en finale et +37 points de victoire : il écrasait tout. Le repère retenu : en finale, deux points d’Attaque valent 13 points de victoire (la ligne « étalon » du tableau) ; un état qui touche un rival qui n’y résiste pas vaut à peu près autant, soit 5 à 7 % de la barre adverse en finale, 4 à 5 % en poule. Les chances par coup sont basses pour que les doses ne se saturent pas : ainsi un état dépend vraiment de ce qui le pose (des coups qui touchent, gardés ou non). Le tableau : le kit de départ avec la lame importée, sans contrepartie, chaque famille d’arme à sa chance (carte GE-7).",
+    "table": [
+     [
+      "Moyenne contre les sept",
+      "Poule",
+      "Tableau",
+      "Finale",
+      "Part de la barre adverse en finale"
+     ],
+     [
+      "La lame importée (aucun état)",
+      "86",
+      "67",
+      "51",
+      "—"
+     ],
+     [
+      "La même, Attaque +2 (l’étalon)",
+      "92",
+      "77",
+      "60",
+      "—"
+     ],
+     [
+      "La lame envenimée (poison, 12 % par coup)",
+      "91",
+      "78",
+      "63",
+      "5,4 %"
+     ],
+     [
+      "La lame ardente (brûlure, 8 % par coup, même gardé)",
+      "91",
+      "77",
+      "65",
+      "6,5 %"
+     ],
+     [
+      "La lame éblouissante (aveuglement, 15 % par coup)",
+      "92",
+      "76",
+      "62",
+      "—"
+     ],
+     [
+      "La lame dentelée (saignement, 12 % par coup)",
+      "90",
+      "76",
+      "65",
+      "6,5 %"
+     ]
+    ],
+    "rec": "Ces nombres, à juger à ton essai.",
+    "opts": [
+     "Ces nombres",
+     "Plus forts (en note)",
+     "Plus faibles (en note)"
+    ],
+    "recIdx": 0,
+    "src": "tools/auto-states.mjs ac12 (graines 1 à 60, chaque rival à son niveau : le kit de départ à la lame importée gagne 85 / 65 / 50 % contre lui, rivaux armés et résistants) ; src/lab/states.ts (STATE_RULES, WEAPON_FAMILIES)"
+   },
+   {
+    "id": "GE-3",
+    "tag": "la fin d’un combat",
+    "title": "Un état n’achève pas : il laisse 1 point de santé",
+    "ctx": "Une perte due au poison, à la brûlure ou au saignement s’arrête à 1 point de santé : le combat finit toujours sur un coup. Ainsi la cinématique du K.O. joue toujours (CI-5), la blessure reste celle d’un K.O. par un coup puissant (V2B1-1), et le carnet de maître Corvin lit toujours le coup qui a fini. Mesuré sur les 999 combats du planificateur rejoués : des états qui achèvent ne changent l’issue que d’un point au plus (un combattant à 1 point tombe au coup suivant) ; la règle se voit, elle ne pèse pas.",
+    "rec": "Un état n’achève pas.",
+    "opts": [
+     "Un état n’achève pas",
+     "Un état peut achever (un K.O. sans coup, sans cinématique)"
+    ],
+    "recIdx": 0,
+    "src": "src/combat/auto.ts (AUTO_RULES.states.lethal false ; stateDmg) ; journal Passes CI2 (CI-5), V2B1 (V2B1-1)"
+   }
+  ]
+ },
+ {
+  "id": "sources",
+  "fam": "var(--astre)",
+  "title": "Ce qui les donne",
+  "sub": "Toutes les mesures de ce groupe : tools/auto-states.mjs ac12 (graines 1 à 60, chaque rival à son niveau : le kit de départ à la lame importée gagne 85 / 65 / 50 % contre lui, rivaux armés et résistants). La finale ici ; la poule et le tableau dans le rapport (briefs/combat-auto.md § 41). « −2 » : avec une contrepartie de −2 en Attaque. Les rivaux portent leurs états (carte GE-6) et leurs résistances.",
+  "items": [
+   {
+    "id": "GE-4",
+    "tag": "les armes",
+    "title": "Quatre familles d’armes, et une contrepartie pour que chacune soit un choix",
+    "ctx": "Une arme d’une famille porte son état sur chaque coup de son attaque simple et sur son coup puissant (pas sur les compétences, qui ont les leurs). Envenimée : 12 % par coup de poser une dose de poison. Ardente : 8 % de poser la brûlure, même sur un coup gardé. Éblouissante : 15 % d’aveugler. Dentelée : 12 % de poser une dose de saignement. Sans contrepartie, une telle arme bat la même arme nue partout (+10 à +14 en finale) : il faut une contrepartie. Avec −2 en Attaque (la pièce de la même famille de prix, une fois le chantier 5 fait), chacune devient une réponse : forte contre deux ou trois rivaux, faible contre celui qui y résiste. Les pièces elles-mêmes (noms, prix, boutiques, statistiques) sont le travail du chantier 5 ; je lui donne les familles et ce principe.",
+    "table": [
+     [
+      "Finale, à niveau égal (%)",
+      "Vessa",
+      "Tobin",
+      "Cassius",
+      "Orla",
+      "Ilse",
+      "Marek",
+      "Rhosk",
+      "Moyenne"
+     ],
+     [
+      "La lame importée",
+      "50",
+      "50",
+      "52",
+      "48",
+      "50",
+      "53",
+      "52",
+      "51"
+     ],
+     [
+      "Envenimée, −2 Atq",
+      "52",
+      "63",
+      "28",
+      "53",
+      "52",
+      "52",
+      "78",
+      "54"
+     ],
+     [
+      "Ardente, −2 Atq",
+      "50",
+      "65",
+      "58",
+      "57",
+      "52",
+      "30",
+      "82",
+      "56"
+     ],
+     [
+      "Éblouissante, −2 Atq",
+      "67",
+      "60",
+      "48",
+      "55",
+      "33",
+      "43",
+      "50",
+      "51"
+     ],
+     [
+      "Dentelée, −2 Atq",
+      "62",
+      "58",
+      "58",
+      "47",
+      "62",
+      "58",
+      "38",
+      "55"
+     ],
+     [
+      "Le sabre de duelliste (pour comparer)",
+      "57",
+      "60",
+      "30",
+      "73",
+      "40",
+      "47",
+      "50",
+      "51"
+     ]
+    ],
+    "shots": [
+     [
+      "img/poison.mp4",
+      "Lame envenimée contre Rhosk : « Poison » sur sa carte, une perte chaque seconde ; Rhosk fait saigner Ren de sa Taille du Nord"
+     ],
+     [
+      "img/saignement.mp4",
+      "Lame dentelée contre Tobin : chaque action de Tobin lui coûte ; sa poussière aveugle Ren"
+     ]
+    ],
+    "rec": "Ces quatre familles, avec une contrepartie d’environ deux points d’Attaque, que le chantier 5 met dans ses pièces.",
+    "opts": [
+     "Ces familles, avec une contrepartie",
+     "Ces familles, sans contrepartie",
+     "Des huiles à appliquer avant un combat plutôt que des armes (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/lab/states.ts (WEAPON_FAMILIES) ; src/combat/autoData.ts (autoGearFx : l’état de l’arme, la résistance la plus haute des pièces) ; src/combat/auto.ts (hitOnce : l’arme sur l’attaque simple et le coup puissant)"
+   },
+   {
+    "id": "GE-5",
+    "tag": "les compétences",
+    "title": "Les signatures de quatre rivaux portent leur état",
+    "ctx": "La Chute de fer de Marek brûle (9 s), la Frappe sainte d’Ilse aveugle (9 s), la Taille du Nord de Rhosk fait saigner, la Riposte dorée de Cassius pose deux doses de poison. Chaque fois que la compétence touche. Le rival la joue, et Ren aussi une fois qu’il l’a apprise par un défi à partir du jour 6 (SK-7). Aucune compétence nouvelle : le catalogue reste à vingt-quatre. Mesuré à deux doses, la Taille du Nord devenait la seule bonne réponse dans trois cas : une dose.",
+    "table": [
+     [
+      "Finale, à niveau égal (%)",
+      "Vessa",
+      "Tobin",
+      "Cassius",
+      "Orla",
+      "Ilse",
+      "Marek",
+      "Rhosk",
+      "Moyenne"
+     ],
+     [
+      "Le kit de départ",
+      "50",
+      "50",
+      "52",
+      "48",
+      "50",
+      "53",
+      "52",
+      "51"
+     ],
+     [
+      "Chute de fer (brûle) pour l’Estoc",
+      "57",
+      "68",
+      "57",
+      "48",
+      "53",
+      "55",
+      "70",
+      "58"
+     ],
+     [
+      "Frappe sainte (aveugle) pour l’Estoc",
+      "53",
+      "67",
+      "45",
+      "58",
+      "38",
+      "50",
+      "45",
+      "51"
+     ],
+     [
+      "Taille du Nord (saigne) pour la Ferveur",
+      "50",
+      "77",
+      "30",
+      "82",
+      "58",
+      "48",
+      "57",
+      "57"
+     ],
+     [
+      "Riposte dorée (empoisonne) pour la Taille éclair",
+      "68",
+      "73",
+      "32",
+      "68",
+      "42",
+      "37",
+      "60",
+      "54"
+     ]
+    ],
+    "rec": "Ces quatre signatures portent leur état.",
+    "opts": [
+     "Ces quatre signatures",
+     "Aucune compétence ne porte d’état",
+     "De nouvelles compétences d’état (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/lab/states.ts (SKILL_STATES) ; src/combat/autoData.ts (AUTO_SKILL_STATES, autoBrute) ; src/combat/skillbook.ts (SIGNATURES)"
+   },
+   {
+    "id": "GE-6",
+    "tag": "les rivaux",
+    "title": "Six rivaux portent un état et résistent au leur ; Orla se bat proprement",
+    "ctx": "Pour qu’une protection serve, il faut des rivaux qui posent des états. Chacun selon qui il est : Vessa et ses deux lames font saigner (4 % par coup), Tobin jette de la poussière (5 %), Cassius empoisonne sa lame (6 %) et sa Riposte, Marek frappe d’un fer brûlant (8 %) et de sa Chute de fer, Ilse aveugle de sa Frappe sainte, Rhosk fait saigner de sa Taille du Nord. Chacun résiste à ce qu’il porte (Cassius a l’antidote de son poison, Marek ne craint pas son feu, Ilse ne craint pas la lumière, Rhosk a ses fourrures), Tobin à moitié (il plisse les yeux) ; Orla, en maille, résiste à moitié au saignement et ne pose rien ; Vessa, en cuir léger, ne résiste à rien. Les combattants de la ville prennent l’état et les résistances du rival dont ils empruntent le style. Sans recalage, les rivaux armés font perdre au planificateur 13 points en finale (la course se recale à la construction, carte GE-11).",
+    "table": [
+     [
+      "Rival",
+      "Pose",
+      "Par",
+      "Résiste à"
+     ],
+     [
+      "Vessa",
+      "saignement",
+      "ses lames (4 % par coup)",
+      "rien"
+     ],
+     [
+      "Tobin",
+      "aveuglement",
+      "sa poussière (5 % par coup)",
+      "aveuglement (à moitié)"
+     ],
+     [
+      "Cassius",
+      "poison",
+      "sa lame (6 %) et la Riposte dorée (deux doses)",
+      "poison"
+     ],
+     [
+      "Orla",
+      "—",
+      "—",
+      "saignement (à moitié)"
+     ],
+     [
+      "Ilse",
+      "aveuglement",
+      "la Frappe sainte",
+      "aveuglement"
+     ],
+     [
+      "Marek",
+      "brûlure",
+      "son fer (8 %, même gardé) et la Chute de fer",
+      "brûlure"
+     ],
+     [
+      "Rhosk",
+      "saignement",
+      "la Taille du Nord",
+      "saignement"
+     ]
+    ],
+    "shots": [
+     [
+      "img/brulure.mp4",
+      "Marek brûle Ren : « Brûlure » sur sa carte, la flamme de Marek empruntée, une perte chaque seconde"
+     ]
+    ],
+    "rec": "Ces porteurs et ces résistances.",
+    "opts": [
+     "Ces porteurs et ces résistances",
+     "Les rivaux ne posent rien (les protections ne servent alors à rien)",
+     "Une autre répartition (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/lab/states.ts (RIVAL_WEAPONS, SKILL_STATES, RIVAL_RESIST) ; src/combat/autoData.ts (AUTO_STYLES : inflict, resist ; autoFoe)"
+   }
+  ]
+ },
+ {
+  "id": "protections",
+  "fam": "var(--ronce)",
+  "title": "Ce qui en protège",
+  "sub": "Une protection réduit la chance d’être atteint : une armure de moitié, un accessoire tout à fait. Les accessoires ont deux places : en prendre une pour une protection, c’est renoncer à l’anneau de fer, aux bottes ou à la bande du docker.",
+  "items": [
+   {
+    "id": "GE-7",
+    "tag": "armures et accessoires",
+    "title": "Trois familles d’armures, quatre familles d’accessoires",
+    "ctx": "Armures (la chance d’être atteint de moitié) : le cuir contre le poison, le matelassé contre la brûlure, la maille contre le saignement ; aucune contre l’aveuglement, faute d’emplacement de casque. Les pièces d’aujourd’hui sont déjà de ces familles (le cuir des docks, le gambison, la cotte et le haubert) : le chantier 5 dira si elles prennent la protection de leur famille. Accessoires (l’état n’atteint plus) : le bézoard contre le poison, le charme de salamandre contre la brûlure, la capuche contre l’aveuglement, le garrot contre le saignement. Chaque protection répond à ses rivaux et à eux seuls : en finale, le garrot contre Vessa et Rhosk, la salamandre contre Marek ; au tableau, le bézoard rend 20 points contre Cassius et la salamandre 19 contre Marek. Contre un rival sans état, une protection ne fait rien : elle se prépare d’après le repérage.",
+    "table": [
+     [
+      "Finale, à niveau égal (%)",
+      "Vessa",
+      "Tobin",
+      "Cassius",
+      "Orla",
+      "Ilse",
+      "Marek",
+      "Rhosk",
+      "Moyenne"
+     ],
+     [
+      "Sans protection",
+      "50",
+      "50",
+      "52",
+      "48",
+      "50",
+      "53",
+      "52",
+      "51"
+     ],
+     [
+      "Cuir (poison ×½)",
+      "50",
+      "50",
+      "55",
+      "48",
+      "50",
+      "53",
+      "52",
+      "51"
+     ],
+     [
+      "Matelassé (brûlure ×½)",
+      "50",
+      "50",
+      "52",
+      "48",
+      "50",
+      "57",
+      "52",
+      "51"
+     ],
+     [
+      "Maille (saignement ×½)",
+      "57",
+      "50",
+      "52",
+      "48",
+      "50",
+      "53",
+      "50",
+      "51"
+     ],
+     [
+      "Bézoard (poison ×0)",
+      "50",
+      "50",
+      "50",
+      "48",
+      "50",
+      "53",
+      "52",
+      "50"
+     ],
+     [
+      "Salamandre (brûlure ×0)",
+      "50",
+      "50",
+      "52",
+      "48",
+      "50",
+      "68",
+      "52",
+      "53"
+     ],
+     [
+      "Capuche (aveuglement ×0)",
+      "50",
+      "60",
+      "52",
+      "48",
+      "52",
+      "53",
+      "52",
+      "52"
+     ],
+     [
+      "Garrot (saignement ×0)",
+      "62",
+      "50",
+      "52",
+      "48",
+      "50",
+      "53",
+      "60",
+      "54"
+     ]
+    ],
+    "rec": "Ces sept familles ; le chantier 5 en fait des pièces.",
+    "opts": [
+     "Ces sept familles",
+     "Les accessoires seuls",
+     "Une autre répartition (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/lab/states.ts (ARMOUR_FAMILIES, CHARM_FAMILIES) ; src/simulation/gear.ts (les pièces d’aujourd’hui) ; tools/auto-states.mjs ac12 (graines 1 à 60, chaque rival à son niveau : le kit de départ à la lame importée gagne 85 / 65 / 50 % contre lui, rivaux armés et résistants)"
+   }
+  ]
+ },
+ {
+  "id": "lecture",
+  "fam": "var(--voile)",
+  "title": "Ce qui se lit, se voit, s’entend",
+  "sub": "Les clips sont l’arène du jeu avec le prototype d’affichage de l’atelier (DEV, ?scene=arena&states=…) : la carte, les nombres et les effets empruntés. Rien n’est dessiné de neuf.",
+  "items": [
+   {
+    "id": "GE-8",
+    "tag": "la lecture",
+    "title": "Sur la carte du combattant, dans la fiche de match, dans le carnet",
+    "ctx": "Dans l’arène : un mot au-dessus du combattant quand l’état le prend (« Poison », « Brûlure », « Aveuglé », « Saignement », ses doses, ses secondes), une étiquette sur sa carte qui décompte (« Poison ×2 · 7 s »), un nombre à chaque perte, et « Manqué » quand l’aveuglement fait manquer (le prototype dit encore « Esquive »). Sur la fiche de match : l’état que pose ton arme et ce que pose l’adversaire, ses résistances et les tiennes (« Cassius : sa lame empoisonne · résiste au poison »), lus dans le repérage (le style au premier palier). Dans le carnet de maître Corvin : ce qu’un état a fait (« le poison lui a pris 6 % de sa santé ») et un conseil (« contre Cassius, ton poison ne sert à rien : il en porte l’antidote » ; « Marek t’a brûlé quatre fois : un charme de salamandre »). Dans le guide, un paragraphe dans « Le duel ». En anglais et en français.",
+    "shots": [
+     [
+      "img/poison.png",
+      "La carte de Rhosk : « Poison 10 s » ; celle de Ren : « Saignement ×2 »"
+     ],
+     [
+      "img/brulure.png",
+      "Marek brûle Ren"
+     ]
+    ],
+    "rec": "Ainsi.",
+    "opts": [
+     "Ainsi",
+     "Moins (en note)",
+     "Plus (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/arena/autoView.ts, AutoHud.ts (le prototype : les lignes afflict et tick) ; à construire : src/combat/match.ts (la fiche de match), src/combat/autoNotes.ts (le carnet), src/ui/tutorial.ts (le guide)"
+   },
+   {
+    "id": "GE-9",
+    "tag": "images et sons",
+    "title": "Des recettes et des sons déjà approuvés, empruntés",
+    "ctx": "Quand un état prend : le poison, les poussières grises qui tombent du signe de la forme en baisse ; la brûlure, la flamme de la Résolution de Marek ; l’aveuglement, la lumière de la Prière d’Ilse ; le saignement, le sang du Rugissement de Rhosk. Chaque perte : son seul nombre, sans effet. Un coup manqué par l’aveuglement : l’esquive et son son. Les sons : celui de la recette empruntée. Les couleurs restent dans l’exception de FX4 (les effets du duel gardent la couleur de leur compétence, une seconde au plus). L’interface reste dans sa palette (ni vert ni rouge).",
+    "shots": [
+     [
+      "img/aveuglement.mp4",
+      "Ren aveugle Marek (la lumière de la Prière d’Ilse) ; un coup de Marek manque (le prototype dit encore « Esquive » : « Manqué » à la construction)"
+     ]
+    ],
+    "rec": "Ces emprunts.",
+    "opts": [
+     "Ces emprunts",
+     "D’autres emprunts (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/arena/fx/combatFx.ts (STATE_LOOKS, le prototype) ; src/arena/fx/fxRecipes.ts (FORM_RECIPES.formDown, m_resolve, m_prayer, m_roar) ; journal Passe FX4"
+   },
+   {
+    "id": "GE-10",
+    "tag": "le plan de combat",
+    "title": "Aucune condition nouvelle dans le plan",
+    "ctx": "Le plan de combat (une condition par compétence) n’apprend rien des états : la préparation se fait avant, par l’arme et les protections, d’après le repérage. Une condition « s’il est empoisonné » ajouterait une ligne à chaque compétence pour un gain que les mesures ne montrent pas.",
+    "rec": "Aucune condition nouvelle.",
+    "opts": [
+     "Aucune condition nouvelle",
+     "Une condition liée aux états (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/combat/autoData.ts (AUTO_CONDS_BY_ROLE)"
+   }
+  ]
+ },
+ {
+  "id": "ensuite",
+  "fam": "var(--cendre)",
+  "title": "Ensuite",
+  "sub": "La course, les durées, le chantier 5 et la construction.",
+  "items": [
+   {
+    "id": "GE-11",
+    "tag": "la course et les durées",
+    "title": "Recaler la course à la construction ; les durées tiennent",
+    "ctx": "Les rivaux armés rendent le tournoi plus dur. Sur 200 parties entières tenues à part, sans recalage : le planificateur 26 → 9 % de titres (finale 54 → 23 %), la référence 41 → 28 %, le curieux 28 → 14 %. Comme chaque fois que le duel bouge, la course se recale sur le planificateur à 50 % en demi-finale et en finale (PB-3, appliquée, pas changée), en dernier, sur la base à jour. Un joueur qui prépare ses armes et ses protections d’après le repérage gagne alors plus souvent que le planificateur, qui n’en prend pas. Les durées de la référence restent dans SL1-2 : 2 min 00 / 2 min 53 / 3 min 19 aujourd’hui, 1 min 59 / 3 min 01 / 3 min 03 avec les rivaux armés. Les combats du planificateur rejoués : avec une arme d’une famille, sa finale revient de 41 à 53-60 %.",
+    "table": [
+     [
+      "Planificateur, ses combats rejoués (%)",
+      "Poule",
+      "Tableau",
+      "Finale",
+      "Durées"
+     ],
+     [
+      "Aujourd’hui (sans aucun état)",
+      "93",
+      "63",
+      "54",
+      "120 / 167 / 202 s"
+     ],
+     [
+      "Rivaux armés, Ren sans rien",
+      "89",
+      "58",
+      "41",
+      "119 / 165 / 196 s"
+     ],
+     [
+      "… avec une lame envenimée",
+      "91",
+      "67",
+      "53",
+      "115 / 159 / 191 s"
+     ],
+     [
+      "… ardente",
+      "94",
+      "70",
+      "53",
+      "113 / 159 / 191 s"
+     ],
+     [
+      "… éblouissante",
+      "95",
+      "69",
+      "59",
+      "119 / 167 / 204 s"
+     ],
+     [
+      "… dentelée",
+      "94",
+      "69",
+      "60",
+      "113 / 157 / 189 s"
+     ],
+     [
+      "… avec un bézoard",
+      "92",
+      "59",
+      "45",
+      "119 / 167 / 199 s"
+     ],
+     [
+      "… avec une salamandre",
+      "89",
+      "60",
+      "47",
+      "119 / 166 / 198 s"
+     ],
+     [
+      "… avec un garrot",
+      "90",
+      "59",
+      "46",
+      "120 / 165 / 196 s"
+     ]
+    ],
+    "rec": "Recaler la course à la construction (PB-3) ; les durées tiennent.",
+    "opts": [
+     "Recaler la course à la construction",
+     "Ne pas recaler : le tournoi plus dur (décision A3 : change PB-3)"
+    ],
+    "recIdx": 0,
+    "src": "tools/auto-states.mjs games (200 parties tenues à part, graines 101 à 300) et price ; tools/auto-lab.mjs fit (PB-3) ; journal Passes CF3 (PB-3), SL2 (SL1-2)"
+   },
+   {
+    "id": "GE-12",
+    "tag": "le chantier 5",
+    "title": "Les familles nommées dans le code, les pièces au chantier 5",
+    "ctx": "Je nomme dans le code et dans la note partagée des chantiers les familles que tu retiens (les quatre familles d’armes, les trois d’armures, les quatre d’accessoires, avec leur état et leur force). Le chantier 5 (l’or et l’équipement : GP-17 à GP-19) en fait des pièces : leurs noms, leurs prix, leurs boutiques et leurs contreparties, au lieu de refaire le catalogue. D’ici là, aucune pièce du jeu ne porte d’état : la construction de ce chantier pose les règles, les rivaux, les signatures et la lecture, et les pièces arrivent avec le chantier 5.",
+    "rec": "Ainsi.",
+    "opts": [
+     "Ainsi",
+     "Créer ici quelques pièces d’essai (en note)"
+    ],
+    "recIdx": 0,
+    "src": "note partagée gp4-etat.md ; briefs/audit-gameplay-gp1.md § 11 (GP-18)"
+   },
+   {
+    "id": "GE-13",
+    "tag": "la suite",
+    "title": "Construire, prouver, fusionner",
+    "ctx": "Après ta relecture : les règles dans le duel du jeu par défaut, les rivaux et leurs résistances, les signatures, ce qui se lit (l’arène, la fiche de match, le carnet, le guide) en anglais et en français ; chaque règle prouvée contre un oracle, les mots dans les deux langues ; l’arène prouvée dans le navigateur (auto-arena-proof, gauge-proof, avec et sans mouvement réduit) ; la course recalée en dernier ; puis la fusion.",
+    "rec": "Construire, prouver, fusionner.",
+    "opts": [
+     "Construire, prouver, fusionner",
+     "Attendre (en note)"
+    ],
+    "recIdx": 0,
+    "src": "note de coordination des chantiers (protocole de fusion)"
+   }
+  ]
+ }
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  // un tableau de mesures : la première ligne en tête
+  if (it.table) {
+    const t = el('table', { class: 'tbl' }), [head, ...rows] = it.table;
+    t.append(el('thead', {}, el('tr', {}, ...head.map((h) => el('th', { scope: 'col' }, h)))));
+    t.append(el('tbody', {}, ...rows.map((r) => el('tr', {}, ...r.map((v) => el('td', {}, v))))));
+    c.append(el('div', { class: 'tblwrap' }, t));
+  }
+  if (it.shots) {
+    const grid = el('div', { class: 'shots vids' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      // un film : joué sur place, en boucle, sans son (les films de duel-clip n’en ont pas)
+      if (/.mp4$/.test(src)) { grid.append(el('figure', { class: 'shot' }, el('video', { src, controls: '', muted: '', loop: '', playsinline: '', preload: 'metadata', 'aria-label': cap }), el('figcaption', {}, cap))); continue; }
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

@@ -61,6 +61,8 @@ function exploreInputs(look: TimeOfDay): void {
 async function startArena(): Promise<void> {
     try {
     const { ArenaApp } = await import('./arena/ArenaApp');
+    // DEV only: the trial of the harmful states (?states=venom|ember|glare|serrated|hex|numb, src/lab/states.ts, the workshop of journal Passe GP4-1); compiled out of production builds
+    if (import.meta.env.DEV && params.has('states')) (await import('./lab/states')).installStatesTrial(params);
     const app = new ArenaApp({ canvas, params, onProgress: progressOn(label, bar) });
     (window as any).__arena = app;
     await app.init();
