@@ -264,6 +264,8 @@ export const CHAPTERS: Chapter[] = [
   { id: 'law', title: 'tut.ch.law.title', line: 'tut.ch.law.line', body: 'tut.ch.law.body', fig: 'marks' },
   { id: 'challenges', title: 'tut.ch.challenges.title', line: 'tut.ch.challenges.line', body: 'tut.ch.challenges.body', fig: 'none' },
   { id: 'intel', title: 'tut.ch.intel.title', line: 'tut.ch.intel.line', body: 'tut.ch.intel.body', fig: 'none' },
+  // the operator's GP-11 « Corriger la lecture et ajouter le chapitre » (journal Passe GP2): the signs and the threats, the places' own risks and their answers, the quests
+  { id: 'events', title: 'tut.ch.events.title', line: 'tut.ch.events.line', body: 'tut.ch.events.body', fig: 'none' },
   { id: 'renown', title: 'tut.ch.renown.title', line: 'tut.ch.renown.line', body: 'tut.ch.renown.body', fig: 'fame' },
   { id: 'prepare', title: 'tut.ch.prepare.title', line: 'tut.ch.prepare.line', body: 'tut.ch.prepare.body', fig: 'none' },
   { id: 'duel', title: 'tut.ch.duel.title', line: 'tut.ch.duel.line', body: 'tut.ch.duel.body', fig: 'order' },
@@ -284,6 +286,7 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'challenges': return tx(c.body, { names: list(Object.keys(CHALLENGERS).map(nameOf)), coins: STAKE.coins, name: STAKE.name, day: dayOf('semis'), cap: TRAIN_CAP });
     // what watching gives since lot 3 of « La Brute » (the style, then the plan, the rehearsal opened: src/simulation/v2scout.ts), said since GP-16
     case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM, corvin: nameOf('corvin') });
+    case 'events': return tx(c.body, { mara: nameOf('mara'), hale: nameOf('hale'), odo: nameOf('odo'), room: STRONGROOM, hilde: nameOf('hilde'), tam: nameOf('tam'), anwen: nameOf('anwen'), corvin: nameOf('corvin'), lio: nameOf('lio') });
     // the duel played by the computer (lot 3, journal Passe LC5): the order of the four, the match sheet, the health of a bout (AUTO_RULES.hpScale, DB5)
     case 'prepare': return tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen'), rehearse: REHEARSAL.n, cap: SAND_LESSON.cap, sday: SIGNATURE_DAY, lday: LESSON.day, pnext: lessonPrice(4), plast: lessonPrice(5) });
     // its numbers the duel's own (src/combat/auto.ts AUTO_RULES, src/combat/autoData.ts: the cooldown, the weapons' chains of blows)

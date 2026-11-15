@@ -6,7 +6,7 @@ import { RIVALS } from '../narrative/roster';
 import { tx, type TextKey } from '../narrative/text';
 import { isV2 } from './v2';
 import { V2_SKILL_ACTIONS } from './v2skills';
-import { V2_GEAR_ACTIONS, weaponTier } from './v2gear';
+import { V2_GEAR_ACTIONS } from './v2gear';
 import { V2_TOWN_ACTIONS } from './v2town';
 import { V2_STORY_ACTIONS } from '../narrative/v2story';
 import { V2_LAW_ACTIONS } from './v2law';
@@ -17,18 +17,19 @@ import { V2_RIVAL_ACTIONS, anwenBusy } from './v2rivals';
 import { V2_FESTIVAL_ACTIONS } from './v2festival';
 import { V2_WORK_ACTIONS } from './v2work';
 import { V2_PREP_ACTIONS } from './v2prep';
+import { V2_QUEST_ACTIONS } from './v2quests';
+import { QUEST } from './v2questData';
+import { V2_ENCOUNTER_ACTIONS } from './v2encounter';
 import { TRAINED_STATS, trainGain, type TrainedStat } from '../combat/stats';
-import { MAX_WEAPON_TIER, TIER_PRICE, WEAPON_TIER_ATK } from './gear';
-/** the Wyrmsteel temper's price: today's game 10 coins; a version 2 game, the price of the weapon's tier it gives (TIER_PRICE, as Bram's forge prices its tiers), so
- *  the weapon's three tiers cost 10 + 25 + 40 whatever the order of the temper and the forge's tiers (the operator's GP-20 « Les corriger », journal Passe GP2: tiers
- *  then temper cost 45, temper then tiers 75, for the same weapon); none at the weapon's top tier, where the temper is refused. « proposé » */
-const temperPrice = (st: GameState): number => (!isV2(st) ? 10 : weaponTier(st) >= MAX_WEAPON_TIER ? 0 : TIER_PRICE[weaponTier(st)]);
+/** the Wyrmsteel temper's price: 10 coins in every game. In a version 2 game the Wyrmsteel is no longer a forge tier (the operator's Q-02 « Attaque +1, en plus des paliers, tout de suite »), so the forge's tiers keep
+ *  TIER_PRICE alone and the temper stays at 10 whatever their order (GP-20's order-free total holds: tiers cost 10 + 25 + 40, the temper 10 more); never refused at a tier. */
+const temperPrice = (_st: GameState): number => 10;
 /** the report to Sergeant Hale pays this (the smiths' guild's, or the tournament's purse for the gear) */
 const REPORT_PAY = 15;
 /** the stats' names (keys written whole: tests/texts.test.mjs) */
 const SPAR_STAT: Record<TrainedStat, TextKey> = { atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv', hp: 'ui.stat.hp' };
 
-const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS, ...V2_WORK_ACTIONS, ...V2_PREP_ACTIONS };
+const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS, ...V2_WORK_ACTIONS, ...V2_PREP_ACTIONS, ...V2_QUEST_ACTIONS, ...V2_ENCOUNTER_ACTIONS };
 
 /** The town's people in game roles (choice P4, journal Passe L4): the district's existing characters offer services, quests and clues;
  *  the forecourt's officials and the rivals offer care, sparring and scouting (choice K3: portraits and dialogues). Each action names who
@@ -156,14 +157,12 @@ export const ROLE_ACTIONS: T = {
   temper: {
     by: 'bram',
     list: (st) => (st.place === 'district' && st.quests.cargo === 'delivered' ? [{ type: 'temper' }] : []),
-    // a version 2 game: the temper is the weapon's first tier (src/simulation/gear.ts), its Attack said as the forge's tiers say it (journal Passe CO1: « +15 %
-    // damage » since DB7-2 a tier's point); today's game keeps its words
-    label: (st) => (isV2(st) ? tx('v2.temper.label', { atk: WEAPON_TIER_ATK, price: TIER_PRICE[Math.min(MAX_WEAPON_TIER - 1, weaponTier(st))] }) : tx('temper.label')),
+    // a version 2 game: the temper is not a forge tier, Attack +1 on top of them (Q-02); today's game keeps its words
+    label: (st) => (isV2(st) ? tx('v2.temper.label', { atk: QUEST.wyrmAtk, price: temperPrice(st) }) : tx('temper.label')),
     cost: () => 1,
     coins: (st) => temperPrice(st),
-    // a version 2 game: refused at the weapon's top tier, where it gives nothing (GP-20), and priced as the tier it gives
     check: (st) => available(st, 'bram') ?? (st.services.forge === 'sabotaged' ? tx('temper.cold') : blade(st) ? tx('temper.haveBlade')
-      : isV2(st) && weaponTier(st) >= MAX_WEAPON_TIER ? tx('v2.upgrade.max') : st.player.coins < temperPrice(st) ? (isV2(st) ? tx('v2.upgrade.poor', { price: temperPrice(st) }) : tx('temper.poor')) : null),
+      : st.player.coins < temperPrice(st) ? (isV2(st) ? tx('v2.upgrade.poor', { price: temperPrice(st) }) : tx('temper.poor')) : null),
     apply: (s, _a, _r, emit) => { s.player.coins -= temperPrice(s); s.player.items.push('tempered-blade'); s.quests.cargo = 'done'; add(s, 'bram', 10); emit({ kind: 'action', id: 'temper', cause: 'quest:cargo', text: tx('temper.log'), visible: true }); },
   },
   repair: {

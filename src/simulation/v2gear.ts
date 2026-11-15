@@ -10,6 +10,7 @@ import { allyAp } from '../narrative/v2story';
 import type { Mods } from '../combat/profiles';
 import { wanted } from './v2law';
 import { PEOPLE } from '../narrative/people';
+import { draughtHp, QUEST } from './v2questData';
 
 /** The equipment and the shops of a version 2 game (lot V3, C5; the operator's decision AV-12, with its note « arme + armure + 2 accessoires »,
  *  journal Passe V3): the gear carried (one weapon and its tier, one armour, two accessories, the bag of what is owned and not worn), what it
@@ -34,10 +35,17 @@ export function wornPieces(s: GameState): Array<string | null> { const g = gearV
 /** the Speed points of the pieces worn (the gear's own table, AC-11's doubled points): the duel counts them at AUTO_PIECE_VIV (PB-1) */
 export function piecesViv(s: GameState): number { return wornPieces(s).reduce((n, id) => n + (id ? GEAR[id]?.fx?.viv ?? 0 : 0), 0); }
 
-/** the weapon's tier as the duel reads it: its own, and the Wyrmsteel temper of the steel cargo (one more), at most MAX_WEAPON_TIER */
+/** the tiers the forge has given the weapon (Bram's, bought: TIER_PRICE), at most MAX_WEAPON_TIER */
+export const forgeTier = (s: GameState): number => Math.min(MAX_WEAPON_TIER, gearView(s).tier);
+/** the weapon's tier: the forge's. The Wyrmsteel temper of the steel cargo is no tier any more but an Attack on top of them that the forge does not sell (the
+ *  operator's GP-09 « Quatre quêtes de ville et une page « En cours » », the cargo « réécrite pour donner ce que la forge ne vend pas », journal Passe GP2;
+ *  before it the temper was the forge's first tier, MAX_WEAPON_TIER in all): `wyrmTier` */
 export function weaponTier(s: GameState): number {
-  return Math.min(MAX_WEAPON_TIER, gearView(s).tier + (s.player.items.includes('tempered-blade') ? 1 : 0));
+  return forgeTier(s);
 }
+/** the Wyrmsteel's Attack is worn (QUEST.wyrm: `beyond` at once, on top of the forge's tiers, even the last; `fourth` once the forge's three are bought; `edge` never:
+ *  its edge in the duel instead, src/combat/autoMatch.ts) */
+export const wyrmTier = (s: GameState): boolean => s.player.items.includes('tempered-blade') && (QUEST.wyrm === 'beyond' || (QUEST.wyrm === 'fourth' && forgeTier(s) >= MAX_WEAPON_TIER));
 
 /** every effect the player wears (the weapon and its tiers, the armour, both accessories): the stat points added, the AP added, the effect multiplied */
 export function wornFx(s: GameState): Required<GearFx> {
@@ -47,7 +55,7 @@ export function wornFx(s: GameState): Required<GearFx> {
     if (!d) continue;
     for (const [k, v] of Object.entries(d.fx) as Array<[keyof GearFx, number]>) { if (k === 'effect') fx.effect *= v; else fx[k] += v; }
   }
-  fx.atk += WEAPON_TIER_ATK * weaponTier(s);
+  fx.atk += WEAPON_TIER_ATK * forgeTier(s) + (wyrmTier(s) ? QUEST.wyrmAtk : 0);
   return fx;
 }
 
@@ -62,7 +70,7 @@ export function trainedStats(s: GameState): TrainedStat[] {
  *  of the health on top (v2Mods) */
 export function v2Stats(s: GameState): FighterStats {
   const fx = wornFx(s), st: FighterStats = { ...REN_BASE };
-  st.hp += VIGOUR_HP * (s.v2?.wins ?? 0) + fx.hp;
+  st.hp += VIGOUR_HP * (s.v2?.wins ?? 0) + fx.hp + draughtHp(s);
   st.atk += fx.atk + (s.player.items.includes('whetstone') ? GEAR.whetstone.fx.atk ?? 0 : 0);
   st.def += fx.def; st.end += fx.end; st.viv += fx.viv;
   for (const k of trainedStats(s)) st[k] += trainGain(k);
@@ -219,19 +227,19 @@ export const V2_GEAR_ACTIONS: { [K in V2GearAction['type']]: ActionDef<Extract<V
     by: 'bram',
     list: (s) => (isV2(s) && s.place === 'district' ? [{ type: 'upgradeWeapon' }] : []),
     // a tier's Attack as the gear's table gives it (journal Passe CO1: « +8 % damage » since DB7-2 made it a point, AC-11 two)
-    label: (s) => tx('v2.upgrade.label', { item: heldName(gearView(s).weapon), tier: weaponTier(s) + 1, price: TIER_PRICE[Math.min(MAX_WEAPON_TIER - 1, weaponTier(s))], atk: WEAPON_TIER_ATK }),
+    label: (s) => tx('v2.upgrade.label', { item: heldName(gearView(s).weapon), tier: weaponTier(s) + 1, price: TIER_PRICE[Math.min(MAX_WEAPON_TIER - 1, forgeTier(s))], atk: WEAPON_TIER_ATK }),
     cost: () => 1,
-    coins: (s) => (weaponTier(s) >= MAX_WEAPON_TIER ? 0 : TIER_PRICE[weaponTier(s)]),
+    coins: (s) => (forgeTier(s) >= MAX_WEAPON_TIER ? 0 : TIER_PRICE[forgeTier(s)]),
     check: (s) => {
       if (!isV2(s)) return tx('v2.only');
       if (s.place !== 'district') return tx('v2.upgrade.notHere');
       if (s.services.forge === 'sabotaged') return tx('temper.cold');
       if (s.slot === 'evening') return tx('v2.upgrade.night');
-      if (weaponTier(s) >= MAX_WEAPON_TIER) return tx('v2.upgrade.max');
-      return s.player.coins < TIER_PRICE[weaponTier(s)] ? tx('v2.upgrade.poor', { price: TIER_PRICE[weaponTier(s)] }) : null;
+      if (forgeTier(s) >= MAX_WEAPON_TIER) return tx('v2.upgrade.max');
+      return s.player.coins < TIER_PRICE[forgeTier(s)] ? tx('v2.upgrade.poor', { price: TIER_PRICE[forgeTier(s)] }) : null;
     },
     apply: (s, _a, _r, emit) => {
-      const p = TIER_PRICE[weaponTier(s)];
+      const p = TIER_PRICE[forgeTier(s)];
       s.player.coins -= p; gearOf(s).tier++; s.town.bram = clamp((s.town.bram ?? 0) + 5, -100, 100);
       emit({ kind: 'action', id: 'upgrade', cause: 'action:upgradeWeapon', visible: true, text: tx('v2.upgrade.log', { item: heldName(gearView(s).weapon), tier: weaponTier(s) }) });
     },

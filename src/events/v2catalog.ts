@@ -34,7 +34,11 @@ export const V2_EVENTS: readonly EventDef[] = [
   {
     id: 'v2-bookmakers', type: 'tournament', about: 'The bookmakers lay odds on the player once the pool has seen them win.',
     slots: ['morning'], when: { all: [{ wins: true, gte: 2 }, { rank: true, lte: 3 }] }, cause: 'two wins and a place among the pool\'s best',
-    outcomes: [{ effects: [{ pulse: 'playerFame', add: 6 }, { coins: 10 }], text: 'At the forecourt\'s gate the bookmakers chalk your name among the favourites. A grateful punter slips you 10 coins.' }],
+    // GP-10: the punter's coins reach a player at the forecourt's gate that morning; elsewhere the name alone is chalked
+    outcomes: [
+      { when: { here: ['forecourt'] }, effects: [{ pulse: 'playerFame', add: 6 }, { coins: 10 }], text: 'At the forecourt\'s gate the bookmakers chalk your name among the favourites. A grateful punter slips you 10 coins.' },
+      { effects: [{ pulse: 'playerFame', add: 6 }], text: 'At the forecourt\'s gate the bookmakers chalk your name among the favourites.' },
+    ],
   },
   {
     id: 'v2-gate-vigil', type: 'tournament', about: 'The night before the semi-finals the Temple keeps a vigil at the arena\'s gate.',
@@ -68,10 +72,12 @@ export const V2_EVENTS: readonly EventDef[] = [
   },
   {
     id: 'v2-card-sharps', type: 'district', about: 'Card sharps on the festival square at night, when the watch is thin.',
-    slots: ['evening'], chance: 0.4, when: { all: [{ pulse: 'festivity', gte: 45 }, { pulse: 'security', lte: 55 }] }, cause: 'a festive night and a thin watch',
+    // GP-10 « Le lieu et le choix »: the festival square only, where the player is, and the player answers (pay, refuse, or fight: src/simulation/v2encounter.ts); gone with
+    // the sharps once Lio's quest drove them off (src/simulation/v2quests.ts)
+    slots: ['evening'], chance: 0.4, when: { all: [{ pulse: 'festivity', gte: 45 }, { pulse: 'security', lte: 55 }, { not: { fact: 'sharps-gone' } }, { here: ['lanterns'] }] }, cause: 'a festive night and a thin watch',
     outcomes: [
       { when: { town: 'lio', gte: 10 }, effects: [{ town: 'lio', add: 2 }], text: 'Lio warns you off the card sharps by the stage: friends of the house do not lose their purse here.' },
-      { effects: [{ coins: -5 }], text: 'A friendly game by the stage costs you 5 coins before you see the marked cards.' },
+      { encounter: 'sharps', effects: [{ coins: -5 }], text: 'A friendly game by the stage turns out to be played with marked cards: the sharp holds out his hand for your 5 coins.' },
     ],
   },
   // ---------------------------------------------------------------- the new systems: thefts, challenges

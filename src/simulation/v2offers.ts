@@ -13,8 +13,10 @@ export type MarkKind = 'item' | 'event' | 'follow';
 
 /** item: something to get or to earn for coins; event: something happening now, for a while; follow: what follows from what happened */
 export const KIND_OF: Readonly<Record<string, MarkKind>> = {
-  buy: 'item', shopBuy: 'item', sell: 'item', barter: 'item', bargain: 'item', upgradeWeapon: 'item', temper: 'item', buySkill: 'item', heal: 'item', lockGear: 'item', checkGear: 'item',
-  work: 'item', restock: 'item', haul: 'item',
+  buy: 'item', shopBuy: 'item', sell: 'item', barter: 'item', bargain: 'item', upgradeWeapon: 'item', temper: 'follow', buySkill: 'item', heal: 'item', lockGear: 'item', checkGear: 'item',
+  work: 'item', restock: 'item',
+  // the town's quests (GP-09): each step follows from the quest taken
+  haul: 'follow', buyHerbs: 'follow', brewDraught: 'follow', buyTreatise: 'follow', studyTreatise: 'follow', askWatch: 'follow',
   challenge: 'event', spar: 'event', festDeed: 'event', walkBehind: 'event', walkOwn: 'event', keepWatch: 'event', payWatch: 'event', register: 'event', recruit: 'event', rumour: 'event', buyInfo: 'event', listen: 'event',
   report: 'follow', restitute: 'follow', workDebt: 'follow', confront: 'follow', taunt: 'follow', confrontVessa: 'follow', reportRhosk: 'follow', faceMuscle: 'follow', payMuscle: 'follow', askPapers: 'follow', repair: 'follow',
   // Master Corvin's rehearsal, newly open against the next opponent (the operator's GP-16 « Les corriger », journal Passe GP2, amending MK-6 « Ni l’observation des
@@ -25,6 +27,18 @@ export const KIND_OF: Readonly<Record<string, MarkKind>> = {
  *  the list's summary instead, src/simulation/v2todo.ts); the passers-by of the crowd (`folk`) never wear a mark */
 export const NEVER_MARKED = new Set(['talk', 'scout']);
 export const UNMARKED_PEOPLE = new Set(['folk']);
+/** the daily guards against a sabotage wear a mark only once a sign of its chain was seen (the operator's GP-11 « Corriger la lecture et ajouter le chapitre », journal
+ *  Passe GP2: « le losange des parades seulement après un signe »): the quay's paid watch at the forge after the hood's oil, the loiterer or a friend's warning, while the forge
+ *  stands; Clerk Odo's strongroom after the servant at Hilde's, the lockers found open or a friend's warning, while the gear's chain has not struck. Before it they wore one
+ *  every evening or every eve, threat or not, and a real threat's mark drowned among them. The actions stay open all the same */
+export const FORGE_SIGNS: readonly string[] = ['lamp-oil', 'loiterer', 'friend-warned-forge'];
+export const GEAR_SIGNS: readonly string[] = ['armour-asked', 'locker-open', 'friend-warned-gear'];
+export function markWorthy(st: Pick<GameState, 'facts' | 'flags'> & Partial<Pick<GameState, 'services'>>, type: string): boolean {
+  if (type === 'payWatch' || type === 'keepWatch') return FORGE_SIGNS.some((f) => st.facts.includes(f)) && st.services?.forge !== 'sabotaged' && !st.facts.includes('saboteur-caught');
+  if (type === 'lockGear') return GEAR_SIGNS.some((f) => st.facts.includes(f)) && !st.flags['tamper-done'];
+  return true;
+}
+
 /** the offers that change every day */
 const DAILY = new Set(['work', 'restock', 'rumour', 'buyInfo', 'payWatch', 'keepWatch', 'lockGear', 'listen']);
 

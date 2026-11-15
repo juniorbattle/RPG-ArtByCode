@@ -190,6 +190,8 @@ export const AUTO_GEAR_FX: Record<string, AutoGearFx> = {
   'dock-leathers': { dodge: 1.3, guardChance: 0.85 },
   // the iron ring: one's break shorter (−30 %)
   'iron-ring': { stun: 0.7 },
+  // the Wyrmsteel's edge (the steel cargo's reward when it is no tier, src/simulation/v2quests.ts QUEST.wyrm): its blows fill the opponent's gauge more
+  wyrmsteel: { gauge: 1.2 },
   // the lucky ribbon and the champion's token (their AP of before): the cooldowns and gaps −15 % and −10 %
   'lucky-ribbon': { cd: 0.85 },
   // (the token left the game's catalogue, src/simulation/gear.ts, by the operator's GP-20 « Les corriger », journal Passe GP2: kept here as the laboratory's table

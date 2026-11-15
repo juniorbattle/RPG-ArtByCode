@@ -1,4 +1,4 @@
-import type { ForgeService, SlotId, WorldPulse } from '../simulation/state';
+import type { ForgeService, PlaceId, SlotId, WorldPulse } from '../simulation/state';
 
 /** The dynamic events' configuration language (PROJECT_MASTER_CONTRACT §§ 9, 14: « au moins 12 événements dynamiques configurables »;
  *  journal Passe L2): an event is data, a condition over the state and the pulse, effects, a cause and a text; a major one names its signs
@@ -40,7 +40,10 @@ export type Cond =
   | { boutTomorrow: true }
   /** lot L4 (journal Passe EVL7): the player's next bout, not fought yet, comes in exactly this many days (1 = tomorrow); a competitor's phase in the
    *  version 2's bracket (`phaseStatus`: 'pool', 'semi', 'gate', 'third', 'final', 'champion') */
-  | { boutIn: number } | { status: [string, string[]] };
+  | { boutIn: number } | { status: [string, string[]] }
+  /** the operator's GP-10 « Le lieu et le choix » (journal Passe GP2): the player is at one of these places when the slot ends (« un événement de quartier ne frappe que là
+   *  où il est »); a version 2 game only, always true in today's game */
+  | { here: PlaceId[] };
 
 export type Effect =
   /** a lasting shift of a pulse field (read by computePulse) */
@@ -63,6 +66,9 @@ export type EventType = 'global' | 'district' | 'faction' | 'tournament' | 'targ
 
 export interface EventOutcome {
   when?: Cond; effects: Effect[]; text: string;
+  /** a version 2 game (GP-10: « un événement qui coûte propose une réponse »): the outcome opens an encounter the player answers before anything else
+   *  (src/simulation/v2encounter.ts) on that place until the next slot ends: its effects are the cost, which an answer may take back */
+  encounter?: 'cutpurse' | 'sharps';
   /** its words in a version 2 game, whose rules differ (journal Passe CO2: the steel shortage on every shop's blades and armour, a goodwill that can be lost) */
   textV2?: string;
 }

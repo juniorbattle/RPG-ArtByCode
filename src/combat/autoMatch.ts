@@ -4,6 +4,9 @@ import { PLAYER_ID } from '../narrative/roster';
 import type { DuelOutcome } from '../tournament/pool';
 import { rivalMods } from '../tournament/pool';
 import { piecesViv, v2Mods, v2Stats, wornPieces } from '../simulation/v2gear';
+import { QUEST } from '../simulation/v2questData';
+/** the Wyrmsteel's edge in the duel (the cargo's reward when it is no tier: QUEST.wyrm 'edge', AUTO_GEAR_FX.wyrmsteel) */
+const wyrmEdge = (st: GameState): boolean => QUEST.wyrm === 'edge' && st.player.items.includes('tempered-blade');
 import { v2KitOf } from '../simulation/v2';
 import { GENERICS } from '../narrative/generics';
 import { NPC_BASE, NPC_FIGHTERS } from '../narrative/npcFighters';
@@ -44,7 +47,7 @@ export function autoBoutOf(st: GameState, kind: 'bout' | 'challenge' = 'bout'): 
 export function autoFightersFor(st: GameState, foeId: string, stage: Stage, round: number): Pick<AutoBout, 'ren' | 'foe' | 'prep'> {
   const o = { id: foeId }, mods = v2Mods(st), g = GENERICS[o.id];
   // the plan kept for this rival, else the general one (lot 2 of « La Brute »: « un plan par rival », set on its match sheet)
-  const ren = autoRen(autoRenStats(st), autoKitFor(v2KitOf(st), o.id), { weapon: st.v2?.gear?.weapon, hpShare: mods.hp, taken: mods.taken, effect: mods.effect, gear: wornPieces(st), pieceViv: piecesViv(st) });
+  const ren = autoRen(autoRenStats(st), autoKitFor(v2KitOf(st), o.id), { weapon: st.v2?.gear?.weapon, hpShare: mods.hp, taken: mods.taken, effect: mods.effect, gear: [...wornPieces(st), ...(wyrmEdge(st) ? ['wyrmsteel'] : [])], pieceViv: piecesViv(st) });
   // Orla's advice from the gate (BL1-6): the gaps and the cooldown × 0.9, on top of the gear's
   const ally = allyCd(st);
   if (ally !== 1) ren.gfx = { ...ren.gfx, cd: (ren.gfx?.cd ?? 1) * ally };

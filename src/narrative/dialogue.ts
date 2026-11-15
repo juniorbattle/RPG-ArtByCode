@@ -11,6 +11,7 @@ import { watchPost } from '../simulation/v2watch';
 import { marksOf, LAW } from '../simulation/v2law';
 import { fameTier, type FameTier } from '../simulation/v2react';
 import { festivalWords } from '../simulation/v2festival';
+import { offerQuest } from '../simulation/v2quests';
 
 /** what the passers-by make of the player in a version 2 game (lot L5): a name in Sergeant Hale's ledger first, then the fame (src/simulation/v2react.ts) */
 const FOLK: Record<FameTier, TextKey> = { unknown: 'v2.line.folk.unknown', noticed: 'v2.line.folk.noticed', known: 'v2.line.folk.known', celebrated: 'v2.line.folk.celebrated' };
@@ -34,7 +35,9 @@ const fought = (s: GameState, day: number) => s.tournament.matches.some((m) => m
 const rival = (s: GameState, id: string) => s.competitors[id]?.relationships.player ?? 0;
 
 export function onTalk(s: GameState, who: string, emit: Emit): void {
-  if (who === 'tam' && !s.quests.cargo) {
+  // a version 2 game: every town quest is offered by its giver on its days (src/simulation/v2quests.ts, GP-09); today's game keeps its cargo as it was
+  if (isV2(s)) offerQuest(s, who, emit);
+  else if (who === 'tam' && !s.quests.cargo) {
     s.quests.cargo = 'asked';
     emit({ kind: 'action', id: 'quest:cargo', cause: 'action:talk', visible: true, text: tx('quest.cargo.offer') });
   }

@@ -62,6 +62,8 @@ export const V2_WORK_ACTIONS: { [K in V2WorkAction['type']]: ActionDef<Extract<V
       if (workedToday(s, a.job)) return tx('v2.work.done');
       if (wanted(s)) return tx('v2.work.wanted');
       if (j.place === 'training') { const shut = sandRefusal(s); if (shut) return shut; }
+      // Lio's card sharps not driven off (the town's quests, GP-09: « quête ratée → coût économique », GAMEPLAY § 11): his room has no customers left to serve
+      if (a.job === 'tables' && s.quests.sharps === 'failed') return tx('v2.quest.sharps.noTables');
       return available(s, j.by);
     },
     apply: (s, a, _r, emit) => {

@@ -3,7 +3,8 @@ import { freshTodo, openedKey, seeTodo, todoHere, todoSeen, type Todo } from '..
 import { isV2 } from '../simulation/v2';
 import { PEOPLE } from '../narrative/people';
 import { RIVALS } from '../narrative/roster';
-import { tx } from '../narrative/text';
+import { tx, type TextKey } from '../narrative/text';
+import { TITLE as QUEST_TITLE, type QuestId } from '../simulation/v2quests';
 import { bindCap } from '../input/caps';
 import { PHONE_QUERY } from './design/tokens';
 import { el, esc } from './style';
@@ -56,17 +57,35 @@ function boutFoe(s: GameState): string {
   return m ? RIVALS[m.a === 'player' ? m.b : m.a]?.name ?? '' : '';
 }
 
+/** what a person offers, in a few words (the operator's GP-11 « Corriger la lecture et ajouter le chapitre », journal Passe GP2: « la liste qui dit quoi »; before it the
+ *  line said only the mark's kind): by the action's type; a quest's step or its offer by the quest's name (src/simulation/v2quests.ts); else the kind's word */
+const WHAT: Readonly<Record<string, TextKey>> = {
+  buy: 'ui.what.goods', shopBuy: 'ui.what.goods', bargain: 'ui.what.goods', sell: 'ui.what.sell', barter: 'ui.what.barter', upgradeWeapon: 'ui.what.forge', buySkill: 'ui.what.skill',
+  heal: 'ui.what.heal', lockGear: 'ui.what.strongroom', checkGear: 'ui.what.check', work: 'ui.what.work', restock: 'ui.what.work', challenge: 'ui.what.challenge', spar: 'ui.what.spar',
+  festDeed: 'ui.what.festival', walkBehind: 'ui.what.festival', walkOwn: 'ui.what.festival', keepWatch: 'ui.what.watch', payWatch: 'ui.what.watch', register: 'ui.what.register',
+  recruit: 'ui.what.recruit', rumour: 'ui.what.rumour', buyInfo: 'ui.what.rumour', listen: 'ui.what.rumour', report: 'ui.what.report', restitute: 'ui.what.restitute', workDebt: 'ui.what.restitute',
+  confront: 'ui.what.confront', taunt: 'ui.what.confront', confrontVessa: 'ui.what.confront', reportRhosk: 'ui.what.reportRhosk', faceMuscle: 'ui.what.muscle', payMuscle: 'ui.what.muscle',
+  repair: 'ui.what.repair', talk: 'ui.what.talk',
+};
+/** the quest each step of the town's quests belongs to */
+const STEP_OF: Readonly<Record<string, QuestId>> = { askPapers: 'cargo', haul: 'cargo', temper: 'cargo', buyHerbs: 'herbs', brewDraught: 'herbs', buyTreatise: 'treatise', studyTreatise: 'treatise', askWatch: 'sharps' };
+export function offerWhat(act: string | undefined, kind: 'item' | 'event' | 'follow'): string {
+  if (act?.startsWith('quest:')) { const id = act.slice(6) as QuestId; if (QUEST_TITLE[id]) return tx('ui.what.quest', { quest: tx(QUEST_TITLE[id]) }); }
+  if (act && STEP_OF[act]) return tx('ui.what.questStep', { quest: tx(QUEST_TITLE[STEP_OF[act]]) });
+  return act && WHAT[act] ? tx(WHAT[act]) : tx(MARK_WORD[kind]);
+}
+
 /** one line of the preview: its sign, its words, its tag */
 export function todoLine(s: GameState, t: Todo): string {
   const tag = (txt: string, gain = false) => `<span class="tag${gain ? ' gain' : ''}">${esc(txt)}</span>`;
   if (t.kind === 'bout') return `<p><span>${esc(t.what === 'challenge' ? tx('v2.challenge.enter') : tx('ui.todo.bout', { name: boutFoe(s) }))}</span></p>`;
   if (t.who) {
     const k = t.kind as 'item' | 'event' | 'follow', p = PEOPLE[t.who];
-    return `<p><span class="pm-mk" data-kind="${k}" role="img" aria-label="${esc(tx(MARK_WORD[k]))}">${markGlyph(k)}</span><span>${esc(tx('ui.todo.who', { name: p?.name ?? t.who, kind: tx(MARK_WORD[k]) }))}</span>${t.gain ? tag(tx('ui.gainN', { n: t.gain }), true) : ''}</p>`;
+    return `<p><span class="pm-mk" data-kind="${k}" role="img" aria-label="${esc(tx(MARK_WORD[k]))}">${markGlyph(k)}</span><span>${esc(tx('ui.todo.who', { name: p?.name ?? t.who, kind: offerWhat(t.act, k) }))}</span>${t.gain ? tag(tx('ui.gainN', { n: t.gain }), true) : ''}</p>`;
   }
   // the preparation of the next bout (the operator's GP-16 « Les corriger », journal Passe GP2): its opponent named
   const foe = t.foe ? RIVALS[t.foe]?.name ?? t.foe : '';
-  const words = t.what === 'train' ? tx('ui.todo.train') : t.what === 'drill' ? tx('ui.todo.drill') : t.what === 'scout' ? tx('ui.todo.scout', { name: foe })
+  const words = t.what === 'train' ? tx('ui.todo.train') : t.what === 'drill' ? tx('ui.todo.drill') : t.what === 'sharps' ? tx('ui.todo.sharps') : t.what === 'scout' ? tx('ui.todo.scout', { name: foe })
     : t.what === 'rehearse' ? tx('ui.todo.rehearse', { name: foe }) : tx('ui.todo.repair');
   return `<p><span class="tick" aria-hidden="true"></span><span>${esc(words)}</span>${t.slot ? tag(tx('ui.oneSlot')) : ''}</p>`;
 }

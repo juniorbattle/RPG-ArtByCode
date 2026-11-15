@@ -1,6 +1,7 @@
 import type { Rng } from '../core/rng';
 import { clamp, type CompetitorState, type GameState, type MatchRecord } from '../simulation/state';
 import type { Emit } from '../simulation/advance';
+import { drinkDraught } from '../simulation/v2questData';
 import { PLAYER_ID, POINTS, RIVALS, ROUNDS } from '../narrative/roster';
 import { tx } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
@@ -175,6 +176,8 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
   // Master Corvin's note of the bout (lot 3 of « La Brute »), outside the fingerprint
   if (s.v2) keepOutcomeNote(s, o, 'bout');
   P.training = 0; if (s.v2?.prep) s.v2.prep = [];
+  // Sister Anwen's draught (the town's quests, GP-09) is drunk by the bout it served
+  drinkDraught(s);
   P.items = P.items.filter((i) => i !== 'whetstone');
   emit({
     kind: 'match', id: won ? 'player-won' : 'player-lost', cause: `match:${matchId(m)}`, visible: true,

@@ -13,6 +13,8 @@ import { festivalDusk } from './v2festival';
 import { v2Dawn } from './v2law';
 import { vessaTalks } from './v2rivals';
 import { PEOPLE } from '../narrative/people';
+import { questsAfterSlot } from './v2quests';
+import { expireEncounter } from './v2encounter';
 
 /** The simulation's entry points (PROJECT_MASTER_CONTRACT § 10.2, journal Passe L1):
  *  - `newGame(seed, name)`: the slice's first morning;
@@ -106,11 +108,15 @@ export type Emit = (e: Omit<GameEvent, 'seq' | 'day' | 'slot'> & Partial<Pick<Ga
 
 /** the slot ends: the world moves (off screen, pulse, events), then the clock */
 function passSlot(s: GameState, emit: Emit, cause: string): void {
+  // an encounter not answered by the end of the slot that followed it is over: its cost stands (GP-10, src/simulation/v2encounter.ts)
+  expireEncounter(s);
   endSlot(s, emit, rngFor(s, 'slot'));
   // the version 2's bracket (lot V6): the cut, the major match, the final, the champion, once the day's bouts are fought
   v2AfterSlot(s, s.slot, emit);
   // the festival of day 9 (lot L6): the parade's order set at dusk, the end of its afternoon
   if (s.slot === 'afternoon') festivalDusk(s, emit);
+  // the town's quests (GP-09): a deadline come fails its quest; Lio's word on the eve of a bout
+  questsAfterSlot(s, emit);
   // a version 2 game's dawn (lot L2a): the owners count what was stolen in the day, the watch searches a player it wants
   if (s.slot === 'evening' && s.day < daysOf(s) && s.flags.v2 === true) { v2Dawn(s, emit, rngFor(s, 'law')); vessaTalks(s, emit); }
   const i = slotIndex(s.slot);

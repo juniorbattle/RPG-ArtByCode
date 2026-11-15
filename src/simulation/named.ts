@@ -100,6 +100,11 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   'v2-unmasked-night': { about: 'a version 2 game on day 7\'s evening, on the festival square: the strap cut before the semi-final, Lady Edda names House Dree, Sergeant Hale told', script: UNMASK7, v2: true, seed: 23 },
   'v2-epilogue': { about: 'a version 2 game on day 10\'s evening, on the forecourt: every bout won, the hero crowned', script: [...POOL_WON, W, WON, W, W, W, W, W, W, W, W, W, W, W, WON, { type: 'move', to: 'forecourt' }], v2: true },
   // lot L6 (the festival of day 9, journal Passe EVL11): its morning on the festival square, the good turns there (tools/festival-flow.mjs)
+  // the town's quests (the operator's GP-09, journal Passe GP2; src/simulation/v2quests.ts): each giver on a day of their quest, and a day 3 with all four taken
+  'v2-quest-herbs': { about: 'a version 2 game on day 3\'s morning, on the forecourt: Sister Anwen and her herbs', script: [W, W, W, W, WON, W, { type: 'move', to: 'forecourt' }], v2: true },
+  'v2-quest-treatise': { about: 'a version 2 game on day 3\'s morning, at the training ground: Master Corvin and his treatise', script: [W, W, W, W, WON, W, { type: 'move', to: 'training' }], v2: true },
+  'v2-quest-sharps': { about: 'a version 2 game on day 2\'s evening, on the festival square: Lio and his card sharps', script: [W, W, W, W, WON, { type: 'move', to: 'lanterns' }], v2: true },
+  'v2-quests-day3': { about: 'a version 2 game on day 3\'s morning, at the training ground: the cargo delivered, Fenwick\'s moss bought, Lio\'s and Master Corvin\'s quests taken', script: [{ type: 'talk', who: 'tam' }, { type: 'askPapers' }, { type: 'haul' }, W, W, { type: 'move', to: 'forecourt' }, { type: 'talk', who: 'anwen' }, W, WON, { type: 'move', to: 'district' }, { type: 'buyHerbs' }, { type: 'move', to: 'lanterns' }, { type: 'talk', who: 'lio' }, W, { type: 'move', to: 'training' }, { type: 'talk', who: 'corvin' }], v2: true },
   'v2-festival-day9': { about: 'a version 2 game on day 9\'s morning, on the festival square: every bout won, the Lanterns\' parade at dusk', script: [...SAND9, { type: 'move', to: 'lanterns' }], v2: true },
 };
 

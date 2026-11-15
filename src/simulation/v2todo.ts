@@ -31,6 +31,8 @@ export interface Todo {
   what?: string;
   /** the opponent a preparation is for (scout, rehearse) */
   foe?: string;
+  /** what the person offers first among what is new (an action's type, `talk`, or `quest:<id>`: the list says what, GP-11) */
+  act?: string;
   /** coins it pays (a job among the person's new offers) */
   gain?: number;
   /** it spends the moment (the slot) */
@@ -40,7 +42,7 @@ export interface Todo {
 /** LA-6: the bout, then what follows, an event, what pays (an item that pays), an item, the place's activities */
 const rank = (t: Todo): number => (t.kind === 'bout' ? 0 : t.kind === 'follow' ? 1 : t.kind === 'event' ? 2 : t.kind === 'item' ? (t.gain ? 3 : 4) : 5);
 /** the place's own activities that spend the moment, by the action that gives them */
-const PLACE_TODO: Readonly<Record<string, string>> = { train: 'train', drillSkill: 'drill', repair: 'repair' };
+const PLACE_TODO: Readonly<Record<string, string>> = { train: 'train', drillSkill: 'drill', repair: 'repair', faceSharps: 'sharps' };
 
 /** the things to do here now, the most pressing first */
 export function todoHere(st: GameState): Todo[] {
@@ -57,7 +59,7 @@ export function todoHere(st: GameState): Todo[] {
     const fresh = new Set(f.offers.map((o) => o.key));
     const pays = opts.filter((o) => o.ok && o.gain && offeredBy(o.action as never) === m.who && fresh.has(offerKey(st, o.action as never)));
     // the person and what is new about them, short (a fingerprint of their new offers' keys): it changes when an offer is new
-    out.push({ key: `who:${m.who}:${(hashString([...fresh].sort().join(',')) >>> 0).toString(36)}`, kind: f.kind, who: m.who, ...(pays.length ? { gain: Math.max(...pays.map((o) => o.gain!)) } : {}) });
+    out.push({ key: `who:${m.who}:${(hashString([...fresh].sort().join(',')) >>> 0).toString(36)}`, kind: f.kind, who: m.who, ...(pays.length ? { act: pays[0].action.type } : f.offers[0]?.type ? { act: f.offers[0].type } : {}), ...(pays.length ? { gain: Math.max(...pays.map((o) => o.gain!)) } : {}) });
   }
   // the preparation of the next bout (GP-16), first among the place's activities: watching that opponent here and now while their next tier is still to see (the
   // action's own check: their plan not known yet, not watched today), then the rehearsal

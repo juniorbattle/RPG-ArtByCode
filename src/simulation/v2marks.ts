@@ -3,7 +3,7 @@ import { actions, advance } from './advance';
 import { offeredBy } from './roles';
 import { talkableHere } from './v2watch';
 import { isV2 } from './v2';
-import { KIND_OF, NEVER_MARKED, UNMARKED_PEOPLE, offerKey, seenOf, talkKey, type MarkKind } from './v2offers';
+import { KIND_OF, NEVER_MARKED, UNMARKED_PEOPLE, markWorthy, offerKey, seenOf, talkKey, type MarkKind } from './v2offers';
 import { rehearsalDue } from './v2prep';
 
 export type { MarkKind } from './v2offers';
@@ -18,8 +18,8 @@ export interface Mark {
   who: string;
   /** the strongest kind offered (a follow-up first, then an event, then an item) */
   kind: MarkKind;
-  /** each offer's key and kind */
-  offers: Array<{ key: string; kind: MarkKind }>;
+  /** each offer's key and kind, and what it is (the action's type; `talk`, or `quest:<id>` for a quest offered by talking: the list says it, GP-11) */
+  offers: Array<{ key: string; kind: MarkKind; type?: string }>;
 }
 
 const RANK: Record<MarkKind, number> = { item: 0, event: 1, follow: 2 };
@@ -34,13 +34,16 @@ export function offersHere(st: GameState): Mark[] {
     if (UNMARKED_PEOPLE.has(p.id)) continue;
     const offers: Mark['offers'] = [];
     for (const o of opts) {
-      if (!o.ok || NEVER_MARKED.has(o.action.type) || offeredBy(o.action as never) !== p.id) continue;
+      if (!o.ok || NEVER_MARKED.has(o.action.type) || offeredBy(o.action as never) !== p.id || !markWorthy(st, o.action.type)) continue;
       const kind = KIND_OF[o.action.type];
-      if (kind) offers.push({ key: offerKey(st, o.action as never), kind });
+      if (kind) offers.push({ key: offerKey(st, o.action as never), kind, type: o.action.type });
     }
     // what talking itself changes (a witness, a quest): the conversation's own events, beyond meeting the person
     const r = advance(st, { type: 'talk', who: p.id });
-    if (r.ok && r.events.some((e) => e.kind === 'consequence' || (e.cause === 'action:talk' && e.id !== 'meet'))) offers.push({ key: talkKey(p.id), kind: 'follow' });
+    // a quest offered is an event (GP-09: something happening for a while), what else talking changes a follow-up
+    const quest = r.ok ? r.events.find((e) => e.cause === 'action:talk' && e.id.startsWith('quest:'))?.id : undefined;
+    if (quest) offers.push({ key: talkKey(p.id), kind: 'event', type: quest });
+    else if (r.ok && r.events.some((e) => e.kind === 'consequence' || (e.cause === 'action:talk' && e.id !== 'meet'))) offers.push({ key: talkKey(p.id), kind: 'follow', type: 'talk' });
     if (offers.length) out.push({ who: p.id, kind: strongest(offers), offers });
   }
   return out;
@@ -48,7 +51,7 @@ export function offersHere(st: GameState): Mark[] {
 
 /** the offers not seen yet: a mark left with none of them is null */
 export function freshMark(m: Mark, seen: ReadonlySet<string>): Mark | null {
-  const offers = m.offers.filter((o) => !seen.has(o.key));
+  const offers = m.offers.filter((o) => !seen.has(o.key)).sort((a, b) => RANK[b.kind] - RANK[a.kind]);
   return offers.length ? { who: m.who, offers, kind: strongest(offers) } : null;
 }
 

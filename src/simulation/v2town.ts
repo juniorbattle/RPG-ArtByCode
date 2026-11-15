@@ -1,6 +1,7 @@
 import { clamp, type GameState } from './state';
 import type { ActionDef } from './actions';
 import type { Emit } from './advance';
+import { drinkDraught } from './v2questData';
 import { isV2 } from './v2';
 import { learnFromChallenge, sandLesson, challengeSkill } from './v2skills';
 import { keepOutcomeNote } from './v2notes';
@@ -366,6 +367,8 @@ const teacherOf = (s: GameState, who: string): string | null => challengeSkill(s
 export function applyChallenge(s: GameState, o: DuelOutcome, emit: Emit): void {
   const v = s.v2!, ch = v.challenge!, who = ch.who, won = o.winner === 'player', temper = RIVALS[who]?.temper, name = fighterName(who);
   delete v.challenge;
+  // Sister Anwen's draught (the town's quests, GP-09) is drunk by the bout it served, a challenge as a bout of the tournament
+  drinkDraught(s);
   if (ch.reprisal) { applyReprisal(s, o, emit); return; }
   if (ch.kind === 'caught') { applyCaught(s, ch.caught!, o, emit); return; }
   if (ch.kind === 'seize') { applySeize(s, who, o, emit); return; }

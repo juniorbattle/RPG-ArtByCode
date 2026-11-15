@@ -186,6 +186,9 @@ export interface V2State {
   /** the tale Vessa Lark paid Lio's room to tell (lot L4, the operator's EV-9 « Chaque rival se souvient ; deux autres agissent », journal Passe EV2): of which rival,
    *  from which day the room repeats it, until the day of the player's bout against them (src/simulation/v2rivals.ts) */
   lie?: { who: string; from: number; until: number };
+  /** an encounter a costly event of the town opened, waiting for the player's answer before anything else (the operator's GP-10 « Le lieu et le choix », journal
+   *  Passe GP2: « un événement qui coûte propose une réponse : payer, refuser, ou se battre »; src/simulation/v2encounter.ts): which, when and where */
+  encounter?: { id: 'cutpurse' | 'sharps'; day: number; slot: SlotId; place: PlaceId };
   /** the festival of day 9 (lot L6, the operator's EV-14 and the festival's sheet, journal Passe EVL11): the good turns done, the rival walked behind, the parade's
    *  order once set (src/simulation/v2festival.ts) */
   festival?: V2Festival;

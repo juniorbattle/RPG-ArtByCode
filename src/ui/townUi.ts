@@ -11,6 +11,8 @@ import { journalPage } from './journal';
 import { portraitUrl, portraitsReady } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
 import { arrowKeys, el, esc, footBtn, footOf, injectStyle, overlay, pageShell, scrollFade } from './style';
+import { newsLines } from './news';
+import { encounterOf } from '../simulation/v2encounter';
 import { skillsPage } from './skills';
 import { cap, itemText, lang, num, said, shortName, skillName, tx, word, type TextRef } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
@@ -230,6 +232,32 @@ export class TownUi {
     if (this.st.over) void this.showEnd(); else this.showNews();
     // the preview on arriving, once the news are read (a page with the tutorial: once its welcome is done)
     if (!host.tutorial) void this.newsRead.then(() => this.todo?.arrive(this.st, this.boutNow()));
+    // a costly event of the town asks its answer once the news are read (GP-10, src/simulation/v2encounter.ts)
+    void this.newsRead.then(() => { if (encounterOf(this.st) && !this.modal) this.openEncounter(); });
+  }
+
+  /** the answer to a costly event of the town (the operator's GP-10 « Le lieu et le choix », journal Passe GP2): the dialogue's band, the event's words, its answers; Esc
+   *  lets it be (its cost stands; the answers stay in the list until the next slot ends) */
+  openEncounter(): void {
+    const st = this.st, e = encounterOf(st);
+    if (!e) return;
+    const opts = actions(st).filter((o) => o.action.type === 'answer');
+    const ev = [...st.log].reverse().find((x) => x.visible && x.id === (e === 'sharps' ? 'v2-card-sharps' : 'pickpockets'));
+    this.closeModal();
+    this.modal = true; this.prompt.classList.remove('on');
+    const root = el('div', 'pm pm-talk'), card = el('div', 'pm-dlg'), side = el('div', 'side');
+    root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', tx('v2.encounter.title'));
+    root.dataset.encounter = e;
+    card.innerHTML = `<div class="who"><h2 class="pm-h">${esc(tx('v2.encounter.title'))}</h2><div class="pm-line">${ev ? `<p>${esc(said(ev.text, ev.$t))}</p>` : ''}</div></div>`;
+    const list = el('div', 'opts');
+    // the answer's words in the bandeau once the band is gone
+    for (const o of opts) list.appendChild(this.optionButton(o, () => { const lines = this.said.splice(0); this.closeModal(); if (lines.length) this.flash(lines); }, false));
+    const leave = footBtn('Esc', tx('ui.leave'), () => this.closeModal());
+    side.append(list, footOf(leave)); arrowKeys(side);
+    card.appendChild(side); root.appendChild(card);
+    document.body.appendChild(root); document.body.classList.add('pm-talking');
+    this.current = root; scrollFade(list);
+    ((list.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? leave).focus();
   }
 
   /** the end of the slice: the pool after its second round, what the player's choices left in the Cité, what comes next */
@@ -386,8 +414,8 @@ export class TownUi {
     if (opts.some((o) => o.ok && o.action.type === 'steal')) this.hint('steal');
   }
 
-  private optionButton(o: ActionOption, after?: () => void): HTMLButtonElement {
-    const b = el('button', 'pm-btn', `<span>${esc(shortLabel(o))}${o.ok ? '' : `<span class="why">${esc(o.reason ?? '')}</span>`}</span>${costTag(o)}`);
+  private optionButton(o: ActionOption, after?: () => void, tag = true): HTMLButtonElement {
+    const b = el('button', 'pm-btn', `<span>${esc(shortLabel(o))}${o.ok ? '' : `<span class="why">${esc(o.reason ?? '')}</span>`}</span>${tag ? costTag(o) : ''}`);
     b.disabled = !o.ok;
     b.addEventListener('click', () => { this.run(o.action); after?.(); });
     return b;
@@ -435,8 +463,11 @@ export class TownUi {
     const won = isV2(this.st) && news.some((e) => e.id === 'player-won'), sand = isV2(this.st) && !won && news.some((e) => e.id === 'challenge:won');
     const vigour = won ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(this.st).hp ?? 0, k: num(AUTO_RULES.hpScale) }))}</p>`
       : sand ? `<p class="pm-vigour">${esc(tx('v2.result.noVigour'))}</p>` : '';
-    if (duel) { this.newsRead = this.card(`<div class="pm-result"><p class="pm-big">${duel.id === 'player-won' ? tx('v2.result.won') : tx('v2.result.lost')}</p>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}${vigour}</div>`, tx('ui.goOn')); return; }
-    this.newsRead = this.card(`<h2 class="pm-h">${news.length > 1 ? tx('ui.meanwhile') : tx('ui.news')}</h2>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}${vigour}`, tx('ui.goOn'), true);
+    // a version 2 game never cuts a sign or a consequence (GP-11, src/ui/news.ts newsLines), the rest left to the journal; today's game keeps its last eight lines
+    const { lines, rest } = isV2(this.st) ? newsLines(news) : { lines: news.slice(-8), rest: 0 };
+    const body = lines.map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('') + (rest > 0 ? `<p class="pm-sub">${esc(tx('ui.news.rest', { n: rest }))}</p>` : '');
+    if (duel) { this.newsRead = this.card(`<div class="pm-result"><p class="pm-big">${duel.id === 'player-won' ? tx('v2.result.won') : tx('v2.result.lost')}</p>${body}${vigour}</div>`, tx('ui.goOn')); return; }
+    this.newsRead = this.card(`<h2 class="pm-h">${news.length > 1 ? tx('ui.meanwhile') : tx('ui.news')}</h2>${body}${vigour}`, tx('ui.goOn'), true);
   }
 
   /** `band`: what is read in passing, at the foot of the screen; else a page on the full-screen veil */

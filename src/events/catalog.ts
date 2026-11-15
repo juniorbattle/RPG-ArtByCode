@@ -91,9 +91,12 @@ export const EVENTS: readonly EventDef[] = [
   },
   {
     id: 'pickpockets', type: 'district', about: 'Cutpurses work the festive crowds.',
-    slots: ['afternoon'], chance: 0.5, when: { all: [{ pulse: 'festivity', gte: 40 }, { pulse: 'security', lte: 62 }] }, cause: 'thick crowds and a stretched watch',
+    // a version 2 game (the operator's GP-10 « Le lieu et le choix », journal Passe GP2): the quay's market only, where the player is, and the player answers (let him go,
+    // or chase him: src/simulation/v2encounter.ts); today's game keeps its cutpurse everywhere
+    slots: ['afternoon'], chance: 0.5, when: { all: [{ pulse: 'festivity', gte: 40 }, { pulse: 'security', lte: 62 }, { here: ['district'] }] }, cause: 'thick crowds and a stretched watch',
     outcomes: [
       { when: { town: 'hale', gte: 10 }, effects: [{ town: 'hale', add: 2 }], text: 'A cutpurse brushes past you, and one of Hale\'s men collars him: Hale keeps an eye on his friends.' },
+      { when: { v2: true }, encounter: 'cutpurse', effects: [{ coins: -4 }], text: 'In the crush of the quay\'s market, a cutpurse lifts four coins from your belt and slips away between the stalls.' },
       { effects: [{ coins: -4 }], text: 'In the crush of the crowd, a cutpurse lifts four coins from your belt.' },
     ],
   },

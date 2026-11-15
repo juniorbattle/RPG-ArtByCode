@@ -42,6 +42,7 @@ export function holds(c: Cond, s: GameState, pulse: WorldPulse): boolean {
   if ('boutTomorrow' in c) return s.tournament.matches.some((m) => m.day === s.day + 1 && !m.winner && (m.a === PLAYER_ID || m.b === PLAYER_ID));
   if ('boutIn' in c) { const next = s.tournament.matches.filter((m) => m.day > s.day && !m.winner && (m.a === PLAYER_ID || m.b === PLAYER_ID)).reduce((d, m) => Math.min(d, m.day), Infinity); return next - s.day === c.boutIn; }
   if ('status' in c) return c.status[1].includes(s.competitors[c.status[0]]?.phaseStatus ?? '');
+  if ('here' in c) return s.flags.v2 !== true || c.here.includes(s.place);
   throw new Error(`unknown condition ${JSON.stringify(c)}`);
 }
 
@@ -78,6 +79,8 @@ export function runEvents(s: GameState, pulse: WorldPulse, emit: Emit, rng: Rng,
     const out = ev.outcomes.find((o) => !o.when || holds(o.when, s, pulse));
     if (!out) continue;
     for (const e of out.effects) applyEffect(e, s);
+    // GP-10: a costly event opens an encounter the player may answer (pay, refuse, fight: src/simulation/v2encounter.ts)
+    if (out.encounter && s.flags.v2 === true && s.v2) s.v2.encounter = { id: out.encounter, day: s.day, slot: s.slot, place: s.place };
     s.flags[`ev:${ev.id}`] = slotNumber(s);
     // a version 2 game's ambiences leave the news (lot L4, EV-8): written hidden, their pulse kept
     emit({ kind: ev.major ? 'consequence' : ev.type === 'targeted' ? 'sign' : 'event', id: ev.id, cause: ev.cause, text: (s.flags.v2 === true ? out.textV2 : undefined) ?? out.text, visible: !(ev.v2quiet && s.flags.v2 === true) });
