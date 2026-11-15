@@ -423,6 +423,12 @@ Chacun dans sa séance, l'un après l'autre (une seule branche de travail à la 
 ### Pensée
 - Des chantiers parallèles qui nomment leurs passes d'après la fiche commune (« GP » + un numéro) se télescopent : un préfixe propre au chantier dès la première passe évite le renommage.
 
+### Rebasé sur le chantier 2 (main 2fb5294 puis GP4) — [OK]
+- Conflits résolus : le journal (les passes GP3 et GP4 du chantier 2 d'abord, puis QE1 et QE2), `AGENTS.md` (les deux lignes de statut), les tables de textes (les clés des deux côtés), `townUi.ts` (la vigueur de GP-14 et la carte des nouvelles de GP-11), `v2-injury` (les épingles remesurées : le diligent inchangé, 1,48 ; la référence 0,46).
+- Le mot de Lio garde le plan comme le repérage de GP-15 le garde (`scoutPlan`, `scoutPlanDay`) et ne parle que si le second palier n'est pas déjà tenu.
+- Q-06, la course revérifiée sur la base rebasée (400 parties, graines 101 à 500, sans → avec les quêtes) : le planificateur 23,7 → 26,0 % de titres (demi-finale 48 → 53 %, finale 50 → 56 %), la référence 37,5 → 40,7 %, le curieux 14,5 → 20,3 %. Le planificateur reste près des 50 % de PB-3 en demi-finale ; sa finale gagne six points. Non recalée ici : à revoir après la fusion du chantier 1 (« se battre » et le duel des PNJ), selon Q-06 et le protocole.
+- `npm test` 734 / 734, typecheck, build. Preuves dans le navigateur avant le rebase : `quest-flow` cargo, sharps et encounter en anglais, en français, `REDUCED=1` et `MOTION=reduce` verts ; `town-flow` watch, quay et hails verts ; `play-day` corrigé (le journal ne s'ouvre sur « En cours » que si une quête est ouverte) et `tutorial-proof` mis à quatorze chapitres, tous deux à relancer.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
