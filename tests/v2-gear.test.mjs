@@ -93,24 +93,23 @@ test('the weapon\'s tiers: Bram raises it by day at the forge (a slot, 10 / 25 /
   const burnt = v2(); burnt.services.forge = 'sabotaged'; burnt.player.coins = 99; refused(burnt, { type: 'upgradeWeapon' }, /cold/);
 });
 
-test('GP-20: the Wyrmsteel temper costs the tier it gives, so the weapon\'s three tiers cost the same whatever the order; refused at the top tier, where it gives nothing; today\'s game keeps its 10 coins', () => {
+test('GP-20 and Q-02: the Wyrmsteel temper is no tier, 10 coins whatever the forge tiers, so the whole weapon costs the same in any order and the temper is never refused at the top tier; today game keeps its words', () => {
   const quest = () => { const s = v2(); s.quests.cargo = 'delivered'; s.player.coins = 300; return s; };
   const coins = (s, type) => G.actions(s).find((x) => x.action.type === type);
   const again = (s) => { s.slot = 'morning'; return s; };
-  // the temper first: 10, then the forge's 25 and 40
-  let a = quest(); assert.equal(coins(a, 'temper').coins, GE.TIER_PRICE[0]);
-  a = again(act(a, { type: 'temper' })); a = again(act(a, { type: 'upgradeWeapon' })); a = again(act(a, { type: 'upgradeWeapon' }));
-  // the forge first, then the temper: it gives the third tier, at the third tier's price (45 before: the order changed the price)
-  let b = quest(); b = again(act(b, { type: 'upgradeWeapon' })); b = again(act(b, { type: 'upgradeWeapon' }));
-  const t = coins(b, 'temper'); assert.ok(t.ok); assert.equal(t.coins, GE.TIER_PRICE[2]); assert.match(t.label, new RegExp(`\\(${GE.TIER_PRICE[2]} coins: Attack \\+${GE.WEAPON_TIER_ATK}\\)$`));
+  const TIERS = GE.TIER_PRICE.reduce((x, y) => x + y, 0);
+  // the temper first: 10, then the forge's tiers
+  let a = quest(); assert.equal(coins(a, 'temper').coins, 10);
+  a = again(act(a, { type: 'temper' })); for (let i = 0; i < GE.MAX_WEAPON_TIER; i++) a = again(act(a, { type: 'upgradeWeapon' }));
+  // the forge first, then the temper: the same 10 (it was the third tier's price, 40, before the Wyrmsteel stopped being a tier)
+  let b = quest(); for (let i = 0; i < GE.MAX_WEAPON_TIER; i++) b = again(act(b, { type: 'upgradeWeapon' }));
+  const t = coins(b, 'temper'); assert.ok(t.ok, 'offered at the top tier too'); assert.equal(t.coins, 10);
+  assert.match(t.label, /\(10 coins: Attack \+1, on top of the forge's tiers\)$/);
   b = again(act(b, { type: 'temper' }));
-  assert.deepEqual([VG.weaponTier(a), VG.weaponTier(b)], [GE.MAX_WEAPON_TIER, GE.MAX_WEAPON_TIER]);
-  assert.equal(300 - a.player.coins, GE.TIER_PRICE.reduce((x, y) => x + y, 0)); assert.equal(a.player.coins, b.player.coins, 'the same price, either order');
-  // the three tiers paid at the forge: the temper refused, with its reason (it was sold, for nothing)
-  let c = quest(); for (let i = 0; i < GE.MAX_WEAPON_TIER; i++) c = again(act(c, { type: 'upgradeWeapon' }));
-  refused(c, { type: 'temper' }, /as fine as Bram can make it/); assert.equal(coins(c, 'temper').coins, 0);
-  // too poor for the tier it gives: Bram says his price
-  const poor = quest(); poor.player.coins = 5; refused(poor, { type: 'temper' }, /^Bram wants 10 coins\.$/);
+  assert.deepEqual([VG.weaponTier(a), VG.weaponTier(b)], [GE.MAX_WEAPON_TIER, GE.MAX_WEAPON_TIER], 'the Wyrmsteel is no tier: the three of the forge');
+  assert.equal(300 - a.player.coins, TIERS + 10); assert.equal(a.player.coins, b.player.coins, 'the same price, either order');
+  // too poor: Bram says his price
+  const poor = quest(); poor.player.coins = 5; refused(poor, { type: 'temper' }, /^Bram wants 10 coins.$/);
   // today's game: its quest's temper at 10 coins, its words unchanged
   const d = G.namedState('day1-morning'); d.quests.cargo = 'delivered'; d.player.coins = 50;
   const dt = coins(d, 'temper'); assert.equal(dt.coins, 10); assert.equal(dt.label, 'Have Bram temper your blade in the Wyrmsteel (10 coins: +15 % damage)');

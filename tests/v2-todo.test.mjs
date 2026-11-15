@@ -25,7 +25,7 @@ test('the first morning on the quay: the events (Tam\'s quest to take, a challen
   // Nell, the quay's passer-by in the morning (journal Passe PN1, GP-06 « Un passant par lieu et par moment (douze) »), her piece an item
   assert.deepEqual(list.map((t) => [t.who ?? t.what, t.kind]), [['tam', 'event'], ['piers', 'event'], ['mara', 'item'], ['bram', 'item'], ['nell', 'item']]);
   // the list says what (GP-11, Q-07): Tam's quest by its name, Mara's job before her goods
-  assert.deepEqual(list.map((t) => t.act), ['quest:cargo', 'challenge', 'work', 'upgradeWeapon', 'TODO']);
+  assert.deepEqual(list.map((t) => t.act), ['quest:cargo', 'challenge', 'work', 'upgradeWeapon', 'barter']);
   assert.equal(list[2].gain, ok(st, 'work')[0]?.gain, 'Mara\'s job: what it pays, as the action says');
   assert.ok(!list.some((t) => /steal|wait|rest|scout/.test(t.key)), JSON.stringify(list.map((t) => t.key)));
 });

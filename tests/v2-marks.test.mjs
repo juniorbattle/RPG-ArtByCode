@@ -56,7 +56,7 @@ test('watching a rival train never marks, in any moment of whole games (MK-6)', 
 });
 
 test('GP-16: Master Corvin wears a diamond, an event, when his rehearsal against the next opponent is newly open; gone with his dialogue, back once their plan is seen, never once rehearsed', () => {
-  const corvin = (s) => M.offersHere(s).find((o) => o.who === 'corvin')?.offers.filter((x) => x.key.startsWith('rehearse:')) ?? [];
+  const corvin = (s) => M.offersHere(s).find((o) => o.who === 'corvin')?.offers.filter((x) => x.key.startsWith('rehearse:')).map(({ key, kind }) => ({ key, kind })) ?? [];
   // the next opponent (Vessa, day 2) unseen: no rehearsal to mark
   const st = v2();
   assert.deepEqual(corvin(at(st, 'training', 'afternoon')), []);
