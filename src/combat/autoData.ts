@@ -94,6 +94,8 @@ export const AUTO_BRUTE = {
   // the model's 1.2 × AUTO_WEIGHT.skills (0.55), written out (1.2 × 0.55 is 0.6600000000000001 in floating point)
   usePower: 0.66,
   rivalLevel: [1, 2, 3] as readonly number[],
+  /** a role's own uses by level in place of `uses` (none: every role `uses`; the workshop of journal Passe SK1 measures the ultimate's) */
+  roleUses: {} as Partial<Record<AutoRole, readonly number[]>>,
 };
 /** each skill's role, its gap's class and what it does besides (Ren's catalogue and the rivals' own; the laboratory's BRUTE_ROLES) */
 export const AUTO_ROLES: Record<string, { role: AutoRole; gap: keyof typeof AUTO_BRUTE.gap; undodge?: boolean; pierce?: boolean; pierceWard?: boolean }> = {
@@ -162,7 +164,7 @@ export function autoBrute(a: AutoAction, level: number, o: { parry?: boolean } =
   const R = AUTO_ROLES[a.id];
   if (!R) throw new Error(`no role for the skill "${a.id}"`);
   const role: AutoRole = o.parry ? 'parry' : R.role, B = AUTO_BRUTE, U = AUTO_RULES;
-  const b: AutoAction = { ...a, role, uses: B.uses[clampLevel(level) - 1], cooldown: B.gap[R.gap] };
+  const b: AutoAction = { ...a, role, uses: (B.roleUses[role] ?? B.uses)[clampLevel(level) - 1], cooldown: B.gap[R.gap] };
   if (R.undodge) b.undodge = true;
   if (R.pierce) b.pierce = true;
   if (R.pierceWard) b.pierceWard = true;

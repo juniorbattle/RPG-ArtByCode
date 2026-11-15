@@ -215,6 +215,8 @@ export class ArenaApp {
    *  the one playing, an ultra's void's ground; the cinematic's action, whose blows the arena then tells without their sounds and effects (the cinematic told them) */
   private cineOn = false;
   private cineCalm = false;
+  /** the cinematics' rule (undefined: the operator's, CINE_RULE; DEV `cine=sk1` the workshop's of journal Passe SK1) */
+  private cineRule: import('./cineRule').CineRule | undefined;
   cineList: CineMoment[] = [];
   private cineNext = 0;
   cineRun: CineRun | null = null;
@@ -373,7 +375,9 @@ export class ArenaApp {
       this.cineOn = true; this.cineCalm = cq === 'calm';
       this.cineMod = await import('./cineDirector');
       this.cineBack = new this.cineMod.CineBackdrop(this.scene);
-      this.cineList = (await import('./cine')).cineMoments(this.auto.result, this.auto.fighters);
+      // DEV `cine=sk1`: the rule of the skills' structure workshop (journal Passe SK1: an ultimate every time it lands in full)
+      if (import.meta.env.DEV && cq === 'sk1') this.cineRule = (await import('../lab/skillStructure')).CINE_RULE_SK1;
+      this.cineList = (await import('./cine')).cineMoments(this.auto.result, this.auto.fighters, this.cineRule);
     }
     // a version 2 duel: the district's townsfolk on the stands (journal Passe PU1, the operator's sheet PU-1 to PU-8); `cast=generated` keeps today's spectators
     if (v2Rules(this.rules) && !this.opts.forecourt && !this.opts.match?.empty && this.opts.params.get('cast') !== 'generated') {
@@ -473,7 +477,7 @@ export class ArenaApp {
     const t = +(Math.max(a.t, a.lastLineT() + 0.006) + 1e-6).toFixed(6), p: AutoCommand = { t, skill: sk.id };
     this.presses.push(p);
     a.replace(autoDuel(a.fighters.ren, a.fighters.marek, this.autoSeed, { log: true, trace: true, commands: this.presses }), p);
-    if (this.cineOn) void import('./cine').then((c) => { this.cineList = c.cineMoments(a.result, a.fighters); const k = this.cineList.findIndex((m) => m.t > a.t + 1e-6); this.cineNext = k < 0 ? this.cineList.length : k; });
+    if (this.cineOn) void import('./cine').then((c) => { this.cineList = c.cineMoments(a.result, a.fighters, this.cineRule); const k = this.cineList.findIndex((m) => m.t > a.t + 1e-6); this.cineNext = k < 0 ? this.cineList.length : k; });
     this.snd?.duelEvent({ type: 'press', quiet });
     this.opts.match?.onPress?.(p);
     return true;

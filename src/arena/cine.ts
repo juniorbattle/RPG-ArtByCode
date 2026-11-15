@@ -53,12 +53,13 @@ export function cineCandidates(result: AutoResult, fighters: { ren: AutoFighter;
 }
 
 /** the moments the arena plays: the candidates under `max` and `gap`, the K.O.'s always when `ko` */
-export function cinePick(cands: readonly CineMoment[], rule: Pick<CineRule, 'max' | 'gap' | 'ko'>): CineMoment[] {
+export function cinePick(cands: readonly CineMoment[], rule: Pick<CineRule, 'max' | 'gap' | 'ko'> & { tiers?: CineRule['tiers'] }): CineMoment[] {
   const out: CineMoment[] = [];
+  const free = (m: CineMoment): boolean => !!rule.tiers?.find((x) => x.tier === m.tier)?.free;
   for (const m of cands) {
     const last = out[out.length - 1];
-    if (rule.ko && m.ko) { out.push(m); continue; }
-    if (rule.max !== undefined && out.length >= rule.max) continue;
+    if ((rule.ko && m.ko) || free(m)) { out.push(m); continue; }
+    if (rule.max !== undefined && out.filter((x) => !free(x)).length >= rule.max) continue;
     if (rule.gap !== undefined && last && m.t - last.t < rule.gap) continue;
     out.push(m);
   }

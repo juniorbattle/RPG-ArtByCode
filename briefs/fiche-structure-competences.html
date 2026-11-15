@@ -1,0 +1,403 @@
+<title>Structure des compétences</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--line); border-radius: 6px; }
+.shots.vids { grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.tblwrap { overflow-x: auto; max-width: 100%; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl th { font-weight: 600; color: var(--muted); font-size: 13px; }
+.tbl td:first-child { font-weight: 600; }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions du responsable · 15/11/2026</span>
+    <h1>Le duel « La Brute » : la structure des compétences</h1>
+    <p class="lede">Ta demande : structurer les compétences (des supers, des ultimes que l’on apprend de ses adversaires et que l’on équipe, sans oublier le soutien), pour que la stratégie, le kit et la mise en scène du combat soient cohérents. Tout est mesuré sur le jeu lui-même (parties entières tenues à part et duels isolés) ; trois films du prototype, qui tourne dans l’arène derrière un paramètre d’essai : rien du jeu par défaut ne change avant ta relecture. Pour chaque choix : ce qui est mesuré, ma recommandation et tes options. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne dans le journal et la spécification, puis je construis ce que la fiche décide dans le jeu par défaut, en anglais et en français, avec ses tests et ses preuves dans le navigateur, et je fusionne.</p>
+    <p class="src">Sources : journal Passe SK1 ; src/lab/skillStructure.ts (le candidat : les signatures, leurs nombres, la règle des cinématiques) ; tools/auto-lab.mjs (judge, cinematics, kits, price, avec --catalogue=sk1 ; 200 parties tenues à part, graines 101 à 300 ; duels isolés, graines 1 à 60) ; tools/cine-moments.mjs --sk1 ; tools/duel-clip.mjs (les films).</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Les apostrophes : typographiques (’) partout dans les chaînes.
+const GROUPS = [
+  { id: 'structure', title: 'La structure', sub: 'Ta demande, mot pour mot : « il est clair que nous pouvons avoir des plusieurs competences super mais aussi des competences ulttra obtenable par nos adversaires et donc equipables sans oublier les competences de soutien ... il faut bien structurer cela c’est essentiel ». Rien du jeu par défaut ne change avant ta relecture : la structure tourne dans le laboratoire et, dans l’arène, derrière le paramètre d’essai DEV « cine=sk1 ».', fam: 'var(--astre)', items: [
+    { id: 'SK-1', tag: 'les étiquettes', title: 'Trois étiquettes par compétence, le rang suit le rôle',
+      ctx: 'Chaque compétence porte une famille (ce qu’elle fait : Attaque, Défense, Soutien), un rang (sa puissance et sa mise en scène : Technique, Super, Ultime) et un rôle (quand l’automatique la joue : les onze d’aujourd’hui). Une seule règle donne le rang, sans exception : exploiter fait une Ultime, casser une Super, toute autre attaque une Technique ; la Défense et le Soutien sont toujours des techniques (ils ne frappent pas, ils préparent). Le jeu devient une chaîne lisible : les techniques ouvrent la faille, les supers remplissent la jauge jusqu’à la rupture, l’ultime achève ; la défense et le soutien tiennent pendant ce temps (Concentration double la prochaine attaque, donc l’ultime). Avec les signatures des rivaux (SK-7), le catalogue de Ren passe de 12 à 19 compétences :',
+      table: [['Rang', 'Rôle', 'De Ren', 'Apprises des rivaux'],
+        ['Ultime', 'exploiter', 'Estoc (au départ)', 'Chute de Fer (Marek), Frappe du Temple (Ilse)'],
+        ['Super', 'casser', 'Tourbillon (achat, 45 pièces)', 'Coup sauvage (Tobin), Taille du Nord (Rhosk)'],
+        ['Technique', 'ouvrir', 'Brèche, l’ancien Fracas (achat, 40)', 'Coup d’épaule des docks (Orla)'],
+        ['Technique', 'interrompre', 'Feinte (entraînement)', '—'],
+        ['Technique', 'punir', 'Taille éclair (au départ)', 'Fente de la Lame-Vive (Vessa)'],
+        ['Technique', 'percer', 'Fente (entraînement)', 'Riposte dorée (Cassius)'],
+        ['Défense', 'protéger, parer', 'Rempart (au départ), Peau de fer (achat, 35), Garde de riposte (Ilse, jour 1)', '—'],
+        ['Soutien', 'accélérer, ralentir, charger', 'Ferveur (au départ), Cri de guerre (Orla, jour 1), Concentration (Vessa, jour 1)', '—']],
+      rec: 'Adopter ces trois étiquettes et ce catalogue.',
+      opts: ['Adopter ces trois étiquettes', 'Adopter, avec des retouches (en note)', 'Reprendre la structure (en note)'], recIdx: 0,
+      src: 'src/combat/autoData.ts (AUTO_ROLES, les familles) ; src/lab/skillStructure.ts (les signatures) ; journal Passe SK1' },
+    { id: 'SK-2', tag: 'le kit', title: 'Quatre places, une ultime au plus, une super au plus',
+      ctx: 'Ta question, mot pour mot : « devrions nous pas structurer nos equipement de competences en moode 1 ultime choisi, 1 super choisi et 1 technique et 1 defense et 1 soutien ... ou que proposes tu de mieux ». Mesuré sur les 999 combats du planificateur (200 parties tenues à part), son kit changé d’une compétence au niveau 1. Deux ultimes écrasent tout (la finale de 50 à 73 %) : le plafond d’une ultime est indispensable. Deux supers affaiblissent le kit et raccourcissent la poule à 1 min 26 (ta décision A3 : « la poule environ 2min ») : le plafond d’une super garde les durées et l’identité du kit. Cinq places changent trop : avec Tourbillon en cinquième la poule tombe à 1 min 42, avec une Feinte le tableau monte à 79 % ; toute la course serait à recaler, et le HUD, les touches 1 à 4 et la croix de la manette sont faits pour quatre. Une place imposée par sorte supprimerait des réponses mesurées : en finale, la seule bonne réponse contre Cassius est le kit Feinte (Feinte, Fente, Estoc, Ferveur : deux techniques, sans défense ni super). Le kit de départ (une technique, l’ultime, une défense, un soutien) colle déjà à la structure ; la super vient ensuite.',
+      table: [['Le kit (planificateur)', 'Poule', 'Tableau', 'Finale', 'Durée en poule'],
+        ['Aujourd’hui : Taille éclair, Estoc, Rempart, Ferveur', '93 %', '66 %', '50 %', '1 min 57'],
+        ['Une ultime et une super (Tourbillon pour la Ferveur)', '90 %', '75 %', '49 %', '1 min 39'],
+        ['Deux ultimes (Chute de Fer pour la Ferveur)', '98 %', '87 %', '73 %', '1 min 29'],
+        ['Deux ultimes (Frappe du Temple pour la Ferveur)', '99 %', '88 %', '73 %', '1 min 28'],
+        ['Deux supers (Tourbillon, Coup sauvage)', '82 %', '65 %', '42 %', '1 min 26'],
+        ['Cinq places : les quatre et Tourbillon', '89 %', '67 %', '49 %', '1 min 42'],
+        ['Cinq places : les quatre et une Feinte', '92 %', '79 %', '58 %', '1 min 54']],
+      rec: 'Quatre places, une ultime au plus et une super au plus ; les deux autres libres (technique, défense ou soutien). La page refuse une deuxième ultime ou une deuxième super et dit pourquoi.',
+      opts: ['Quatre places : une ultime au plus, une super au plus', 'Cinq places : une ultime, une super, une technique, une défense, un soutien', 'Quatre places : une ultime au plus, les supers libres'], recIdx: 0,
+      src: 'tools/auto-lab.mjs (captureBank, le planificateur, graines 101 à 300) ; tools/auto-lab.mjs kits (le test « chaque adversaire a ses réponses, rien ne domine »)' },
+    { id: 'SK-3', tag: 'les usages', title: 'Les usages d’une ultime',
+      ctx: 'Aujourd’hui chaque compétence a 2, 2, 3, 3 ou 4 usages par combat selon son niveau (PB-2) et un délai entre deux (28 s pour une exploitation) ; les rivaux 1, 2 ou 3 selon l’étape. Une ultime plus rare a été mesurée, la course telle qu’elle est : avec un usage aux niveaux 1 et 2, le planificateur perd un tiers de ses titres et ne voit plus qu’une cinématique d’ultime par combat de poule. Sa rareté vient déjà de son délai, de sa préparation (×2 en faille ou en rupture) et du plafond d’une ultime par kit.',
+      table: [['Usages d’une ultime par niveau', 'Titres (planificateur)', 'Titres (référence)', 'Finale (planificateur)', 'Cinématiques par combat'],
+        ['2, 2, 3, 3, 4 (aujourd’hui)', '27 %', '41 %', '50 %', '1,54 / 2,26 / 2,55'],
+        ['1, 1, 2, 2, 2', '18 %', '29 %', '38 %', '1,00 / 1,54 / 1,54'],
+        ['1, 2, 2, 2, 3', '20 %', '29 %', '43 %', '—']],
+      rec: 'Garder les usages d’aujourd’hui pour toutes les compétences.',
+      opts: ['Garder 2, 2, 3, 3, 4', 'Une ultime plus rare : 1, 1, 2, 2, 2 (la course recalée)'], recIdx: 0,
+      src: 'tools/auto-lab.mjs judge, --set=BRUTE.roleUses (AUTO_BRUTE.roleUses, src/combat/autoData.ts)' },
+    { id: 'SK-4', tag: 'les pages', title: 'Ce que les pages montrent',
+      ctx: 'La page des compétences et la fiche de match disent le rang de chaque compétence à côté de sa famille et de son rôle (« Estoc · Ultime · exploiter ») ; les quatre places disent la règle (« une ultime au plus, une super au plus ») ; une compétence refusée dit pourquoi ; une signature dit qui l’enseigne et à partir de quel jour. Le guide (« Préparer un combat ») explique la structure en quelques lignes, en anglais et en français. Le HUD du duel ne change pas (les noms, les usages en carrés).',
+      rec: 'Ainsi.',
+      opts: ['Ainsi', 'Ainsi, avec des retouches (en note)'], recIdx: 0,
+      src: 'src/ui/skills.ts ; la fiche de match ; src/ui/tutorial.ts (le guide)' },
+  ]},
+  { id: 'cine', title: 'Les cinématiques par rang', sub: 'Ta réponse du 15/11, mot pour mot : « si c’est la competences ultime alors la cinematique doit se jouer en tout temps, des lors que’elle reussit ». Une ultime joue dans le vide noir, une super dans l’arène, une technique les effets du duel. Les nombres : cinématiques par combat en poule / au tableau / en finale, 200 parties tenues à part.', fam: 'var(--voile)', items: [
+    { id: 'SK-5', tag: 'l’ultime', title: 'L’ultime à chaque réussite',
+      ctx: '« Réussir », c’est que chaque coup touche : ni gardé, ni esquivé, ni paré, ni coupé. Je lis « en tout temps » comme « sans plafond » : une ultime joue sa cinématique à chaque réussite, en dehors du plafond ; le plafond (3 par combat, 20 s entre deux, le K.O. toujours) ne vaut plus que pour les supers, et une super attend 20 s après une ultime. La première vient vers 68 s, une toutes les 39 s ; au plus 5 en finale pour le planificateur, 6 pour le curieux. Le film : Ren porte la Chute de Fer de Marek, dans la rupture de Marek.',
+      table: [['La règle', 'Planificateur', 'Référence', 'Curieux'],
+        ['Aujourd’hui (une ultime en faille ou en rupture)', '1,27 / 1,57 / 1,61', '1,27 / 1,58 / 1,86', '1,44 / 2,28 / 2,51'],
+        ['Ta réponse : l’ultime à chaque réussite, sans plafond', '1,54 / 2,26 / 2,55', '1,54 / 2,29 / 2,83', '1,72 / 2,82 / 3,59'],
+        ['Tout plafonné : 3 au plus, 20 s entre deux', '1,54 / 2,17 / 2,19', '1,54 / 2,17 / 2,49', '1,72 / 2,59 / 2,88']],
+      shots: [['vid/ren-chute-de-fer.mp4', 'Ren et la Chute de Fer (apprise de Marek), dans la rupture de Marek : 473']],
+      rec: 'Sans plafond pour les ultimes ; les supers 3 au plus, 20 s entre deux.',
+      opts: ['Sans plafond pour les ultimes ; les supers 3 au plus, 20 s entre deux', 'Tout plafonné : 3 au plus, 20 s entre deux, ultimes comprises'], recIdx: 0,
+      src: 'src/lab/skillStructure.ts (CINE_RULE_SK1) ; src/arena/cine.ts (cinePick, le palier « free ») ; tools/auto-lab.mjs cinematics' },
+    { id: 'SK-6', tag: 'hors faille', title: 'Une ultime qui réussit hors d’une faille',
+      ctx: 'Une exploitation frappe ×2 dans une faille, une rupture ou sur un adversaire qui charge un gros coup, ×0,6 ailleurs. Sous ta règle, l’ultime joue aussi sa cinématique hors d’une faille : 66 % des ultimes tombent en faille ou en rupture (dégâts médians 639), 9 % sur un K.O., 26 % ailleurs (dégâts médians 275) ; une sur dix fait moins de 150, une cinématique complète pour un petit nombre (le film : une Estoc sur Vessa, sous son Arc-boutement, 84). Sans le ×0,6 (une ultime frappe au moins à pleine force), il n’en reste que 2 % sous 150 ; la préparation paie toujours (×2) ; les titres montent de 2 à 3 points (le planificateur 26 → 29 %, sa demi-finale 53 → 56 %, la référence 41 → 43 %).',
+      shots: [['vid/estoc-hors-faille.mp4', 'Une Estoc hors faille, sur l’Arc-boutement de Vessa : 84, la cinématique entière']],
+      rec: 'Une ultime frappe au moins à pleine force (×1 hors faille, ×2 dedans) ; la course recalée à la construction si elle s’écarte.',
+      opts: ['Une ultime frappe au moins à pleine force (×1 ailleurs)', 'Garder ses dégâts (×0,6 ailleurs)'], recIdx: 0,
+      src: 'AUTO_RULES.exploit (src/combat/auto.ts) ; tools/auto-lab.mjs judge --set=RULES.exploit.lo=1' },
+  ]},
+  { id: 'sign', title: 'Les signatures des rivaux', sub: 'L’attaque qui fait chaque rival, équipable par Ren : un rang chacune (deux ultimes, deux supers, trois techniques).', fam: 'var(--ronce)', items: [
+    { id: 'SK-7', tag: 'qui enseigne', title: 'Qui enseigne quoi, et quand',
+      ctx: 'Deux temps, sur la règle des défis d’aujourd’hui (un défi par combattant et par phase). Jours 1 à 5 : Orla, Ilse et Vessa enseignent leur soutien ou leur défense comme aujourd’hui (le curieux les porte : Cri de guerre 90 %, Garde de riposte 92 %). Jours 6 à 10 : un défi gagné contre un rival hors du titre, ou contre l’un des trois, apprend sa signature. Hors du titre au jour 6 (le planificateur) : Vessa 100 %, Orla 79 %, Ilse 72 %, Rhosk 54 %, Cassius 35 %, Tobin 32 %, Marek 27 % : la Chute de Fer est rare, la Frappe du Temple courante. Ce que Marek, Cassius, Rhosk et Tobin enseignent aujourd’hui (Peau de fer, Feinte, Brèche, Fente) s’achète ou s’entraîne déjà : le curieux les apprend (56, 0, 43 et 15 % des parties) sans jamais les porter ni les monter au-delà du niveau 3 ; elles restent au niveau 3 au plus.',
+      shots: [['vid/ren-taille-du-nord.mp4', 'Ren et la Taille du Nord (apprise de Rhosk) : une super dans l’arène, 154 sur Orla']],
+      rec: 'Deux temps : le soutien ou la défense aux jours 1 à 5, la signature aux jours 6 à 10.',
+      opts: ['Deux temps : le soutien au jour 1, la signature dès le jour 6', 'Les signatures dès le jour 1 pour Orla, Ilse et Vessa (la Frappe du Temple dès le premier jour)', 'Les signatures restent aux rivaux'], recIdx: 0,
+      src: 'src/simulation/v2skills.ts (learnFromChallenge) ; src/simulation/v2town.ts (challengeable, RIVALS_CHALLENGE_DAY) ; src/combat/skillbook.ts (LATE_TEACHER)' },
+    { id: 'SK-8', tag: 'leurs nombres', title: 'Leurs nombres dans les mains de Ren',
+      ctx: 'Chaque signature garde les nombres de son rival au niveau 1 (sa charge, sa puissance, son poids sur la jauge), ses niveaux suivant la compétence de Ren du même rôle. Mesurée sur le test « chaque adversaire a ses réponses, rien ne domine » (chaque rival à son niveau, le kit de départ à 85 / 65 / 50 % contre lui, la compétence au niveau de celle qu’elle remplace) : les supers et les techniques tiennent telles quelles ; les deux ultimes, telles quelles, valent moins que l’Estoc (81 et 77 % en poule contre 86) : ×1,2 pour la Chute de Fer et ×1,4 pour la Frappe du Temple les mettent à parité, chacune avec ses bonnes réponses (la Chute de Fer, rapide, contre Vessa qui esquive). Aucun kit ne domine.',
+      table: [['Le kit de départ, une compétence changée', 'Poule', 'Tableau', 'Finale'],
+        ['Tel quel (Estoc)', '86 %', '66 %', '51 %'],
+        ['Chute de Fer ×1,2 pour l’Estoc', '88 %', '66 %', '51 %'],
+        ['Frappe du Temple ×1,4 pour l’Estoc', '88 %', '69 %', '48 %'],
+        ['Chute de Fer aux nombres de Marek', '81 %', '55 %', '39 %'],
+        ['Tourbillon pour la Ferveur', '90 %', '72 %', '55 %'],
+        ['Coup sauvage pour la Ferveur', '87 %', '67 %', '56 %'],
+        ['Taille du Nord pour la Ferveur', '85 %', '70 %', '56 %'],
+        ['Fente de la Lame-Vive pour la Taille éclair', '88 %', '72 %', '58 %'],
+        ['Riposte dorée pour la Taille éclair', '85 %', '63 %', '42 %'],
+        ['Coup d’épaule pour la Taille éclair', '89 %', '71 %', '59 %']],
+      rec: 'Ces nombres : les signatures à ceux de leur rival, les deux ultimes ×1,2 et ×1,4.',
+      opts: ['Ces nombres', 'Retoucher (en note)'], recIdx: 0,
+      src: 'tools/auto-lab.mjs kits --norm=rival --catalogue=sk1 (graines 1 à 60) ; src/lab/skillStructure.ts (SK1_TUNE)' },
+    { id: 'SK-9', tag: 'images et sons', title: 'Leurs images, effets et sons',
+      ctx: 'Ren joue une signature avec ses propres images d’attaque (les quatre images de sa compétence offensive), la recette d’effets du rival (sa couleur : le feu de forge de la Chute de Fer, la terre de la Taille du Nord) et son son ; la bande montre le visage de Ren et le nom de la compétence. Tout existe déjà : aucune image ni aucun son nouveaux (CI-12). Les films de SK-5 et SK-7 le montrent.',
+      rec: 'Ainsi, sans art nouveau.',
+      opts: ['Ainsi, sans art nouveau', 'Une pose propre à chaque signature ensuite (tâche à part)'], recIdx: 0,
+      src: 'src/arena/fx/fxRecipes.ts ; src/arena/autoView.ts (animOf) ; src/arena/AutoHud.ts (autoActionName)' },
+  ]},
+  { id: 'noms', title: 'Les noms et la jauge', sub: 'Ta réponse sur Fracas, mot pour mot : « oui donc a toi de determiner ce qui est le plus coherent.... c;est toi qui a amener cette proposition j’attends de toi une coherence totale ».', fam: 'var(--cendre)', items: [
+    { id: 'SK-10', tag: 'Brèche', title: 'Fracas devient Brèche, les ouvreurs à poids normal',
+      ctx: 'Ma décision, par ta délégation : Fracas s’appelle Brèche (en anglais Breach), son rôle étant d’ouvrir une faille. Une seule règle pour la jauge : seul un casseur la remplit plus qu’une compétence ordinaire ; Brèche et le Coup d’épaule d’Orla y pèsent comme une compétence ordinaire (deux coups au lieu de quatre). Mesuré : les parties entières ne bougent pas (titres du planificateur 27 → 26 %, de la référence 41 → 41 %, du curieux 26 → 28 %) ; le Coup d’épaule, qui serait devenu le meilleur kit de la finale dans les mains de Ren (66 % contre 51), revient à 59 %.',
+      rec: 'Reçu.',
+      opts: ['Reçu', 'Garder le nom « Fracas » (en note)'], recIdx: 0,
+      src: 'src/combat/autoData.ts (AUTO_SKILLS.k_sunder.gaugeK, AUTO_FOES.orla) ; les tables de textes (skill.k_sunder) ; tools/auto-lab.mjs judge' },
+    { id: 'SK-11', tag: 'les mots', title: 'Les mots du jeu',
+      ctx: 'Les rangs : Technique, Super, Ultime (en anglais Technique, Super, Ultimate). La ligne du guide sur les cinématiques devient : « Une ultime qui touche pleinement joue sa cinématique dans le noir, une super la sienne dans l’arène ; au plus trois supers par combat, vingt secondes entre deux ». Les rôles gardent leurs mots (ouvrir, casser, exploiter…).',
+      rec: 'Ces mots.',
+      opts: ['Ces mots', 'D’autres mots (en note)'], recIdx: 0,
+      src: 'src/narrative/text/en.ts, fr-texts.ts (tut.ch.duel.body, ui.role.*)' },
+  ]},
+  { id: 'suite', title: 'La suite', sub: '', fam: 'var(--astre)', items: [
+    { id: 'SK-12', tag: 'le catalogue', title: 'Lever « une douzaine de compétences au plus »',
+      ctx: 'Le brief de la version 2 fixait le catalogue à une douzaine au plus ; avec les sept signatures, il en compte dix-neuf (EV-4 : « aucune compétence neuve sans fiche » : c’est cette fiche).',
+      rec: 'La lever : dix-neuf compétences.',
+      opts: ['La lever : dix-neuf compétences', 'Garder douze (en note : lesquelles retirer)'], recIdx: 0,
+      src: 'src/combat/skillbook.ts ; briefs/cloud-session-v2-brief.md' },
+    { id: 'SK-13', tag: 'construction', title: 'Construire dans le jeu par défaut',
+      ctx: 'Ce que la fiche décide, dans le jeu par défaut, en anglais et en français : les rangs et la règle du kit (la page refuse et dit pourquoi), les signatures (apprises par défi, leurs niveaux, leurs nombres), la règle des cinématiques, Brèche et la jauge des ouvreurs, les pages et le guide ; le curieux du laboratoire apporte une signature apprise en respectant la règle du kit ; la course recalée si elle s’écarte ; les tests et les preuves du navigateur (auto-arena-proof, gauge-proof, tutorial-proof, play-flow, ui-text), le journal, la fusion.',
+      rec: 'Construire, prouver et fusionner ; ton essai en jeu ensuite.',
+      opts: ['Construire, prouver, fusionner', 'La garder derrière un paramètre jusqu’à mon essai'], recIdx: 0,
+      src: 'AGENTS.md (« Git workflow ») ; briefs/combat-auto.md' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  // un tableau de mesures : la première ligne en tête
+  if (it.table) {
+    const t = el('table', { class: 'tbl' }), [head, ...rows] = it.table;
+    t.append(el('thead', {}, el('tr', {}, ...head.map((h) => el('th', { scope: 'col' }, h)))));
+    t.append(el('tbody', {}, ...rows.map((r) => el('tr', {}, ...r.map((v) => el('td', {}, v))))));
+    c.append(el('div', { class: 'tblwrap' }, t));
+  }
+  if (it.shots) {
+    const grid = el('div', { class: 'shots vids' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      // un film : joué sur place, en boucle, sans son (les films de duel-clip n’en ont pas)
+      if (/.mp4$/.test(src)) { grid.append(el('figure', { class: 'shot' }, el('video', { src, controls: '', muted: '', loop: '', playsinline: '', preload: 'metadata', 'aria-label': cap }), el('figcaption', {}, cap))); continue; }
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

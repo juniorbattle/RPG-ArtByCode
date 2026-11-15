@@ -6,7 +6,9 @@ export type CineTier = 'ultra' | 'super';
 /** when an action lands « totalement »: `hit` every blow of the action lands (neither guarded, dodged, parried, interrupted nor lost in a clash); `open` and in an
  *  opening or a break (CI-3 « Et seulement dans une faille ou une rupture ») */
 export type CineLand = 'hit' | 'open';
-export interface CineTierRule { tier: CineTier; roles: readonly string[]; land: CineLand }
+/** `free`: this tier plays every time it lands, outside `max` and `gap` (the workshop of journal Passe SK1: the operator's « si c'est la competences ultime alors la
+ *  cinematique doit se jouer en tout temps, des lors que'elle reussit »); its cinematics still count for the `gap` of the others */
+export interface CineTierRule { tier: CineTier; roles: readonly string[]; land: CineLand; free?: boolean }
 export interface CineRule {
   tiers: readonly CineTierRule[];
   /** whose skills: Ren's alone, or both fighters' */
