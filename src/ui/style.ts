@@ -134,6 +134,17 @@ const CSS = `
   .pm-goods .pm-foot{grid-column:1 / 3;grid-row:3;padding-top:4px}
   .pm-cmp{grid-template-columns:minmax(0,1fr) 64px 64px 48px;margin-top:4px}
 }
+/* a phone both narrow and short (568 x 320: the width rule stacked the hero's column over the list, leaving the list and the detail no height and the foot's second line
+   under the card, journal Passe PF1): the skills' and the gear's pages as the short screens above, the list and the detail side by side, the foot below */
+@media (max-height:480px) and (max-width:700px){
+  .pm-overlay .pm-card.pm-two.pm-skills,.pm-overlay .pm-card.pm-two.pm-wares{display:block;height:calc(100vh - 26px)}
+  .pm-skills .pm-self,.pm-wares .pm-self{display:none}
+  .pm-skills .pm-goods,.pm-wares .pm-goods{height:100%;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);grid-template-rows:auto minmax(0,1fr) auto;column-gap:18px}
+  .pm-skills .pm-ghead,.pm-wares .pm-ghead{grid-column:1 / 3;padding-bottom:4px}
+  .pm-skills .pm-glist,.pm-wares .pm-glist{grid-column:1;grid-row:2}
+  .pm-skills .pm-detail,.pm-wares .pm-detail{grid-column:2;grid-row:2;min-height:0;padding-top:0}
+  .pm-skills .pm-foot,.pm-wares .pm-foot{grid-column:1 / 3;grid-row:3;padding-top:4px;column-gap:18px}
+}
 @media (max-height:480px) and (min-width:701px){
   .pm-notebook .pm-card.pm-two{display:grid;grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr);column-gap:24px}
   .pm-notebook .pm-head p{display:none}
