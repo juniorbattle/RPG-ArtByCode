@@ -135,7 +135,7 @@ test('the numbers of the decision: seeds 1..50 give Passe V2B1\'s wounds a game,
   // before, 40.4 % of the bouts, the cut 70 %)
   // (the rivals' plans of the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », journal Passe GP3, a plan changed at the cut and after each defeat against the
   // player: 1.46 and 1.3 before, 39.1 % of the bouts, the cut 72 %)
-  // (the events of journal Passe QE2, the operator's Q-08 « Ces trois, à leur lieu »: the cutpurse strikes on the quay's market only: PREPARED_INJ_BEFORE)
+  // (the events of journal Passe QE2, the operator's Q-08 « Ces trois, à leur lieu »: the cutpurse strikes on the quay's market only: the prepared player's numbers unchanged on these seeds)
   assert.equal(+prepared.rates.playerInjured.toFixed(2), 1.48); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.14);
   // (lot L4, journal Passe EVL7: 0.592 since Rhosk takes the training sand on the free day before a bracket bout, which the prepared player does not answer: seed 27
   // loses the major match it won; 0.596 before; 0.604 with the duel of journal Passe DB3)
@@ -147,8 +147,8 @@ test('the numbers of the decision: seeds 1..50 give Passe V2B1\'s wounds a game,
   const reference = L.labReport(S, L.POLICIES.reference, 'v2');
   // (0.36 against 0.7 since lot 2, journal Passe SL3; 0.36 against 1.42 under the model « La Brute », journal Passe BL1; 0.3 against 1.18 with BL1-8 and BL1-9;
   // 0.38 against 1.34 with the blows' weights of journal Passe BE1; 0.42 against 1.3 with the skills' structure of journal Passe SK2; 0.6 against 1.14 with the rivals'
-  // plans of GP-15, journal Passe GP3; REF_QE2)
-  assert.equal(+reference.rates.playerInjured.toFixed(2), 0.6);
+  // plans of GP-15, journal Passe GP3; 0.46 against 1.14 since the reference does the town's quests, journal Passe QE2)
+  assert.equal(+reference.rates.playerInjured.toFixed(2), 0.46);
   assert.ok(reference.rates.playerInjured < idle.rates.playerInjured, 'the player who prepares the duel is wounded less often than the idle one');
   assert.ok(prepared.eventCounts['healer-offer'] > 0 && idle.eventCounts['healer-offer'] > 0, 'the healer still writes to the wounded');
 });

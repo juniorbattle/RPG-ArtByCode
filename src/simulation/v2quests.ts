@@ -6,7 +6,7 @@ import { available } from './roles';
 import { learnOrRaise, levelOf } from './v2skills';
 import { MAX_LEVEL } from '../combat/skills';
 import { marksOf } from './v2law';
-import { nextBoutOf } from './v2scout';
+import { nextBoutOf, scoutTier } from './v2scout';
 import { PEOPLE } from '../narrative/people';
 import { RIVALS } from '../narrative/roster';
 import { SKILL_BOOK } from '../combat/skillbook';
@@ -72,8 +72,10 @@ export function questsAfterSlot(s: GameState, emit: Emit): void {
   // Lio's word (the card sharps' reward): the eve of each bout, the plan of the next opponent (the scouting's second tier, src/simulation/v2scout.ts)
   if (s.slot === 'evening' && s.quests.sharps === 'done') {
     const n = nextBoutOf(s);
-    if (n && n.day === s.day + 1 && RIVALS[n.foe] && !s.facts.includes(`scouted2:${n.foe}`)) {
-      s.facts.push(`scouted:${n.foe}`, `scouted2:${n.foe}`);
+    // the plan as the scouting keeps it (the operator's GP-15, journal Passe GP3: the plan seen and its day, a rival changing its plan at the cut and after a defeat)
+    if (n && n.day === s.day + 1 && RIVALS[n.foe] && scoutTier(s, n.foe) < 2) {
+      for (const f of [`scouted:${n.foe}`, `scouted2:${n.foe}`]) if (!s.facts.includes(f)) s.facts.push(f);
+      s.flags[`scoutPlan:${n.foe}`] = s.competitors[n.foe]?.plan ?? 0; s.flags[`scoutPlanDay:${n.foe}`] = s.day;
       emit({ kind: 'action', id: `quest:sharps:word:${n.foe}`, cause: tx('v2.quest.why', { quest: tx(TITLE.sharps) }), visible: true, text: tx('v2.quest.sharps.word', { name: RIVALS[n.foe].name }) });
     }
   }
