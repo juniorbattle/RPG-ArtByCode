@@ -12,7 +12,8 @@ import { DYNAMIC_DATA } from './dynamic';
  *  holds nineteen: the seven rivals' signature attacks (`signature`), learnt by a challenge won from day 6 (SK-12 « La lever : dix-neuf compétences »). Pure data. */
 
 export type SkillSource = 'start' | 'buy' | 'train' | 'challenge';
-export interface SkillInfo { id: DynActionId; family: 'offensive' | 'defensive' | 'support'; source: SkillSource; price?: number; teacher?: string; signature?: string }
+/** `looks`: the skill whose effects' recipe and sound it borrows (no new art: the operator's NC-10 « Ainsi », journal Passe SK4) */
+export interface SkillInfo { id: DynActionId; family: 'offensive' | 'defensive' | 'support'; source: SkillSource; price?: number; teacher?: string; signature?: string; looks?: string }
 
 const ren = (o: Partial<DynActionDef> & Pick<DynActionDef, 'id' | 'name' | 'family'>): DynActionDef => ({
   owner: 'ren', kind: 'skill', prep: 0.35, impactAt: 0.16, follow: 0.26, recover: 0.12, damage: 0, resist: 0, anim: o.family === 'offensive' ? 'skillOff' : o.family === 'defensive' ? 'skillDef' : 'skillSup', ...o,
@@ -26,10 +27,18 @@ export const NEW_SKILLS: Record<string, DynActionDef> = {
   k_parry: ren({ id: 'k_parry', name: 'Riposte Stance', family: 'defensive', prep: 0.2, impactAt: 0.1, follow: 0.2, recover: 0.1, apCost: 1, ward: { dur: 3, damage: 0.35, resist: 0.6 } }),
   k_cry: ren({ id: 'k_cry', name: 'Battle Cry', family: 'support', prep: 0.4, impactAt: 0.1, follow: 0.2, recover: 0.1, apCost: 2, boost: { dur: 5, damage: 1.45, resist: 1.2 } }),
   k_focus: ren({ id: 'k_focus', name: 'Focus', family: 'support', prep: 0.4, impactAt: 0.1, follow: 0.2, recover: 0.1, apCost: 2, boost: { dur: 10, damage: 1.1, resist: 2.0 } }),
+  // the five the town fighters teach (journal Passe SK4): their numbers are the duel played by the computer's (src/combat/autoData.ts); these actions name them
+  // (their AP the skill each is measured against, under the three-button duel of before: AV-6)
+  n_grace: ren({ id: 'n_grace', name: 'Finishing Blow', family: 'offensive', apCost: 4 }),
+  n_disarm: ren({ id: 'n_disarm', name: 'Disarm', family: 'offensive', apCost: 2 }),
+  n_sidestep: ren({ id: 'n_sidestep', name: 'Sidestep', family: 'defensive', apCost: 2 }),
+  n_wind: ren({ id: 'n_wind', name: 'Second Wind', family: 'support', apCost: 3 }),
+  n_wrist: ren({ id: 'n_wrist', name: 'Wrist Strike', family: 'offensive', apCost: 2 }),
 };
 
 /** every skill of the catalogue: the heavy attack (journal Passe CH1), today's six and the six new ones (thirteen: the brief's « une douzaine au
- *  plus » and the heavy attack, which was the command's own tier before) */
+ *  plus » and the heavy attack, which was the command's own tier before); the seven signatures since journal Passe SK2; the town fighters' five since journal Passe SK4
+ *  (twenty-four and the heavy attack) */
 export const SKILL_BOOK: Record<string, SkillInfo> = {
   // the heavy attack, a skill since the operator's decision A3 of 2026-11-04 (journal Passe CH1): owned from the start, drilled as the others
   heavy: { id: 'heavy', family: 'offensive', source: 'start' },
@@ -53,7 +62,18 @@ export const SKILL_BOOK: Record<string, SkillInfo> = {
   m_riposte: { id: 'm_riposte', family: 'offensive', source: 'challenge', signature: 'cassius' },
   m_shoulder: { id: 'm_shoulder', family: 'offensive', source: 'challenge', signature: 'orla' },
   m_lunge: { id: 'm_lunge', family: 'offensive', source: 'challenge', signature: 'vessa' },
+  // the town fighters' skills (the operator's NC-1 « Adopter ces cinq, enseignées par les combattants de la ville », NC-2 « L’écarter ; Corra n’enseigne rien », NC-8
+  // « Ainsi », the sheet https://claude.ai/artifact/FJdfCEs4igBxqgtVeQj5pV, journal Passe SK4): a challenge won against the teacher teaches it in either phase (learnt,
+  // then raised a level); each borrows another skill's recipe and sound (NC-10: the Thrust's gold, the Feint's smoke, the Rampart's ward, the Fervour's glow, the
+  // Flash cut's lightning)
+  n_grace: { id: 'n_grace', family: 'offensive', source: 'challenge', teacher: 'lucan', looks: 't4' },
+  n_disarm: { id: 'n_disarm', family: 'offensive', source: 'challenge', teacher: 'aldric', looks: 'k_feint' },
+  n_sidestep: { id: 'n_sidestep', family: 'defensive', source: 'challenge', teacher: 'piers', looks: 'd1' },
+  n_wind: { id: 'n_wind', family: 'support', source: 'challenge', teacher: 'ambrose', looks: 's1' },
+  n_wrist: { id: 'n_wrist', family: 'offensive', source: 'challenge', teacher: 'kell', looks: 't1' },
 };
+/** the skill whose recipe and sound an action plays (its own, or the one it borrows: NC-10) */
+export const looksOf = (id: string): string => SKILL_BOOK[id]?.looks ?? id;
 
 /** a skill's action at level 1 (today's and the heavy attack from DYNAMIC_DATA, the new ones from NEW_SKILLS) */
 export function skillAction(id: string): DynActionDef {

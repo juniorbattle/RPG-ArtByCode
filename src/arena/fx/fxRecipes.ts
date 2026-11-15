@@ -1,4 +1,5 @@
 import type { FxElement } from './fxPalettes';
+import { looksOf } from '../../combat/skillbook';
 
 /**
  * The duel's FX recipes. A recipe is a timeline of primitive steps placed on anchors, the format of RPGThreeJS (dev@5cc6119e,
@@ -256,14 +257,14 @@ export const FORM_RECIPES: Record<string, FxRecipe> = {
 /** the sign's recipe for a fighter */
 export const formRecipe = (sign: string, who: string): FxRecipe => FORM_RECIPES[sign === 'down' ? 'formDown' : who === 'ren' ? 'formUp' : 'formUpFoe'];
 
-/** a landed blow's recipe: its own, else the plain blow of its weight and side */
+/** a landed blow's recipe: its own (or the one it borrows, the town fighters' skills: NC-10, journal Passe SK4), else the plain blow of its weight and side */
 export function blowRecipe(action: string, kind: string, from: string): FxRecipe {
-  return RECIPES[action] ?? RECIPES[from === 'ren' ? (kind === 'heavy' ? 'heavy' : 'light') : kind === 'heavy' ? 'm_heavy' : 'm_slash'];
+  return RECIPES[looksOf(action)] ?? RECIPES[from === 'ren' ? (kind === 'heavy' ? 'heavy' : 'light') : kind === 'heavy' ? 'm_heavy' : 'm_slash'];
 }
 
-/** a ward's or a boost's recipe: its own, else the shared shape */
+/** a ward's or a boost's recipe: its own (or the one it borrows), else the shared shape */
 export function effectRecipe(action: string, family: string): FxRecipe {
-  return RECIPES[action] ?? RECIPES[family === 'defensive' ? 'd1' : 's1'];
+  return RECIPES[looksOf(action)] ?? RECIPES[family === 'defensive' ? 'd1' : 's1'];
 }
 
 /** the charge's level for a tier (0 the light attack: nothing; the first skill's tier 1; the tiers after it, the first half 2, the last 3; journal

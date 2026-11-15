@@ -61,20 +61,25 @@ test('the order the page shows is the duel\'s: the four in the order the automat
   }
 });
 
-test('the next level says what the game allows: drilling to its cap, then none (since journal Passe SK2 a challenge teaches, it no longer raises), and the action agrees', () => {
+test('the next level says what the game allows: drilling to its cap, then Master Corvin\'s lessons to level 5 (NC-11, journal Passe SK4), and the actions agree', () => {
   const s = G.makeV2(G.namedState('day1-morning'));
   s.v2.kit.levels.k_cry = 1; s.v2.kit.levels.t1 = 1;
   assert.deepEqual(P.nextLevel(s, 't1'), { level: 2, by: 'drill' });
-  s.v2.kit.levels.t1 = VS.TRAIN_CAP; assert.equal(P.nextLevel(s, 't1'), null, 'the cap is the end');
-  // every skill alike: the first day's teachers' and the rivals' signatures (SK-7: a challenge won teaches once per phase, it raises nothing above the cap)
-  for (const id of ['k_cry', 'k_parry', 'k_iron', 'k_sunder', ...Object.values(SB.SIGNATURES)]) {
+  const lesson = (level) => ({ level, by: 'lesson', price: VS.lessonPrice(level), day: VS.LESSON.day });
+  s.v2.kit.levels.t1 = VS.TRAIN_CAP; assert.deepEqual(P.nextLevel(s, 't1'), lesson(4), 'the cap: the lesson next');
+  s.v2.kit.levels.t1 = 5; assert.equal(P.nextLevel(s, 't1'), null, 'level 5 is the end');
+  // every skill alike: the first day's teachers', the rivals' signatures, the town fighters' (a challenge won teaches once per phase, it raises nothing above the cap)
+  for (const id of ['k_cry', 'k_parry', 'k_iron', 'k_sunder', ...Object.values(SB.SIGNATURES), 'n_grace', 'n_wind']) {
     s.v2.kit.levels[id] = 1; assert.deepEqual(P.nextLevel(s, id), { level: 2, by: 'drill' }, id);
-    s.v2.kit.levels[id] = VS.TRAIN_CAP; assert.equal(P.nextLevel(s, id), null, `${id} at the cap`);
+    s.v2.kit.levels[id] = VS.TRAIN_CAP; assert.deepEqual(P.nextLevel(s, id), lesson(4), `${id} at the cap`);
   }
-  // the drill's own refusal at the cap, on the practice sand
-  const t = structuredClone(s); t.place = 'training';
+  // the drill's own refusal at the cap, on the practice sand, says the lessons go further; the lesson refused before day 6, offered from it
+  const t = structuredClone(s); t.place = 'training'; t.v2.kit.levels.t1 = VS.TRAIN_CAP;
   const d = G.actions(t).find((o) => o.action.type === 'drillSkill' && o.action.skill === 't1');
-  assert.ok(d && !d.ok && /no higher than level/.test(d.reason), 'the action refuses what the page says is the end');
+  assert.ok(d && !d.ok && /no higher than level 3; Master Corvin's lessons take it further from day 6\./.test(d.reason), d?.reason);
+  assert.ok(!G.actions(t).some((o) => o.action.type === 'lessonSkill' && o.ok), 'no lesson before day 6');
+  t.day = VS.LESSON.day; t.player.coins = 100;
+  assert.ok(G.actions(t).some((o) => o.action.type === 'lessonSkill' && o.action.skill === 't1' && o.ok), 'the lesson from day 6');
 });
 
 test('the journal: every entry told once, none hidden, the last day first and each day in its order', () => {

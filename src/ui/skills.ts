@@ -4,7 +4,9 @@ import { bindCap } from '../input/caps';
 import { actsOf } from '../settings/settings';
 import { v2KitOf } from '../simulation/v2';
 import { RIVALS } from '../narrative/roster';
-import { num, skillName, tx } from '../narrative/text';
+import { num, skillName, tx, type TextKey } from '../narrative/text';
+import { PEOPLE } from '../narrative/people';
+import { GENERICS } from '../narrative/generics';
 import { SKILL_BOOK } from '../combat/skillbook';
 import { AUTO_ROLES, AUTO_SKILLS, autoCondOf, autoCondsFor, autoKitFor, kitRankFault, skillRank } from '../combat/autoData';
 import { AUTO_RULES, type AutoCond, type AutoRole } from '../combat/auto';
@@ -19,9 +21,10 @@ import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './st
  *  (src/simulation/preview.ts). The model « La Brute » (PB-1, journal Passe CF3) has no AP; since its lot 2 (briefs/combat-auto.md § 33.5) the page is the plan
  *  of combat: each skill's role, its uses in a bout and the gap between two, a condition per skill among its role's (C), the order of the four; the match sheet's
  *  plan is kept for its rival (`foe`: « un plan par rival », taken up when it is met again), the skills page's the general one. */
-const ROLE: Record<AutoRole, 'ui.role.exploit' | 'ui.role.punish' | 'ui.role.pierce' | 'ui.role.breaker' | 'ui.role.opener' | 'ui.role.interrupt' | 'ui.role.ward' | 'ui.role.parry' | 'ui.role.haste' | 'ui.role.slow' | 'ui.role.load'> = {
+const ROLE: Record<AutoRole, TextKey> = {
   exploit: 'ui.role.exploit', punish: 'ui.role.punish', pierce: 'ui.role.pierce', breaker: 'ui.role.breaker', opener: 'ui.role.opener', interrupt: 'ui.role.interrupt',
   ward: 'ui.role.ward', parry: 'ui.role.parry', haste: 'ui.role.haste', slow: 'ui.role.slow', load: 'ui.role.load',
+  finisher: 'ui.role.finisher', strip: 'ui.role.strip', evade: 'ui.role.evade', recover: 'ui.role.recover', sap: 'ui.role.sap',
 };
 /** a skill's role in the duel, in words (PB-1: « un rôle par compétence ») */
 export const roleName = (id: string): string => { const r = AUTO_ROLES[id]?.role; return r ? tx(ROLE[r]) : ''; };
@@ -68,9 +71,10 @@ function cmpHtml(now: SkillFigures, next: SkillFigures | null, level: number): s
 /** a skill's condition in the tactic (SY-08, lot 2 of the second redesign, journal Passe SL3): the plan kept for `foe` (its match sheet), else the general one */
 const condOf = (s: GameState, id: string, foe?: string): AutoCond => autoCondOf(autoKitFor(v2KitOf(s), foe), id);
 /** the automatic's rule for each role (PB-1, src/combat/auto.ts autoRole), spelt out */
-const AUTO_TEXT: Record<AutoRole, 'ui.skill.autoOff' | 'ui.skill.autoExploit' | 'ui.skill.autoOpener' | 'ui.skill.autoInterrupt' | 'ui.skill.autoWard' | 'ui.skill.autoParry' | 'ui.skill.autoHaste' | 'ui.skill.autoSlow' | 'ui.skill.autoLoad'> = {
+const AUTO_TEXT: Record<AutoRole, TextKey> = {
   exploit: 'ui.skill.autoExploit', punish: 'ui.skill.autoOff', pierce: 'ui.skill.autoOff', breaker: 'ui.skill.autoOff', opener: 'ui.skill.autoOpener', interrupt: 'ui.skill.autoInterrupt',
   ward: 'ui.skill.autoWard', parry: 'ui.skill.autoParry', haste: 'ui.skill.autoHaste', slow: 'ui.skill.autoSlow', load: 'ui.skill.autoLoad',
+  finisher: 'ui.skill.autoFinisher', strip: 'ui.skill.autoStrip', evade: 'ui.skill.autoEvade', recover: 'ui.skill.autoRecover', sap: 'ui.skill.autoOff',
 };
 /** when a skill leaves, said in a sentence: its condition, the automatic's own rule spelt out for its role */
 function whenText(s: GameState, id: string, foe?: string): string {
@@ -128,9 +132,11 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     if (wide) wide.innerHTML = `<p class="ttl">${esc(foe && host.foeName ? tx('ui.order.vs', { name: host.foeName }) : tx('ui.order.title'))}</p><p class="pm-sub">${esc(planLine(host.state(), foe, host.foeName))}</p>${autoOrderView(host.state(), four(), foe).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${tx('ui.order.uses', { n: t.uses, gap: num(t.gapS) })}<br>${esc(tx(COND_TEXT[condOf(host.state(), t.id, foe)]))}</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
     if (go) go.disabled = chosen.size !== 4;
     const lv = kit.levels[now], st = host.state(), f = skillFigures(st, now, lv), up = nextLevel(st, now), k = SKILL_BOOK[now];
-    const said = !up ? tx('ui.skill.top') : tx('ui.skill.drill', { level: up.level });
-    // a rival's signature says whom it was learnt from (SK-4)
-    const sig = k?.signature ? tx('ui.skill.signature', { name: RIVALS[k.signature]?.name ?? k.signature }) : '';
+    // the next level: the practice sand's up to its cap, then Master Corvin's lesson (the operator's NC-11, journal Passe SK4)
+    const said = !up ? tx('ui.skill.top') : up.by === 'lesson' ? tx('ui.skill.lesson', { level: up.level, price: up.price, day: up.day }) : tx('ui.skill.drill', { level: up.level });
+    // a rival's signature says whom it was learnt from (SK-4), and a skill a fighter of the town teaches its teacher (NC-10: « Apprise de Lucan Rook »)
+    const from = k?.signature ? RIVALS[k.signature]?.name ?? k.signature : k?.teacher ? PEOPLE[k.teacher]?.name ?? GENERICS[k.teacher]?.name ?? k.teacher : null;
+    const sig = from ? tx('ui.skill.signature', { name: from }) : '';
     const on = chosen.has(now), movable = on && chosen.size === 4;
     // the tactic (SY-08): when a skill brought leaves, its condition chosen with C (the pad's Y)
     // when it leaves, and on the skills page whose plan that is (the general one; a rival's is set on its match sheet)

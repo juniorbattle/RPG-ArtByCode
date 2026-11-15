@@ -28,15 +28,17 @@ export interface AutoTexts extends DynTexts {
   openOn: string; opened: string; interrupted: string; parried: string; inBreak: (k: number) => string; inOpen: (k: number) => string; uses: (left: number, all: number) => string;
   /** an ultimate that failed, over its striker (the operator's note on SK-6, journal Passe SK2): guarded, dodged, parried, cut, lost in a clash */
   ultMiss: Record<UltMiss, string>;
+  /** the new skills (the operator's NC-10 « Ainsi », journal Passe SK4): Disarm's lifting and Wrist Strike's wait, over the target */
+  stripped: string; sapped: string;
 }
 export type UltMiss = 'guarded' | 'dodged' | 'parried' | 'cut' | 'lost';
 const EN_EXTRA = { speed: '×2', speedSub: 'twice as fast', speedOn: 'back to ×1', skip: 'Skip', skipSub: 'to the result', charging: (n: string) => `Charging ${n}`, order: 'Your order', secs: (n: number) => `${n} s`, waiting: 'At your next choice', clash: 'Clash',
   openOn: 'Open', opened: 'Open!', interrupted: 'Interrupted', parried: 'Parried', inBreak: (k: number) => `in the break ×${k}`, inOpen: (k: number) => `in the opening ×${k}`, uses: (l: number, a: number) => `${l} of ${a} uses left`,
-  ultMiss: { guarded: 'Ultimate guarded', dodged: 'Ultimate dodged', parried: 'Ultimate parried', cut: 'Ultimate cut', lost: 'Ultimate lost' } };
+  ultMiss: { guarded: 'Ultimate guarded', dodged: 'Ultimate dodged', parried: 'Ultimate parried', cut: 'Ultimate cut', lost: 'Ultimate lost' }, stripped: 'Disarmed', sapped: 'Sapped' };
 const comma = (k: number): string => String(k).replace('.', ',');
 const FR_EXTRA = { speed: '×2', speedSub: 'deux fois plus vite', speedOn: 'retour à ×1', skip: 'Passer', skipSub: 'au résultat', charging: (n: string) => `Charge : ${n}`, order: 'Votre ordre', secs: (n: number) => `${n} s`, waiting: 'À votre prochain choix', clash: 'Entrechoc',
   openOn: 'Faille', opened: 'Faille !', interrupted: 'Interrompu', parried: 'Paré', inBreak: (k: number) => `dans la rupture ×${comma(k)}`, inOpen: (k: number) => `dans la faille ×${comma(k)}`, uses: (l: number, a: number) => `${l} usage${l > 1 ? 's' : ''} sur ${a}`,
-  ultMiss: { guarded: 'Ultime gardée', dodged: 'Ultime esquivée', parried: 'Ultime parée', cut: 'Ultime coupée', lost: 'Ultime perdue' } };
+  ultMiss: { guarded: 'Ultime gardée', dodged: 'Ultime esquivée', parried: 'Ultime parée', cut: 'Ultime coupée', lost: 'Ultime perdue' }, stripped: 'Désarmé', sapped: 'Sapé' };
 export const AUTO_TEXTS_EN: AutoTexts = { ...DYN_TEXTS_EN, ...EN_EXTRA, restart: 'An official bout cannot be restarted' };
 export const AUTO_TEXTS_FR: AutoTexts = { ...DYN_TEXTS_FR_GAME, ...FR_EXTRA };
 
@@ -104,7 +106,7 @@ export class AutoHud {
     this.ready = fontsReady();
     this.names = names;
     // each fighter's ultimates (an exploit's rank, journal Passe SK2): a failed one is said over its striker
-    for (const k of ['ren', 'marek'] as Seat[]) this.ults[k] = new Set(replay.fighters[k].skills.filter((a) => a.role === 'exploit').map((a) => a.id));
+    for (const k of ['ren', 'marek'] as Seat[]) this.ults[k] = new Set(replay.fighters[k].skills.filter((a) => a.role === 'exploit' || a.role === 'finisher').map((a) => a.id));
     for (const [id, css] of [['arena-hud-css', CSS], ['arena-dyn-css', DYN_CSS], ['arena-auto-css', AUTO_CSS]] as const) {
       if (!document.getElementById(id)) { const st = document.createElement('style'); st.id = id; st.textContent = css; document.head.appendChild(st); }
     }
@@ -223,6 +225,9 @@ export class AutoHud {
       else if (e.type === 'parry') { this.float(e.to as Seat, t.parried, 'ap', -34, this.openLine(AUTO_RULES.parry.open)); this.ultMiss(e.to as Seat, e.action, 'parried'); }
       else if (e.type === 'open' && (e.why === 'opener' || e.why === 'whiff') && !e.again) this.float(e.who as Seat, t.opened, 'ap', -34, t.secs(Math.round(Number(e.dur))));
       else if (e.type === 'clash') { this.float(e.who as Seat, t.clash, 'guarded'); this.float(e.to as Seat, t.clash, 'guarded'); this.ultMiss(e.who as Seat, e.action, 'lost'); this.ultMiss(e.to as Seat, e.vs, 'lost'); }
+      // Disarm's lifting and Wrist Strike's wait over the target (NC-10), the wait's seconds below
+      else if (e.type === 'strip') this.float(e.who as Seat, t.stripped, 'ap', -34);
+      else if (e.type === 'sap') this.float(e.who as Seat, t.sapped, 'ap', -34, t.secs(Math.round(Number(e.dur))));
       else if (e.type === 'break') this.float(e.who as Seat, t.breakFloat, 'guardbreak', -34);
       else if (e.type === 'effect') this.float(e.who as Seat, e.action ? this.name(e.action as string) : e.family === 'defensive' ? t.wardOn : t.boostOn, 'ap', -34);
       else if (e.type === 'ko') { const ko = this.q('#ah-ko'); ko.querySelector('b')!.textContent = e.who === 'marek' ? t.victory : t.defeat; ko.querySelector('span')!.textContent = t.isDown(this.names[e.who as Seat]); ko.classList.add('on'); this.el.classList.add('ko'); }

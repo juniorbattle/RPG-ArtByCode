@@ -8,6 +8,7 @@
 import * as THREE from 'three';
 import { parseTime } from '../../atmosphere/DayState';
 import type { LightRig, LightSource } from '../../atmosphere/LightRig';
+import { looksOf } from '../../combat/skillbook';
 import type { Actor } from '../../characters/SpriteRenderer';
 import type { ChargeView } from '../../combat/charge';
 import type { FighterId } from '../CombatSim';
@@ -161,7 +162,7 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
       else if (on !== from) blow(r, F, on);
       else self(r, F[on]);
     },
-    palette(action, who) { const P = FX_PALETTES[RECIPES[action]?.element ?? (who === 'ren' ? 'gold' : 'fire')]; return { edge: P.edge, light: P.light }; },
+    palette(action, who) { const P = FX_PALETTES[RECIPES[looksOf(action)]?.element ?? (who === 'ren' ? 'gold' : 'fire')]; return { edge: P.edge, light: P.light }; },
     pose(p) {
       if (punch.dur <= 0) return;
       const k = punch.t / punch.dur, e = (k < 0.14 ? k / 0.14 : 1 - (k - 0.14) / 0.86) * punch.amount;

@@ -53,9 +53,17 @@ export const SIGNATURE_CHARGE: Record<string, Times> = {
   m_lunge: [3, 2.8, 2.65, 2.45, 2.25], m_wild: [3.9, 3.65, 3.35, 3.15, 2.95], m_riposte: [3.4, 3.15, 2.9, 2.7, 2.55], m_shoulder: [3.7, 3.4, 3.15, 2.95, 2.7],
   m_smite: [3.8, 3.45, 3.15, 2.85, 2.55], m_ironfall: [4.3, 3.9, 3.55, 3.2, 2.85], m_cleave: [4.4, 4.1, 3.8, 3.55, 3.3],
 };
+/** the skills the town fighters teach (the operator's NC-1 « Adopter ces cinq, enseignées par les combattants de la ville » and NC-3 to NC-7 « Ces nombres », the sheet
+ *  https://claude.ai/artifact/FJdfCEs4igBxqgtVeQj5pV, journal Passe SK4): each the charge of Ren's skill it is measured against, by level (the Finishing Blow the Thrust's,
+ *  Disarm and Wrist Strike the Flash cut's, Sidestep the Rampart's, Second Wind the Fervour's) */
+export const TOWN_CHARGE: Record<string, Times> = {
+  n_grace: [7.65, 6.95, 6.3, 5.7, 5.1], n_disarm: [3.4, 3.2, 3.0, 2.75, 2.55], n_wrist: [3.4, 3.2, 3.0, 2.75, 2.55],
+  n_sidestep: [3.0, 2.8, 2.65, 2.45, 2.3], n_wind: [4.25, 4.0, 3.75, 3.5, 3.25],
+};
 export const SKILLS: Record<string, SkillDef> = {
   ...Object.fromEntries(Object.entries(BASE_CHARGE).map(([id, t]) => [id, { id: id as DynActionId, charge: trimmed(t), source: SOURCE[id] }])),
   ...Object.fromEntries(Object.entries(SIGNATURE_CHARGE).map(([id, t]) => [id, { id: id as DynActionId, charge: t, source: 'challenge' as const }])),
+  ...Object.fromEntries(Object.entries(TOWN_CHARGE).map(([id, t]) => [id, { id: id as DynActionId, charge: t, source: 'challenge' as const }])),
 };
 
 export const clampLevel = (n: number): number => Math.max(1, Math.min(MAX_LEVEL, Math.round(n)));

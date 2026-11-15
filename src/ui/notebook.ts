@@ -27,6 +27,7 @@ export function adviceText(a: Advice, foe: string): string {
     case 'dodged': return tx('advice.dodged', { foe: name, n: a.n ?? 0 });
     case 'foeSkill': return tx('advice.foeSkill', { foe: name, foeSkill, pct: a.pct ?? 0 });
     case 'unspent': return tx('advice.unspent', { skill, n: a.n ?? 0 });
+    case 'broken': return tx('advice.broken', { n: a.n ?? 0 });
     case 'noOpen': return tx('advice.noOpen');
     case 'keep': return tx('advice.keep', { foe: name });
     default: return tx('advice.rehearse', { foe: name });

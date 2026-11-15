@@ -25,8 +25,9 @@ export interface CineRule {
  *  ultimate (an exploit) plays every time it lands in full, outside the cap (CI-3's « Et seulement dans une faille ou une rupture » left); before that, word for word: CI-2 « Les ultimes seules (les
  *  exploitations) » with its note (the supers for the strong skills, without the black screen), CI-3 « Et seulement dans une faille ou une rupture » for the
  *  ultras and, for the supers, his answer « Super : chaque coup touche (Recommended) » (a breaker never lands in an opening: measured 0 a bout), CI-4 « Les deux
- *  combattants », CI-5 « Au plus 3, 20 s entre deux, le K.O. toujours » */
+ *  combattants », CI-5 « Au plus 3, 20 s entre deux, le K.O. toujours »; since the sheet of new skills (the sheet https://claude.ai/artifact/FJdfCEs4igBxqgtVeQj5pV, journal Passe SK4) the Finishing Blow, an ultimate of the role « finir »
+ *  (NC-9 « Garder la règle »: « finir » donne une ultime), plays as the exploits (NC-3: « Sa cinématique se joue à chaque réussite, comme toute ultime (SK-5) ») */
 export const CINE_RULE: CineRule = {
-  tiers: [{ tier: 'ultra', roles: ['exploit'], land: 'hit', free: true }, { tier: 'super', roles: ['breaker'], land: 'hit' }],
+  tiers: [{ tier: 'ultra', roles: ['exploit', 'finisher'], land: 'hit', free: true }, { tier: 'super', roles: ['breaker'], land: 'hit' }],
   side: 'both', max: 3, gap: 20, ko: true,
 };

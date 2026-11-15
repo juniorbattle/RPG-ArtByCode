@@ -1,4 +1,5 @@
 import { MIX, type Effect } from './score';
+import { looksOf } from '../combat/skillbook';
 
 /** The duel's sounds (lot S3, journal Passes SN15 / SN16): which baked sound of the band plays for each event of a duel, and the arena's crowd. The operator's
  *  sheet briefs/fiche-son-duel.html, word for word: S3-DUEL « Mieux : continuer dans cette voie », S3-COUPS, S3-REN, S3-RIVAUX, S3-SOUTIENS, S3-CHARGE and
@@ -53,10 +54,11 @@ export function sfxOf(e: { type: string } & Record<string, unknown>, tiers: numb
       // an enchaînement's later blows (the duel played by the computer, AC-02: `follow`) play their side's plain light blow, the action's own sound on its first
       // blow only (Taille éclair's bolt, Tourbillon's three cuts are written once: lot 4, journal Passe LC6)
       if (e.follow) return [cue(foe ? 'm_slash' : 'light', pan, 'hit')];
-      const action = String(e.action), id = OWN.has(action) ? action : foe ? (e.kind === 'heavy' ? 'm_heavy' : 'm_slash') : e.kind === 'heavy' ? 'heavy' : 'light';
+      // (a town fighter's skill plays the sound of the skill it borrows: NC-10, journal Passe SK4)
+      const action = looksOf(String(e.action)), id = OWN.has(action) ? action : foe ? (e.kind === 'heavy' ? 'm_heavy' : 'm_slash') : e.kind === 'heavy' ? 'heavy' : 'light';
       return [cue(id, pan, e.kind === 'heavy' || e.kind === 'skill' || (e.damage as number) >= 20 ? 'heavy' : 'hit')];
     }
-    case 'effect': { const a = String(e.action); return [cue(SUPPORT.has(a) ? a : e.family === 'defensive' ? 'd1' : 's1', SIDE(e.who))]; }
+    case 'effect': { const a = looksOf(String(e.action)); return [cue(SUPPORT.has(a) ? a : e.family === 'defensive' ? 'd1' : 's1', SIDE(e.who))]; }
     // a clash (BL1-8): the guard's sound, both blades in the middle of the stage
     case 'clash': return [cue(e.kind === 'light' ? 'guard' : 'guardHeavy', 0, 'guard')];
     // a parry (lot 2 of « La Brute »): a big blow guarded, where the parrier stands
@@ -80,7 +82,7 @@ export function sfxOf(e: { type: string } & Record<string, unknown>, tiers: numb
 export function crowdOf(e: { type: string } & Record<string, unknown>): CrowdId | null {
   if (e.type === 'ko') return 'roar';
   if (e.type === 'break') return 'gasp';
-  if (e.type === 'impact' && e.result === 'hit' && !e.follow && (e.kind === 'heavy' || e.kind === 'skill')) return e.from === 'ren' && OWN.has(String(e.action)) ? 'cheer' : 'oh';
+  if (e.type === 'impact' && e.result === 'hit' && !e.follow && (e.kind === 'heavy' || e.kind === 'skill')) return e.from === 'ren' && OWN.has(looksOf(String(e.action))) ? 'cheer' : 'oh';
   return null;
 }
 /** the charge held: the level its breath plays at after this event (0: none), `now` the level before it; the breath stops when the charge ends or Ren is stunned,

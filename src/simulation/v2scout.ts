@@ -56,6 +56,7 @@ export const usesAt = (stage: Stage): number => AUTO_BRUTE.uses[autoRivalLevel(s
 export const ROLE_WORD: Record<AutoRole, TextKey> = {
   exploit: 'ui.role.exploit', punish: 'ui.role.punish', pierce: 'ui.role.pierce', breaker: 'ui.role.breaker', opener: 'ui.role.opener', interrupt: 'ui.role.interrupt',
   ward: 'ui.role.ward', parry: 'ui.role.parry', haste: 'ui.role.haste', slow: 'ui.role.slow', load: 'ui.role.load',
+  finisher: 'ui.role.finisher', strip: 'ui.role.strip', evade: 'ui.role.evade', recover: 'ui.role.recover', sap: 'ui.role.sap',
 };
 /** a rival's condition in words, said of them (their plan, tier 2); 'auto' the rule of the skill's role (src/combat/auto.ts autoRole), said by ROLE_WHEN */
 const PLAN_WORD: Record<Exclude<AutoCond, 'auto'>, TextKey> = {
@@ -65,6 +66,7 @@ const PLAN_WORD: Record<Exclude<AutoCond, 'auto'>, TextKey> = {
 const ROLE_WHEN: Record<AutoRole, TextKey> = {
   exploit: 'scout.role.exploit', punish: 'scout.role.punish', pierce: 'scout.role.pierce', breaker: 'scout.role.breaker', opener: 'scout.role.opener', interrupt: 'scout.role.interrupt',
   ward: 'scout.role.ward', parry: 'scout.role.parry', haste: 'scout.role.haste', slow: 'scout.role.slow', load: 'scout.role.load',
+  finisher: 'scout.role.finisher', strip: 'scout.role.strip', evade: 'scout.role.evade', recover: 'scout.role.recover', sap: 'scout.role.sap',
 };
 /** when a rival uses a skill, in words: its condition, or its role's rule */
 export function whenText(id: string, cond: AutoCond): string {

@@ -44,8 +44,10 @@ test('the plan\'s conditions: each role\'s, the laboratory\'s as its plans were 
   const src = fs.readFileSync(new URL('../tools/auto-final/brute.mjs', import.meta.url), 'utf8');
   const block = src.slice(src.indexOf('export const CONDS_BY_ROLE = {') + 'export const CONDS_BY_ROLE = '.length, src.indexOf('};', src.indexOf('export const CONDS_BY_ROLE')) + 1);
   const lab = new Function(`return ${block}`)();
-  assert.deepEqual(AD.AUTO_CONDS_BY_ROLE, lab, 'the page offers what the laboratory measured');
-  for (const [id, x] of Object.entries(AD.AUTO_ROLES)) if (AD.AUTO_SKILLS[id]) assert.deepEqual(AD.autoCondsFor(id), lab[x.role], id);
+  // the roles of the new skills since journal Passe SK4 (NC-3 to NC-7), measured with their own conditions in journal Passe SK3 (tests/new-skills.test.mjs)
+  const NEW = ['finisher', 'strip', 'evade', 'recover', 'sap'];
+  assert.deepEqual(Object.fromEntries(Object.entries(AD.AUTO_CONDS_BY_ROLE).filter(([r]) => !NEW.includes(r))), lab, 'the page offers what the laboratory measured');
+  for (const [id, x] of Object.entries(AD.AUTO_ROLES)) if (AD.AUTO_SKILLS[id] && !NEW.includes(x.role)) assert.deepEqual(AD.autoCondsFor(id), lab[x.role], id);
   let st = G.makeV2(G.namedState('day1-morning'));
   // the Estoc (an exploit) takes « dans une faille », the Rampart (a ward) does not; a family's condition of before still holds (a plan written before lot 2)
   assert.ok(G.advance(st, { type: 'setTactic', skill: 't4', cond: 'open' }).ok);

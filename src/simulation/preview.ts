@@ -2,7 +2,8 @@ import { ACTIONS, type Action } from './actions';
 import type { GameState } from './state';
 import { isV2, v2KitOf } from './v2';
 import { v2Mods } from './v2gear';
-import { TRAIN_CAP, levelOf } from './v2skills';
+import { LESSON, TRAIN_CAP, lessonPrice, levelOf } from './v2skills';
+import { MAX_LEVEL } from '../combat/skills';
 import type { ChargeTier } from '../combat/charge';
 import type { DynActionId } from '../combat/dynamic';
 import { matchSheetFor, playerMods, v2SheetData } from '../combat/match';
@@ -119,12 +120,15 @@ export function autoOrderView(s: GameState, ids: string[], foe?: string | null):
   return order.map((id) => { const a = autoSkill(id, k.levels[id] ?? 1); return { id, charge: +(a.charge * (ren.tempo / Math.max(1, ren.viv))).toFixed(2), uses: a.uses ?? 0, gapS: +((a.cooldown ?? 0) * (ren.gfx?.cd ?? 1)).toFixed(1) }; });
 }
 
-/** the level a skill can still reach: drilling up to its cap (TRAIN_CAP), then none. Since the operator's SK-7 (journal Passe SK2) a challenge won teaches the three's
+/** the level a skill can still reach: drilling up to its cap (TRAIN_CAP), then Master Corvin's lessons to level 5 from day 6 (NC-11, journal Passe SK4). Since the operator's SK-7 (journal Passe SK2) a challenge won teaches the three's
  *  support or defence before day 6 and a rival's signature from day 6, once per phase each: it no longer raises a skill above the cap (no player of the laboratory
  *  had taken one there, journal Passe SK1) */
-export function nextLevel(s: GameState, id: string): { level: number; by: 'drill' } | null {
+export type NextLevel = { level: number; by: 'drill' } | { level: number; by: 'lesson'; price: number; day: number };
+export function nextLevel(s: GameState, id: string): NextLevel | null {
   const lv = levelOf(s, id);
-  return lv < TRAIN_CAP ? { level: lv + 1, by: 'drill' } : null;
+  if (lv < TRAIN_CAP) return { level: lv + 1, by: 'drill' };
+  // beyond the training's cap, Master Corvin's lesson (the operator's NC-11, journal Passe SK4): its price and the day it opens
+  return lv < MAX_LEVEL ? { level: lv + 1, by: 'lesson', price: lessonPrice(lv + 1), day: LESSON.day } : null;
 }
 
 export interface StatChange { id: StatId; now: number; after: number; better: boolean }

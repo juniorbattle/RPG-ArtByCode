@@ -11,7 +11,7 @@ export type NoteKind = 'bout' | 'challenge' | 'rehearsal';
  *  or on an opponent charging a big action (where an exploit is twice as strong), those that came to nothing (dodged, parried, cut by an interruption, lost in a
  *  clash), and its damage */
 export interface NoteSkill { id: string; used: number; max: number; landed: number; clean: number; void: number; dmg: number }
-export type AdviceKey = 'feint' | 'exploit' | 'ultMiss' | 'dodged' | 'foeSkill' | 'unspent' | 'noOpen' | 'keep' | 'rehearse';
+export type AdviceKey = 'feint' | 'exploit' | 'ultMiss' | 'dodged' | 'foeSkill' | 'unspent' | 'broken' | 'noOpen' | 'keep' | 'rehearse';
 export interface Advice { k: AdviceKey; skill?: string; foeSkill?: string; n?: number; of?: number; pct?: number }
 export interface BoutNote {
   day: number; foe: string; kind: NoteKind; won: boolean;
@@ -35,7 +35,8 @@ export interface BoutNote {
 
 /** the advice's thresholds (« proposé »): a Feint wasted when half of them cut nothing (from two fired), an opponent's skill heavy from 35 % of Ren's wounds, two
  *  uses left unspent, two big blows dodged */
-export const NOTE_RULES = { feintFrom: 2, foeShare: 0.35, unspent: 2, dodged: 2, ultMiss: 1 };
+// (`broken`: Ren's gauge broken this many times, the notebook's word on Second Wind: the operator's NC-10 « Ainsi », journal Passe SK4)
+export const NOTE_RULES = { feintFrom: 2, foeShare: 0.35, unspent: 2, dodged: 2, ultMiss: 1, broken: 2 };
 
 const kindOf = (a: AutoAction): 0 | 1 | 2 => (a.kind === 'light' ? 0 : a.kind === 'heavy' ? 1 : 2);
 
@@ -123,15 +124,18 @@ export function boutNote(r: AutoResult, ren: AutoFighter, foe: AutoFighter, meta
 export function adviceOf(n: BoutNote, ren: AutoFighter, feint: string | undefined, cut: number, dodged: number): Advice {
   const N = NOTE_RULES, f = feint ? n.skills.find((x) => x.id === feint) : undefined;
   const role = (id: string) => ren.skills.find((a) => a.id === id);
-  const isExploit = (id: string) => role(id)?.role === 'exploit', isBlow = (id: string) => { const a = role(id); return !!a && !a.ward && !a.boost && a.role !== 'haste' && a.role !== 'slow' && a.role !== 'load'; };
+  const isExploit = (id: string) => role(id)?.role === 'exploit', isUlt = (id: string) => role(id)?.role === 'exploit' || role(id)?.role === 'finisher', isBlow = (id: string) => { const a = role(id); return !!a && !a.ward && !a.boost && a.role !== 'haste' && a.role !== 'slow' && a.role !== 'load'; };
   if (f && f.used >= N.feintFrom && cut * 2 <= f.used) return { k: 'feint', skill: f.id, ...(n.foeTop ? { foeSkill: n.foeTop.id } : {}), n: f.used - cut, of: f.used };
   for (const x of n.skills) if (isExploit(x.id) && x.landed > 0 && x.clean < x.landed) return { k: 'exploit', skill: x.id, n: x.landed - x.clean, of: x.landed };
   // an ultimate that failed (dodged, parried, cut or lost in a clash: it plays no cinematic, its use spent; the operator's note on SK-6, journal Passe SK2)
-  for (const x of n.skills) if (isExploit(x.id) && x.void >= N.ultMiss) return { k: 'ultMiss', skill: x.id, n: x.void, of: x.used };
+  // (the Finishing Blow too, an ultimate since journal Passe SK4)
+  for (const x of n.skills) if (isUlt(x.id) && x.void >= N.ultMiss) return { k: 'ultMiss', skill: x.id, n: x.void, of: x.used };
   if (dodged >= N.dodged) return { k: 'dodged', n: dodged };
   const hurt = n.taken[0] + n.taken[1] + n.taken[2];
   if (n.foeTop && hurt > 0 && n.foeTop.dmg / hurt >= N.foeShare) return { k: 'foeSkill', foeSkill: n.foeTop.id, pct: Math.round((100 * n.foeTop.dmg) / hurt) };
   for (const x of n.skills) if (isBlow(x.id) && x.max - x.used >= N.unspent) return { k: 'unspent', skill: x.id, n: x.max - x.used };
+  // Ren's gauge broken again and again: Second Wind empties it (NC-10), unless he brings it already
+  if ((n.breaks?.[0] ?? 0) >= N.broken && !ren.skills.some((a) => a.role === 'recover')) return { k: 'broken', n: n.breaks[0] };
   if (n.open[0] === 0) return { k: 'noOpen' };
   return { k: n.won ? 'keep' : 'rehearse' };
 }
@@ -152,7 +156,7 @@ export function sumNotes(notes: readonly BoutNote[]): NoteSum {
     const a = seen.get(x.advice.k); if (a) a.count++; else seen.set(x.advice.k, { first: x.advice, count: 1 });
   }
   // the advice seen most often; on a tie, the earlier of the advice's own order
-  const ORDER: AdviceKey[] = ['feint', 'exploit', 'ultMiss', 'dodged', 'foeSkill', 'unspent', 'noOpen', 'keep', 'rehearse'];
+  const ORDER: AdviceKey[] = ['feint', 'exploit', 'ultMiss', 'dodged', 'foeSkill', 'unspent', 'broken', 'noOpen', 'keep', 'rehearse'];
   let best: { first: Advice; count: number } = { first: { k: 'keep' }, count: 0 };
   for (const k of ORDER) { const a = seen.get(k); if (a && a.count > best.count) best = a; }
   return { n, wins, dmg, open: [open[0] / Math.max(1, n), open[1] / Math.max(1, n)], inOpen, used: used / Math.max(1, n), max: max / Math.max(1, n), advice: best.first, often: best.count };

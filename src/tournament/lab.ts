@@ -171,10 +171,6 @@ function diligentV2(st: GameState): Action {
 /** the lab's training session in a version 2 game (the operator's DB7-3, journal Passe DB8): Attack first, then Defence */
 const labSession = (st: GameState): Action => ({ type: 'train', stat: st.player.training === 0 ? 'atk' : 'def' });
 
-/** the curious player's switches (the workshop of journal Passe SK3): `sameRank`, a skill learnt takes the place of a start skill of its family AND its rank only (off: of
- *  its family, so that a technique learnt once the Flash cut is gone takes the Thrust's place, the kit left without its ultimate) */
-export const CURIOUS = { sameRank: false };
-
 /** the curious player's version 2 day (« proposé », a policy, not a person): see POLICIES.curious */
 function curiousV2(st: GameState): Action {
   const bout = st.slot === 'afternoon' && !!matchSheetFor(st), hurt = st.player.injury > 0, marks = marksOf(st);
@@ -183,11 +179,12 @@ function curiousV2(st: GameState): Action {
   const first = (...xs: Array<() => Action | null>): Action | null => { for (const f of xs) { const a = f(); if (a) return a; } return null; };
   // a challenge accepted is fought at once (its bout takes the slot)
   if (st.v2?.challenge) return { type: 'challengeResult', outcome: challengeOutcome(st, 0.6) };
-  // brings what it learnt: a skill won by a challenge takes the place of the start skill of its family; an ultimate, a rival's signature, the place of the start
-  // ultimate (the Thrust: one at most, the operator's SK-2, journal Passe SK2); never four that break the kit's rule
+  // brings what it learnt: a skill won by a challenge takes the place of the start skill of its family and its rank (journal Passe SK4, NC-12: before it, a technique
+  // learnt once the Flash cut was gone took the Thrust's place, the kit left without its ultimate, journal Passe SK3); an ultimate, a rival's signature or the
+  // Finishing Blow, the place of the start ultimate (the Thrust: one at most, the operator's SK-2, journal Passe SK2); never four that break the kit's rule
   const kit = v2KitOf(st), learnt = Object.values(SKILL_BOOK).filter((k) => k.source === 'challenge' && (kit.levels[k.id] ?? 0) > 0 && !(kit.loadout as string[]).includes(k.id));
   for (const k of learnt) {
-    const ult = skillRank(k.id) === 'ultimate', i = (kit.loadout as string[]).findIndex((id) => SKILL_BOOK[id]?.source === 'start' && (ult ? skillRank(id) === 'ultimate' : SKILL_BOOK[id]?.family === k.family && (!CURIOUS.sameRank || skillRank(id) === skillRank(k.id))));
+    const ult = skillRank(k.id) === 'ultimate', i = (kit.loadout as string[]).findIndex((id) => SKILL_BOOK[id]?.source === 'start' && (ult ? skillRank(id) === 'ultimate' : SKILL_BOOK[id]?.family === k.family && skillRank(id) === skillRank(k.id)));
     if (i < 0) continue;
     const four = [...kit.loadout] as string[]; four[i] = k.id;
     if (!kitRankFault(four)) return { type: 'setLoadout', skills: four };

@@ -159,6 +159,8 @@ const SKILL_KEYS: Record<string, TextKey> = {
   k_sunder: 'skill.k_sunder', k_feint: 'skill.k_feint', k_iron: 'skill.k_iron', k_parry: 'skill.k_parry', k_cry: 'skill.k_cry', k_focus: 'skill.k_focus',
   // the rivals' signature attacks in Ren's catalogue (journal Passe SK2)
   m_ironfall: 'skill.m_ironfall', m_smite: 'skill.m_smite', m_wild: 'skill.m_wild', m_cleave: 'skill.m_cleave', m_riposte: 'skill.m_riposte', m_shoulder: 'skill.m_shoulder', m_lunge: 'skill.m_lunge',
+  // the town fighters' skills (journal Passe SK4)
+  n_grace: 'skill.n_grace', n_disarm: 'skill.n_disarm', n_sidestep: 'skill.n_sidestep', n_wind: 'skill.n_wind', n_wrist: 'skill.n_wrist',
 };
 export function skillName(id: string): string { const k = SKILL_KEYS[id]; return k ? tx(k) : id; }
 

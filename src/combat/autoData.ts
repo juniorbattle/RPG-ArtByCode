@@ -1,4 +1,4 @@
-import { AUTO_RULES, autoDuel, type AutoAction, type AutoBrain, type AutoCond, type AutoEffect, type AutoFamily, type AutoFighter, type AutoGearFx, type AutoResult, type AutoRole, type AutoRoleAny, type AutoStyle } from './auto';
+import { AUTO_RULES, autoDuel, type AutoAction, type AutoBrain, type AutoCond, type AutoEffect, type AutoFamily, type AutoFighter, type AutoGearFx, type AutoResult, type AutoRole, type AutoStyle } from './auto';
 import { POWER, RIVAL_SHEETS, type FighterStats, type Stage } from './stats';
 import { LEVEL_POWER, SKILLS, clampLevel, type Times } from './skills';
 
@@ -82,6 +82,13 @@ export const AUTO_SKILLS: Record<string, AutoSkillDef> = {
   m_ironfall: { family: 'offensive', powerK: 1.2 }, m_smite: { family: 'offensive', powerK: 1.4 },
   m_wild: { family: 'offensive', gaugeK: 1.6 }, m_cleave: { family: 'offensive', gaugeK: 2 },
   m_riposte: { family: 'offensive' }, m_shoulder: { family: 'offensive' }, m_lunge: { family: 'offensive' },
+  // the new skills taught by the town fighters (the operator's NC-1 « Adopter ces cinq, enseignées par les combattants de la ville », NC-3 to NC-7 « Ces nombres »,
+  // the sheet https://claude.ai/artifact/FJdfCEs4igBxqgtVeQj5pV, journal Passe SK4): the Finishing Blow the Thrust's power by its charge (×0.8); Disarm ×1.5 (at ×0.7 the curious player who brought it lost a third of his titles,
+  // journal Passe SK3); Sidestep a stance in the ward's slot taking nothing off, 6 s at level 1 (13.5 s, the Rampart's, took the reference's finals from 56 to 81 %);
+  // Second Wind a support whose effect is its role's; Wrist Strike the Flash cut's charge at full power
+  n_grace: { family: 'offensive', powerK: 0.8 }, n_disarm: { family: 'offensive', powerK: 1.5 },
+  n_sidestep: { family: 'defensive', ward: { dur: 2, dmg: 1, gauge: 1 } }, n_wind: { family: 'support', boost: { dur: 1, dmg: 1, gauge: 1 } },
+  n_wrist: { family: 'offensive', powerK: 1 },
 };
 /** DB5-3 « 5 × le temps de charge » (A3): the heavy blow comes back this many times its charge time at level 1 after its charge begins (SY-02); the skills since
  *  PB-1 their gap between two uses (AUTO_BRUTE.gap) */
@@ -97,7 +104,8 @@ export const AUTO_BRUTE = {
   uses: [2, 2, 3, 3, 4] as readonly number[],
   gap: { R: 8, M: 16, L: 28 },
   // the exploits ×0.36 since journal Passe BE1 (×0.4 in the model: with the opener's opening of 4 s, the Estoc still fits in it)
-  charge: 0.6, roleCharge: { exploit: 0.6 } as Partial<Record<AutoRoleAny, number>>,
+  // the finisher, an ultimate, charges as the exploits (NC-3: « la charge et le délai de l’Estoc »)
+  charge: 0.6, roleCharge: { exploit: 0.6, finisher: 0.6 } as Partial<Record<AutoRole, number>>,
   // the model's 1.2 × AUTO_WEIGHT.skills (0.55), written out (1.2 × 0.55 is 0.6600000000000001 in floating point)
   usePower: 0.66,
   rivalLevel: [1, 2, 3] as readonly number[],
@@ -115,15 +123,19 @@ export const AUTO_ROLES: Record<string, { role: AutoRole; gap: keyof typeof AUTO
   m_smite: { role: 'exploit', gap: 'L' }, m_aegis: { role: 'ward', gap: 'M' }, m_prayer: { role: 'load', gap: 'L' },
   m_ironfall: { role: 'exploit', gap: 'L' }, m_bulwark: { role: 'ward', gap: 'M' }, m_resolve: { role: 'load', gap: 'L' },
   m_cleave: { role: 'breaker', gap: 'M', undodge: true }, m_roar: { role: 'slow', gap: 'L' }, m_hide: { role: 'ward', gap: 'M' },
+  // the new skills (NC-3 to NC-7): the Finishing Blow's long gap (the Thrust's), Disarm's medium one and no parry takes it, Sidestep's medium, Second Wind's long,
+  // Wrist Strike's fast
+  n_grace: { role: 'finisher', gap: 'L' }, n_disarm: { role: 'strip', gap: 'M', unparry: true }, n_sidestep: { role: 'evade', gap: 'M' },
+  n_wind: { role: 'recover', gap: 'L' }, n_wrist: { role: 'sap', gap: 'R' },
 };
 /** a skill's rank (the operator's SK-1 « Adopter ces trois étiquettes », the sheet https://claude.ai/artifact/2KKiD7u2rzxtWc6NE9CfVX, journal Passe SK2): its role decides it, without exception: an exploit an ultimate, a breaker a
  *  super, every other skill a technique (a ward and a support never strike: techniques). Its family (offensive, defensive, support) says what it does, its role when
  *  the automatic plays it; an ultimate plays its cinematic in the black void, a super in the arena (src/arena/cineRule.ts) */
 export type SkillRank = 'technique' | 'super' | 'ultimate';
-/** the roles that give a rank above a technique (SK-1: an exploit an ultimate, a breaker a super; the workshop of journal Passe SK3 proposes the finisher as an
- *  ultimate, added by the laboratory only until the operator's sheet) */
-export const RANK_OF_ROLE: Partial<Record<AutoRoleAny, SkillRank>> = { exploit: 'ultimate', breaker: 'super' };
-export const rankOfRole = (role: AutoRoleAny): SkillRank => RANK_OF_ROLE[role] ?? 'technique';
+/** the roles that give a rank above a technique (SK-1: an exploit an ultimate, a breaker a super; the operator's NC-9 « Garder la règle », the sheet https://claude.ai/artifact/FJdfCEs4igBxqgtVeQj5pV, journal Passe SK4: the finisher an
+ *  ultimate too, « « finir » donne une ultime, une défense ou un soutien reste une technique ») */
+export const RANK_OF_ROLE: Partial<Record<AutoRole, SkillRank>> = { exploit: 'ultimate', finisher: 'ultimate', breaker: 'super' };
+export const rankOfRole = (role: AutoRole): SkillRank => RANK_OF_ROLE[role] ?? 'technique';
 export const skillRank = (id: string): SkillRank => { const r = AUTO_ROLES[id]?.role; return r ? rankOfRole(r) : 'technique'; };
 /** the four brought (SK-2 « Quatre places : une ultime au plus, une super au plus »): at most this many of a rank; two ultimates won 73 % of the planner's finals
  *  instead of 50, two supers took his pool bouts to 1 min 26 (journal Passe SK1) */
@@ -186,7 +198,7 @@ export function autoGearFx(pieces: readonly (string | null | undefined)[]): Auto
 export function autoBrute(a: AutoAction, level: number, o: { parry?: boolean } = {}): AutoAction {
   const R = AUTO_ROLES[a.id];
   if (!R) throw new Error(`no role for the skill "${a.id}"`);
-  const role: AutoRoleAny = o.parry ? 'parry' : R.role, B = AUTO_BRUTE, U = AUTO_RULES;
+  const role: AutoRole = o.parry ? 'parry' : R.role, B = AUTO_BRUTE, U = AUTO_RULES;
   const b: AutoAction = { ...a, role, uses: B.uses[clampLevel(level) - 1], cooldown: B.gap[R.gap] };
   if (R.undodge) b.undodge = true;
   if (R.pierce) b.pierce = true;
@@ -291,7 +303,7 @@ export const AUTO_CONDS_OF: Record<AutoFamily, readonly AutoCond[]> = {
 /** the conditions a skill's line may take by its role (PB-1 « une condition par compétence parmi celles de son rôle », briefs/combat-auto.md § 32.2: the
  *  laboratory's CONDS_BY_ROLE, tools/auto-final/brute.mjs, as its plans were measured): what the plan's page offers since lot 2 of « La Brute », the
  *  automatic's first; « dans une faille » (`open`) and « au début » (`start`) among them */
-export const AUTO_CONDS_BY_ROLE: Partial<Record<AutoRoleAny, readonly AutoCond[]>> = {
+export const AUTO_CONDS_BY_ROLE: Record<AutoRole, readonly AutoCond[]> = {
   exploit: ['auto', 'ready', 'open', 'incoming', 'broken', 'finish'],
   punish: ['auto', 'ready', 'incoming', 'open', 'finish', 'never'],
   pierce: ['auto', 'warded', 'open', 'incoming', 'finish'],
@@ -303,11 +315,17 @@ export const AUTO_CONDS_BY_ROLE: Partial<Record<AutoRoleAny, readonly AutoCond[]
   haste: ['auto', 'start', 'follow', 'broken', 'hurt'],
   slow: ['auto', 'start', 'incoming', 'hurt', 'never'],
   load: ['auto', 'ready', 'broken', 'open', 'finish'],
+  // the new skills' roles (NC-3 to NC-7), measured with these in journal Passe SK3
+  finisher: ['auto', 'ready', 'finish', 'open', 'broken', 'incoming'],
+  strip: ['auto', 'warded', 'ready', 'incoming', 'never'],
+  evade: ['auto', 'incoming', 'ready', 'never'],
+  recover: ['auto', 'gauge', 'hurt', 'never'],
+  sap: ['auto', 'ready', 'start', 'open', 'never'],
 };
 /** the conditions the plan's page offers for a skill: its role's (a skill without one: its family's) */
 export function autoCondsFor(id: string): readonly AutoCond[] {
   const role = AUTO_ROLES[id]?.role, fam = AUTO_SKILLS[id]?.family;
-  return (role && AUTO_CONDS_BY_ROLE[role]) || (fam ? AUTO_CONDS_OF[fam] : ['auto']);
+  return role ? AUTO_CONDS_BY_ROLE[role] : fam ? AUTO_CONDS_OF[fam] : ['auto'];
 }
 /** a skill's condition in a kit's tactic (`kit.tactic`, set on the match sheet: setTactic); 'auto' when it has none or one it cannot take (its role's since lot 2
  *  of « La Brute », or its family's, a plan written before it) */

@@ -277,6 +277,21 @@ export class AutoReplay {
         this.open(other, e.t + (e.ev === 'interrupt' ? AUTO_RULES.interrupt.open : AUTO_RULES.parry.open), e.ev, tell);
         break;
       }
+      // a strip (Disarm, the operator's NC-4, journal Passe SK4): the target's protection, quickening and load lifted, their cards gone, told (« Disarmed »); a
+      // sap (Wrist Strike, NC-7): the target's skills and heavy blow wait, told (« Sapped »)
+      case 'strip': {
+        if (o.ward) { o.ward = null; if (tell) this.emit({ type: 'wardEnd', who: other }); }
+        const b = o.boost ? this.acts[other].get(o.boost.id ?? '')?.role : undefined;
+        if (o.boost && (b === 'haste' || b === 'load')) { o.boost = null; if (tell) this.emit({ type: 'boostEnd', who: other }); }
+        if (tell) this.emit({ type: 'strip', who: other, by: seat, action: e.act });
+        break;
+      }
+      case 'sap': {
+        const until = e.t + AUTO_RULES.sap.delay;
+        for (const x of [...this.fighters[other].skills, this.fighters[other].heavy]) { const c = o.cd[x.id]; if (!c || c.until < until) o.cd[x.id] = { until, dur: Math.max(c?.dur ?? 0, until - e.t) }; }
+        if (tell) this.emit({ type: 'sap', who: other, by: seat, action: e.act, dur: AUTO_RULES.sap.delay });
+        break;
+      }
       // a clash (BL1-8): two blows met, both charges end there without damage, told once (the guard's sparks and sound, « Clash »); a light attack lost to a
       // big action (`beat`): its charge ends, the big action's blow follows
       case 'clash': {

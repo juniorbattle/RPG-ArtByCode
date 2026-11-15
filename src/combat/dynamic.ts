@@ -23,7 +23,7 @@ export type DynFighterId = 'ren' | 'marek';
 export type DynKind = 'light' | 'heavy' | 'skill';
 export type SkillFamily = 'offensive' | 'defensive' | 'support';
 /** today's actions; `m_<name>`: an opponent's skill, `k_<name>`: a skill of the version 2's catalogue (src/combat/skills.ts, lots V1 / V2) */
-export type DynActionId = 'light' | 'heavy' | 't1' | 't2' | 't3' | 't4' | 'd1' | 's1' | 'm_slash' | 'm_heavy' | `m_${string}` | `k_${string}`;
+export type DynActionId = 'light' | 'heavy' | 't1' | 't2' | 't3' | 't4' | 'd1' | 's1' | 'm_slash' | 'm_heavy' | `m_${string}` | `k_${string}` | `n_${string}`;
 export type DynState = 'idle' | 'acting' | 'recovering' | 'pushed' | 'stunned' | 'down';
 
 export interface DynActionDef {

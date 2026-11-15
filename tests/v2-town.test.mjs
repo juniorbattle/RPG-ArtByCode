@@ -89,21 +89,21 @@ test('a challenge (lot L2b, EV-3 / EV-4): put to a fighter who is there, a stake
   const bout = G.makeV2(G.namedState('day2-afternoon')); bout.place = 'training'; refused(bout, { type: 'challenge', who: 'orla', stake: 'name' }, /arena is waiting/);
   // a stake one cannot pay
   const poor = act(v2(), { type: 'move', to: 'training' }).state; poor.player.coins = 9; refused(poor, { type: 'challenge', who: 'orla', stake: 'coins' }, /10 coins/);
-  // a generic fighter: on its rival's profile, a little weaker; teaches nothing
+  // a generic fighter: on its rival's profile, a little weaker; teaches its own skill since journal Passe SK4 (NC-1, NC-8: Ser Aldric Venn the Disarm)
   const gs = act(act(v2(), { type: 'move', to: 'training' }).state, { type: 'challenge', who: 'aldric', stake: 'coins' }).state, gsh = M.challengeSheetFor(gs);
   assert.equal(gsh.sides[1].fighters[0].name, 'Ser Aldric Venn'); assert.equal(gsh.sides[1].fighters[0].profile, 'ilse'); assert.deepEqual(gsh.sides[1].fighters[0].mods, { hp: 0.9, damage: 0.95 });
-  const gw = act(gs, { type: 'challengeResult', outcome: WIN }).state; assert.deepEqual(gw.v2.kit.levels, sand(gs), 'no skill of its own, the sand\'s lesson');
+  const gw = act(gs, { type: 'challengeResult', outcome: WIN }).state; assert.deepEqual(gw.v2.kit.levels, { ...sand(gs), n_disarm: 1 }, 'its skill, and the sand\'s lesson');
   // the challenge's duel is a version 2 duel the bot can fight to its end, the rival's and the generic's
   for (const s of [st, gs]) { const x = M.challengeSheetFor(s), d = M.v2SheetData(x, undefined, G.v2KitOf(s), VG.v2Mods(s)); assert.ok(B.runV2BotDuel(d.data, d.tiers, { skill: 0.6, seed: 3 }).winner); }
 });
 
-test('the three more generic fighters (GA-P1 to GA-P3 « Oui, ainsi », journal Passe GA3): each at its place and hour, on its rival\'s profile, teaching nothing of their own', () => {
+test('the three more generic fighters (GA-P1 to GA-P3 « Oui, ainsi », journal Passe GA3): each at its place and hour, on its rival\'s profile, teaching their own skill since journal Passe SK4 (NC-1)', () => {
   // the oracle, as the operator's lot sheet kept them: the swordmaster on the forecourt in the evening (Marek's profile), the spear champion on the quay by day
   // (Vessa's), the bare-handed fighter on the market hall's square in the morning (Tobin's); health and blows « proposés »
   const ORACLE = {
-    lucan: { name: 'Lucan Rook', place: 'forecourt', slots: ['evening'], profile: 'marek', mods: { hp: 0.85, damage: 0.9 } },
-    piers: { name: 'Piers Calloway', place: 'district', slots: ['morning', 'afternoon'], profile: 'vessa', mods: { hp: 0.9, damage: 0.95 } },
-    kell: { name: 'Kell Barrow', place: 'lanterns', slots: ['morning'], profile: 'tobin', mods: { hp: 0.9, damage: 0.95 } },
+    lucan: { name: 'Lucan Rook', place: 'forecourt', slots: ['evening'], profile: 'marek', mods: { hp: 0.85, damage: 0.9 }, teaches: 'n_grace' },
+    piers: { name: 'Piers Calloway', place: 'district', slots: ['morning', 'afternoon'], profile: 'vessa', mods: { hp: 0.9, damage: 0.95 }, teaches: 'n_sidestep' },
+    kell: { name: 'Kell Barrow', place: 'lanterns', slots: ['morning'], profile: 'tobin', mods: { hp: 0.9, damage: 0.95 }, teaches: 'n_wrist' },
   };
   for (const [who, o] of Object.entries(ORACLE)) {
     for (const slot of ['morning', 'afternoon', 'evening']) {
@@ -114,7 +114,7 @@ test('the three more generic fighters (GA-P1 to GA-P3 « Oui, ainsi », journal 
       const st = act(s, offer.action).state, sh = M.challengeSheetFor(st), f = sh.sides[1].fighters[0];
       assert.equal(f.name, o.name); assert.equal(f.profile, o.profile); assert.deepEqual(f.mods, o.mods);
       const won = act(st, { type: 'challengeResult', outcome: WIN }).state;
-      assert.deepEqual(won.v2.kit.levels, sand(st), `${who}: no skill of their own, the sand's lesson`); assert.equal(won.player.coins, s.player.coins + 10, `${who}: the stake back twice`);
+      assert.deepEqual(won.v2.kit.levels, { ...sand(st), [o.teaches]: 1 }, `${who}: their skill, and the sand's lesson`); assert.equal(won.player.coins, s.player.coins + 10, `${who}: the stake back twice`);
       // the duel is a version 2 duel the bot can fight to its end
       const d = M.v2SheetData(sh, undefined, G.v2KitOf(st), VG.v2Mods(st)); assert.ok(B.runV2BotDuel(d.data, d.tiers, { skill: 0.6, seed: 3 }).winner, who);
     }

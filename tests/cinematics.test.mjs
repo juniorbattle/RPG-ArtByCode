@@ -49,10 +49,11 @@ function oracle({ d, F }) {
 }
 
 test('the rule is the operator’s: the ultras (exploitations) every time they land in full, outside the cap (SK-5), the supers (breakers) when every blow lands, both fighters, 3 supers a bout at most, 20 s apart, the K.O. always', () => {
-  assert.deepEqual(JSON.parse(JSON.stringify(C.CINE_RULE)), { tiers: [{ tier: 'ultra', roles: ['exploit'], land: 'hit', free: true }, { tier: 'super', roles: ['breaker'], land: 'hit' }], side: 'both', max: 3, gap: 20, ko: true });
+  // the Finishing Blow, an ultimate of the role « finish » since journal Passe SK4 (NC-3, NC-9), plays as the exploits
+  assert.deepEqual(JSON.parse(JSON.stringify(C.CINE_RULE)), { tiers: [{ tier: 'ultra', roles: ['exploit', 'finisher'], land: 'hit', free: true }, { tier: 'super', roles: ['breaker'], land: 'hit' }], side: 'both', max: 3, gap: 20, ko: true });
   // the comment's lines joined (a quote may run over two of them)
   const cineRule = fs.readFileSync(path.join(ROOT, 'src/arena/cineRule.ts'), 'utf8').replace(/\r?\n\s*\*\s*/g, ' ');
-  for (const w of ['« Les ultimes seules (les exploitations) »', '« Et seulement dans une faille ou une rupture »', '« Super : chaque coup touche (Recommended) »', '« Les deux combattants »', '« Au plus 3, 20 s entre deux, le K.O. toujours »', '« si c\'est la competences ultime alors la cinematique doit se jouer en tout temps, des lors que\'elle reussit »', '« Sans plafond pour les ultimes ; les supers 3 au plus, 20 s entre deux »']) assert.ok(cineRule.includes(w), `quoted word for word: ${w}`);
+  for (const w of ['« Les ultimes seules (les exploitations) »', '« Et seulement dans une faille ou une rupture »', '« Super : chaque coup touche (Recommended) »', '« Les deux combattants »', '« Au plus 3, 20 s entre deux, le K.O. toujours »', '« si c\'est la competences ultime alors la cinematique doit se jouer en tout temps, des lors que\'elle reussit »', '« Sans plafond pour les ultimes ; les supers 3 au plus, 20 s entre deux »', '« Garder la règle »', '« Sa cinématique se joue à chaque réussite, comme toute ultime (SK-5) »']) assert.ok(cineRule.includes(w), `quoted word for word: ${w}`);
 });
 
 test('each moment against the oracle written from the script: the actions that land in full, their tier, their striker, their first blow, on 63 duels', () => {

@@ -45,7 +45,10 @@ test('every recipe is well formed: known steps, known colours, a positive length
 });
 
 test('every action of the duel plays its own recipe: each skill of the book and each rival\'s has one, the plain blows each side theirs', () => {
-  for (const id of [...Object.keys(K.SKILL_BOOK), 't1', 't2', 't3', 't4', 'd1', 's1']) assert.ok(R.RECIPES[id], `no recipe for ${id}`);
+  // (a town fighter's skill borrows another's recipe, no new art: the operator's NC-10, journal Passe SK4)
+  for (const id of [...Object.keys(K.SKILL_BOOK), 't1', 't2', 't3', 't4', 'd1', 's1']) assert.ok(R.RECIPES[K.looksOf(id)], `no recipe for ${id}`);
+  assert.deepEqual(['n_grace', 'n_disarm', 'n_wrist'].map((id) => R.blowRecipe(id, 'skill', 'ren').id), ['t4', 'k_feint', 't1']);
+  assert.deepEqual([R.effectRecipe('n_sidestep', 'defensive').id, R.effectRecipe('n_wind', 'support').id], ['d1', 's1']);
   assert.ok(Object.keys(V.FOE_SKILLS).length >= 17);
   for (const id of Object.keys(V.FOE_SKILLS)) assert.ok(R.RECIPES[id], `no recipe for ${id}`);
   for (const [foe, f] of Object.entries(V.V2_FOES)) for (const k of f.skills.list) assert.ok(R.RECIPES[k.id], `${foe}: no recipe for ${k.id}`);

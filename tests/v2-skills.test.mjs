@@ -19,9 +19,9 @@ const v2 = (name = 'day1-morning') => G.makeV2(G.namedState(name));
 const act = (st, a) => { const r = G.advance(st, a); assert.ok(r.ok, `${a.type}: ${r.reason}`); return r.state; };
 const refused = (st, a, re) => { const r = G.advance(st, a); assert.equal(r.ok, false, a.type); if (re) assert.match(r.reason, re); };
 
-test('the catalogue: twelve skills and the heavy attack (journal Passe CH1), and since journal Passe SK2 the rivals\' seven signatures (SK-12 « La lever : dix-neuf compétences »), the three families, each with its charge times (five levels, shorter as they rise) and its AP', () => {
+test('the catalogue: twelve skills and the heavy attack (journal Passe CH1), since journal Passe SK2 the rivals\' seven signatures (SK-12 « La lever : dix-neuf compétences »), since journal Passe SK4 the town fighters\' five (NC-1), the three families, each with its charge times (five levels, shorter as they rise) and its AP', () => {
   const all = Object.keys(SB.SKILL_BOOK), sigs = Object.values(SB.SIGNATURES), ids = all.filter((id) => !sigs.includes(id));
-  assert.equal(all.length, 20, `${all.length} skills and the heavy attack`); assert.equal(sigs.length, 7);
+  assert.equal(all.length, 25, `${all.length} skills and the heavy attack`); assert.equal(sigs.length, 7);
   // a signature is a rival\'s attack, its numbers the duel played by the computer\'s (tests/skill-structure.test.mjs); the three-button duel never carries it
   for (const id of sigs) { assert.equal(SB.SKILL_BOOK[id].family, 'offensive'); assert.equal(SB.SKILL_BOOK[id].source, 'challenge'); for (let lv = 2; lv <= 5; lv++) assert.ok(K.chargeTime(id, lv) < K.chargeTime(id, lv - 1), id); }
   assert.deepEqual({ ...SB.SKILL_BOOK.heavy }, { id: 'heavy', family: 'offensive', source: 'start' });

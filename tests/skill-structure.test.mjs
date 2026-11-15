@@ -24,15 +24,16 @@ const refused = (st, a, re) => { const r = G.advance(st, a); assert.equal(r.ok, 
 const inFrench = (f) => { T.useLanguage('fr', FR); try { return f(); } finally { T.useLanguage('en'); } };
 const SHEET = 'https://claude.ai/artifact/2KKiD7u2rzxtWc6NE9CfVX';
 
-test('SK-1 / SK-12: nineteen skills, each its family, its rank by its role, its role; three ultimates and three supers, a defence and a support always a technique', () => {
+test('SK-1 / SK-12: nineteen skills, twenty-four since the town fighters\' five (NC-1, journal Passe SK4), each its family, its rank by its role, its role; four ultimates and three supers, a defence and a support always a technique', () => {
   const ids = Object.keys(SB.SKILL_BOOK).filter((id) => id !== 'heavy');
-  assert.equal(ids.length, 19);
+  assert.equal(ids.length, 24);
   const by = (r) => ids.filter((id) => AD.skillRank(id) === r).sort();
-  assert.deepEqual(by('ultimate'), ['m_ironfall', 'm_smite', 't4']);
+  assert.deepEqual(by('ultimate'), ['m_ironfall', 'm_smite', 'n_grace', 't4']);
   assert.deepEqual(by('super'), ['m_cleave', 'm_wild', 't3']);
   for (const id of ids) {
     const role = AD.AUTO_ROLES[id].role;
-    assert.equal(AD.skillRank(id), role === 'exploit' ? 'ultimate' : role === 'breaker' ? 'super' : 'technique', id);
+    // (NC-9 « Garder la règle »: « finir » donne une ultime)
+    assert.equal(AD.skillRank(id), role === 'exploit' || role === 'finisher' ? 'ultimate' : role === 'breaker' ? 'super' : 'technique', id);
     if (SB.SKILL_BOOK[id].family !== 'offensive') assert.equal(AD.skillRank(id), 'technique', `${id}: a defence or a support never strikes`);
   }
   // the decisions quoted word for word where the rank is decided
@@ -77,19 +78,20 @@ test('SK-2: one ultimate and one super at most among the four; the match sheet\'
 test('SK-7: before day 6 a challenge teaches the first day\'s three their support or defence; from day 6 every rival its signature, named on the challenge', () => {
   assert.equal(SB.SIGNATURE_DAY, VT.RIVALS_CHALLENGE_DAY, 'the second phase of the challenges');
   const early = v2();
-  assert.deepEqual(['orla', 'ilse', 'vessa', 'marek', 'aldric'].map((w) => S.challengeSkill(early, w)), ['k_cry', 'k_parry', 'k_focus', null, null]);
+  // (a town fighter teaches its own skill in both phases since journal Passe SK4: tests/new-skills.test.mjs)
+  assert.deepEqual(['orla', 'ilse', 'vessa', 'marek', 'aldric', 'corra'].map((w) => S.challengeSkill(early, w)), ['k_cry', 'k_parry', 'k_focus', null, 'n_disarm', null]);
   const late = structuredClone(early); late.day = SB.SIGNATURE_DAY;
   for (const [foe, id] of Object.entries(SB.SIGNATURES)) assert.equal(S.challengeSkill(late, foe), id, foe);
-  assert.equal(S.challengeSkill(late, 'aldric'), null, 'a generic fighter teaches none');
+  assert.equal(S.challengeSkill(late, 'aldric'), 'n_disarm', 'a town fighter teaches its own skill in both phases');
   const won = structuredClone(late); assert.equal(S.learnFromChallenge(won, 'marek', () => {}), 'm_ironfall'); assert.equal(won.v2.kit.levels.m_ironfall, 1);
   // the challenge's line names what a win teaches; the line of a fighter who teaches none says the stake alone
   for (const k of ['v2.challenge.labelCoins', 'v2.challenge.labelName']) { assert.match(EN[k], /\{skill\}\)$/); assert.match(FR[k], /\{skill\}\)$/); }
   // the skills a rival out of the title taught before (LATE_TEACHER) are bought or drilled: no one else teaches them
   assert.equal(SB.LATE_TEACHER, undefined);
   for (const id of ['k_iron', 'k_feint', 'k_sunder', 't2']) assert.ok(['buy', 'train'].includes(SB.SKILL_BOOK[id].source), id);
-  // a skill is drilled up to the cap and no higher
+  // a skill is drilled up to the cap and no higher; Master Corvin's lessons beyond it since journal Passe SK4 (NC-11)
   const s = v2(); s.v2.kit.levels.m_smite = 1;
-  assert.deepEqual(P.nextLevel(s, 'm_smite'), { level: 2, by: 'drill' }); s.v2.kit.levels.m_smite = S.TRAIN_CAP; assert.equal(P.nextLevel(s, 'm_smite'), null);
+  assert.deepEqual(P.nextLevel(s, 'm_smite'), { level: 2, by: 'drill' }); s.v2.kit.levels.m_smite = S.TRAIN_CAP; assert.equal(P.nextLevel(s, 'm_smite').by, 'lesson');
 });
 
 test('SK-6 / SK-10: an ultimate at full strength at least; Breach, Orla\'s shoulder and Marek\'s Iron Fall at an ordinary weight on the gauge, only a breaker heavier', () => {
@@ -110,8 +112,8 @@ test('SK-11: the ranks and the signatures by their names, in English and in Fren
   const names = { m_ironfall: ['Iron Fall', 'Chute de Fer'], m_smite: ['Temple Smite', 'Frappe du Temple'], m_wild: ['Wild Swing', 'Coup sauvage'], m_cleave: ['Northern Cleave', 'Taille du Nord'], m_riposte: ['Gilded Riposte', 'Riposte dorée'], m_shoulder: ['Dockside Shoulder', 'Coup d’épaule des docks'], m_lunge: ['Quickblade Lunge', 'Fente de la Lame-Vive'] };
   for (const [id, [en, fr]] of Object.entries(names)) { assert.equal(T.skillName(id), en); assert.equal(inFrench(() => T.skillName(id)), fr); }
   // the guide says the structure, its day the game's
-  const prep = T.tx('tut.ch.prepare.body', { train: 1, trainHp: 20, base: 300, vigour: 24, sessions: 3, hp: 3.6, wound: 10, anwen: 'Sister Anwen', rehearse: 30, cap: 3, sday: SB.SIGNATURE_DAY });
-  assert.match(prep, /an exploitation is an ultimate, a breaker a super, every other skill a technique\. Among your four, one ultimate and one super at most\. Before day 6, .*; from day 6, beating a rival out of the title, or one of those three, teaches you their signature attack\./);
+  const prep = T.tx('tut.ch.prepare.body', { train: 1, trainHp: 20, base: 300, vigour: 24, sessions: 3, hp: 3.6, wound: 10, anwen: 'Sister Anwen', rehearse: 30, cap: 3, sday: SB.SIGNATURE_DAY, lday: S.LESSON.day, pnext: S.lessonPrice(4), plast: S.lessonPrice(5) });
+  assert.match(prep, /an exploitation or a finishing blow is an ultimate, a breaker a super, every other skill a technique\. Among your four, one ultimate and one super at most\. Before day 6, .*; from day 6, beating a rival out of the title, or one of those three, teaches you their signature attack\./);
 });
 
 test('the operator\'s note on SK-6: a failed ultimate plays no cinematic, its use spent; said over its striker, and the notebook\'s advice', () => {

@@ -22,14 +22,11 @@ import { hitFactor } from './stats';
 
 export type AutoKind = 'light' | 'heavy' | 'skill';
 export type AutoFamily = 'offensive' | 'defensive' | 'support';
-/** what a skill does in the duel (PB-1; briefs/combat-auto.md § 32.2, the laboratory's BRUTE_ROLES) */
-export type AutoRole = 'exploit' | 'punish' | 'pierce' | 'breaker' | 'opener' | 'interrupt' | 'ward' | 'parry' | 'haste' | 'slow' | 'load';
-/** the roles the workshop of new skills proposes (journal Passe SK3, « proposé »: no skill of the game carries them until the operator's sheet): finish (×
- *  under a share of the target's health), strip (the target's ward, haste and load lifted; it cannot be parried), evade (a stance: one's dodge ×), recover (one's
- *  own gauge emptied by a share), sap (the target's skills and heavy blow wait longer) */
-export type AutoRoleSk3 = 'finisher' | 'strip' | 'evade' | 'recover' | 'sap';
-/** a role an action may carry: a decided one, or one of the workshop SK3 (the laboratory's) */
-export type AutoRoleAny = AutoRole | AutoRoleSk3;
+/** what a skill does in the duel (PB-1; briefs/combat-auto.md § 32.2, the laboratory's BRUTE_ROLES); since the operator's sheet of new skills (NC-1 « Adopter ces cinq,
+ *  enseignées par les combattants de la ville », the sheet https://claude.ai/artifact/FJdfCEs4igBxqgtVeQj5pV, journal Passe SK4) five more: finish (× under half of the target's health), strip (the target's ward, haste and load lifted; it
+ *  cannot be parried), evade (a stance in which every blow that can be dodged is dodged), recover (one's own gauge emptied by a share), sap (the target's skills and
+ *  heavy blow wait) */
+export type AutoRole = 'exploit' | 'punish' | 'pierce' | 'breaker' | 'opener' | 'interrupt' | 'ward' | 'parry' | 'haste' | 'slow' | 'load' | 'finisher' | 'strip' | 'evade' | 'recover' | 'sap';
 /** a ward (on oneself: the damage and the gauge one takes ×) or a support's effect, for `dur` seconds */
 export interface AutoEffect { dur: number; dmg: number; gauge: number }
 /** an action on the timeline */
@@ -57,12 +54,12 @@ export interface AutoAction {
   /** the heavy blow (kind 'heavy': the finisher that may wound Ren, the game's V2B1-1) */
   heavy?: boolean;
   /** a skill's role (PB-1) and its uses per duel by its level (PB-2) */
-  role?: AutoRoleAny;
+  role?: AutoRole;
   uses?: number;
   /** it cannot be dodged (Tourbillon, Rhosk's cleave); it goes through a ward too (the Thrust of Fente, Cassius's riposte) */
   undodge?: boolean;
   pierceWard?: boolean;
-  /** it cannot be parried (the strip of the workshop SK3: it lifts the ward before the ward can take it) */
+  /** it cannot be parried (Disarm, NC-4: it lifts the ward before the ward can take it) */
   unparry?: boolean;
 }
 /** who decides for a fighter: Ren (the player's side) or a rival; both play the same automatic unless `o.deciders` replaces one (the laboratory) */
@@ -138,9 +135,9 @@ export const AUTO_RULES = {
   // before; one ultimate in ten under 150 outside an opening, a cinematic for a small number)
   exploit: { hi: 2, lo: 1 }, punish: 1.7, opener: 4, interrupt: { open: 6, stagger: 1 }, parry: { open: 6, dur: 3 },
   haste: { k: 0.7, dur: 15 }, slow: { k: 1.4, dur: 12 }, load: { dmg: 2, gauge: 1.5, dur: 15 },
-  /** the roles of the workshop SK3 (« proposé », journal Passe SK3; no skill of the game carries them): a finisher × `hi` on a target under `below` of its health,
-   *  × `lo` else (an ultimate at full strength at least, SK-6); (an evade stance dodges every blow that can be dodged, even while charging); a recover's share of one's gauge emptied; a sap's wait (s) on the
-   *  target's skills and heavy blow */
+  /** the roles of the new skills (the operator's NC-3 to NC-7 « Ces nombres », the sheet https://claude.ai/artifact/FJdfCEs4igBxqgtVeQj5pV, journal Passe SK4): a finisher × `hi` on a target under `below` of its health, × `lo` else
+   *  (an ultimate at full strength at least, SK-6; the Finishing Blow); a recover's share of one's gauge emptied (Second Wind); a sap's wait (s) on the target's
+   *  skills and heavy blow (Wrist Strike); an evade stance dodges every blow that can be dodged, even while charging (Sidestep) */
   finisher: { hi: 2.5, lo: 1, below: 0.5 }, recover: { share: 0.35 }, sap: { delay: 15 },
   /** the light attack's charge × (fewer skills: the light fills the time; RY-1's forty blows a minute kept) */
   lightCharge: 1.35,
@@ -284,7 +281,7 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     if (a.role === 'haste' || a.role === 'slow' || a.role === 'load' || a.role === 'recover') {
       if (a.role === 'haste') f.hasteUntil = t + R.haste.dur;
       else if (a.role === 'slow') other(f).slowUntil = t + R.slow.dur;
-      // a recover (the workshop SK3): one's own gauge emptied by its share
+      // a recover (Second Wind, NC-6): one's own gauge emptied by its share
       else if (a.role === 'recover') { f.g = gaugeNow(f) * (1 - R.recover.share); f.gT = t; }
       else f.next = { until: t + R.load.dur, dmg: R.load.dmg, gauge: R.load.gauge };
       log && put({ t: T(), who: f.x.id, ev: 'boost', act: a.id }); return false;
@@ -320,7 +317,7 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     const lastPierce = !!f.gfx.lastPierce && a.kind === 'light' && c.i === c.hits.length;
     const open = g.openUntil > t, st = g.x.style;
     let res: 'hit' | 'guarded' | 'dodged' = 'hit';
-    // (an evade stance of the workshop SK3 dodges every blow that can be dodged, even while its fighter charges)
+    // (an evade stance, Sidestep, dodges every blow that can be dodged, even while its fighter charges: NC-5)
     const evading = !!g.ward?.evade && g.ward.until > t;
     if (!g.broken && (!exposed || evading) && !open) {
       if (!a.undodge && (evading || autoDraw(s0, f.i, c.k, c.i, DRAW.dodge) < R.react.dodge * ratio(g.x.viv, f.x.viv) * (g.gfx.dodge ?? 1) * (st?.dodge ?? 1))) res = 'dodged';
@@ -367,7 +364,7 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
       const gm = res === 'guarded' ? g.gfx.guardGauge ?? R.gauge.guardMul : 1;
       addGauge(g, autoGaugeHit(a, share, g.x.end, R) * gm * (c.load ? c.load.gauge : 1) * (wardOn ? g.ward!.gauge : 1) * (f.gfx.gauge ?? 1));
     }
-    // the workshop SK3: a strip lifts the target's ward, haste and load; a sap that lands makes its skills and heavy blow wait
+    // a strip (Disarm, NC-4) lifts the target's ward, haste and load; a sap that lands (Wrist Strike, NC-7) makes its skills and heavy blow wait
     if (c.i === 1 && a.role === 'strip' && (wardOn || g.hasteUntil > t || !!g.next)) { g.ward = null; g.hasteUntil = Math.min(g.hasteUntil, t); g.next = null; log && put({ t: T(), who: f.x.id, ev: 'strip', act: a.id }); }
     if (c.i === 1 && a.role === 'sap' && res === 'hit') {
       for (const s of [...g.x.skills, g.x.heavy]) g.cd[s.id] = Math.max(g.cd[s.id] ?? 0, t + R.sap.delay);
@@ -495,7 +492,7 @@ export function autoRole(v: AutoView, x: AutoFighter, s: AutoAction): boolean {
       const foeLeft = foe.act ? foe.at - t : 0, foeBig = !!foe.act && foe.act.kind !== 'light';
       return (foeBig && foeLeft > v.chargeOf(me, s)) || v.gauge(me) >= (2 / 3) * v.rules.gauge.max;
     }
-    // the workshop SK3 (« proposé »): the finisher under its share of the opponent's health (or Ren nearly down); the strip when something is up to lift when it
+    // the new skills (NC-3 to NC-7): the finisher under its share of the opponent's health (or Ren nearly down); the strip when something is up to lift when it
     // lands; the evade stance on a big action it can be up for; the recover past two thirds of one's gauge; the sap as soon as it is ready
     case 'finisher': return foe.hp / foe.maxHp < v.rules.finisher.below || me.hp / me.maxHp < L * 0.6;
     case 'strip': { const at = t + v.chargeOf(me, s); return active(foe.ward, at) || foe.hasteUntil > at || (!!foe.next && foe.next.until > at); }
