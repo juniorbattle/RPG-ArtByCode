@@ -100,5 +100,6 @@ export function journalPage(s: GameState, close: () => void): { root: HTMLElemen
   if (qRow && open) { qRow.classList.add('on'); showQuests(); }
   if (!days.length && !qRow) detail.appendChild(el('p', 'pm-sub', tx('ui.journal.empty')));
   arrowKeys(list); scrollFade(list);
-  return { root, focus: () => { (list.querySelector('.pm-btn') as HTMLElement | null ?? out).focus(); } };
+  // the « In progress » page first while a quest is open (Q-07), else the last day
+  return { root, focus: () => { ((qRow && open ? qRow : list.querySelector('.pm-btn:not([data-quests])') ?? qRow) as HTMLElement | null ?? out).focus(); } };
 }

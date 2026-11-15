@@ -927,7 +927,7 @@ export const FR_TEXTS: Record<string, string> = {
   "v2.quest.sharps.notHere": "Les tricheurs jouent près de l’estrade de la place de la Halle.",
   "v2.quest.sharps.night": "Les tricheurs ne sortent que la nuit.",
   "v2.quest.sharps.noWatch": "Le sergent Hale ne vous a prêté aucun homme du guet.",
-  "v2.quest.sharps.word": "Lio vous fait passer un mot de sa salle : ce que {name} compte faire demain dans l’arène (son plan, sur la fiche de match).",
+  "v2.quest.sharps.word": "Lio vous fait passer un mot de sa salle : ce que {name} compte faire à votre prochain combat (son plan, sur la fiche de match).",
   "v2.quest.sharps.noTables": "Lio n’a plus besoin d’aide à ses tables : les tricheurs lui ont pris ses clients.",
   "v2.encounter.none": "Personne n’attend de réponse.",
   "v2.encounter.title": "Votre réponse",

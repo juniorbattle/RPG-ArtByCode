@@ -1,7 +1,7 @@
 // The tutorial's proof at the keyboard (journal Passe TU3, the operator's sheet TU-1 to TU-12; the gamepad and the bare address: tools/default-proof.mjs):
 //   1. a new game (tutorial=1: a driven browser keeps today's flow without it): the arrival's news, then the tour of six bands at Enter, the real clock,
 //      figures, list and menu lit; Esc skips the tour when it is replayed;
-//   2. the guide on H: thirteen chapters (« Earning coins » since journal Passe ECO2) walked with the arrows, every chapter's text filled from the game (no brace left), the ten days, the scene here as a
+//   2. the guide on H: fourteen chapters (« Earning coins » since journal Passe ECO2, « Events and sabotage » since journal Passe QE2) walked with the arrows, every chapter's text filled from the game (no brace left), the ten days, the scene here as a
 //      live picture, the quay kept for « The Cité and its squares »; Esc closes it;
 //   3. the hints, each once: the shop (a keeper's goods), the theft (the list), then the next pages as the game goes on: the eve of the first bout (day 1,
 //      afternoon), Space opening its chapter of the guide; the first square (the forecourt), its picture kept beside the quay's; the evening; none twice;
@@ -202,21 +202,23 @@ try {
   // 2. the guide on H
   await key(page, 'h');
   const n = await until(page, () => document.querySelectorAll('.tu-guide .pm-glist .pm-btn').length, 5000, 'the guide');
-  check(n === 13, `H opens the guide: ${n} chapters`);
+  check(n === 14, `H opens the guide: ${n} chapters`);
   const seen = [];
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 13; i++) {
     const c = await page.evaluate(() => ({ t: document.querySelector('.tu-guide section:last-child .pm-h').textContent, body: document.querySelector('.tu-guide .pm-detail').textContent, img: document.querySelectorAll('.tu-guide .pm-detail img').length, days: document.querySelectorAll('.tu-days div').length, order: document.querySelectorAll('.tu-order > div').length }));
     seen.push(c);
     if (i === 3) await page.screenshot({ path: path.join(outDir, '2-guide-places.png') });
-    if (i === 10) await page.screenshot({ path: path.join(outDir, '2-guide-prepare.png') });
-    if (i === 11) await page.screenshot({ path: path.join(outDir, '2-guide-duel.png') });
+    if (i === 11) await page.screenshot({ path: path.join(outDir, '2-guide-prepare.png') });
+    if (i === 12) await page.screenshot({ path: path.join(outDir, '2-guide-duel.png') });
     await key(page, 'ArrowDown');
   }
   check(seen.every((c) => c.body.length > 120 && !/[{}]/.test(c.body)), `every chapter filled from the game: ${seen.map((c) => c.t).join(' | ')}`);
   check(seen[0].days === 10, 'the tournament drawn from the game (ten days)');
   check(seen[2].img === 1, '« Walking and talking »: the scene here, a live picture');
   check(seen[3].img === 1 && seen[3].body.includes(t('tut.fig.unseen')), `« The Cité and its squares »: the quay kept, the squares to discover (${seen[3].img} picture)`);
-  check(seen[11].t === t('tut.ch.duel.title') && seen[11].order === 5 && seen[11].body.startsWith(t('ui.order.title')), `« ${seen[11].t} »: the order of the four drawn from the game, then the light attack (${seen[11].order} lines)`);
+  check(seen[12].t === t('tut.ch.duel.title') && seen[12].order === 5 && seen[12].body.startsWith(t('ui.order.title')), `« ${seen[12].t} »: the order of the four drawn from the game, then the light attack (${seen[12].order} lines)`);
+  // « Events and sabotage » (journal Passe QE2, GP-11 and Q-07): after « Watching and rumours »
+  check(seen[9].t === t('tut.ch.events.title'), `the guide's « ${seen[9].t} » after the rumours`);
   await key(page, 'Escape');
   check(await page.evaluate(() => !document.querySelector('.tu-guide')), 'Esc closes the guide');
 
@@ -286,7 +288,7 @@ try {
   await next(page);
   await closeHints(page);
   await key(page, 'h');
-  for (let i = 0; i < 11; i++) await key(page, 'ArrowDown');
+  for (let i = 0; i < 12; i++) await key(page, 'ArrowDown');
   const duelCh = await page.evaluate(() => ({ t: document.querySelector('.tu-guide section:last-child .pm-h')?.textContent, foot: document.querySelector('.tu-guide .pm-foot')?.textContent ?? '' }));
   check(duelCh.t === t('tut.ch.duel.title') && duelCh.foot.includes(t('tut.duel.again')), `the guide's « ${duelCh.t} »: Space « ${t('tut.duel.again')} »`);
   await key(page, ' ');

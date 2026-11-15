@@ -962,7 +962,7 @@ export const EN = {
   'v2.quest.sharps.notHere': 'The card sharps play by the stage of the festival square.',
   'v2.quest.sharps.night': 'The card sharps come out at night.',
   'v2.quest.sharps.noWatch': 'Sergeant Hale has lent you no watchman.',
-  'v2.quest.sharps.word': 'Lio sends word from his room: what {name} means to do in the arena tomorrow (their plan, on the match sheet).',
+  'v2.quest.sharps.word': 'Lio sends word from his room: what {name} means to do in your next bout (their plan, on the match sheet).',
   'v2.quest.sharps.noTables': 'Lio no longer needs a hand at his tables: the card sharps took his customers.',
   'v2.encounter.none': 'Nobody is waiting for an answer.',
   'v2.encounter.title': 'Your answer',

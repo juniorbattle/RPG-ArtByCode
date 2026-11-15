@@ -1,4 +1,4 @@
-import { clamp, slotIndex, type GameState, type PlaceId, type SlotId } from './state';
+import { clamp, slotIndex, type GameState, type PlaceId } from './state';
 import type { ActionDef } from './actions';
 import type { Emit } from './advance';
 import { isV2, v2KitOf } from './v2';
@@ -11,7 +11,7 @@ import { PEOPLE } from '../narrative/people';
 import { RIVALS } from '../narrative/roster';
 import { SKILL_BOOK } from '../combat/skillbook';
 import { tx, skillName, type TextKey } from '../narrative/text';
-import { QUEST, QUESTS, QUEST_IDS, REWARD, TITLE, type QuestDef, type QuestId } from './v2questData';
+import { QUEST, QUESTS, QUEST_IDS, TITLE, type QuestDef, type QuestId } from './v2questData';
 export * from './v2questData';
 
 /** The town's quests of a version 2 game (the operator's GP-09 « Quatre quêtes de ville et une page « En cours » », journal Passe GP2; the general gameplay
