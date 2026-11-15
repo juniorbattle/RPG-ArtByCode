@@ -28,7 +28,7 @@ import { DYN_PRESETS, runDynScript } from './DynPresets';
 import { arenaRules, dynClip, dynClipFrame, dynKeys, dynPad, fxOn, tuneDyn, v2Rules, type ArenaRules } from './dynamicView';
 import { AutoReplay, sceneAutoDuel, type ReplayEvent } from './autoView';
 import { AutoHud, AUTO_TEXTS_EN, AUTO_TEXTS_FR, autoActionName, type AutoTexts } from './AutoHud';
-import { autoDuel, type AutoCommand, type AutoFighter, type AutoResult } from '../combat/auto';
+import { AUTO_RULES, autoDuel, type AutoCommand, type AutoFighter, type AutoResult } from '../combat/auto';
 import { FloorUI } from './FloorUI';
 import { chargeHudModel, makeV2Duel, runV2Script, V2_PAD, V2_PRESETS } from './v2Arena';
 import { CHARGE_TEXTS_EN, CHARGE_TEXTS_FR } from './DynamicHud';
@@ -36,6 +36,8 @@ import { lang } from '../narrative/text';
 import type { ChargedDuel, ChargeTier } from '../combat/charge';
 import type { CombatFx } from './fx/combatFx';
 import type { PieceId } from '../audio/plan';
+import type { CineMoment, CineRule } from './cine';
+import type { CineBackdrop, CineRun, CineStyle } from './cineDirector';
 
 /** The arena scene of the game (journal Passe P1): `?scene=arena`. The prototype's duel (CombatSim, ported rule for rule) staged with
  *  the town's renderer: the same materials, lights (LightRig), sky, moon shadow, planar reflection in the puddles and post chain (in-scatter,
@@ -205,6 +207,19 @@ export class ArenaApp {
   private sheets: import('./CombatSheets').InstalledSheets | null = null;
   /** who sits in the opponent's seat: the bout's rival, else Marek; DEV `foe=<id>` on the arena's page (a rival's sheet in its own duel, journal Passe CX1) */
   private foe: string;
+  /** the sky (hidden in a cinematic's void) */
+  private sky: THREE.Object3D | null = null;
+  /** the cinematics of the skills that land in full (journal Passe CI1, src/arena/cine.ts, cineDirector.ts): their style and rule, the duel's moments, the one
+   *  playing, its void's ground; the cinematic's action, whose blows the arena then tells without their sounds and effects (the cinematic told them) */
+  private cineStyle: CineStyle | null = null;
+  private cineRule: CineRule | null = null;
+  cineList: CineMoment[] = [];
+  private cineNext = 0;
+  cineRun: CineRun | null = null;
+  private cineBack: CineBackdrop | null = null;
+  private cineMod: typeof import('./cineDirector') | null = null;
+  private cineQuiet: { who: FighterId; action: string; until: number } | null = null;
+  private cineAir: number | null = null;
 
   constructor(private opts: ArenaOptions) {
     this.foe = opts.match?.foe ?? (import.meta.env.DEV ? opts.params.get('foe') : null) ?? 'marek';
@@ -263,7 +278,8 @@ export class ArenaApp {
     const t = parseTime(q);
     this.look = t ? LOOKS[t] : null;
     this.keyDir = t ? arenaSunDir(t, MOON_DIR) : MOON_DIR.clone();
-    this.scene.add(buildSky(this.look?.sky ?? null));
+    this.sky = buildSky(this.look?.sky ?? null);
+    this.scene.add(this.sky);
     this.reflection.clipY = 0;
     U.uMoonDir.value.copy(this.keyDir);
     U.uMoonCol.value.copy(NIGHT_MOON);
@@ -348,6 +364,20 @@ export class ArenaApp {
     this.scene.add(this.sprites.group);
     this.scene.add(this.floor.mesh);
     if (fxOn(this.rules, this.opts.params)) this.combatFx = (await import('./fx/combatFx')).installCombatFx(this.scene, this.camera, this.opts.params, { foe: this.foe, guardReach: (who) => { const r = ((import.meta.env.DEV && this.densityTrial) || this.sheets) && this.set.reach[`${who}/block.0`]; return r ? r * PIXEL_WORLD * CHAR_SCALE : null; }, lights: this.lights, shake: (k) => { this.shake = Math.max(this.shake, k); }, timeScale: (k) => { this.timeScale = k; }, renderHeight: () => this.post.height });
+    // the cinematics of the skills that land in full (journal Passe CI1): DEV `cine=full|short|calm` on the duel played by the computer and its sheets (the trial of
+    // the workshop; `cineset=ultimate|strong|all`, `cineland=hit|open|ko`, `cineside=ren|both`, `cinemax=`, `cinegap=`, `cineko=0`)
+    if (import.meta.env.DEV && this.auto && this.sheets && this.combatFx) {
+      const c = this.opts.params.get('cine');
+      if (c === 'full' || c === 'short' || c === 'calm') {
+        const q = this.opts.params, num = (k: string) => (q.has(k) ? +q.get(k)! : undefined);
+        const set = q.get('cineset'), land = q.get('cineland'), side = q.get('cineside');
+        this.cineStyle = c;
+        this.cineRule = { set: set === 'ultimate' || set === 'all' ? set : 'strong', land: land === 'open' || land === 'ko' ? land : 'hit', side: side === 'ren' ? 'ren' : 'both', max: num('cinemax'), gap: num('cinegap') ?? 20, ko: q.get('cineko') !== '0' };
+        this.cineMod = await import('./cineDirector');
+        this.cineBack = new this.cineMod.CineBackdrop(this.scene);
+        this.cineList = (await import('./cine')).cineMoments(this.auto.result, this.auto.fighters, this.cineRule);
+      }
+    }
     // a version 2 duel: the district's townsfolk on the stands (journal Passe PU1, the operator's sheet PU-1 to PU-8); `cast=generated` keeps today's spectators
     if (v2Rules(this.rules) && !this.opts.forecourt && !this.opts.match?.empty && this.opts.params.get('cast') !== 'generated') {
       this.stands = await (await import('./StandsCast')).installStands({ charScale: CHAR_SCALE, edgeGain: this.look ? lum(NIGHT_MOON) / lum(this.look.sunCol) : 1, shade: (await import('./CombatSheets')).shadeFor(this.opts.params.get('time')) });
@@ -411,6 +441,8 @@ export class ArenaApp {
     if (this.auto) {
       // a lesson of the first duel being read holds the bout (journal Passe LC5): neither ×2 nor « Skip » meanwhile, the HUD's buttons included
       if (!down || this.lesson) return;
+      // a cinematic playing: « Skip » cuts it (the duel goes on), ×2 plays it twice as fast as the duel
+      if (this.cineRun && (id === 'dodge' || id === 'skip')) { this.cineRun.cut(); return; }
       // ×2: the interface's click from the keys and the pad, as the HUD's button gives it by itself (lot 4, journal Passe LC6)
       if (id === 'attack' || id === 'speed') { if (!this.auto.over) { this.speed = this.speed > 1 ? 1 : 2; this.snd?.duelEvent({ type: 'speed', on: this.speed > 1, quiet: from === 'hud' }); } }
       else if (id === 'dodge' || id === 'skip') { if ((!this.paused || this.moment) && !this.auto.over && !this.skipFade) this.beginSkip(from === 'hud'); }
@@ -444,6 +476,7 @@ export class ArenaApp {
     const t = +(Math.max(a.t, a.lastLineT() + 0.006) + 1e-6).toFixed(6), p: AutoCommand = { t, skill: sk.id };
     this.presses.push(p);
     a.replace(autoDuel(a.fighters.ren, a.fighters.marek, this.autoSeed, { log: true, trace: true, commands: this.presses }), p);
+    if (this.cineRule) void import('./cine').then((c) => { this.cineList = c.cineMoments(a.result, a.fighters, this.cineRule!); const k = this.cineList.findIndex((m) => m.t > a.t + 1e-6); this.cineNext = k < 0 ? this.cineList.length : k; });
     this.snd?.duelEvent({ type: 'press', quiet });
     this.opts.match?.onPress?.(p);
     return true;
@@ -545,16 +578,71 @@ export class ArenaApp {
     this.paused = false; this.moment = false; this.hud?.still(false);
   }
 
+  // ---------------------------------------------------------------- the cinematics (journal Passe CI1)
+  /** the next cinematic's moment reached by this step: its striker's run-up about to begin (the arena never draws the lunge the cinematic replaces); it starts */
+  private cineDue(step: number): boolean {
+    const a = this.auto;
+    // the moments already behind the replay (a moment sought, « Skip », a press replayed) are passed over
+    while (a && this.cineList[this.cineNext] && this.cineList[this.cineNext].t < a.t - 1e-6) this.cineNext++;
+    const m = this.cineList[this.cineNext];
+    if (!a || !m || !this.cineMod || !this.cineStyle || this.skipFade || a.over) return false;
+    const w = a.wins[m.who].find((x) => !x.follow && x.id === m.action && Math.abs(x.t0 + x.impactAt - m.t) < 1e-6), start = w ? w.t0 : m.t - 0.3;
+    if (a.t + step < start - 1e-9) return false;
+    this.cineNext++;
+    const host: import('./cineDirector').CineHost = {
+      scene: this.scene, camera: this.camera, fighters: this.fighters,
+      show: (f, seat, fr) => this.sheets!.show(f, seat, fr),
+      world: (on) => this.cineWorld(on),
+      play: (id, on, from) => this.combatFx?.play(id, on, from, this.fighters),
+      palette: (id, who) => this.combatFx?.palette(id, who) ?? { edge: '#ffb52a', light: '#ffd66a' },
+      sound: (e) => this.snd?.duelEvent(e as { type: string }),
+      portrait: (seat) => this.set.portraits[seat] ?? null,
+      skillName: (id) => autoActionName(id), fighterName: (seat) => this.hudNames()[seat],
+      place: (mm) => { const T = (this.opts.match?.texts as AutoTexts | undefined) ?? (lang() === 'fr' ? AUTO_TEXTS_FR : AUTO_TEXTS_EN); return mm.inBreak ? T.inBreak(AUTO_RULES.brk.dmg) : mm.inOpen ? T.inOpen(AUTO_RULES.open.dmg) : ''; },
+      reduced: () => this.reducedMotion,
+      catchUp: (mm) => this.cineCatchUp(mm),
+      tier: (mm) => (mm.who === 'ren' ? a.tierOf(mm.action) : 0),
+    };
+    this.cineRun = new this.cineMod.CineRun(m, host, this.reducedMotion ? 'calm' : this.cineStyle, this.cineBack!);
+    return true;
+  }
+  /** the arena, its sky, stands, floor and fires shown or hidden (a cinematic's void) */
+  private cineWorld(on: boolean): void {
+    for (const o of [this.arena?.group, this.sky, this.stands?.group, this.floor.mesh, this.particles?.group]) if (o) o.visible = on;
+    // the void has no air: the lights' in-scatter through the fog read its empty depth as the far sky and gilded it whole (given back after)
+    if (!on) { this.cineAir = this.post.params.airlight; this.post.params.airlight = 0; } else if (this.cineAir !== null) { this.post.params.airlight = this.cineAir; this.cineAir = null; }
+  }
+  /** under a cinematic's black: the duel played on to just after its action (its blows applied, the HUD's numbers and bars, the stands, the tutorial's lessons
+   *  told; their sounds and effects not: the cinematic told them); a lesson the duel reaches holds it there */
+  private cineCatchUp(m: CineMoment): void {
+    const a = this.auto; if (!a) return;
+    this.cineQuiet = { who: m.who, action: m.action, until: m.end + 1e-6 };
+    const step = a.D.dt, until = m.end + 0.18;
+    while (!a.over && !this.paused && a.t < until - 1e-9) { a.step(step); this.onEvents(a.drain()); }
+    this.cineQuiet = null;
+    for (const p of Object.values(this.pres)) { p.off = 0; p.knock = 0; p.flash = 0; }
+    this.presentFighters(0); this.applyCamera(0);
+  }
+  /** an event a cinematic already told (its action's blows and release) */
+  private quietOf(e: ReplayEvent): boolean {
+    const q = this.cineQuiet; if (!q) return false;
+    return (e.type === 'impact' && e.from === q.who && e.action === q.action && (e.t ?? 0) <= q.until) || (e.type === 'chargeRelease' && e.who === q.who && (e.t ?? 0) <= q.until);
+  }
+  private hudNames(): Record<FighterId, string> { return this.opts.match?.auto?.names ?? { ren: 'Ren', marek: this.foe[0].toUpperCase() + this.foe.slice(1) }; }
+
   // ---------------------------------------------------------------- simulation -> presentation
   /** the version 2's sound (lot V8, src/audio/Sound.ts): loaded on demand by a version 2 duel only; today's arena makes none */
   snd: { duelEvent(e: unknown): void } | null = null;
 
   private onEvents(evs: Array<CombatEvent | DynEvent | ReplayEvent>): void {
-    this.combatFx?.onEvents(evs, this.fighters, this.charge?.tiers.length ?? this.auto?.tiers ?? 0);
-    this.stands?.onEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
-    this.pad?.duelEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>);
+    const loud = this.cineQuiet ? (evs as ReplayEvent[]).filter((e) => !this.quietOf(e)) : evs;
+    this.combatFx?.onEvents(loud, this.fighters, this.charge?.tiers.length ?? this.auto?.tiers ?? 0);
+    this.stands?.onEvents(loud as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
+    this.pad?.duelEvents(loud as unknown as Array<{ type: string } & Record<string, unknown>>);
     if (!this.skipFade) this.onDuelEvents?.(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
     for (const e of evs as Array<CombatEvent | DynEvent>) {
+      // a cinematic's action, played under its black: its blows and its release already told (their sounds, effects and knock-backs)
+      if (this.cineQuiet && this.quietOf(e as unknown as ReplayEvent)) continue;
       this.snd?.duelEvent(e);
       if (e.type === 'impact') {
         if (e.hp <= 0) this.finisher = e.kind;
@@ -595,6 +683,7 @@ export class ArenaApp {
       else if (e.type === 'effect') { this.pres[e.who].flash = 0.6; this.spawnFx(e.family === 'defensive' ? 'guard' : 'spark', this.fighters[e.who], e.who === 'ren' ? 'marek' : 'ren'); }
       else if (e.type === 'reset') {
         this.koT = -1; this.shake = 0; this.push = 0; this.endSkip();
+        this.cineRun?.dispose(); this.cineRun = null; this.cineQuiet = null; this.cineNext = 0;
         for (const p of Object.values(this.pres)) { p.off = p.knock = p.flash = p.guardHit = 0; }
         for (const f of this.fx) f.act.hidden = true;
         this.fx = [];
@@ -692,7 +781,7 @@ export class ArenaApp {
       f.act.anim = `${f.kind}.${i}` as Anim;
     }
     this.fx = this.fx.filter((f) => !f.act.hidden);
-    this.combatFx?.present(dt, this.fighters, (this.charge?.view() ?? this.auto?.chargeFx() ?? null) as ReturnType<ChargedDuel['view']> | null);
+    this.combatFx?.present(dt, this.fighters, (this.cineRun?.inVoid() ? null : this.charge?.view() ?? this.auto?.chargeFx() ?? null) as ReturnType<ChargedDuel['view']> | null);
   }
 
   /** the contextual camera: the base framing; a push-in toward Marek while he charges a heavy (scaled by the assistance), held through the
@@ -725,8 +814,8 @@ export class ArenaApp {
 
   /** the fighters' rings (with the HUD) and the telegraph of a reactable attack (full assistance) */
   private updateFloor(): void {
-    const inc = this.sim.incoming(), tele = !!inc && this.assist === 'full' && this.hudVisible && !this.sim.over;
-    this.floor.update(this.fighters.ren.pos, this.fighters.marek.pos, this.hudVisible && !this.sim.over ? 1 : 0, tele ? 1 : 0, inc ? inc.castProgress : 0, !!inc?.windowOpen, this.sim.t);
+    const inc = this.sim.incoming(), tele = !!inc && this.assist === 'full' && this.hudVisible && !this.sim.over && !this.cineRun;
+    this.floor.update(this.fighters.ren.pos, this.fighters.marek.pos, this.hudVisible && !this.sim.over && !this.cineRun ? 1 : 0, tele ? 1 : 0, inc ? inc.castProgress : 0, !!inc?.windowOpen, this.sim.t);
   }
 
   private updateDynamicLights(): void {
@@ -765,29 +854,34 @@ export class ArenaApp {
     U.uMoonDir.value.copy(this.keyDir);
     this.pollPad();
     this.stepSkip(dt);
-    if (!this.paused) {
+    const cr = this.cineRun;
+    if (cr && !this.paused) { cr.update(dt * (this.speed > 1 ? 2 : 1) * (cr.inVoid() ? cr.scale() : 1)); if (cr.done) this.cineRun = null; }
+    if (!this.paused && !this.cineRun) {
       this.acc += dt * this.timeScale * this.speed;
       const step = this.sim.D.dt;
       let n = 0;
-      // a lesson of the first duel opened by a step holds the duel on that step (journal Passe LC5): no step after it
-      while (!this.paused && this.acc >= step && n++ < 24) { this.sim.step(step); this.onEvents(this.sim.drain()); this.acc -= step; }
+      // a lesson of the first duel opened by a step holds the duel on that step (journal Passe LC5): no step after it; a cinematic's moment reached holds it too
+      while (!this.paused && this.acc >= step && n++ < 24) {
+        if (this.cineDue(step)) { this.acc = 0; break; }
+        this.sim.step(step); this.onEvents(this.sim.drain()); this.acc -= step;
+      }
       if (n >= 24) this.acc = 0;
     }
-    const pdt = this.paused ? 0 : dt;
-    if (this.opts.forecourt) this.presentForecourt(dt); else this.presentFighters(pdt);
+    const pdt = this.paused ? 0 : dt, voidOn = !!this.cineRun?.inVoid(), vdt = voidOn ? pdt * this.cineRun!.scale() * (this.speed > 1 ? 2 : 1) : pdt;
+    if (this.opts.forecourt) this.presentForecourt(dt); else if (!voidOn) this.presentFighters(this.cineRun ? 0 : pdt);
     this.presentFans();
-    this.presentFx(pdt);
+    this.presentFx(vdt);
     this.updateDynamicLights();
-    this.applyCamera(pdt);
+    if (!voidOn) this.applyCamera(this.cineRun ? 0 : pdt);
     this.updateFloor();
-    // depth of field on the duel
-    const v = new THREE.Vector3(0, 1.2, 0).applyMatrix4(this.camera.matrixWorldInverse);
+    // depth of field on the duel (in a cinematic's void, on the fighters)
+    const v = voidOn ? this.fighters.ren.pos.clone().setY(1.6).applyMatrix4(this.camera.matrixWorldInverse) : new THREE.Vector3(0, 1.2, 0).applyMatrix4(this.camera.matrixWorldInverse);
     this.post.params.dofFocus = THREE.MathUtils.clamp(-v.z, 6, 40);
     this.lights.update(this.time, pdt, this.camera);
-    this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...this.fans], this.lights, this.camera, this.keyDir, null, this.fighters.ren);
+    this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...(this.cineRun?.ghosts ?? []), ...(voidOn ? [] : this.fans)], this.lights, this.camera, this.keyDir, null, this.fighters.ren);
     this.stands?.update(this.sim.t, this.lights, this.camera, this.keyDir);
     this.particles.update(pdt, this.time, this.camera, this.post.height, this.lights, null);
-    if (this.hud instanceof AutoHud) this.hud.update(this.auto!.hud(), this.hudVisible, this.paused && !this.moment, this.speed > 1, this.auto!.over);
+    if (this.hud instanceof AutoHud) this.hud.update(this.auto!.hud(), this.hudVisible && !this.cineRun, this.paused && !this.moment, this.speed > 1, this.auto!.over);
     else if (this.hud instanceof DynamicHud) this.hud.update(this.dyn!, this.assist, this.hudVisible, this.paused && !this.moment, this.charge ? chargeHudModel(this.charge.view()) : undefined);
     else this.hud?.update(this.classic!, this.assist, this.hudVisible, this.paused && !this.moment);
     // an official bout: told once the KO has had its moment on screen

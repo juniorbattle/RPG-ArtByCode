@@ -132,6 +132,9 @@ export interface InstalledSheets {
   present(fighters: Record<Seat, Actor>, time: number, sim: { over: boolean; f: Record<Seat, any> }, charge: { held: boolean; reached: number } | null): void;
   /** the renderer the arena built (its edge mode for the sheets) */
   attach(sprites: SpriteRenderer): void;
+  /** a frame of a fighter's own sheet shown as the duel shows it (its scale, its shade, its body kept on its axis), a clip it does not hold falling back on its
+   *  stance: a cinematic stages the fighters themselves (src/arena/cineDirector.ts, journal Passe CI1) */
+  show(a: Actor, seat: Seat, frame: string): void;
   info: { sheets: Array<{ seat: Seat; id: string; frames: number; runtimeUse: string }>; counts: Record<Seat, Record<string, number>>; texture: [number, number]; cells: number; cellsPerPage: number; bytes: number; edge: string; rimTexels: number };
 }
 
@@ -180,6 +183,7 @@ export async function installSheets(set: ArenaSpriteSet, sheets: SheetSource[], 
   return {
     frame: SHEET_FRAME,
     attach(s) { s.setEdgeMode(edge === 'dark' ? 'dark' : null); charScale = s.charScale; },
+    show(a, seat, fr) { const clip = fr.slice(0, fr.indexOf('.')); a.scale = SCALE; show(a, seat, counts[seat][clip] ? fr : `${FALLBACK(clip)}.${Math.min(Number(fr.slice(fr.indexOf('.') + 1)), 1)}`); },
     present(fighters, time, sim, charge) {
       for (const seat of seats) {
         const a = fighters[seat], f = sim.f[seat], held = seat === 'ren' ? hold?.pose() ?? null : null;

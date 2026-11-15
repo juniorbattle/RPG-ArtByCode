@@ -23,6 +23,9 @@
 //       each kind, the share dealt in the opponent's break, the durations, the blows a minute, the breaks and the clashes, by stage
 //   node tools/auto-lab.mjs price [--policy=planner] [--seeds=101..300] [--swaps=<from>:<to>:<level>;...]
 //       the price of a skill (journal Passes BL1, BE1): the policy's bouts replayed with one of Ren's skills swapped for another at a level
+//   node tools/auto-lab.mjs cinematics [--policies=planner,reference,curious] [--seeds=101..300] [--json=f]
+//       the cinematics of the duel (journal Passe CI1, src/arena/cine.ts): at each bout of the policies' whole games, the skills that land in full under each rule
+//       (their set, when they land, whose), a bout's count, the bouts without one, the first one's time, the gaps between two, the K.O.s by a skill, by stage
 //   node tools/auto-lab.mjs rehearsal [--policy=planner] [--seeds=101..300]
 //       the rehearsal against the real bouts (lot 3 of « La Brute », journal Passe BL3): at each bout of the policy's whole games, the rehearsal's chances from that
 //       state (the shadow at tier 2, its own plan; at tier 1, its skills by their roles) against the bout's result: the mean chances and the bouts won, by stage,
@@ -435,6 +438,59 @@ function damage() {
   }
   if (arg('json')) fs.writeFileSync(arg('json'), JSON.stringify(out, null, 1));
 }
+/** the cinematics of the duel (journal Passe CI1): each rule's moments at each bout of the policies' whole games (src/arena/cine.ts, read by the arena's own replay) */
+const CI = await load('/src/arena/cine.ts');
+export const CINE_RULES = {
+  'ultime / touché / Ren': { set: 'ultimate', land: 'hit', side: 'ren' },
+  'ultime / touché / les deux': { set: 'ultimate', land: 'hit', side: 'both' },
+  'fort / touché / Ren': { set: 'strong', land: 'hit', side: 'ren' },
+  'fort / touché / les deux': { set: 'strong', land: 'hit', side: 'both' },
+  'fort / faille ou rupture / les deux': { set: 'strong', land: 'open', side: 'both' },
+  'fort / K.O. / les deux': { set: 'strong', land: 'ko', side: 'both' },
+  'tous / touché / les deux': { set: 'all', land: 'hit', side: 'both' },
+  'fort / touché / les deux, 3 au plus, 20 s entre deux, le K.O. toujours': { set: 'strong', land: 'hit', side: 'both', max: 3, gap: 20, ko: true },
+  'ultime / touché / les deux, le K.O. fort toujours': { set: 'ultimate', land: 'hit', side: 'both', ko: true },
+};
+export function cineOf(pn, seeds, rules = CINE_RULES) {
+  const P = LAB.POLICIES[pn], rows = [];
+  const wrap = { name: pn, skill: P.skill, choose: (st) => {
+    const a = P.choose(st);
+    if (a.type === 'fight' || a.type === 'challengeResult') {
+      const kind = a.type === 'fight' ? 'bout' : 'challenge', o = AM.autoOutcome(st, kind, { log: true }), F = { ren: o.bout.ren, marek: o.bout.foe };
+      if (kind === 'bout') {
+        const by = {};
+        for (const [k, r] of Object.entries(rules)) {
+          // a K.O. rule plays the K.O. of a skill of the set: the stronger set's candidates when the rule's own set is narrower
+          const c = r.ko && r.set === 'ultimate' ? [...CI.cineCandidates(o.duel, F, r), ...CI.cineCandidates(o.duel, F, { ...r, set: 'strong', land: 'ko' })].sort((x, y) => x.t - y.t).filter((m, i, a) => a.findIndex((n) => n.t === m.t && n.who === m.who) === i) : CI.cineCandidates(o.duel, F, r);
+          by[k] = CI.cinePick(c, r);
+        }
+        rows.push({ stage: o.bout.stage, t: o.duel.t, foe: o.bout.foeId, by });
+      }
+      return { ...a, outcome: { winner: o.winner, playerHp: o.playerHp, playerMaxHp: o.playerMaxHp, opponentHp: o.opponentHp, opponentMaxHp: o.opponentMaxHp, finisher: o.finisher } };
+    }
+    return a;
+  } };
+  for (const s of seeds) { try { LAB.autoplay(s, wrap, 'Ren', 260, 'auto'); } catch (e) { if (!/refused action/.test(String(e))) throw e; } }
+  return rows;
+}
+function cinematics() {
+  const seeds = seedList(arg('seeds', '101..300')), out = {};
+  for (const pn of arg('policies', 'planner,reference,curious').split(',')) {
+    const rows = cineOf(pn, seeds);
+    console.log(`${pn} (${seeds.length} parties, ${rows.length} combats ; durée méd. ${[0, 1, 2].map((s) => med(rows.filter((r) => r.stage === s).map((r) => r.t)).toFixed(0)).join(' / ')} s)`);
+    out[pn] = {};
+    for (const k of Object.keys(CINE_RULES)) {
+      const per = (R) => R.map((r) => r.by[k].length), mean = (a) => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
+      const st = [0, 1, 2].map((s) => { const R = rows.filter((r) => r.stage === s), n = per(R); return { n: R.length, mean: mean(n), med: med(n), p90: q(n, 0.9), max: Math.max(0, ...n), none: pct(n.filter((x) => x === 0).length, n.length) }; });
+      const all = rows.flatMap((r) => r.by[k]), first = rows.filter((r) => r.by[k].length).map((r) => r.by[k][0].t), gaps = rows.flatMap((r) => r.by[k].slice(1).map((m, i) => m.t - r.by[k][i].t));
+      const who = pct(all.filter((m) => m.who === 'ren').length, all.length), kos = pct(all.filter((m) => m.ko).length, all.length), acts = {};
+      for (const m of all) acts[m.action] = (acts[m.action] ?? 0) + 1;
+      out[pn][k] = { stages: st, first: med(first), gap: med(gaps), ren: who, acts };
+      console.log(`  ${k} : par combat ${st.map((x) => `${x.mean.toFixed(2)} (méd. ${x.med}, p90 ${x.p90}, max ${x.max}, aucun ${x.none} %)`).join(' / ')} ; le premier à ${(first.length ? med(first) : NaN).toFixed(0)} s, entre deux ${(gaps.length ? med(gaps) : NaN).toFixed(0)} s ; Ren ${who} %, K.O. ${kos} % ; ${Object.entries(acts).sort((a, b) => b[1] - a[1]).map(([a, n]) => `${a} ${n}`).join(' ')}`);
+    }
+  }
+  if (arg('json')) fs.writeFileSync(arg('json'), JSON.stringify(out, null, 1));
+}
 /** the rehearsal against the real bouts (lot 3 of « La Brute »): the chances the rehearsal would say from the bout's own state, at tier 2 and tier 1 of the scouting,
  *  against the bout's result (the game's duel on its own seed) */
 function rehearsal() {
@@ -502,6 +558,7 @@ try {
   else if (cmd === 'damage') damage();
   else if (cmd === 'price') price();
   else if (cmd === 'rehearsal') rehearsal();
+  else if (cmd === 'cinematics') cinematics();
   else if (cmd !== 'lib') console.log('commands: games | refs | rhythm | kits | offscreen | level | modes | fit | judge | damage | price (see the header)');
 } finally { if (cmd !== 'lib') await server.close(); }
 export { AU, AD, AM, LAB, ST, range, med, q, pct, rate, server };

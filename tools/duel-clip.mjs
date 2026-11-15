@@ -1,7 +1,8 @@
 // A short clip of the duel played by the computer, frame by frame (journal Passe SL3: the rhythm candidates of lot 2's sheet): the arena's own page, its loop held,
 // stepped at `--fps` through its own update and render, each frame captured, then encoded by ffmpeg (FFMPEG or the PATH) into an MP4 (H.264, no sound) the
 // sheet plays. The same seed and the same fighters on every candidate: only the rhythm changes.
-//   node tools/duel-clip.mjs <out.mp4> "<extra query>" [--from=0] [--secs=20] [--fps=30] [--size=960x540]     (DEV server; BASE_URL, CHROME_PATH)
+//   node tools/duel-clip.mjs <out.mp4> "<extra query>" [--from=0] [--at=<duel s>] [--secs=20] [--fps=30] [--size=960x540]     (DEV server; BASE_URL, CHROME_PATH)
+// --from: seconds of the page's clock before the first frame; --at: the duel's own second instead (a cinematic holds the duel's clock while it plays, journal Passe CI1)
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -11,7 +12,7 @@ const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const args = process.argv.slice(2), opt = (k, d) => args.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3) ?? d;
 const [out, extra = ''] = args.filter((a) => !a.startsWith('--'));
 if (!out) { console.log('usage: node tools/duel-clip.mjs <out.mp4> "<extra query>" [--from=0] [--secs=20] [--fps=30] [--size=960x540]'); process.exit(1); }
-const FPS = +opt('fps', 30), SECS = +opt('secs', 20), FROM = +opt('from', 0), [W, H] = opt('size', '960x540').split('x').map(Number);
+const FPS = +opt('fps', 30), SECS = +opt('secs', 20), FROM = +opt('from', 0), AT = opt('at', null), [W, H] = opt('size', '960x540').split('x').map(Number);
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', FF = process.env.FFMPEG ?? 'ffmpeg';
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'duel-clip-'));
@@ -24,6 +25,7 @@ try {
   await page.goto(`${BASE}?scene=arena&vis=0&fps=off&tutorial=0${extra ? '&' + extra : ''}`, { waitUntil: 'load', timeout: 300000 });
   await page.waitForFunction('window.__ready === true || window.__error', { timeout: 300000 });
   await page.evaluate((from) => { const A = window.__arena; for (let t = 0; t < from; t += 1 / 60) A.update(1 / 60); }, FROM);
+  if (AT !== null) await page.evaluate((at) => { const A = window.__arena; for (let n = 0; A.auto && A.auto.t < at && !A.auto.over && n < 120 * 600; n++) A.update(1 / 60); }, +AT);
   const n = Math.round(SECS * FPS);
   for (let i = 0; i < n; i++) {
     const over = await page.evaluate((dt) => { const A = window.__arena; A.update(dt); A.render(); return A.auto?.over && A.auto.t - A.auto.end > 2; }, 1 / FPS);

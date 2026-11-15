@@ -14,6 +14,7 @@ import type { FighterId } from '../CombatSim';
 import { FX_EXPOSURE, FxEngine, type FxHooks } from './FxEngine';
 import { FxDirector, type FxPlayContext, type FxUnitRef } from './FxDirector';
 import { onSettings, reducedMotion } from '../../settings/settings';
+import { FX_PALETTES } from './fxPalettes';
 import { RECIPES, blowRecipe, chargeLevel, effectRecipe, formRecipe, type FxRecipe } from './fxRecipes';
 
 /** the figure's height (m), and how far before a fighter the blades meet on generated art (`cast=generated`): Ren holds his sword close, Marek's art at arm's length, Vessa on Ren's clips
@@ -49,6 +50,11 @@ export interface CombatFx {
   present(dt: number, fighters: Record<FighterId, Actor>, charge: ChargeView | null): void;
   /** the framing's push onto a blow */
   pose(p: { dist: number; tx: number; ty: number }): void;
+  /** a recipe played by hand on a fighter (a cinematic's beats, src/arena/cineDirector.ts): a blow's on the one it lands on, from the other; a charge's or a release's on
+   *  the fighter itself */
+  play(id: string, on: FighterId, from: FighterId, fighters: Record<FighterId, Actor>): void;
+  /** a skill's colours (its recipe's element; the side's gold or forge-red without one of its own): a cinematic's void takes them */
+  palette(action: string, who: FighterId): { edge: string; light: string };
 }
 
 interface Slot { src: LightSource; t: number; dur: number }
@@ -149,6 +155,13 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
       }
       advance(dt, charge, F);
     },
+    play(id, on, from, F) {
+      const r = RECIPES[id]; if (!r) return;
+      if (/^(charge|hold|release)/.test(id)) director.play(r, { source: unit(F[on]), target: unit(F[on === 'ren' ? 'marek' : 'ren']) });
+      else if (on !== from) blow(r, F, on);
+      else self(r, F[on]);
+    },
+    palette(action, who) { const P = FX_PALETTES[RECIPES[action]?.element ?? (who === 'ren' ? 'gold' : 'fire')]; return { edge: P.edge, light: P.light }; },
     pose(p) {
       if (punch.dur <= 0) return;
       const k = punch.t / punch.dur, e = (k < 0.14 ? k / 0.14 : 1 - (k - 0.14) / 0.86) * punch.amount;
