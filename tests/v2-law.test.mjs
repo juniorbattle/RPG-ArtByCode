@@ -36,7 +36,10 @@ test('two numbers apart: a theft caught puts a mark in Hale\'s ledger and costs 
   const ok = act(st, { type: 'steal', shop: 'mara' }, WIN).state;
   assert.equal(sus(ok), 0, 'an unseen theft: no mark until it is found'); assert.equal(ok.player.reputation, 10, 'the name does not know of it');
   assert.deepEqual(ok.v2.thefts, [{ day: 1, from: 'mara', item: 'whetstone', seen: null }]);
-  const caught = act(st, { type: 'steal', shop: 'mara' }, LOSE).state;
+  const held = act(st, { type: 'steal', shop: 'mara' }, LOSE).state;
+  // held by Mara (GP-03): the fine waits for the answer, paid or fought
+  assert.deepEqual(held.v2.caught, { by: 'mara', from: 'mara', item: 'whetstone', fine: 15, shop: 'mara' }); assert.equal(held.player.coins, st.player.coins);
+  const caught = act(held, { type: 'payFine' }).state;
   assert.equal(sus(caught), 1, 'caught in the act: one mark'); assert.equal(caught.player.reputation, 2); assert.equal(caught.player.coins, st.player.coins - 15);
   // the rule written out: by day 0.3, the watch's slack, the keeper's goodwill, the alert; the marks change nothing (L2-2: no hidden points)
   const rule = (s, shop = 'mara') => Math.min(0.85, Math.max(0.05, (s.slot === 'evening' ? 0.6 : 0.3) + (60 - s.pulse.security) / 200 - (s.town[{ mara: 'mara', armourer: 'hilde', master: 'corvin', trinkets: 'pip' }[shop]] ?? 0) / 400 - (s.flags[`alert:${s.day}`] ? 0.15 : 0)));
@@ -87,7 +90,9 @@ test('the night: a day stall shuttered can be forced, easier, unless the watch t
   assert.equal(T.stealChance(watched, 'mara'), rule(watched)); assert.ok(T.stealChance(watched, 'mara') < T.stealChance(night, 'mara'));
   const ok = act(night, { type: 'steal', shop: 'mara' }, WIN).state;
   assert.deepEqual(ok.v2.thefts[0], { day: 1, from: 'mara', item: 'whetstone', seen: null, night: true });
-  const c = act(night, { type: 'steal', shop: 'mara' }, LOSE).state;
+  const heldNight = act(night, { type: 'steal', shop: 'mara' }, LOSE).state;
+  assert.equal(heldNight.v2.caught.by, 'wynn', 'at night the watch holds the thief'); assert.equal(heldNight.v2.caught.fine, 25);
+  const c = act(heldNight, { type: 'payFine' }).state;
   assert.equal(c.player.coins, night.player.coins - Math.min(25, night.player.coins)); assert.equal(c.player.reputation, Math.max(0, night.player.reputation - (night.player.coins < 25 ? 15 : 12)));
   assert.equal(sus(c), 1, 'one mark, the fine and the name harder'); assert.equal(c.v2.shops.mara.closed, 2, 'shut to the player tomorrow'); assert.equal(c.v2.shops.mara.markup, 3);
   // by day the stall that is open is robbed as before, and a day stall shut by day (Pip's in the morning) cannot be
@@ -165,13 +170,13 @@ test('a restitution at Sergeant Hale\'s: the pieces held go back, the others are
 
 test('the registrar warns once; a second theft caught costs a point of the pool while it is fought, a fine after it', () => {
   let s = v2(); s.player.coins = 99;
-  s = act(s, { type: 'steal', shop: 'mara' }, LOSE).state;
+  s = act(act(s, { type: 'steal', shop: 'mara' }, LOSE).state, { type: 'payFine' }).state;
   assert.ok(s.log.some((e) => e.id === 'registrar:warn' && e.visible)); assert.equal(s.tournament.points.player, 0); assert.equal(s.v2.warned, true);
   const p0 = s.tournament.points.player, again = structuredClone(s); again.place = 'lanterns'; again.slot = 'afternoon';
   const t = act(again, { type: 'steal', shop: 'trinkets' }, LOSE).state;
   assert.equal(t.tournament.points.player, p0 - 1); assert.ok(t.log.some((e) => e.id === 'registrar:point'));
   const late = structuredClone(again); late.day = 6; late.player.coins = 40;
-  const u = act(late, { type: 'steal', shop: 'trinkets' }, LOSE).state;
+  const u = act(act(late, { type: 'steal', shop: 'trinkets' }, LOSE).state, { type: 'payFine' }).state;
   assert.equal(u.tournament.points.player, p0, 'after the pool: no point'); assert.equal(u.player.coins, 40 - 15 - 15, 'the stall\'s fine, then the registrar\'s');
   assert.ok(u.log.some((e) => e.id === 'registrar:fine'));
 });
@@ -231,7 +236,7 @@ test('the passers-by: each at their place and hours, some days only; their piece
   // lifted instead: a theft like a stall's, found at dawn by its owner (half the time), the owner shy of the player once caught
   const p = act(fc, { type: 'pickpocket', who: 'edda' }, WIN).state;
   assert.equal(p.v2.gear.armour, 'knight-hauberk'); assert.deepEqual(p.v2.thefts[0], { day: 1, from: 'edda', item: 'knight-hauberk', seen: null }); assert.equal(sus(p), 0);
-  const pc = act(fc, { type: 'pickpocket', who: 'edda' }, LOSE).state;
+  const pc = act(act(fc, { type: 'pickpocket', who: 'edda' }, LOSE).state, { type: 'payFine' }).state;
   assert.equal(sus(pc), 1); refused(pc, { type: 'barter', who: 'edda' }, /nothing to do with you/);
   // given back at Hale's, the piece is the passer-by's again
   const back = act(Object.assign(structuredClone(p), { place: 'district' }), { type: 'restitute' }).state;
@@ -242,7 +247,7 @@ test('a reprisal (lot L2b, the operator\'s note on EV-2): a robbed owner\'s grud
   const M = G.makeV2(G.namedState('day1-morning'));
   // caught at Mara's with her goodwill already low: -15 - 20 = -35, under the grudge's -30
   M.town.mara = -15;
-  const caught = act(M, { type: 'steal', shop: 'mara' }, LOSE).state;
+  const caught = act(act(M, { type: 'steal', shop: 'mara' }, LOSE).state, { type: 'payFine' }).state;
   const log = [], dawn = structuredClone(caught); dawn.slot = 'evening'; L.v2Dawn(dawn, emitTo(log), LOSE);
   const e = log.find((x) => x.id === 'reprisal:hired');
   assert.ok(e && e.day === 2 && e.slot === 'morning'); assert.match(e.text, /Mara/); assert.match(e.text, /Corra Dunmere/);

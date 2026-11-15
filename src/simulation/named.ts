@@ -11,10 +11,18 @@ export const NAMED_SEED = 1842;
 
 export function play(st: GameState, script: readonly Action[]): GameState {
   for (const a of script) {
+    // a thief caught pays or fights before anything else (journal Passe PN1, GP-03 « Gagné : on s'échappe sans amende (la pièce reste) »): a script written before it, whose
+    // thefts were fined on the spot, pays the fine as the player who does nothing else would, so each named state stays the state it was
+    if (st.v2?.caught && a.type !== 'payFine' && a.type !== 'fightCatch') {
+      const paid = advance(st, { type: 'payFine' });
+      if (!paid.ok) throw new Error(`named state script: the fine refused on day ${st.day} ${st.slot}: ${paid.reason}`);
+      st = paid.state;
+    }
     const r = advance(st, a);
     if (!r.ok) throw new Error(`named state script: "${a.type}" refused on day ${st.day} ${st.slot}: ${r.reason}`);
     st = r.state;
   }
+  if (st.v2?.caught) { const paid = advance(st, { type: 'payFine' }); if (paid.ok) st = paid.state; }
   return st;
 }
 
@@ -66,10 +74,10 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   'v2-training-night': { about: 'a version 2 game, the first evening, at the Training Ground (shut)', script: [W, W, { type: 'move', to: 'training' }], v2: true },
   'v2-square-morning': { about: 'a version 2 game, the first morning, on the Festival Square', script: [{ type: 'move', to: 'lanterns' }], v2: true },
   'v2-training-dusk': { about: 'a version 2 game, back from a won first bout, at the Training Ground at sunset', script: [W, W, W, W, WON, { type: 'move', to: 'training' }], v2: true },
-  // lots L2a / L2b (journal Passes EVL2 to EVL4): a thief the watch wants, on the quay at night (seed 1842: caught at Mara's, a ribbon lifted at Pip's, caught
-  // there again, caught at Fenwick's pocket: three marks in Hale's ledger, the registrar's points); the training ground on day 7, the cut made (Tobin out of the
-  // title, Rhosk in the third place's bout)
-  'v2-wanted-night': { about: 'a version 2 thief the watch wants (three marks), on the quay at night', script: [{ type: 'steal', shop: 'mara' }, { type: 'move', to: 'lanterns' }, W, { type: 'steal', shop: 'trinkets' }, { type: 'steal', shop: 'trinkets' }, W, { type: 'move', to: 'district' }, { type: 'pickpocket', who: 'fenwick' }], v2: true },
+  // lots L2a / L2b (journal Passes EVL2 to EVL4): a thief the watch wants, on the quay at night (seed 1842: caught at Mara's, a piece lifted at Hilde's, caught at
+  // Pip's, caught at Fenwick's pocket, each fine paid: three marks in Hale's ledger, the registrar's points; since journal Passe PN1, GP-07, a stall's chance follows the
+  // price of the piece, and Pip's ribbon is no longer lifted on that seed); the training ground on day 7, the cut made (Tobin out of the title, Rhosk in the third place's bout)
+  'v2-wanted-night': { about: 'a version 2 thief the watch wants (three marks), on the quay at night', script: [{ type: 'steal', shop: 'mara' }, { type: 'payFine' }, { type: 'move', to: 'forecourt' }, { type: 'steal', shop: 'armourer' }, { type: 'move', to: 'lanterns' }, W, { type: 'steal', shop: 'trinkets' }, { type: 'payFine' }, W, { type: 'move', to: 'district' }, { type: 'pickpocket', who: 'fenwick' }, { type: 'payFine' }], v2: true },
   'v2-day7-training': { about: 'a version 2 game on day 7, every bout won, at the Training Ground', script: [W, W, W, W, WON, W, W, W, W, W, WON, W, W, WON, W, W, WON, W, { type: 'move', to: 'training' }], v2: true },
   // lot L3 (journal Passe EVL5): the strap cut, before and after the semi-final
   'v2-strap-day6': { about: 'a version 2 game on day 6\'s afternoon, on the forecourt: the strap cut in the night before the semi-final, Lio\'s room asked of Orla', script: STRAP6, v2: true, seed: 23 },

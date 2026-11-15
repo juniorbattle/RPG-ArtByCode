@@ -509,10 +509,12 @@ test('AC-11 (A3): every stat point of every piece and of the forge ×2, the pena
   const GR = GEAR_MOD;
   const DB72 = {
     'imported-blade': { atk: 2 }, 'duelist-sabre': { atk: 1.5, viv: 1 }, 'padded-jack': { def: 1 }, 'mail-shirt': { def: 3, viv: -0.5 }, 'dock-leathers': { def: 1.5, end: 1 },
-    'lucky-ribbon': { ap: 1 }, 'iron-ring': { end: 2 }, 'swift-boots': { viv: 1 }, 'fervour-charm': { effect: 1.3 }, 'docker-wrap': { hp: 18 }, 'champion-token': { ap: 1, end: 0.5 },
+    'lucky-ribbon': { ap: 1 }, 'iron-ring': { end: 2 }, 'swift-boots': { viv: 1 }, 'fervour-charm': { effect: 1.3 }, 'docker-wrap': { hp: 18 },
     'river-pearl': { end: 1.5, hp: 10 }, 'knight-hauberk': { def: 3.5, viv: -0.5 }, 'pilgrim-medal': { hp: 16, effect: 1.15 }, whetstone: { atk: 0.5 },
   };
   for (const [id, fx] of Object.entries(DB72)) assert.deepEqual(GR.GEAR[id].fx, Object.fromEntries(Object.entries(fx).map(([k, v]) => [k, k === 'ap' || k === 'effect' ? v : v * 2])), id);
+  // the champion's token, given by nothing, left the catalogue (the operator's GP-20 « Les corriger », journal Passe GP2); its effect stays the laboratory's (the port above)
+  assert.equal(GR.GEAR['champion-token'], undefined);
   assert.equal(GR.WEAPON_TIER_ATK, 2);
   const base = AM.autoRenStats(v2State());
   assert.deepEqual(base, VG.v2Stats(v2State()));

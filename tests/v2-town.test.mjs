@@ -35,10 +35,13 @@ test('stealing: easier at night and with a thin watch; taken, the cheapest piece
   let ok = 0, caught = 0;
   for (let seed = 1; seed <= 60; seed++) {
     const s = G.makeV2(G.newGame(seed, 'Ren')), coins = s.player.coins, rep = s.player.reputation;
-    const r = act(s, { type: 'steal', shop: 'mara' }), st = r.state;
+    const r = act(s, { type: 'steal', shop: 'mara' });
+    let st = r.state;
     if (r.events[0].id === 'steal:ok') { ok++; assert.ok(st.player.items.includes('whetstone')); assert.equal(st.player.coins, coins); }
     else {
       caught++;
+      // held by Mara (GP-03, journal Passe PN1): the fine paid here, the answer the player who will not fight gives
+      assert.equal(st.v2.caught.by, 'mara'); st = act(st, { type: 'payFine' }).state;
       assert.equal(st.player.coins, coins - 15); assert.equal(st.player.reputation, rep - 8); assert.equal(st.town.mara, -20);
       refused(st, { type: 'shopBuy', shop: 'mara', item: 'whetstone' }, /will not serve you/);
       refused(st, { type: 'steal', shop: 'mara' }, /will not serve you/);
@@ -54,7 +57,7 @@ test('stealing: easier at night and with a thin watch; taken, the cheapest piece
   assert.ok(ok > 5 && caught > 20, `${ok} taken, ${caught} caught by day`);
   // a purse too thin for the fine: what it holds, and the name pays the rest
   const broke = v2(); broke.player.coins = 4;
-  for (let seed = 1; seed < 40; seed++) { const s = G.makeV2(G.newGame(seed, 'Ren')); s.player.coins = 4; const r = act(s, { type: 'steal', shop: 'mara' }); if (r.events[0].id === 'steal:caught') { assert.equal(r.state.player.coins, 0); assert.equal(r.state.player.reputation, Math.max(0, 10 - 12)); break; } }
+  for (let seed = 1; seed < 40; seed++) { const s = G.makeV2(G.newGame(seed, 'Ren')); s.player.coins = 4; const r = act(s, { type: 'steal', shop: 'mara' }); if (r.events[0].id === 'steal:caught') { const p = act(r.state, { type: 'payFine' }).state; assert.equal(p.player.coins, 0); assert.equal(p.player.reputation, Math.max(0, 10 - 12)); break; } }
 });
 
 test('a challenge (lot L2b, EV-3 / EV-4): put to a fighter who is there, a stake chosen, full health, once per phase, no wound; its bout takes a slot; won, the stake back twice and the skill learnt; from day 6 the fighter\'s signature instead (SK-7, journal Passe SK2)', () => {

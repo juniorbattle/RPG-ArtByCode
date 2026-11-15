@@ -87,6 +87,56 @@ test('the weapon\'s tiers: Bram raises it by day at the forge (a slot, 10 / 25 /
   const burnt = v2(); burnt.services.forge = 'sabotaged'; burnt.player.coins = 99; refused(burnt, { type: 'upgradeWeapon' }, /cold/);
 });
 
+test('GP-20: the Wyrmsteel temper costs the tier it gives, so the weapon\'s three tiers cost the same whatever the order; refused at the top tier, where it gives nothing; today\'s game keeps its 10 coins', () => {
+  const quest = () => { const s = v2(); s.quests.cargo = 'delivered'; s.player.coins = 300; return s; };
+  const coins = (s, type) => G.actions(s).find((x) => x.action.type === type);
+  const again = (s) => { s.slot = 'morning'; return s; };
+  // the temper first: 10, then the forge's 25 and 40
+  let a = quest(); assert.equal(coins(a, 'temper').coins, GE.TIER_PRICE[0]);
+  a = again(act(a, { type: 'temper' })); a = again(act(a, { type: 'upgradeWeapon' })); a = again(act(a, { type: 'upgradeWeapon' }));
+  // the forge first, then the temper: it gives the third tier, at the third tier's price (45 before: the order changed the price)
+  let b = quest(); b = again(act(b, { type: 'upgradeWeapon' })); b = again(act(b, { type: 'upgradeWeapon' }));
+  const t = coins(b, 'temper'); assert.ok(t.ok); assert.equal(t.coins, GE.TIER_PRICE[2]); assert.match(t.label, new RegExp(`\\(${GE.TIER_PRICE[2]} coins: Attack \\+${GE.WEAPON_TIER_ATK}\\)$`));
+  b = again(act(b, { type: 'temper' }));
+  assert.deepEqual([VG.weaponTier(a), VG.weaponTier(b)], [GE.MAX_WEAPON_TIER, GE.MAX_WEAPON_TIER]);
+  assert.equal(300 - a.player.coins, GE.TIER_PRICE.reduce((x, y) => x + y, 0)); assert.equal(a.player.coins, b.player.coins, 'the same price, either order');
+  // the three tiers paid at the forge: the temper refused, with its reason (it was sold, for nothing)
+  let c = quest(); for (let i = 0; i < GE.MAX_WEAPON_TIER; i++) c = again(act(c, { type: 'upgradeWeapon' }));
+  refused(c, { type: 'temper' }, /as fine as Bram can make it/); assert.equal(coins(c, 'temper').coins, 0);
+  // too poor for the tier it gives: Bram says his price
+  const poor = quest(); poor.player.coins = 5; refused(poor, { type: 'temper' }, /^Bram wants 10 coins\.$/);
+  // today's game: its quest's temper at 10 coins, its words unchanged
+  const d = G.namedState('day1-morning'); d.quests.cargo = 'delivered'; d.player.coins = 50;
+  const dt = coins(d, 'temper'); assert.equal(dt.coins, 10); assert.equal(dt.label, 'Have Bram temper your blade in the Wyrmsteel (10 coins: +15 % damage)');
+});
+
+test('GP-20: « two at once » never takes a weapon in hand: the pair\'s sabre goes to the bag, the forge\'s tiers kept; a plain purchase still wields it, the page saying what it loses', async () => {
+  const W = await load('/src/simulation/preview.ts');
+  const st = v2(); st.place = 'training'; st.slot = 'morning'; st.player.coins = 300; st.v2.gear.tier = 2;
+  const win = { next: () => 0, fork() { return this; } };
+  const r = G.advance(st, { type: 'bargain', shop: 'master', item: 'swift-boots', arg: 'pair' }, win);
+  assert.ok(r.ok, r.reason); assert.ok(r.events.some((e) => e.id === 'bargain:won'));
+  const g = r.state.v2.gear;
+  assert.deepEqual([g.weapon, g.tier], ['training-sword', 2], 'the weapon in hand and its tiers kept');
+  assert.ok(g.bag.includes('duelist-sabre') && g.acc.includes('swift-boots'), 'the sabre in the bag, the boots worn');
+  // a single bargain for a weapon: to the bag as well
+  const one = structuredClone(st); one.place = 'district';
+  const r1 = G.advance(one, { type: 'bargain', shop: 'mara', item: 'imported-blade', arg: 'name' }, win);
+  assert.ok(r1.ok, r1.reason); assert.deepEqual([r1.state.v2.gear.weapon, r1.state.v2.gear.tier, r1.state.v2.gear.bag], ['training-sword', 2, ['imported-blade']]);
+  // the negative control: bought plainly, the sabre is taken in hand and the tiers go, as the goods page warns (Preview.tierLost)
+  const p = W.preview(st, { type: 'shopBuy', shop: 'master', item: 'duelist-sabre' });
+  assert.deepEqual([p.slot, p.replaces, p.tierLost], ['weapon', 'training-sword', 2]);
+  const bought = act(st, { type: 'shopBuy', shop: 'master', item: 'duelist-sabre' });
+  assert.deepEqual([bought.v2.gear.weapon, bought.v2.gear.tier], ['duelist-sabre', 0]);
+  // worn from the bag, the warning is the page's too
+  const e = W.preview(r.state, { type: 'equip', item: 'duelist-sabre' });
+  assert.deepEqual([e.slot, e.replaces, e.tierLost], ['weapon', 'training-sword', 2]);
+  // armour and accessories as before: a free place takes the piece
+  const armour = v2(); armour.place = 'forecourt'; armour.slot = 'morning'; armour.player.coins = 300;
+  const ra = G.advance(armour, { type: 'bargain', shop: 'armourer', item: 'padded-jack', arg: 'pair' }, win);
+  assert.ok(ra.ok, ra.reason); assert.ok(ra.state.v2.gear.armour !== null, 'an armour worn');
+});
+
 test('what the gear changes in a duel (the operator\'s DB7-2 « Des points, le reste gardé », journal Passe DB8): stat points, the AP at the start and the effects as before', () => {
   const st = G.makeV2(G.namedState('day2-afternoon'));
   const bare = structuredClone(st); bare.v2.gear = { weapon: 'training-sword', tier: 0, armour: null, acc: [null, null], bag: [] };

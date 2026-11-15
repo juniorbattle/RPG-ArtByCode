@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "npc-m-combat-x3-2026-11-15-c.png",
+  "sha256": "5dba4250f2178d5a3647d9c7624719d0bccc2fcebb77fd0af1acc2f88d37a69f",
+  "bytes": 1491036,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "b765e695404cc4a45584de6ec15937d4f2e2dfd9f2bda2aad28c691398b91645",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the town sprite of ONE character of \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament), a young townsman of the Cité, a stallholder who defends himself with a short sword: front, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Image 2 is the character reference sheet he comes from (four views); it only confirms the design. Images 1 and 2 show him wearing a tan apron: leave the apron OUT entirely; his blue shirt, belt and trousers show instead. NO apron, NO bag, NO hat, NO scarf. Images 3 and 4 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of this character, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1, without the apron: messy brown hair, a clear young face with one large eye in profile; a plain slate-blue work shirt with the sleeves rolled up to the elbows (light grey rolled cuffs), the collar open; a plain brown leather belt with a small square buckle; loose dark charcoal-grey trousers; brown leather boots. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO cross, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big head, about three heads tall, an ordinary compact body (a townsman, not a warrior). Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head about 97 pixels tall.\n\nThe weapon, the same in every figure: a plain one-handed short sword (an arming sword): a bright steel blade with a darker edge line, about 100 pixels long at this scale, a simple straight steel crossguard, a dark brown leather grip, a small round steel pommel. He holds it in ONE hand only (the front hand); the other hand is free and empty. No shield, no scabbard, no second weapon.\n\n2 rows, in this order, left to right:\nRow 1, a quick lunge:\n1. LUNGE, PREPARATION: drawn back on the rear foot, the sword pulled back beside the hip, pointing forward, the eyes on the opponent to the left.\n2. LUNGE, SURGE: springing forward, the back foot still on the ground, the torso leaning in, the sword arm starting to extend.\n3. LUNGE, THE THRUST LANDING on an opponent just to the left, at chest height: a long lunge, the front knee deeply bent, the back leg straight, the sword arm fully extended forward, the blade level and pointing left, mouth open in a shout.\n4. LUNGE, RECOVERY: pulling back out of the lunge, the weight returning to the back foot, the sword coming back in front of the chest.\nRow 2, a brace, then a fall:\n5. BRACE, PREPARATION: stepping back, the sword brought across the body.\n6. BRACE: a solid low defensive stance, feet wide, knees bent, the sword held crosswise in front of the body at chest height (the blade horizontal), the free hand pressing on the flat of the blade near its tip, the head lowered behind it.\n7. BRACE, RETURN: rising out of the brace, the sword returning in front, pointing forward.\n8. KNOCKOUT, FALLING: collapsing, the knees buckling, the torso sagging, the head dropping, the arms hanging, the sword slipping from the hand.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "dd03564c13cc68e90a4919c418bd7fb7d5e8af658a5fd42475ba00b475910713",
+    "promptFile": "(outside the repository) gab-m-c.txt",
+    "references": [
+      {
+        "file": "(outside the repository) vendor-town-x5.png",
+        "sha256": "6c310df15347563224fafe4efb8ad2cf030194689ce9fe6311f0154221a27543",
+        "bytes": 20288
+      },
+      {
+        "file": "(outside the repository) npc01.png",
+        "sha256": "1521819687f26c424bb16615bbee7acb0d00b035eacdcd9d376e037f85d92dd0",
+        "bytes": 127925
+      },
+      {
+        "file": ".claude/worktrees/determined-visvesvaraya-7ac630/art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": ".claude/worktrees/determined-visvesvaraya-7ac630/art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "1 of 2",
+    "task": "npc-gabarits",
+    "requestedAt": "2026-11-15T13:51:24.083Z",
+    "response": {
+      "requestId": "req_7e009596ec9e406698233ce15e27e1af",
+      "created": "2026-11-15T13:52:27.000Z",
+      "processingMs": 61084
+    },
+    "usage": {
+      "input_tokens": 10276,
+      "input_tokens_details": {
+        "image_tokens": 8290,
+        "text_tokens": 1986
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 21252
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.383795,
+        "fromUsage": 0.40553
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 23664 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-15",
+    "from": "npc-gabarits-20261115T135124Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

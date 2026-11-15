@@ -57,7 +57,9 @@ export interface PlazaOptions {
 /** the forecourt's gate guard: the approved guard sheet's second variant (art-lab/characters/variants/variants.json, guard-x2-v1), the original being Hale's and
  *  the first Wynn's, who stand on the quay (the operator's « A single guard », journal Passe CO4) */
 const GATE_VARIANT = 2;
-const ROLE_ARCHETYPE: Record<string, string> = { guardA: 'guardA', guardB: 'guardB', hooded: 'hooded', porter: 'porter', edda: 'citizen-noble', sela: 'citizen-wayfarer', wynn: 'guardB' };
+const ROLE_ARCHETYPE: Record<string, string> = { guardA: 'guardA', guardB: 'guardB', hooded: 'hooded', porter: 'porter', edda: 'citizen-noble', sela: 'citizen-wayfarer', wynn: 'guardB',
+  // the seven more passers-by (GP-06, journal Passe PN1): a citizen of the squares or a townsperson of the crowd, taken out of the walkers while they stand
+  yselle: 'citizen-wayfarer', garrick: 'crowd3', maud: 'crowd0', dov: 'crowd1', hettie: 'crowd2' };
 /** the people a square shows, generated only under `cast=generated`, the comparison (their sheets: src/characters/PlazaCast.ts, journal Passes V5 / CA5) */
 export const SQUARE_PEOPLE = ['odo', 'anwen', 'hilde', 'corvin', 'pip', 'lio', 'orla', 'vessa', 'marek', 'ilse', 'cassius', 'drill', 'bard'];
 /** the key light of a square by the look (journal Passe VP1, « proposé »): a square is closed on three sides (the north and the two rows), open
@@ -291,7 +293,7 @@ export class PlazaApp {
     this.opts.onProgress('people', 0.97);
     const castMode = this.opts.params.get('cast');
     // Ren under his look (journal Passe PR3, HeroLookCast: the approved look, or DEV's `herolook` review)
-    const cast = castMode === 'generated' ? null : await loadProductionCast(false, 'approved', undefined, heroEntries(plazaCastEntries()));
+    const cast = castMode === 'generated' ? null : await loadProductionCast(false, 'approved', undefined, heroEntries(plazaCastEntries(this.opts.people)));
     this.cast = cast?.cast ?? null;
     const generated = cast ? [] : crowdVariants(7351, SQUARE_PEOPLE.length).map((s, i): CharSpec => ({ ...s, id: `person-${SQUARE_PEOPLE[i]}` }));
     this.atlas = SpriteAtlas.build([PLAYER, GUARD_A, GUARD_B, HOODED, PORTER, ...crowdVariants(1842, 5), ...generated], cast?.sheets ?? [], this.renderer.capabilities.maxTextureSize);
@@ -310,6 +312,8 @@ export class PlazaApp {
       const at = this.place.spots[id]; if (!at) continue;
       // a passer-by stands as a citizen's sheet: none under the generated comparison
       if (ROLE_ARCHETYPE[id]?.startsWith('citizen-')) { if (!this.cast?.has(ROLE_ARCHETYPE[id])) continue; standing.add(ROLE_ARCHETYPE[id]); }
+      // (a townsperson of the crowd standing as a passer-by walks no more meanwhile)
+      if (/^crowd\d$/.test(ROLE_ARCHETYPE[id] ?? '')) standing.add(ROLE_ARCHETYPE[id]);
       const a = this.actor(ROLE_ARCHETYPE[id] ?? `person-${id}`, 'person', at[0], at[1], 100 + this.people.length, id === 'guardA' ? GATE_VARIANT : undefined);
       this.people.push(a); this.who.set(a, id);
     }

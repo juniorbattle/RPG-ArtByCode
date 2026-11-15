@@ -3,6 +3,8 @@ import type { ActionDef } from './actions';
 import { isV2 } from './v2';
 import { GEAR, MAX_WEAPON_TIER, SHOPS, TIER_PRICE, WEAPON_TIER_ATK, type GearFx, type ShopId } from './gear';
 import { REN_BASE, TRAINED_STATS, VIGOUR_HP, trainGain, type FighterStats, type TrainedStat } from '../combat/stats';
+import { AUTO_GEAR_FX, AUTO_PIECE_VIV } from '../combat/autoData';
+import { AUTO_RULES, type AutoGearFx } from '../combat/auto';
 import { itemText, tx } from '../narrative/text';
 import { allyAp } from '../narrative/v2story';
 import type { Mods } from '../combat/profiles';
@@ -115,20 +117,52 @@ export function shopOpen(s: GameState, shop: ShopId): string | null {
   return null;
 }
 
-/** a piece bought (from a shop, by a bargain, from a passer-by) goes where it is worn, or into the bag: the salve heals at once, the whetstone waits for
- *  the next bout, a weapon is taken in hand (the old one to the bag), an armour worn (the old one to the bag), an accessory on a free place or the bag */
+/** a weapon taken in hand: the old one to the bag, the forge's tiers with it (they were folded into the old blade) */
+function wield(g: V2Gear, item: string): void { g.bag.push(g.weapon); g.weapon = item; g.tier = 0; }
+
+/** a piece received (won by a bargain, the bargain's pair, bought from a passer-by) goes where it is worn, or into the bag: the salve heals at once, the whetstone
+ *  waits for the next bout, an armour is worn (the old one to the bag), an accessory on a free place or the bag. A weapon never replaces the one in hand: it goes to
+ *  the bag, the forge's tiers kept, and is worn from the gear page, which says what the swap loses (the operator's GP-20 « Les corriger », journal Passe GP2: « two
+ *  at once » took the sabre in hand and wiped the tiers paid at Bram's without the warning a plain purchase gives; the plain purchase wields it, shopBuy) */
 export function receive(s: GameState, item: string): void {
   const d = GEAR[item];
   if (item === 'salve') { s.player.injury = Math.max(0, s.player.injury - 1); return; }
   if (item === 'whetstone') { s.player.items.push('whetstone'); return; }
   const g = gearOf(s);
-  if (d.slot === 'weapon') { g.bag.push(g.weapon); g.weapon = item; g.tier = 0; }
+  if (d.slot === 'weapon') { if (g.weapon) g.bag.push(item); else g.weapon = item; }
   else if (d.slot === 'armour') { if (g.armour) g.bag.push(g.armour); g.armour = item; }
   else { const i = g.acc.indexOf(null); if (i >= 0) g.acc[i] = item; else g.bag.push(item); }
 }
 
 export const itemName = (id: string): string => itemText(id, 'name');
+/** a piece's points in words (the gear's text; today's game reads it too) */
 export const itemAbout = (id: string): string => itemText(id, 'about');
+
+/** a version 2 piece's effects in a bout, in words, each number read from the duel's own tables (the operator's GP-20 « Les corriger », journal Passe GP2: the gear
+ *  page showed the pieces' Speed whole, said « wards and boosts » where only the protections last longer, src/combat/autoData.ts autoSkill (a support's boost is its
+ *  role's, the parry's window its own), and named none of AUTO_GEAR_FX): its Speed counted at AUTO_PIECE_VIV, its protections' length, its effects. Each value's
+ *  words say its side of 1 (tests/v2-gear.test.mjs holds every value of the tables on the side its words say) */
+export function pieceFx(id: string): string[] {
+  const d = GEAR[id], e: AutoGearFx = AUTO_GEAR_FX[id] ?? {}, pct = (k: number): number => Math.round(Math.abs(1 - k) * 100), out: string[] = [];
+  if (d?.fx.viv) out.push(tx('gear.fx.viv', { pct: Math.round(AUTO_PIECE_VIV * 100) }));
+  if (d?.fx.effect !== undefined && d.fx.effect !== 1) out.push(tx('gear.fx.effect', { pct: pct(d.fx.effect) }));
+  if (e.lastPierce) out.push(tx('gear.fx.lastPierce'));
+  if (e.gauge !== undefined) out.push(tx(e.gauge > 1 ? 'gear.fx.gaugeMore' : 'gear.fx.gaugeLess', { pct: pct(e.gauge) }));
+  if (e.lightCharge !== undefined) out.push(tx('gear.fx.lightCharge', { pct: pct(e.lightCharge) }));
+  if (e.guardGauge !== undefined) out.push(tx('gear.fx.guardGauge', { pct: Math.round(e.guardGauge * 100), base: Math.round(AUTO_RULES.gauge.guardMul * 100) }));
+  if (e.lightTaken !== undefined) out.push(tx('gear.fx.lightTaken', { pct: pct(e.lightTaken) }));
+  if (e.dodge !== undefined) out.push(tx(e.dodge > 1 ? 'gear.fx.dodgeMore' : 'gear.fx.dodgeLess', { pct: pct(e.dodge) }));
+  if (e.guardChance !== undefined) out.push(tx('gear.fx.guardLess', { pct: pct(e.guardChance) }));
+  if (e.stun !== undefined) out.push(tx('gear.fx.stun', { pct: pct(e.stun) }));
+  if (e.cd !== undefined) out.push(tx('gear.fx.cd', { pct: pct(e.cd) }));
+  if (e.firstFast) out.push(tx('gear.fx.firstFast'));
+  return out;
+}
+/** a version 2 piece's words: its points, then its effects in a bout (the shop's label, the goods page) */
+export function pieceWords(id: string): string {
+  const points = itemAbout(id), fx = pieceFx(id).join(', ');
+  return points && fx ? tx('gear.words', { points, fx }) : points || fx;
+}
 /** after « your »: without its article */
 const heldName = (id: string): string => itemName(id).replace(/^an? /, '');
 
@@ -143,7 +177,7 @@ export const V2_GEAR_ACTIONS: { [K in V2GearAction['type']]: ActionDef<Extract<V
   shopBuy: {
     by: (a) => SHOPS[a.shop].keeper,
     list: (s) => (!isV2(s) ? [] : (Object.keys(SHOPS) as ShopId[]).filter((k) => SHOPS[k].place === s.place).flatMap((shop) => Object.values(GEAR).filter((g) => g.shop === shop).map((g) => ({ type: 'shopBuy' as const, shop, item: g.id })))),
-    label: (s, a) => tx('v2.shop.label', { item: itemName(a.item), price: shopPrice(s, a.shop, a.item), about: itemAbout(a.item) }),
+    label: (s, a) => tx('v2.shop.label', { item: itemName(a.item), price: shopPrice(s, a.shop, a.item), about: pieceWords(a.item) }),
     cost: () => 0,
     coins: (s, a) => shopPrice(s, a.shop, a.item),
     check: (s, a) => {
@@ -159,8 +193,9 @@ export const V2_GEAR_ACTIONS: { [K in V2GearAction['type']]: ActionDef<Extract<V
     apply: (s, a, _r, emit) => {
       const p = shopPrice(s, a.shop, a.item), d = GEAR[a.item], keeper = SHOPS[a.shop].keeper;
       s.player.coins -= p; s.town[keeper] = clamp((s.town[keeper] ?? 0) + 3, -100, 100);
-      // what is bought is worn at once when its place is free (or better than nothing), else kept in the bag
-      receive(s, a.item);
+      // what is bought is worn at once when its place is free (or better than nothing), else kept in the bag; a weapon bought is taken in hand, as before (the goods
+      // page says what the swap loses, the forge's tiers: Preview.tierLost)
+      if (d.slot === 'weapon') wield(gearOf(s), a.item); else receive(s, a.item);
       emit({ kind: 'action', id: `shop:${a.item}`, cause: s.services.shopFactor > 1 && (d.slot === 'weapon' || d.slot === 'armour') ? tx('buy.causePrices', { cause: s.services.shopCause }) : 'action:shopBuy', visible: true, text: tx('v2.shop.log', { item: itemName(a.item), price: p }) });
     },
   },
@@ -174,7 +209,7 @@ export const V2_GEAR_ACTIONS: { [K in V2GearAction['type']]: ActionDef<Extract<V
     apply: (s, a, _r, emit) => {
       const g = gearOf(s), d = GEAR[a.item];
       g.bag.splice(g.bag.indexOf(a.item), 1);
-      if (d.slot === 'weapon') { g.bag.push(g.weapon); g.weapon = a.item; g.tier = 0; }
+      if (d.slot === 'weapon') wield(g, a.item);
       else if (d.slot === 'armour') { if (g.armour) g.bag.push(g.armour); g.armour = a.item; }
       else { const i = a.slot ?? (g.acc[0] === null ? 0 : g.acc[1] === null ? 1 : 0); const old = g.acc[i]; if (old) g.bag.push(old); g.acc[i] = a.item; }
       emit({ kind: 'action', id: 'equip', cause: 'action:equip', visible: false, text: tx('v2.equip.log', { item: itemName(a.item) }) });

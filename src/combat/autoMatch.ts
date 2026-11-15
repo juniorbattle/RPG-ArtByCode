@@ -6,6 +6,7 @@ import { rivalMods } from '../tournament/pool';
 import { piecesViv, v2Mods, v2Stats, wornPieces } from '../simulation/v2gear';
 import { v2KitOf } from '../simulation/v2';
 import { GENERICS } from '../narrative/generics';
+import { NPC_BASE, NPC_FIGHTERS } from '../narrative/npcFighters';
 import { allyCd } from '../narrative/v2story';
 import { AUTO_RULES, autoDuel, autoFormsOf, autoWinner, type AutoFighter, type AutoResult } from './auto';
 import { autoFoe, autoGenericSheet, autoKitFor, autoPrepPoints, autoRaceSheet, autoRen, autoRound } from './autoData';
@@ -48,9 +49,12 @@ export function autoFightersFor(st: GameState, foeId: string, stage: Stage, roun
   const ally = allyCd(st);
   if (ally !== 1) ren.gfx = { ...ren.gfx, cd: (ren.gfx?.cd ?? 1) * ally };
   const c = st.competitors[o.id];
-  const foe = g ? autoFoe(o.id, autoGenericSheet(g.profile, g, stage, round), { kitOf: g.profile, stage })
-    : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c?.preparation, hp: c ? rivalMods(c).hp : 1 }), { stage, plan: c?.plan });
-  return { ren, foe, prep: g || !c ? 0 : autoPrepPoints(c.preparation) };
+    // a townsperson who fights themselves (journal Passe PN1, src/narrative/npcFighters.ts): NPC_BASE's sheet at the stage, their shares, their weapon's kit
+    const npc = NPC_FIGHTERS[o.id];
+    const foe = npc ? autoFoe(o.id, autoGenericSheet(NPC_BASE, npc, stage, round), { kitOf: npc.look.weapon, stage })
+      : g ? autoFoe(o.id, autoGenericSheet(g.profile, g, stage, round), { kitOf: g.profile, stage })
+      : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c?.preparation, hp: c ? rivalMods(c).hp : 1 }), { stage, plan: c?.plan });
+    return { ren, foe, prep: npc || g || !c ? 0 : autoPrepPoints(c.preparation) };
 }
 
 /** the player's bout or challenge fought in this duel, as the game takes its result (DuelOutcome), and the duel itself (`log`: its script, with each

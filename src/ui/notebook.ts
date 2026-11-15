@@ -1,5 +1,6 @@
 import { RIVALS } from '../narrative/roster';
 import { GENERICS } from '../narrative/generics';
+import { PEOPLE } from '../narrative/people';
 import { num, tx, word } from '../narrative/text';
 import type { GameState } from '../simulation';
 import type { Advice, BoutNote, NoteSum } from '../combat/autoNotes';
@@ -14,8 +15,8 @@ import { portraitUrl } from './portraits';
  *  what is known of their style, their plan and their kit, the last rehearsal against their shadow and the two bouts to watch again (Enter a win, Space a loss), and
  *  Master Corvin's notes on the bouts and challenges against them (src/combat/autoNotes.ts), each with his advice. Opened from the menu and from Master Corvin. */
 
-/** a fighter's name, a rival's or a generic fighter's */
-export const fighterName = (id: string): string => RIVALS[id]?.name ?? (GENERICS[id] ? word(GENERICS[id].name) : id);
+/** a fighter's name, a rival's, a generic fighter's or, since journal Passe PN1, a townsperson's who fights themselves (« Openings: 1 yours, 0 for garrick » said the raw id) */
+export const fighterName = (id: string): string => RIVALS[id]?.name ?? (GENERICS[id] ? word(GENERICS[id].name) : PEOPLE[id] ? word(PEOPLE[id].name) : id);
 
 /** an advice in words */
 export function adviceText(a: Advice, foe: string): string {

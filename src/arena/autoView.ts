@@ -3,6 +3,7 @@ import { autoFoe, autoRaceSheet, autoRen } from '../combat/autoData';
 import { REN_BASE } from '../combat/stats';
 import { V2_START_KIT } from '../combat/v2duel';
 import { GENERICS } from '../narrative/generics';
+import { NPC_BASE, NPC_FIGHTERS } from '../narrative/npcFighters';
 import { autoGenericSheet } from '../combat/autoData';
 
 /** The arena's side of the duel played by the computer (lot 2 of briefs/combat-auto.md § 17.3, journal Passe LC3): the duel is decided before the arena opens
@@ -526,12 +527,12 @@ function actionsOf(x: AutoFighter): Map<string, AutoAction> {
 }
 
 /** the arena's own page (`?scene=arena`, outside a game): Ren of a new game (his start, the four of the start kit at level 1, the training sword) against
- *  the pool's Marek (or `foe`, a rival's sheet in its own duel; DEV a generic fighter), a fixed seed; `seed` another duel; DEV `o` another weapon or four skills
+ *  the pool's Marek (or `foe`, a rival's sheet in its own duel; DEV a generic fighter, or a townsperson who fights themselves, journal Passe PN1), a fixed seed; `seed` another duel; DEV `o` another weapon or four skills
  *  (the proofs of the gauge's enchaînements, journal Passe LC7) */
 export function sceneAutoDuel(foe = 'marek', seed = 1337, o: { weapon?: string | null; loadout?: readonly string[] } = {}): { result: AutoResult; ren: AutoFighter; foe: AutoFighter; seed: number } {
   const loadout = o.loadout?.length ? [...o.loadout] : V2_START_KIT.loadout;
   const ren = autoRen({ ...REN_BASE }, { loadout, levels: o.loadout?.length ? Object.fromEntries(loadout.map((id) => [id, 1])) : V2_START_KIT.levels }, o.weapon ? { weapon: o.weapon } : {});
-  const g = GENERICS[foe];
-  const f = g ? autoFoe(foe, autoGenericSheet(g.profile, g, 0, 0), { kitOf: g.profile }) : autoFoe(foe, autoRaceSheet(foe, 0, 0));
+  const g = GENERICS[foe], npc = NPC_FIGHTERS[foe];
+  const f = npc ? autoFoe(foe, autoGenericSheet(NPC_BASE, npc, 0, 0), { kitOf: npc.look.weapon }) : g ? autoFoe(foe, autoGenericSheet(g.profile, g, 0, 0), { kitOf: g.profile }) : autoFoe(foe, autoRaceSheet(foe, 0, 0));
   return { result: autoDuel(ren, f, seed, { log: true, trace: true }), ren, foe: f, seed };
 }

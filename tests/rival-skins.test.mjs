@@ -113,7 +113,8 @@ test('the runtime: every sheet of the file owned by its fighter; recoloured only
   const cc = fs.readFileSync(path.join(ROOT, 'src/arena/CombatCast.ts'), 'utf8');
   assert.match(cc, /import \{ sheetSkin \} from '\.\.\/characters\/FighterSkinCast'/);
   assert.match(cc, /skin = id\.startsWith\('hero-'\) \? heroSheetLook\(id, frames, fw, fh\) : sheetSkin\(id, frames, fw, fh\)/, 'a rival\'s combat sheet through its skin');
-  assert.match(cc, /\.\.\.\(await skinOf\(id, bytes, meta\)\)/, 'every duel sheet through skinOf');
+  // every duel sheet through skinOf, but a townsperson's template, recoloured to their own look (journal Passe PN1, src/characters/NpcLook.ts)
+  assert.match(cc, /\.\.\.\(o\.look \? await lookOf\(o\.look, bytes, meta, !!o\.candidate\) : await skinOf\(id, bytes, meta\)\)/, 'every duel sheet through skinOf');
 });
 
 test('a square\'s cast as the page loads it (loadProductionCast with the squares\' entries): a rival with a fixed variant under its skin, the others as their export', async () => {

@@ -14,6 +14,9 @@ const V = await load('/src/combat/v2duel.ts');
 const B = await load('/src/combat/bot.ts');
 const M = await load('/src/combat/match.ts');
 const { PEOPLE } = await load('/src/narrative/people.ts');
+const P = await load('/src/simulation/preview.ts');
+const T = await load('/src/narrative/text/index.ts');
+const { V2_EVENTS } = await load('/src/events/v2catalog.ts');
 
 const v2 = (name = 'day1-morning') => G.makeV2(G.namedState(name));
 const act = (st, a) => { const r = G.advance(st, a); assert.ok(r.ok, `${a.type}: ${r.reason}`); return r.state; };
@@ -105,13 +108,17 @@ test('drilling on the practice sand: a slot; a base skill learnt at level 1, an 
   st.slot = 'evening'; refused(st, { type: 'drillSkill', skill: 't4' }, /closes at dusk/);
 });
 
-test('a challenge won teaches the fighter\'s skill, then raises it (to level 5); the four chosen at the match sheet are four distinct owned skills', () => {
+test('a challenge won teaches the fighter\'s skill, then raises it up to level 3 and never beyond (GP-16); the four chosen at the match sheet are four distinct owned skills', () => {
   const st = v2(), events = [], emit = (e) => { events.push(e); return e; };
   assert.equal(S.learnFromChallenge(st, 'orla', emit), 'k_cry');
   assert.equal(st.v2.kit.levels.k_cry, 1);
   for (let i = 0; i < 6; i++) S.learnFromChallenge(st, 'orla', emit);
-  assert.equal(st.v2.kit.levels.k_cry, 5);
-  assert.deepEqual(events.map((e) => e.id), ['skill:learnt', 'skill:raised', 'skill:raised', 'skill:raised', 'skill:raised', 'skill:max', 'skill:max']);
+  // the operator's GP-16 « Les corriger » (journal Passe GP2): the sand teaches up to the training's cap, Master Corvin's lessons beyond; at the cap the fighter
+  // teaches nothing more, so the challenge's label names no skill
+  assert.equal(S.TRAIN_CAP, 3);
+  assert.equal(st.v2.kit.levels.k_cry, S.TRAIN_CAP);
+  assert.deepEqual(events.map((e) => e.id), ['skill:learnt', 'skill:raised', 'skill:raised']);
+  assert.equal(S.challengeSkill(st, 'orla'), null, 'nothing more to teach at the cap');
   assert.equal(S.learnFromChallenge(st, 'mara', emit), null);
   refused(st, { type: 'setLoadout', skills: ['t1', 't4', 'd1'] }, /four/);
   refused(st, { type: 'setLoadout', skills: ['t1', 't4', 'd1', 'd1'] }, /four/);
@@ -119,6 +126,43 @@ test('a challenge won teaches the fighter\'s skill, then raises it (to level 5);
   const s2 = act(st, { type: 'setLoadout', skills: ['k_cry', 't4', 'd1', 's1'] });
   assert.deepEqual(s2.v2.kit.loadout, ['k_cry', 't4', 'd1', 's1']);
   assert.equal(s2.slot, st.slot, 'a minor action');
+});
+
+test('GP-16: a town fighter beaten again from day 6 raises a skill drilled to level 3 no further, and the challenge then promises none; below the cap it is raised', () => {
+  // the defect found in journal Passe GP1: Lucan's Finishing Blow learnt in the first phase, drilled to 3, then a second-phase challenge took it to 4 without a lesson
+  const st = v2(), events = [], emit = (e) => { events.push(e); return e; };
+  assert.equal(S.learnFromChallenge(st, 'lucan', emit), 'n_grace');
+  st.v2.kit.levels.n_grace = S.TRAIN_CAP; st.day = 7;
+  assert.equal(S.learnFromChallenge(st, 'lucan', emit), null);
+  assert.equal(st.v2.kit.levels.n_grace, S.TRAIN_CAP, 'level 3 kept: the lessons alone go beyond');
+  assert.deepEqual(events.map((e) => e.id), ['skill:learnt'], 'nothing said: nothing taught');
+  assert.deepEqual(P.nextLevel(st, 'n_grace'), { level: 4, by: 'lesson', price: S.lessonPrice(4), day: S.LESSON.day });
+  // the negative control: at level 2 the second phase raises it, to the cap
+  const low = v2(); low.v2.kit.levels.n_grace = 2; low.day = 7;
+  assert.equal(S.learnFromChallenge(low, 'lucan', () => {}), 'n_grace'); assert.equal(low.v2.kit.levels.n_grace, 3);
+  // the challenge's words on the training ground (Orla, the first morning): her skill named while it can still be taught, none once it is at the cap
+  const at = v2(); at.place = 'training'; at.slot = 'morning';
+  const label = (s) => G.actions(s).find((o) => o.action.type === 'challenge' && o.action.who === 'orla' && o.action.stake === 'coins')?.label ?? '';
+  assert.match(label(at), new RegExp(`and ${T.skillName('k_cry')}\\)$`));
+  at.v2.kit.levels.k_cry = S.TRAIN_CAP;
+  assert.match(label(at), /\(won: twice back\)$/);
+});
+
+test('GP-16: the day of Master Corvin\'s fifth off (the day after a challenge won, his open lesson), his lessons cost a fifth less too; the list price any other day', () => {
+  const base = v2(); base.place = 'training'; base.slot = 'morning'; base.day = 6; base.v2.kit.levels.t4 = S.TRAIN_CAP; base.player.coins = 100;
+  const off = structuredClone(base); off.flags['lesson:6'] = true;
+  const opt = (s) => G.actions(s).find((o) => o.action.type === 'lessonSkill' && o.action.skill === 't4');
+  assert.deepEqual([opt(base).coins, opt(off).coins], [30, 24]);
+  assert.equal(opt(off).label, `Take Master Corvin's lesson in ${T.skillName('t4')} (to level 4; 24 coins)`);
+  assert.equal(P.nextLevel(off, 't4').price, 24, 'the skills page says the price of the day');
+  let s = act(off, { type: 'lessonSkill', skill: 't4' });
+  assert.deepEqual([s.v2.kit.levels.t4, s.player.coins], [4, 76]);
+  s.slot = 'morning'; s.flags['lesson:6'] = true; s = act(s, { type: 'lessonSkill', skill: 't4' });
+  assert.deepEqual([s.v2.kit.levels.t4, s.player.coins], [5, 28], 'level 5: 60 less a fifth');
+  // the same fifth as on the skills he sells, and the event says it
+  assert.equal(S.skillPrice(off, 'k_sunder'), Math.round(S.skillPrice(base, 'k_sunder') * 0.8));
+  const fame = V2_EVENTS.find((e) => e.id === 'v2-challenge-fame');
+  assert.ok(fame.outcomes.every((o) => o.effects.some((x) => x.tomorrow === 'lesson')), 'the day after a challenge won');
 });
 
 test('the bout takes the player\'s kit: its four skills at their levels, the new skills among them; the bot fights it to a K.O.', () => {

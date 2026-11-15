@@ -36,7 +36,8 @@ test('no first-recipe sheet stays in production', () => {
 test('the sheets reach the squares and a version 2 game, never the frozen district or today\'s game', () => {
   for (const f of ['src/app/App.ts', 'src/characters/BakedCast.ts', 'src/characters/ActorSystem.ts', 'src/arena/ArenaApp.ts', 'src/ui/playForecourt.ts', 'src/ui/playLanterns.ts']) assert.ok(!read(f).includes('PlazaCast'), f);
   assert.match(read('src/ui/playTown.ts'), /isV2\(st\) \? \(await import\('\.\.\/characters\/PlazaCast'\)\)\.plazaFaces\(\) : undefined/);
-  assert.match(read('src/world/PlazaApp.ts'), /plazaCastEntries\(\)\)/);
+  // (since journal Passe PN1, GP-05: the generic fighters the square shows at this moment only, the sprite atlas's two columns)
+  assert.match(read('src/world/PlazaApp.ts'), /plazaCastEntries\(this\.opts\.people\)\)/);
 });
 
 test('every person of a square has a sheet, no provisional sprite left, Tobin and Rhosk their faces', () => {

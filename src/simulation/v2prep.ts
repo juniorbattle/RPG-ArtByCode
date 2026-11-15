@@ -91,6 +91,15 @@ export function rehearsalOf(s: GameState, foe: string): Rehearsal | null {
 /** the rehearsal still holds « with this plan »: the player's side of the bout as it would be fought now is the one rehearsed */
 export const rehearsalFresh = (s: GameState, r: Rehearsal): boolean => { const b = shadowBout(s); return !!b && b.foeId === r.foe && shadowKey(b) === r.key; };
 
+/** the rehearsal still to do against the next opponent: their style known (it is open), and no rehearsal of that bout yet with what is known of them now (none, or
+ *  one played by their style before their plan was seen); the opponent and the tier, or null. What the list's summary and Master Corvin's mark read (the operator's
+ *  GP-16 « Les corriger », journal Passe GP2); whether Corvin can take it now (his hours, the sand) is the action's own check */
+export function rehearsalDue(s: GameState): { foe: string; tier: ScoutTier } | null {
+  const n = isV2(s) ? nextBoutOf(s) : null;
+  if (!n) return null;
+  const tier = scoutTier(s, n.foe), r = rehearsalOf(s, n.foe);
+  return tier >= 1 && (!r || r.tier < tier) ? { foe: n.foe, tier } : null;
+}
 
 export type V2PrepAction = { type: 'rehearse' };
 

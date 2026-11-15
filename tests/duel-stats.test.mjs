@@ -150,9 +150,11 @@ test('Ren\'s stats from his state (DB7-2, DB7-3, DB7-4): the gear in points, the
   const POINTS = {
     'imported-blade': { atk: 4 }, 'duelist-sabre': { atk: 3, viv: 2 }, 'padded-jack': { def: 2 }, 'mail-shirt': { def: 6, viv: -1 }, 'dock-leathers': { def: 3, end: 2 },
     'knight-hauberk': { def: 7, viv: -1 }, 'iron-ring': { end: 4 }, 'swift-boots': { viv: 2 }, 'docker-wrap': { hp: 36 }, 'river-pearl': { end: 3, hp: 20 },
-    'pilgrim-medal': { hp: 32, effect: 1.15 }, 'champion-token': { ap: 1, end: 1 }, 'lucky-ribbon': { ap: 1 }, 'fervour-charm': { effect: 1.3 }, whetstone: { atk: 1 },
+    'pilgrim-medal': { hp: 32, effect: 1.15 }, 'lucky-ribbon': { ap: 1 }, 'fervour-charm': { effect: 1.3 }, whetstone: { atk: 1 },
   };
   for (const [id, fx] of Object.entries(POINTS)) assert.deepEqual(GE.GEAR[id].fx, fx, id);
+  // (the champion's token, given by nothing, left the catalogue: the operator's GP-20 « Les corriger », journal Passe GP2)
+  assert.equal(GE.GEAR['champion-token'], undefined);
   assert.equal(GE.WEAPON_TIER_ATK, 2);
   const s = structuredClone(st);
   s.v2.gear = { weapon: 'imported-blade', tier: 3, armour: 'dock-leathers', acc: ['iron-ring', 'docker-wrap'], bag: [] };

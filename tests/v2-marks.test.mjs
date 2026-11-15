@@ -55,6 +55,28 @@ test('watching a rival train never marks, in any moment of whole games (MK-6)', 
   assert.ok(scouted > 0, 'the games offered rivals to watch (the test reaches the case)');
 });
 
+test('GP-16: Master Corvin wears a diamond, an event, when his rehearsal against the next opponent is newly open; gone with his dialogue, back once their plan is seen, never once rehearsed', () => {
+  const corvin = (s) => M.offersHere(s).find((o) => o.who === 'corvin')?.offers.filter((x) => x.key.startsWith('rehearse:')) ?? [];
+  // the next opponent (Vessa, day 2) unseen: no rehearsal to mark
+  const st = v2();
+  assert.deepEqual(corvin(at(st, 'training', 'afternoon')), []);
+  // watched once at the forecourt: the rehearsal opens, by their style
+  const r = G.advance(at(st, 'forecourt', 'morning'), { type: 'scout', who: 'vessa' }); assert.ok(r.ok, r.reason);
+  const tr = at(r.state, 'training', 'afternoon');
+  assert.deepEqual(corvin(tr), [{ key: 'rehearse:vessa:1', kind: 'event' }]);
+  assert.equal(marks(tr).corvin, 'event');
+  // his dialogue opened: seen; the rival herself never marked for being watched (MK-6 kept)
+  const seen = talk(tr, 'corvin');
+  assert.equal(marks(seen).corvin, undefined);
+  assert.ok(!M.offersHere(at(r.state, 'forecourt', 'afternoon')).some((o) => o.who === 'vessa' && o.offers.some((x) => x.key.startsWith('scout:'))));
+  // their plan seen (a second watch): the rehearsal by their plan is new
+  const plan = structuredClone(seen); plan.facts.push('scouted2:vessa');
+  assert.equal(marks(plan).corvin, 'event');
+  // rehearsed with what is known: nothing more to mark
+  const done = G.advance(plan, { type: 'rehearse' }); assert.ok(done.ok, done.reason);
+  assert.deepEqual(corvin(at(done.state, 'training', 'afternoon')), []);
+});
+
 test('the mark leaves when the dialogue opens and comes back with something new: the next day\'s job (MK-4, MK-5)', () => {
   const st = v2();
   assert.equal(marks(st).mara, 'item');

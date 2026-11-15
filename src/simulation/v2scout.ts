@@ -1,6 +1,7 @@
 import type { GameState, MatchRecord } from './state';
 import { isV2 } from './v2';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
+import { GENERICS } from '../narrative/generics';
 import { tx, word, skillName, type TextKey } from '../narrative/text';
 import { pendingFinal } from '../tournament/v2calendar';
 import { stageOf, type Stage } from '../combat/stats';
@@ -86,8 +87,11 @@ export function whenText(id: string, cond: AutoCond): string {
 /** a skill's name, a rival's own or Ren's catalogue's */
 export const anySkillName = (id: string): string => (FOE_SKILLS[id] ? word(FOE_SKILLS[id].name) : skillName(id));
 
-/** the rival's kit (AUTO_FOES: a generic fighter fights with its rival's) */
-const kitOf = (id: string): string => (AUTO_FOES[id] ? id : 'marek');
+/** the rival's kit (AUTO_FOES); a generic fighter fights with the kit of the rival its profile names (src/narrative/generics.ts, as src/combat/autoMatch.ts builds
+ *  it: `autoFoe(..., { kitOf: g.profile })`): the notebook and the scouting said Marek's for every one of them (the operator's GP-16 « Les corriger », journal Passe GP2) */
+export const kitOf = (id: string): string => (AUTO_FOES[id] ? id : AUTO_FOES[GENERICS[id]?.profile ?? ''] ? GENERICS[id].profile : 'marek');
+/** a fighter's name as the pages say it: a rival's, a generic fighter's (its own, never its id) */
+export const scoutName = (id: string): string => RIVALS[id]?.name ?? (GENERICS[id] ? word(GENERICS[id].name) : id);
 
 /** tier 1: their skills and the role of each, their heavy blow (a brawler's as soon as it is ready), their pieces (a dodger's leathers, a shield, a heavy fighter) */
 export function styleText(id: string, name: string): string {
@@ -106,9 +110,9 @@ export function planText(id: string, name: string, plan = 0, day?: number): stri
 
 /** what the player knows of a rival, as lines (the match sheet, the board, the notebook): the tier's lines, the plan they saw with its day (GP-15: they may have changed
  *  it since; a rumour says so), then how to learn more; a generic fighter (met in portrait only) fights with its rival's kit and is never watched, its style said once
- *  fought */
+ *  fought, under its own name (GP-16) */
 export function scoutLines(s: GameState, id: string): string[] {
-  const name = RIVALS[id]?.name ?? id, tier = scoutTier(s, id), known = isV2(s) ? knownPlan(s, id) : null, out: string[] = [];
+  const name = scoutName(id), tier = scoutTier(s, id), known = isV2(s) ? knownPlan(s, id) : null, out: string[] = [];
   if (tier === 0) out.push(tx('scout.unseen', { name }));
   if (tier >= 1) out.push(styleText(id, name));
   if (known !== null) { const d = s.flags[`scoutPlanDay:${id}`]; out.push(planText(id, name, known, typeof d === 'number' ? d : undefined)); }

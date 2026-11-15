@@ -15,7 +15,8 @@ import type { AutoCond } from '../combat/auto';
  *  a challenge in town (lot V4: `learnFromChallenge`). The four are chosen at the match sheet (`setLoadout`, a minor action). Only a version 2
  *  game offers these actions; the default game never lists them. Pure. */
 
-/** training raises a skill to this level at most; the levels above come from challenges won (« proposé ») */
+/** training raises a skill to this level at most, and so does a challenge won (the operator's GP-16 « Les corriger », journal Passe GP2: a challenge of the second
+ *  phase took a skill to level 4 without a lesson); the levels above come from Master Corvin's lessons alone (« proposé ») */
 export const TRAIN_CAP = 3;
 /** Master Corvin's lessons (the operator's NC-11 « (a) Les leçons de maître Corvin, 30 / 60 pièces », the sheet https://claude.ai/artifact/FJdfCEs4igBxqgtVeQj5pV,
  *  journal Passe SK4): from the bracket's first day, a skill drilled to the training's cap is taken a level further, a slot and its price (level 4, level 5); the
@@ -23,6 +24,11 @@ export const TRAIN_CAP = 3;
 export const LESSON = { day: 6, price: { 4: 30, 5: 60 } as Readonly<Record<number, number>> };
 /** a lesson's price to reach this level (0: none) */
 export const lessonPrice = (level: number): number => LESSON.price[level] ?? 0;
+/** the master's fifth off of the day (his open lesson, the event v2-masterclass; the day after a challenge won, v2-challenge-fame « teaches the winner at a fifth
+ *  off »): on the skills he sells and, since the operator's GP-16 « Les corriger » (journal Passe GP2), on his lessons too */
+const masterDiscount = (s: GameState): number => (s.flags[`lesson:${s.day}`] ? 0.8 : 1);
+/** what a lesson to this level costs today: its price, less the master's fifth off of the day */
+export const lessonCost = (s: GameState, level: number): number => Math.round(lessonPrice(level) * masterDiscount(s));
 
 /** the version 2's state of a game (created with its flag, makeV2) */
 export function v2State(s: GameState): V2State {
@@ -52,18 +58,21 @@ export function learnOrRaise(s: GameState, id: string, cap = MAX_LEVEL): 'learnt
 }
 
 /** the skill a challenge won against this fighter teaches today (the operator's SK-7 « Deux temps : le soutien au jour 1, la signature dès le jour 6 », journal Passe
- *  SK2): before day 6 the support or defence of Orla, Ilse and Vessa, from day 6 every rival's signature attack; a generic fighter none */
+ *  SK2): before day 6 the support or defence of Orla, Ilse and Vessa, from day 6 every rival's signature attack; a generic fighter none. None either once the player
+ *  holds that skill at the training's cap (the operator's GP-16 « Les corriger », journal Passe GP2: the sand teaches up to TRAIN_CAP, Master Corvin's lessons beyond):
+ *  the challenge's label then promises no skill */
 export function challengeSkill(s: GameState, fighter: string): string | null {
   // (a fighter without a signature, a town fighter, teaches what it teaches in both phases: the operator's NC-8 « Ainsi », journal Passe SK4; Corra none, NC-2)
-  return s.day >= SIGNATURE_DAY ? SIGNATURES[fighter] ?? taughtBy(fighter) : taughtBy(fighter);
+  const id = s.day >= SIGNATURE_DAY ? SIGNATURES[fighter] ?? taughtBy(fighter) : taughtBy(fighter);
+  return id && levelOf(s, id) < TRAIN_CAP ? id : null;
 }
 
-/** a challenge won against this fighter (lot V4): its skill learnt, or raised; null when the fighter teaches none */
+/** a challenge won against this fighter (lot V4): its skill learnt, or raised up to the training's cap (GP-16); null when the fighter teaches none, or none more */
 export function learnFromChallenge(s: GameState, fighter: string, emit: Emit): string | null {
   const id = challengeSkill(s, fighter);
   if (!id) return null;
-  const r = learnOrRaise(s, id);
-  emit({ kind: 'action', id: `skill:${r}`, cause: `challenge:${fighter}`, visible: true, text: r === 'learnt' ? tx('v2.skill.learnt', { skill: skillName(id) }) : r === 'raised' ? tx('v2.skill.raised', { skill: skillName(id), level: levelOf(s, id) }) : tx('v2.skill.max', { skill: skillName(id) }) });
+  const r = learnOrRaise(s, id, TRAIN_CAP);
+  emit({ kind: 'action', id: `skill:${r}`, cause: `challenge:${fighter}`, visible: true, text: r === 'learnt' ? tx('v2.skill.learnt', { skill: skillName(id) }) : tx('v2.skill.raised', { skill: skillName(id), level: levelOf(s, id) }) });
   return id;
 }
 
@@ -89,8 +98,8 @@ export function sandLesson(s: GameState, fighter: string, emit: Emit): string | 
 /** the weapon master's price for a skill: its list price, less a tenth for a good name in the pool (reputation 40 or more) (« proposé ») */
 export function skillPrice(s: GameState, id: string): number {
   const p = SKILL_BOOK[id]?.price ?? 0;
-  // the master's open lesson (lot V7, the event v2-masterclass): a fifth less that day
-  return Math.round(p * (s.player.reputation >= 40 ? 0.9 : 1) * (s.flags[`lesson:${s.day}`] ? 0.8 : 1));
+  // the master's open lesson (lot V7, the event v2-masterclass), and the day after a challenge won: a fifth less that day
+  return Math.round(p * (s.player.reputation >= 40 ? 0.9 : 1) * masterDiscount(s));
 }
 
 /** a tactic's condition in words (the match sheet, the skills page, the journal) */
@@ -144,9 +153,9 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
   lessonSkill: {
     by: 'corvin',
     list: (s) => (isV2(s) && atForecourt(s) && s.day >= LESSON.day ? Object.values(SKILL_BOOK).filter((k) => levelOf(s, k.id) >= TRAIN_CAP && levelOf(s, k.id) < MAX_LEVEL).map((k) => ({ type: 'lessonSkill', skill: k.id })) : []),
-    label: (s, a) => tx('v2.lesson.label', { skill: skillName(a.skill), level: levelOf(s, a.skill) + 1, price: lessonPrice(levelOf(s, a.skill) + 1) }),
+    label: (s, a) => tx('v2.lesson.label', { skill: skillName(a.skill), level: levelOf(s, a.skill) + 1, price: lessonCost(s, levelOf(s, a.skill) + 1) }),
     cost: () => 1,
-    coins: (s, a) => lessonPrice(levelOf(s, a.skill) + 1),
+    coins: (s, a) => lessonCost(s, levelOf(s, a.skill) + 1),
     check: (s, a) => {
       if (!isV2(s)) return tx('v2.only');
       if (!atForecourt(s)) return tx('v2.buySkill.notHere');
@@ -155,11 +164,11 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
       const lv = levelOf(s, a.skill);
       if (!SKILL_BOOK[a.skill] || lv < TRAIN_CAP) return tx('v2.lesson.drill', { skill: skillName(a.skill), cap: TRAIN_CAP });
       if (lv >= MAX_LEVEL) return tx('v2.lesson.top', { skill: skillName(a.skill) });
-      const p = lessonPrice(lv + 1);
+      const p = lessonCost(s, lv + 1);
       return s.player.coins < p ? tx('v2.buySkill.poor', { price: p }) : null;
     },
     apply: (s, a, _r, emit) => {
-      const k = v2State(s).kit, to = (k.levels[a.skill] ?? 0) + 1, p = lessonPrice(to);
+      const k = v2State(s).kit, to = (k.levels[a.skill] ?? 0) + 1, p = lessonCost(s, to);
       s.player.coins -= p; k.levels[a.skill] = to;
       emit({ kind: 'action', id: `lesson:${a.skill}`, cause: 'action:lessonSkill', visible: true, text: tx('v2.lesson.log', { skill: skillName(a.skill), price: p, level: to }) });
     },

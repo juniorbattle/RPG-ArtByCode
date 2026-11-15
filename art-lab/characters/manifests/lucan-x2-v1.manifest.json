@@ -29,7 +29,7 @@
   ],
   "approved": true,
   "runtimeUse": "production",
-  "notes": "APPROVED FOR PRODUCTION by the operator on the lot sheet of the three more generic fighters (journal Passe GA3, https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT): « Production » (GA3-LU1), and GA3-S1 « Les six ensemble »; version 2 only, today's game unchanged. Loaded by a version 2 game's portraits (src/characters/PlazaCast.ts). Lucan Rook, a generic fighter of the version 2, standing only (12 frames): his face in a version 2 game's portraits.",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the lot sheet of the three more generic fighters (journal Passe GA3, https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT): « Production » (GA3-LU1), and GA3-S1 « Les six ensemble »; version 2 only, today's game unchanged. Loaded by a version 2 game's portraits (src/characters/PlazaCast.ts). Lucan Rook, a generic fighter of the version 2, standing only (12 frames): his face in a version 2 game's portraits. GP-05, the operator's choice on the general gameplay sheet (https://claude.ai/artifact/WyRKyZbsB1MMp8yMmAw8ho, journal Passe GP2, 15/11/2026), word for word « Debout à leur place et à leur heure (production de leurs feuilles de ville sur les places) »: this town sheet also stands its fighter at their place and hour on the squares and the quay of a version 2 game (src/characters/PlazaCast.ts, src/ui/playTown.ts; journal Passe PN1), under their approved skin.",
   "approval": {
     "by": "operator (git user wonmii)",
     "date": "2026-11-07",

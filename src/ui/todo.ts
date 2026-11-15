@@ -64,7 +64,10 @@ export function todoLine(s: GameState, t: Todo): string {
     const k = t.kind as 'item' | 'event' | 'follow', p = PEOPLE[t.who];
     return `<p><span class="pm-mk" data-kind="${k}" role="img" aria-label="${esc(tx(MARK_WORD[k]))}">${markGlyph(k)}</span><span>${esc(tx('ui.todo.who', { name: p?.name ?? t.who, kind: tx(MARK_WORD[k]) }))}</span>${t.gain ? tag(tx('ui.gainN', { n: t.gain }), true) : ''}</p>`;
   }
-  const words = t.what === 'train' ? tx('ui.todo.train') : t.what === 'drill' ? tx('ui.todo.drill') : tx('ui.todo.repair');
+  // the preparation of the next bout (the operator's GP-16 « Les corriger », journal Passe GP2): its opponent named
+  const foe = t.foe ? RIVALS[t.foe]?.name ?? t.foe : '';
+  const words = t.what === 'train' ? tx('ui.todo.train') : t.what === 'drill' ? tx('ui.todo.drill') : t.what === 'scout' ? tx('ui.todo.scout', { name: foe })
+    : t.what === 'rehearse' ? tx('ui.todo.rehearse', { name: foe }) : tx('ui.todo.repair');
   return `<p><span class="tick" aria-hidden="true"></span><span>${esc(words)}</span>${t.slot ? tag(tx('ui.oneSlot')) : ''}</p>`;
 }
 

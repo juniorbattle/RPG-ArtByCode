@@ -36,6 +36,9 @@ export interface AppOptions {
   canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void;
   /** EXPERIMENTAL baked sheets + authored spawns; only ever set by the DEV loader (`?baked=`, src/lab/bakedLoader.ts) */
   baked?: Promise<{ sheets: BakedSheet[]; spawns: AuthoredSpawn[] }>;
+  /** more production sheets for the quay, set by a version 2 game's town page only (src/ui/playTown.ts: the generic fighters who stand there, the operator's GP-05, journal Passe PN1);
+   *  the district's other addresses and today's game never set it */
+  extraCast?: Promise<Parameters<typeof loadProductionCast>[3]>;
 }
 
 /** The frame cap when `?fps=` is absent: `a60`, evenly paced near 60 fps (55 at 165 Hz, 72 at 144, 60 at 60 / 120) with the adaptive
@@ -212,7 +215,9 @@ export class App {
     // `herolook` (a version 2 game's town, set by playTown.ts; journal Passe PR3): Ren under his look, its module loaded on demand; absent = today's Ren
     const candidates = import.meta.env.DEV && castMode === 'candidate';
     const heroLook = castMode !== 'generated' && this.opts.params.has('herolook') ? await import('../characters/HeroLookCast') : null;
-    const cast = castMode === 'generated' ? null : await loadProductionCast(candidates, variants, undefined, heroLook ? heroLook.heroEntries(castEntries(candidates)) : undefined);
+    // a version 2 game's quay: the sheets its page adds (`extraCast`: Corra Dunmere and Piers Calloway at their hour, the operator's GP-05, journal Passes GP2 / PN1)
+    const quayGenerics = heroLook && this.opts.extraCast ? (await this.opts.extraCast) ?? [] : [];
+    const cast = castMode === 'generated' ? null : await loadProductionCast(candidates, variants, undefined, heroLook ? [...heroLook.heroEntries(castEntries(candidates)), ...quayGenerics] : undefined);
     const baked = this.opts.baked ? await this.opts.baked : null;
     const devSheets = (baked?.sheets ?? []).filter((s) => !cast?.sheets.some((p) => p.id === s.id));
     this.atlas = SpriteAtlas.build([PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, ...crowdVariants(this.config.seed, 5)], [...(cast?.sheets ?? []), ...devSheets], this.renderer.capabilities.maxTextureSize);

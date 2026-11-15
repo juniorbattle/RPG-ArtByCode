@@ -6,7 +6,7 @@ import { RIVALS } from '../narrative/roster';
 import { tx, type TextKey } from '../narrative/text';
 import { isV2 } from './v2';
 import { V2_SKILL_ACTIONS } from './v2skills';
-import { V2_GEAR_ACTIONS } from './v2gear';
+import { V2_GEAR_ACTIONS, weaponTier } from './v2gear';
 import { V2_TOWN_ACTIONS } from './v2town';
 import { V2_STORY_ACTIONS } from '../narrative/v2story';
 import { V2_LAW_ACTIONS } from './v2law';
@@ -18,7 +18,13 @@ import { V2_FESTIVAL_ACTIONS } from './v2festival';
 import { V2_WORK_ACTIONS } from './v2work';
 import { V2_PREP_ACTIONS } from './v2prep';
 import { TRAINED_STATS, trainGain, type TrainedStat } from '../combat/stats';
-import { WEAPON_TIER_ATK } from './gear';
+import { MAX_WEAPON_TIER, TIER_PRICE, WEAPON_TIER_ATK } from './gear';
+/** the Wyrmsteel temper's price: today's game 10 coins; a version 2 game, the price of the weapon's tier it gives (TIER_PRICE, as Bram's forge prices its tiers), so
+ *  the weapon's three tiers cost 10 + 25 + 40 whatever the order of the temper and the forge's tiers (the operator's GP-20 « Les corriger », journal Passe GP2: tiers
+ *  then temper cost 45, temper then tiers 75, for the same weapon); none at the weapon's top tier, where the temper is refused. « proposé » */
+const temperPrice = (st: GameState): number => (!isV2(st) ? 10 : weaponTier(st) >= MAX_WEAPON_TIER ? 0 : TIER_PRICE[weaponTier(st)]);
+/** the report to Sergeant Hale pays this (the smiths' guild's, or the tournament's purse for the gear) */
+const REPORT_PAY = 15;
 /** the stats' names (keys written whole: tests/texts.test.mjs) */
 const SPAR_STAT: Record<TrainedStat, TextKey> = { atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv', hp: 'ui.stat.hp' };
 
@@ -152,11 +158,13 @@ export const ROLE_ACTIONS: T = {
     list: (st) => (st.place === 'district' && st.quests.cargo === 'delivered' ? [{ type: 'temper' }] : []),
     // a version 2 game: the temper is the weapon's first tier (src/simulation/gear.ts), its Attack said as the forge's tiers say it (journal Passe CO1: « +15 %
     // damage » since DB7-2 a tier's point); today's game keeps its words
-    label: (st) => (isV2(st) ? tx('v2.temper.label', { atk: WEAPON_TIER_ATK }) : tx('temper.label')),
+    label: (st) => (isV2(st) ? tx('v2.temper.label', { atk: WEAPON_TIER_ATK, price: TIER_PRICE[Math.min(MAX_WEAPON_TIER - 1, weaponTier(st))] }) : tx('temper.label')),
     cost: () => 1,
-    coins: () => 10,
-    check: (st) => available(st, 'bram') ?? (st.services.forge === 'sabotaged' ? tx('temper.cold') : blade(st) ? tx('temper.haveBlade') : st.player.coins < 10 ? tx('temper.poor') : null),
-    apply: (s, _a, _r, emit) => { s.player.coins -= 10; s.player.items.push('tempered-blade'); s.quests.cargo = 'done'; add(s, 'bram', 10); emit({ kind: 'action', id: 'temper', cause: 'quest:cargo', text: tx('temper.log'), visible: true }); },
+    coins: (st) => temperPrice(st),
+    // a version 2 game: refused at the weapon's top tier, where it gives nothing (GP-20), and priced as the tier it gives
+    check: (st) => available(st, 'bram') ?? (st.services.forge === 'sabotaged' ? tx('temper.cold') : blade(st) ? tx('temper.haveBlade')
+      : isV2(st) && weaponTier(st) >= MAX_WEAPON_TIER ? tx('v2.upgrade.max') : st.player.coins < temperPrice(st) ? (isV2(st) ? tx('v2.upgrade.poor', { price: temperPrice(st) }) : tx('temper.poor')) : null),
+    apply: (s, _a, _r, emit) => { s.player.coins -= temperPrice(s); s.player.items.push('tempered-blade'); s.quests.cargo = 'done'; add(s, 'bram', 10); emit({ kind: 'action', id: 'temper', cause: 'quest:cargo', text: tx('temper.log'), visible: true }); },
   },
   repair: {
     by: 'forge',
@@ -204,10 +212,12 @@ export const ROLE_ACTIONS: T = {
     list: (st) => (st.place === 'district' && st.flags['culprit-known'] && !st.flags.reported ? [{ type: 'report' }] : []),
     label: () => tx('report.label'),
     cost: () => 0,
+    // what it pays, tagged as the jobs' pay is (the operator's GP-20 « Les corriger », journal Passe GP2: it showed « free »); a version 2 game's tag only
+    gain: (st) => (isV2(st) ? REPORT_PAY : 0),
     check: (st) => available(st, 'hale') ?? (!st.flags['culprit-known'] ? tx('report.unknown') : st.flags.reported || st.facts.includes('saboteur-caught') ? tx('report.known') : null),
     apply: (s, _a, _r, emit) => {
       s.flags.reported = true; s.tournament.points.cassius -= 3; const c = s.competitors.cassius; if (c) c.reputation = clamp(c.reputation - 20);
-      s.player.coins += 15; s.player.reputation = clamp(s.player.reputation + 5); add(s, 'hale', 10);
+      s.player.coins += REPORT_PAY; s.player.reputation = clamp(s.player.reputation + 5); add(s, 'hale', 10);
       // a version 2 game (lot L3, EV-10: « l'enquête mène à l'auteur et à une compensation »): the strap cut is paid for by the tournament's purse when the forge
       // was never touched
       emit({ kind: 'consequence', id: 'cassius-sanctioned', cause: 'action:report', text: tx(isV2(s) && !forgeKnown(s) ? 'v2.report.gearLog' : 'report.log'), visible: true });

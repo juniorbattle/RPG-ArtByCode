@@ -73,6 +73,9 @@ function paintFigure(all: BakedFrame[], fw: number, fh: number): void {
 
 const baked = new Map<string, string>();
 let loading: Promise<void> | null = null;
+/** resolved once the baked faces are painted, whenever the page asks for them (a square asks after its first frame) */
+let painted: () => void = () => {};
+const paintedP = new Promise<void>((r) => { painted = r; });
 /** paints the baked faces once (the pages wait for it, with the fonts, before they say they are ready); a sheet that fails its check keeps
  *  the generated portrait (said in the console) */
 export function preloadPortraits(extra: Record<string, { id: string; png: string; json: unknown; sha256: string; face?: (frames: readonly BakedFrame[], fw: number, fh: number) => Uint8Array | null; /** recolours the sheet's frames in place before its face and figure are painted (Ren's look, journal Passe PR3) */ tone?: (frames: BakedFrame[], fw: number, fh: number) => void }> = {}): Promise<void> {
@@ -106,8 +109,12 @@ export function preloadPortraits(extra: Record<string, { id: string; png: string
     }
     for (const [who, id] of Object.entries(BAKED)) { const u = sheets.get(id); if (u) baked.set(who, u); }
   })();
+  void loading.then(() => painted());
   return loading;
 }
+
+/** once the baked faces are painted (a band opened before them, as a thief's holder on a square's first frame, draws its face again then) */
+export const portraitsReady = (): Promise<void> => paintedP;
 
 const cache = new Map<string, string>();
 /** a data URL of the person's portrait (null if they have none): the baked face once preloaded, else the generator's */

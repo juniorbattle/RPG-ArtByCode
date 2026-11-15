@@ -1,0 +1,299 @@
+{
+  "$comment": "The townsfolk templates' looks (journal Passe PN1; the operator's GP-04 note « Mais les pnjs peuvent etre des combattants eux-meme personne ne se bat vraiment pour d'ou la volonte de conception generique avec des declinaisons de peau cheveux, couleur de vetement et armes etc... », answer « Gabarits d'abord (Recommandé) », journal Passe GP2). Ren's look's shape (src/characters/HeroLook.ts): per template sheet, the skin's palette mask, the hair (its colours inside each frame's head rectangle) and the clothes ('cloak': the shirt, or the bodice and the skirt, by their own blues); the ramps a townsperson's look picks from (src/characters/NpcLook.ts: one look per person, src/narrative/npcFighters.ts); every ramp « proposé ». Reaches production only with approved: true from the operator (the art sheet of chantier 1), each sheet's material fingerprint checked at load.",
+  "approved": true,
+  "approval": {"by":"operator (git user wonmii)","date":"2026-11-15","note":"The art sheet of chantier 1 (journal Passe PN1, https://claude.ai/artifact/KQCnZRoBiczix5nEYVmDcF), word for word: GA-M « Production », GA-F « Production », GA-W « Retouches (en note) » with his note « il y a un bug... on percoit l'epee presente parmi les autres armes... il faut corriger cela » and his message of the same day « des corrections d'affichages a prevoir sur les armes de nos pnjs » (both corrected, the sheet republished), GA-L « Ainsi », GA-C « Ainsi », GA-P « En production avec le chantier ». In production in a version 2 game only."},
+  "ramps": {
+    "skin": {
+      "light": ["#9c6656", "#bc826a", "#d89e84", "#ebb89c", "#f6cfb6"],
+      "medium": ["#84523e", "#a26a50", "#be8466", "#d29c7c", "#e2b294"],
+      "tan": ["#64392a", "#80503a", "#9c674c", "#b47e60", "#c89474"],
+      "dark": ["#38211a", "#4e3024", "#664032", "#7e5242", "#966654"]
+    },
+    "hair": {
+      "dark": ["#16121a", "#241c24", "#33282e", "#46363a", "#5a4848"],
+      "chestnut": ["#2e1c1a", "#482a22", "#64402e", "#80563c", "#9a6e4e"],
+      "auburn": ["#3a1a1a", "#5a2a24", "#7c3c2e", "#9a503a", "#b2684a"],
+      "ash": ["#5a4e40", "#7e6e58", "#a08c70", "#c0aa88", "#d8c6a2"],
+      "grey": ["#3e3e44", "#5e5e64", "#828280", "#a6a4a0", "#c8c6be"]
+    },
+    "cloak": {
+      "wine": ["#2a1418", "#4a1e26", "#6e2a34", "#8e3c44", "#a8545a"],
+      "moss": ["#1a2216", "#2a3822", "#3e5030", "#566a40", "#6e8452"],
+      "umber": ["#2a1e16", "#42301e", "#5e442a", "#7a5a38", "#94744c"],
+      "ochre": ["#3a2a12", "#5a421a", "#7c5c24", "#9c7832", "#b89448"],
+      "slate": ["#22242a", "#363a42", "#4c525c", "#666c76", "#80868e"],
+      "plum": ["#26182a", "#3c2444", "#563460", "#70467a", "#8a5c92"],
+      "ivory": ["#5e5a52", "#827c70", "#a49e90", "#c2bcae", "#dad4c6"]
+    }
+  },
+  "look": {},
+  "ranges": {
+    "skin": [0.310575, 0.700763],
+    "hair": [0.024554, 0.333379],
+    "cloak": [0.036939, 0.144287]
+  },
+  "sheets": {
+    "npc-m-x3-combat": {
+      "skin": {
+        "skin": ["f3c49f", "eeb794", "e8a482", "dc9a77", "c88870", "e9af8d", "f5d1b2", "cd957d", "d7a78b"],
+        "shade": ["c48d5f", "ce9865"],
+        "minPart": 4
+      },
+      "skinFlood": true,
+      "hair": {
+        "colours": ["7b5142", "754b3f", "825646", "8c5b47", "6c463c", "644138", "55352f", "96624b", "9d684f", "a37152", "b07957", "bc8459", "4a2b23", "4a302f", "5b3b36", "3a2121", "442c34", "3e262f", "8e5f4c"],
+        "join": 4,
+        "grow": 10,
+        "minPart": 3,
+        "rim": ["2b1819", "2e1f24", "1d1014"],
+        "head": {
+          "idle.0": [72, 143, 119, 189],
+          "idle.1": [72, 141, 119, 187],
+          "ready.0": [62, 154, 108, 198],
+          "ready.1": [62, 152, 108, 196],
+          "strike.0": [70, 145, 116, 189],
+          "strike.1": [73, 152, 119, 197],
+          "strike.2": [58, 152, 104, 196],
+          "heavy.0": [51, 168, 97, 212],
+          "heavy.1": [69, 121, 111, 171],
+          "heavy.2": [66, 164, 111, 208],
+          "heavy.3": [48, 170, 94, 215],
+          "skillOff.0": [64, 144, 110, 189],
+          "skillOff.1": [46, 147, 92, 193],
+          "skillOff.2": [75, 155, 121, 201],
+          "skillOff.3": [66, 143, 112, 188],
+          "skillDef.0": [55, 148, 101, 192],
+          "skillDef.1": [103, 173, 144, 214],
+          "skillDef.2": [60, 147, 106, 192],
+          "skillSup.0": [68, 146, 115, 191],
+          "skillSup.1": [72, 144, 119, 190],
+          "skillSup.2": [66, 153, 112, 199],
+          "block.0": [69, 154, 115, 197],
+          "block.1": [70, 154, 116, 197],
+          "dodge.0": [111, 152, 157, 194],
+          "dodge.1": [59, 164, 105, 208],
+          "hit.0": [109, 145, 156, 190],
+          "hit.1": [54, 159, 98, 205],
+          "recover.0": [91, 190, 133, 235],
+          "recover.1": [91, 190, 133, 235],
+          "ko.0": [55, 151, 100, 199],
+          "ko.1": [84, 222, 127, 269],
+          "ko.2": [68, 221, 114, 261],
+          "victory.0": [76, 146, 123, 190],
+          "victory.1": [76, 146, 123, 190]
+        },
+        "clear": {
+          "idle.0": [
+            [81, 172, 91, 177]
+          ],
+          "idle.1": [
+            [81, 170, 91, 175]
+          ],
+          "ready.0": [
+            [71, 183, 81, 188]
+          ],
+          "ready.1": [
+            [71, 181, 81, 186]
+          ],
+          "strike.0": [
+            [79, 174, 89, 179]
+          ],
+          "strike.1": [
+            [82, 181, 92, 186]
+          ],
+          "strike.2": [
+            [67, 181, 77, 186]
+          ],
+          "heavy.0": [
+            [60, 197, 70, 202]
+          ],
+          "heavy.1": [
+            [78, 150, 88, 155]
+          ],
+          "heavy.2": [
+            [75, 193, 85, 198]
+          ],
+          "heavy.3": [
+            [57, 199, 67, 204]
+          ],
+          "skillOff.0": [
+            [73, 173, 83, 178]
+          ],
+          "skillOff.1": [
+            [55, 176, 65, 181]
+          ],
+          "skillOff.2": [
+            [84, 184, 94, 189]
+          ],
+          "skillOff.3": [
+            [75, 172, 85, 177]
+          ],
+          "skillDef.0": [
+            [64, 177, 74, 182]
+          ],
+          "skillDef.1": [
+            [112, 202, 122, 207]
+          ],
+          "skillDef.2": [
+            [69, 176, 79, 181]
+          ],
+          "skillSup.0": [
+            [77, 175, 87, 180]
+          ],
+          "skillSup.1": [
+            [81, 173, 91, 178]
+          ],
+          "skillSup.2": [
+            [75, 182, 85, 187]
+          ],
+          "block.0": [
+            [78, 183, 88, 188]
+          ],
+          "block.1": [
+            [79, 183, 89, 188]
+          ],
+          "dodge.0": [
+            [120, 181, 130, 186]
+          ],
+          "dodge.1": [
+            [68, 193, 78, 198]
+          ],
+          "hit.0": [
+            [118, 174, 128, 179]
+          ],
+          "hit.1": [
+            [63, 188, 73, 193]
+          ],
+          "recover.0": [
+            [100, 219, 110, 224]
+          ],
+          "recover.1": [
+            [100, 219, 110, 224]
+          ],
+          "ko.0": [
+            [64, 180, 74, 185]
+          ],
+          "ko.1": [
+            [93, 251, 103, 256]
+          ],
+          "ko.2": [
+            [77, 250, 87, 255]
+          ],
+          "victory.0": [
+            [85, 175, 95, 180]
+          ],
+          "victory.1": [
+            [85, 175, 95, 180]
+          ]
+        }
+      },
+      "cloak": {
+        "colours": ["353449", "414157", "4e4e64", "5a5a73", "656882"],
+        "outline": true,
+        "minPart": 6
+      },
+      "weapon": {
+        "steel": ["eceef4", "bec4d0", "848a98"],
+        "blade": ["ddcfbd", "81757c", "776260", "9c8886", "bea8a1", "987c74", "aa928b"],
+        "edge": ["4e5260", "2c2e3a"],
+        "frames": {
+          "idle.0": [69, 239, 42, 268],
+          "idle.1": [69, 239, 42, 268],
+          "ready.0": [50, 208, 13, 174],
+          "ready.1": [50, 206, 13, 172],
+          "strike.0": [122, 158, 143, 142],
+          "strike.1": [52, 201, 2, 201],
+          "strike.2": [64, 232, 28, 264],
+          "heavy.0": [128, 233, 167, 257],
+          "heavy.1": [93, 154, 143, 130],
+          "heavy.2": [47, 228, 2, 246],
+          "heavy.3": [44, 252, 12, 269],
+          "skillOff.0": [69, 222, 25, 222],
+          "skillOff.1": [46, 222, 2, 231],
+          "skillOff.2": [46, 204, 2, 205],
+          "skillOff.3": [72, 221, 37, 210],
+          "skillDef.0": [71, 220, 28, 205],
+          "skillDef.1": [42, 209, 133, 209],
+          "skillDef.2": [63, 220, 25, 207],
+          "skillSup.0": [107, 235, 83, 260],
+          "skillSup.1": [111, 235, 83, 259],
+          "skillSup.2": [48, 206, 3, 203],
+          "block.0": [73, 189, 76, 143],
+          "block.1": [75, 189, 79, 143],
+          "dodge.0": [107, 198, 98, 166],
+          "dodge.1": [59, 206, 66, 157],
+          "hit.0": [76, 208, 36, 189],
+          "hit.1": [60, 240, 20, 260],
+          "recover.0": [83, 239, 76, 268],
+          "recover.1": [83, 239, 76, 268],
+          "ko.0": [48, 236, 17, 268],
+          "ko.1": [50, 264, 17, 266],
+          "ko.2": [38, 263, 2, 264],
+          "victory.0": [79, 147, 79, 104],
+          "victory.1": [79, 145, 79, 102]
+        }
+      },
+      "fingerprint": "d476bed7"
+    },
+    "npc-f-x3-combat": {
+      "skin": {
+        "skin": ["fbd3ac", "f6c9aa", "ebb89b", "e5a78a", "dc9472"],
+        "shade": [],
+        "minPart": 4
+      },
+      "skinFlood": true,
+      "hair": {
+        "colours": ["c6785f", "cd8266", "d78968", "b06656", "ba6e5b", "a65c51", "98534a", "a0564c", "914e47", "8b4946", "834341", "793d3f", "6e3633", "603038", "592930", "4d2730", "6c373e", "43212b", "3e1c1c", "361b24", "b37d6a"],
+        "minPart": 3,
+        "rim": ["2a161c", "201017"]
+      },
+      "cloak": {
+        "colours": ["39384b", "42425b", "515068", "5d5d77", "686881", "2e2c3f"],
+        "outline": true,
+        "minPart": 6
+      },
+      "weapon": {
+        "steel": ["eceef4", "bec4d0", "848a98"],
+        "blade": ["a29190", "787484", "b7a29f", "9a827d", "f5e1ce", "edd4c2", "d8bdad", "ccb2a1", "e5c6af"],
+        "edge": ["4e5260", "2c2e3a", "39384b", "53434a"],
+        "frames": {
+          "skillOff.1": [60, 228, 18, 228],
+          "skillDef.2": [61, 215, 16, 215],
+          "skillSup.0": [103, 229, 75, 256],
+          "idle.0": [72, 238, 38, 263],
+          "idle.1": [72, 238, 38, 263],
+          "ready.0": [50, 204, 15, 167],
+          "ready.1": [50, 202, 15, 165],
+          "strike.0": [113, 167, 146, 154],
+          "strike.1": [50, 202, 1, 202],
+          "strike.2": [54, 237, 23, 265],
+          "heavy.0": [112, 236, 81, 253],
+          "heavy.1": [92, 155, 130, 141],
+          "heavy.2": [64, 247, 35, 266],
+          "heavy.3": [79, 255, 45, 269],
+          "skillOff.0": [109, 228, 83, 240],
+          "skillOff.2": [54, 215, 3, 214],
+          "skillOff.3": [72, 212, 54, 192],
+          "skillDef.0": [67, 206, 40, 191],
+          "skillDef.1": [100, 207, 40, 207],
+          "skillSup.1": [104, 227, 79, 254],
+          "skillSup.2": [55, 214, 14, 210],
+          "block.0": [77, 182, 77, 133],
+          "block.1": [80, 182, 80, 133],
+          "dodge.0": [102, 198, 107, 164],
+          "dodge.1": [62, 204, 69, 156],
+          "hit.0": [77, 198, 54, 185],
+          "hit.1": [58, 245, 31, 264],
+          "recover.0": [86, 242, 71, 268],
+          "recover.1": [86, 242, 71, 268],
+          "ko.0": [48, 260, 19, 269],
+          "ko.1": [75, 266, 35, 266],
+          "ko.2": [86, 266, 46, 266],
+          "victory.0": [85, 148, 85, 120],
+          "victory.1": [85, 146, 85, 118]
+        }
+      },
+      "fingerprint": "382b27e0"
+    }
+  }
+}

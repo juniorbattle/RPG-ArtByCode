@@ -15,7 +15,8 @@ const ROOT = path.resolve(import.meta.dirname, '../..');
 const args = process.argv.slice(2), outDir = args.find((a) => !a.startsWith('--'));
 if (!outDir) throw new Error('usage: node tools/art-lab/hero-look.mjs <outDir> [--suggest] [--ranges] [--fingerprints] [--look=skin,hair,cloak] [--per=<n>] [--only=<frame,...>]');
 const flag = (n) => args.includes(`--${n}`), opt = (n) => args.find((a) => a.startsWith(`--${n}=`))?.slice(n.length + 3);
-const FILE = path.join(ROOT, 'art-lab/characters/variants/hero.json');
+// --file=<variants file>: another file of the same shape (the townsfolk templates' looks, art-lab/characters/variants/npc.json, journal Passe PN1); default Ren's
+const FILE = path.join(ROOT, opt('file') ?? 'art-lab/characters/variants/hero.json');
 const file = JSON.parse(fs.readFileSync(FILE, 'utf8'));
 const lookArg = opt('look')?.split(','), look = lookArg ? { skin: lookArg[0] || undefined, hair: lookArg[1] || undefined, cloak: lookArg[2] || undefined } : file.look;
 const PER = Number(opt('per') ?? 8), only = opt('only')?.split(',');

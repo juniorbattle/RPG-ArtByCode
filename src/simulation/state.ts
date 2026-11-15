@@ -157,8 +157,15 @@ export interface V2State {
   gear?: V2Gear;
   /** the shops' day-long states (lot V4): a bargain or a grudge of the day, closed to the player for the day, a markup until a day */
   shops?: Record<string, { deal?: number; sour?: number; closed?: number; markup?: number; haggled?: number }>;
-  /** a challenge put to a fighter in town, waiting for its bout on the sand (lot V4), and the day each fighter was last challenged */
-  challenge?: { who: string; day: number; stake?: 'coins' | 'name'; reprisal?: boolean };
+  /** a challenge put to a fighter in town, waiting for its bout on the sand (lot V4), and the day each fighter was last challenged; `kind` (journal Passe PN1, the
+   *  operator's GP-01 « Les deux : se battre quand on est pris, et prendre de force »): 'caught' the fight of a thief caught (`caught` what is at stake), 'seize' a
+   *  passer-by's piece demanded by force */
+  challenge?: { who: string; day: number; stake?: 'coins' | 'name'; reprisal?: boolean; kind?: 'caught' | 'seize'; caught?: V2Caught };
+  /** a thief caught, the fine not yet paid (journal Passe PN1, the operator's GP-03 « Gagné : on s’échappe sans amende (la pièce reste) »): who caught the player (the
+   *  keeper by day, Wynn of the watch at night, the passer-by), whom the theft was from, the piece, the fine's cap; settled by paying or by fighting, nothing else in between */
+  caught?: V2Caught;
+  /** the day each passer-by was last challenged for their piece (journal Passe PN1, GP-02 « Les passants seulement »: once a phase) */
+  seized?: Record<string, number>;
   /** a robbed owner's muscle waiting for the player (lot L2b, the operator's note on EV-2: « une possibilite de combat et de represaille reelle »): whom it is
    *  for, and the last day it waits */
   reprisal?: { by: string; until: number };
@@ -184,11 +191,12 @@ export interface V2State {
   festival?: V2Festival;
 }
 /** a rumour as it was told: the day, the source (Lio's room, often right; the hooded stranger, never wrong), the rival's form as said, whether they changed their plan
- *  and since what (the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », journal Passe GP2: `plan`, `since` the cut or their defeat against the player, absent
+ *  and since what (the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », journal Passe GP2: `plan`, `since` the cut or their defeat against the player, absent
  *  when the source says it without knowing why), and a secret only the stranger tells (they watched you train, they meet a hood at night); `hp` the health a rumour told
  *  before GP-15 took it out (an older save), never said again */
 export interface V2Rumour { day: number; src: 'lio' | 'stranger'; hp?: 'fit' | 'hurt' | 'injured'; form: 'rusty' | 'steady' | 'sharp'; plan?: 'same' | 'new'; since?: 'cut' | 'beaten'; secret?: 'spy' | 'plot' }
-export interface V2Theft { day: number; from: string; item: string; seen: 'caught' | 'found' | null; night?: boolean; settled?: boolean }
+export interface V2Theft { day: number; from: string; item: string; seen: 'caught' | 'found' | null; night?: boolean; settled?: boolean; /** taken by force from a passer-by (journal Passe PN1) */ seized?: boolean }
+export interface V2Caught { by: string; from: string; item: string; fine: number; night?: boolean; shop?: string }
 export interface V2Gear { weapon: string; tier: number; armour: string | null; acc: [string | null, string | null]; bag: string[] }
 
 export function slotName(s: SlotId): string { return s; }

@@ -147,6 +147,8 @@ test('NC-11: Master Corvin\'s lessons from day 6, a slot and 30 then 60 coins, a
   const slot = st.slot;
   st = act(st, { type: 'lessonSkill', skill: 't4' });
   assert.deepEqual([st.v2.kit.levels.t4, st.player.coins], [4, 70]); assert.notEqual(st.slot, slot, 'a slot');
+  // (the list prices: an open lesson the slot's events may bring takes a fifth off his lessons too since GP-16, tested apart in tests/v2-skills.test.mjs)
+  for (const k of Object.keys(st.flags)) if (k.startsWith('lesson:')) delete st.flags[k];
   st.slot = 'morning'; st = act(st, { type: 'lessonSkill', skill: 't4' });
   assert.deepEqual([st.v2.kit.levels.t4, st.player.coins], [5, 10]);
   st.slot = 'morning'; refused(st, { type: 'lessonSkill', skill: 't4' }, /is at its highest level\.$/);

@@ -192,6 +192,8 @@ export const AUTO_GEAR_FX: Record<string, AutoGearFx> = {
   'iron-ring': { stun: 0.7 },
   // the lucky ribbon and the champion's token (their AP of before): the cooldowns and gaps −15 % and −10 %
   'lucky-ribbon': { cd: 0.85 },
+  // (the token left the game's catalogue, src/simulation/gear.ts, by the operator's GP-20 « Les corriger », journal Passe GP2: kept here as the laboratory's table
+  // has it, tests/combat-auto.test.mjs's port and tools/auto-final/port-identity.mjs wearing it against tools/auto-final/sim.mjs)
   'champion-token': { cd: 0.9 },
   // the swift boots: the first charge of the duel at once
   'swift-boots': { firstFast: true },
@@ -380,12 +382,26 @@ export const AUTO_FOES: Record<string, AutoFoeDef> = {
   rhosk: { weapon: weaponOf(3, 0.38), skills: [offS('m_cleave', 4.4, 2), boostS('m_roar', 8), wardS('m_hide', 7)] },
 };
 
+/** the townsfolk's kits (journal Passe PN1: the keepers, the watch and the passers-by who fight themselves, the operator's GP-04 note; src/narrative/npcFighters.ts), one
+ *  per weapon: its light attack's enchaînement (the training sword's total, as every kit's) and one technique, the brace (no super, no ultimate: a townsperson has no
+ *  cinematic), with a style of its own (a dagger dodges, a hammer guards and swings its heavy blow as soon as it can); every number « proposé » */
+export const AUTO_TOWN_KITS: Record<string, AutoFoeDef & { style: AutoStyle & { tactic: Record<string, AutoCond> } }> = {
+  sword: { weapon: weaponOf(3, 0.36), skills: [wardS('m_brace', 6)], style: { dodge: 0.8, guard: 1, tactic: { m_brace: 'incoming' } } },
+  dagger: { weapon: weaponOf(4, 0.28), skills: [wardS('m_brace', 5)], style: { dodge: 1.4, guard: 0.6, tactic: { m_brace: 'incoming' } } },
+  axe: { weapon: weaponOf(2, 0.42), skills: [wardS('m_brace', 6)], style: { dodge: 0.5, guard: 0.8, heavy: 'ready', tactic: { m_brace: 'incoming' } } },
+  hammer: { weapon: weaponOf(2, 0.45), skills: [wardS('m_brace', 7)], style: { dodge: 0.3, guard: 1.2, heavy: 'ready', tactic: { m_brace: 'incoming' } } },
+  mace: { weapon: weaponOf(3, 0.4), skills: [wardS('m_brace', 6)], style: { dodge: 0.5, guard: 1.1, tactic: { m_brace: 'incoming' } } },
+};
+/** a kit's table and its style, a rival's or the townsfolk's (Marek's by default) */
+const kitOfId = (k: string): AutoFoeDef => AUTO_FOES[k] ?? AUTO_TOWN_KITS[k] ?? AUTO_FOES.marek;
+const styleOfId = (k: string) => AUTO_STYLES[k] ?? AUTO_TOWN_KITS[k]?.style ?? AUTO_STYLES.marek;
+
 /** a rival's skills' level at a stage (PB-1: 1, 2, 3 at the pool, the bracket, the final) */
 export const autoRivalLevel = (stage: Stage): number => AUTO_BRUTE.rivalLevel[stage] ?? 1;
 /** a rival's actions on the common tables: its light attack with its weapon, its heavy blow, its skills (at the cadence, under the model at the stage's level:
  *  autoBrute) in its order (the wards, the supports, then the offensive skills from the strongest) */
 export function autoFoeActions(kitOf: string, stage: Stage = 0): Pick<AutoFighter, 'light' | 'heavy' | 'skills'> {
-  const K = AUTO_FOES[kitOf] ?? AUTO_FOES.marek, C = AUTO_CADENCE, c = C.charge, parry = AUTO_STYLES[AUTO_FOES[kitOf] ? kitOf : 'marek']?.parry ?? [];
+  const K = kitOfId(kitOf), C = AUTO_CADENCE, c = C.charge, parry = (styleOfId(kitOf) as { parry?: readonly string[] }).parry ?? [];
   const skills = K.skills.map((s): AutoAction => {
     const a: AutoAction = { id: s.id, kind: 'skill', family: s.family, charge: s.charge * c, cooldown: AUTO_COOLDOWN * s.charge * c };
     if (s.ward) a.ward = { ...s.ward, dur: +(s.ward.dur * C.effect).toFixed(2) };
@@ -398,12 +414,13 @@ export function autoFoeActions(kitOf: string, stage: Stage = 0): Pick<AutoFighte
 }
 
 /** a rival or a generic fighter as a fighter: its sheet for the bout (autoRaceSheet), its kit (`kitOf`: its own, a generic fighter's rival's) at the bout's stage
- *  (its skills' uses), its kit's style (AUTO_STYLES: its reactions, its heavy blow), Speed 10 for its tables as every fighter's (SY-01); its plan (`plan`, GP-15: the
- *  index of AUTO_PLANS it plays now, the pool's by default; a generic fighter plays its rival's first plan) */
+ *  (its skills' uses), its kit's style (AUTO_STYLES, or a townsperson's weapon kit's, AUTO_TOWN_KITS: its reactions, its heavy blow), Speed 10 for its tables as every
+ *  fighter's (SY-01); its plan (`plan`, GP-15: the index of AUTO_PLANS it plays now, the pool's by default; a generic fighter plays its rival's first plan, a
+ *  townsperson its weapon kit's tactic) */
 export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; brain?: AutoBrain; side?: 'ren' | 'foe'; stage?: Stage; plan?: number } = {}): AutoFighter {
-  const kitOf = o.kitOf ?? (AUTO_FOES[id] ? id : 'marek'), acts = autoFoeActions(kitOf, o.stage ?? 0), k = AUTO_FOES[kitOf] ? kitOf : 'marek', S = AUTO_STYLES[k];
+  const kitOf = o.kitOf ?? (AUTO_FOES[id] ? id : 'marek'), acts = autoFoeActions(kitOf, o.stage ?? 0), S = styleOfId(kitOf);
   const style: AutoStyle | undefined = S ? { dodge: S.dodge, guard: S.guard, ...(S.heavy ? { heavy: S.heavy } : {}) } : undefined;
-  const plan = autoPlanOf(k, o.plan ?? 0);
+  const plan = AUTO_PLANS[kitOf] ? autoPlanOf(kitOf, o.plan ?? 0) : S.tactic;
   return { id, side: o.side ?? 'foe', hp: sheet.hp, atk: sheet.atk, def: sheet.def, end: sheet.end, viv: sheet.viv, tempo: 10, taken: 1, ...acts, brain: o.brain ?? 'rival', ...(S ? { style, tactic: acts.skills.map((s) => plan[s.id] ?? 'auto') } : {}) };
 }
 

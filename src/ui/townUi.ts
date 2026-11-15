@@ -8,7 +8,7 @@ import { linesOf } from '../narrative/dialogue';
 import { RIVALS } from '../narrative/roster';
 import { boardPage, standingsHtml as standingsHtmlRows } from './board';
 import { journalPage } from './journal';
-import { portraitUrl } from './portraits';
+import { portraitUrl, portraitsReady } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
 import { arrowKeys, el, esc, footBtn, footOf, injectStyle, overlay, pageShell, scrollFade } from './style';
 import { skillsPage } from './skills';
@@ -26,7 +26,8 @@ import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { matchSheetFor } from '../combat/match';
 import { autoBoutOf, autoForms, autoNextBout, autoReactions, type NextBout } from '../combat/autoMatch';
 import { GENERICS } from '../narrative/generics';
-import { STAKE } from '../simulation/v2town';
+import { CAUGHT_LOST, SEIZE, STAKE } from '../simulation/v2town';
+import { PASSERS } from '../simulation/v2barter';
 import { challengeSkill, levelOf } from '../simulation/v2skills';
 import { AUTO_RULES, type AutoAction, type AutoFighter } from '../combat/auto';
 import { AUTO_STYLES } from '../combat/autoData';
@@ -281,6 +282,8 @@ export class TownUi {
   }
 
   render(): void {
+    // caught (journal Passe PN1): the band of the one who holds the player, whatever was open
+    if (this.st.v2?.caught && this.current?.dataset.caught !== '1') queueMicrotask(() => { if (this.st.v2?.caught && this.current?.dataset.caught !== '1') this.openCaught(); });
     const s = this.st, P = s.player, v2 = isV2(s), m = s.tournament.matches.find((x) => x.day >= s.day && !x.winner && (x.a === 'player' || x.b === 'player'));
     const opp = m ? RIVALS[m.a === 'player' ? m.b : m.a] : null;
     const when = m && m.day === s.day ? (s.slot === 'afternoon' ? tx('ui.next.now') : tx('ui.next.today')) : '';
@@ -308,7 +311,32 @@ export class TownUi {
   }
 
   /** the sand's door: a challenge, or a reprisal's muscle waiting there (lot L2b) */
-  private sandLabel(s: GameState): string { const c = s.v2?.challenge; return c?.reprisal ? tx('v2.reprisal.enter', { name: esc(PEOPLE[c.who]?.name ?? c.who) }) : tx('v2.challenge.enter'); }
+  private sandLabel(s: GameState): string {
+    const c = s.v2?.challenge, name = esc(PEOPLE[c?.who ?? '']?.name ?? c?.who ?? '');
+    // a thief's fight, a passer-by's piece demanded (journal Passe PN1)
+    return c?.reprisal ? tx('v2.reprisal.enter', { name }) : c?.kind === 'caught' ? tx('v2.caught.enter', { name }) : c?.kind === 'seize' ? tx('v2.seize.enter', { name }) : tx('v2.challenge.enter');
+  }
+
+  /** caught (journal Passe PN1, the operator's GP-03 « Gagné : on s’échappe sans amende (la pièce reste) »): the one who caught the player holds them, a band with their face, the
+   *  fine paid now or fought on the sand; nothing else until it is settled (the simulation refuses the rest, caughtRule) */
+  openCaught(): void {
+    const s = this.st, c = s.v2?.caught;
+    if (!c) return;
+    const opts = actions(s).filter((o) => o.action.type === 'payFine' || o.action.type === 'fightCatch');
+    this.closeModal(); this.modal = true; this.prompt.classList.remove('on');
+    document.body.classList.add('pm-talking');
+    const root = el('div', 'pm pm-talk'), card = el('div', 'pm-dlg'), side = el('div', 'side'), list = el('div', 'opts');
+    root.dataset.caught = '1';
+    root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', PEOPLE[c.by]?.name ?? c.by);
+    const url = portraitUrl(c.by);
+    card.innerHTML = `${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(PEOPLE[c.by]?.name ?? c.by)}</h2><div class="pm-line"><q>${esc(tx(c.night ? 'v2.caught.holdNight' : 'v2.caught.hold', { item: itemName(c.item), fine: c.fine }))}</q></div></div>`;
+    for (const o of opts) list.appendChild(this.optionButton(o, () => { if (o.action.type === 'fightCatch' && this.st.v2?.challenge) this.openChallengeSheet(); }));
+    side.append(list); arrowKeys(side); card.appendChild(side); root.appendChild(card);
+    document.body.appendChild(root); this.current = root; scrollFade(list);
+    (list.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null)?.focus();
+    // opened on the page's first frame, before the baked faces are painted (a keeper on a square: found by tools/npc-duel-flow.mjs): drawn again with the face
+    if (!url) void portraitsReady().then(() => { if (this.current === root && portraitUrl(c.by)) this.openCaught(); });
+  }
 
   /** the list on demand (UM-R2, Q): what can be done here and now, the rest and the wait, the people; a band at the foot of the screen, as a dialogue */
   openHere(): void {
@@ -502,7 +530,8 @@ export class TownUi {
 
   /** the short sheet before a fight on the sand (the operator's GP-13 « Une fiche courte avant un défi », journal Passe GP2): the opponent, both fighters as the duel
    *  builds them, whose model a fighter of the town fights on, what is at stake and what a win gives, and a plan for them, kept for them; Enter goes onto the sand.
-   *  Any fight waiting on the sand (`s.v2.challenge`: a challenge, a reprisal's muscle) takes it */
+   *  Any fight waiting on the sand (`s.v2.challenge`: a challenge, a reprisal's muscle, the holder of a theft caught and a passer-by's piece demanded by force, journal
+   *  Passe PN1) takes it */
   openChallengeSheet(back?: () => void): void {
     const s = this.st, ch = isV2(s) ? s.v2?.challenge : undefined;
     if (!ch) return;
@@ -525,13 +554,16 @@ export class TownUi {
     const model = g && RIVALS[g.profile] ? RIVALS[g.profile] : null, like = model ? tx('prep.challenge.like', { name, rival: model.name }) : '';
     // what the player knows of their way of fighting: a rival's scouting; a fighter of the town's style once fought (its model's kit)
     const known = r ? scoutLines(s, who) : g && model && hasFought(s, who) ? [styleText(g.profile, name)] : [];
-    const teach = ch.reprisal ? null : challengeSkill(s, who);
-    const stake = ch.reprisal ? tx('prep.challenge.reprisal') : ch.stake === 'coins' ? tx('prep.challenge.stakeCoins', { n: STAKE.coins, back: 2 * STAKE.coins }) : tx('prep.challenge.stakeName', { n: STAKE.name });
+    // a townsperson's fight (journal Passe PN1): what a win and a loss settle, no skill to learn
+    const teach = ch.reprisal || ch.kind ? null : challengeSkill(s, who);
+    const stake = ch.kind === 'caught' && ch.caught ? tx('prep.challenge.caught', { item: itemName(ch.caught.item), fine: CAUGHT_LOST * ch.caught.fine })
+      : ch.kind === 'seize' ? tx('prep.challenge.seize', { item: itemName(PASSERS[who]?.item ?? ''), name, n: SEIZE.coinsLost })
+      : ch.reprisal ? tx('prep.challenge.reprisal') : ch.stake === 'coins' ? tx('prep.challenge.stakeCoins', { n: STAKE.coins, back: 2 * STAKE.coins }) : tx('prep.challenge.stakeName', { n: STAKE.name });
     const win = teach ? tx(levelOf(s, teach) > 0 ? 'prep.challenge.raise' : 'prep.challenge.teach', { skill: skillName(teach) }) : '';
     const vs = b ? this.autoVsHtml(b.ren, b.foe, autoForms(b), name) : '';
-    return `<p class="pm-sub">${esc(tx(ch.reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title'))} · ${esc(tx('ui.dayN', { day: s.day }))}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(name)}</h2><p class="pm-sub">${esc(title)}</p></div></div>`
+    return `<p class="pm-sub">${esc(tx(ch.kind === 'caught' ? 'v2.caught.title' : ch.kind === 'seize' ? 'v2.seize.title' : ch.reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title'))} · ${esc(tx('ui.dayN', { day: s.day }))}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(name)}</h2><p class="pm-sub">${esc(title)}</p></div></div>`
       + (like ? `<p class="pm-sub">${esc(like)}</p>` : '') + vs + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('')
-      + `<p class="pm-sub">${esc(stake)}</p>${win ? `<p class="pm-sub">${esc(win)}</p>` : ''}${ch.reprisal ? '' : `<p class="pm-sub">${esc(tx('v2.result.noVigour'))}</p>`}<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p>`;
+      + `<p class="pm-sub">${esc(stake)}</p>${win ? `<p class="pm-sub">${esc(win)}</p>` : ''}${ch.reprisal || ch.kind ? '' : `<p class="pm-sub">${esc(tx('v2.result.noVigour'))}</p>`}<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p>`;
   }
 
   /** P6 (lot V9): the bout's stage, the opponent (face, name, style), what the player knows of their skills, the gear worn, an ally's advice; since GP-12 the next bout's,

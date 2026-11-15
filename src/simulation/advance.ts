@@ -12,6 +12,7 @@ import { daysOf, v2AfterSlot } from '../tournament/v2calendar';
 import { festivalDusk } from './v2festival';
 import { v2Dawn } from './v2law';
 import { vessaTalks } from './v2rivals';
+import { PEOPLE } from '../narrative/people';
 
 /** The simulation's entry points (PROJECT_MASTER_CONTRACT § 10.2, journal Passe L1):
  *  - `newGame(seed, name)`: the slice's first morning;
@@ -53,6 +54,13 @@ export function actions(st: GameState): ActionOption[] {
   return out;
 }
 
+/** a thief caught answers first (journal Passe PN1, the operator's GP-03): the fine paid or fought, nothing else in between (an action refused for its own reason says that reason) */
+const CAUGHT_ANSWERS = new Set(['payFine', 'fightCatch']);
+function caughtRule(st: GameState, a: Action): string | null {
+  const c = st.v2?.caught;
+  return c && !CAUGHT_ANSWERS.has(a.type) ? tx('v2.caught.first', { name: PEOPLE[c.by]?.name ?? c.by }) : null;
+}
+
 /** refusals that hold for every significant action: on a match afternoon, the bout comes first */
 function slotRule(st: GameState, def: ActionDef, a: Action): string | null {
   if (a.type === 'fight' || def.cost(st, a) === 0) return null;
@@ -61,7 +69,7 @@ function slotRule(st: GameState, def: ActionDef, a: Action): string | null {
 }
 
 function option(st: GameState, def: ActionDef, a: Action): ActionOption {
-  const reason = def.check(st, a) ?? slotRule(st, def, a);
+  const reason = def.check(st, a) ?? caughtRule(st, a) ?? slotRule(st, def, a);
   return { action: a, label: def.label(st, a), cost: def.cost(st, a), coins: def.coins?.(st, a) ?? 0, ...(def.later ? { later: def.later(st, a) } : {}), ...(def.gain ? { gain: def.gain(st, a) } : {}), ok: reason === null, ...(reason !== null ? { reason } : {}) };
 }
 
@@ -75,7 +83,7 @@ function advanceEn(st: GameState, action: Action, rng?: Rng): Advance {
   if (st.over) return { state: st, events: [], ok: false, reason: st.flags.v2 === true ? tx('v2.over') : tx('refuse.over') };
   const def = ACTIONS[action.type] as ActionDef | undefined;
   if (!def) return { state: st, events: [], ok: false, reason: tx('refuse.unknown', { type: action.type }) };
-  const reason = def.check(st, action) ?? slotRule(st, def, action);
+  const reason = def.check(st, action) ?? caughtRule(st, action) ?? slotRule(st, def, action);
   if (reason !== null) return { state: st, events: [], ok: false, reason };
   const s = clone(st), events: GameEvent[] = [];
   const r = rng ?? rngFor(st, `action:${action.type}`);

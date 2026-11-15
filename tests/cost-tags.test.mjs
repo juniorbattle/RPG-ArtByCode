@@ -27,15 +27,18 @@ function rule(st, a) {
     // a challenge's coins staked are put on the table at once (lot L2b, EV-3: 10, won back twice); paying a reprisal's muscle off, 20
     case 'challenge': return a.stake === 'coins' ? 10 : 0;
     case 'payMuscle': return 20;
+    // a thief caught pays the fine of whoever holds them, what the purse has up to it (GP-03, journal Passe PN1); fighting it, or taking a piece by force, costs no coin
+    case 'payFine': return Math.min(st.v2.caught.fine, st.player.coins);
     // a restitution at Sergeant Hale's (lot L2a): the pieces still held go back, the others taken are paid at their list price (a theft caught took nothing:
     // journal Passe CO2), his fee of 5; a thin purse pays all it has
     case 'restitute': {
-      const PRICE = { 'imported-blade': 30, 'duelist-sabre': 55, 'padded-jack': 18, 'mail-shirt': 40, 'dock-leathers': 26, 'lucky-ribbon': 12, 'iron-ring': 24, 'swift-boots': 30, 'fervour-charm': 16, 'docker-wrap': 14, whetstone: 8, 'river-pearl': 26, 'knight-hauberk': 34, 'pilgrim-medal': 18 };
+      const PRICE = { 'imported-blade': 30, 'duelist-sabre': 55, 'padded-jack': 18, 'mail-shirt': 40, 'dock-leathers': 26, 'lucky-ribbon': 12, 'iron-ring': 24, 'swift-boots': 30, 'fervour-charm': 16, 'docker-wrap': 14, whetstone: 8, 'river-pearl': 26, 'knight-hauberk': 34, 'pilgrim-medal': 18, 'mender-gloves': 16, 'courier-boots': 14, 'minstrel-charm': 15, 'sergeant-gorget': 20, 'hostler-leathers': 22 };
       const g = st.v2.gear, held = (id) => id === 'whetstone' ? st.player.items.includes('whetstone') : [g.weapon, g.armour, ...g.acc, ...g.bag].includes(id);
       const open = (st.v2.thefts ?? []).filter((x) => !x.settled), debt = open.filter((x) => x.seen !== 'caught' && !held(x.item)).reduce((n, x) => n + PRICE[x.item], 0) + (open.length || (st.v2.marks ?? 0) > 0 ? 5 : 0);
       return Math.min(debt, st.player.coins);
     }
-    case 'barter': { const p = { fenwick: 26, edda: 34, sela: 18 }[a.who]; return !a.arg ? p : Math.max(1, Math.round(p * (a.arg === 'name' ? 0.8 : 0.7))); }
+    // the passers-by of GP-06 (journal Passe PN1, « Un passant par lieu et par moment (douze) »): their pieces' prices, « proposé »
+    case 'barter': { const p = { fenwick: 26, edda: 34, sela: 18, nell: 16, jory: 14, yselle: 15, garrick: 20, maud: 22, dov: 32, hettie: 10 }[a.who]; return !a.arg ? p : Math.max(1, Math.round(p * (a.arg === 'name' ? 0.8 : 0.7))); }
     case 'buy': return Math.round(LIST[a.item] * (a.item === 'salve' ? 1 : st.services.shopFactor) * (st.flags['discount:mara'] ? 0.9 : 1));
     case 'temper': case 'buyInfo': return 10;
     case 'payWatch': return 15;

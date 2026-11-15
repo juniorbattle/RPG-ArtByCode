@@ -31,6 +31,8 @@ const RIVALS = ['marek', 'vessa', 'orla', 'cassius', 'ilse', 'rhosk', 'tobin'].f
  *  The three of journal Passe GA3 (GA-P1 to GA-P3) approved on the operator's lot sheet of journal Passe GA4; a candidate (none today) is held to the same contract and loaded by nothing */
 const GENERIC = { aldric: 'ilse', corra: 'orla', ambrose: 'cassius', lucan: 'marek', piers: 'vessa', kell: 'tobin' }, GEN = Object.keys(GENERIC);
 const CANDIDATES = [], PROD_GEN = GEN.filter((g) => !CANDIDATES.includes(g));
+/** the townsfolk's templates (journal Passe PN1, the art sheet of chantier 1: GA-M and GA-F « Production »), each person's look and weapon drawn on them at load (src/characters/NpcLook.ts) */
+const NPC_TEMPLATES = ['npc-m', 'npc-f'];
 const kitOf = (id) => GENERIC[id] ?? id, townOf = (id) => (id === 'hero' ? 'hero-x2-v4' : GENERIC[id] ? `${id}-x2-v1` : `${id}-x2-v2`);
 
 test('the page of a duel holds Ren and any rival: 80 cells of 255 rows, the same pixels, the feet where they were', () => {
@@ -107,7 +109,8 @@ test('the body moved by the cell is written with the sheet, frame by frame, and 
 test('the seven rivals, the generic fighters and Ren in production: approved one by one, each a sheet CombatCast loads, none of them anywhere else', async () => {
   const src = read('src/arena/CombatCast.ts').toString('utf8');
   assert.equal(RIVALS.length, 7, 'every rival of the casting has its sheet');
-  for (const glob of src.match(/\{[a-z]+,[a-z,]+\}-x3-combat/g)) assert.deepEqual(glob.slice(1, glob.indexOf('}')).split(',').sort(), ['hero', ...RIVALS, ...PROD_GEN].sort(), glob);
+  // (and since journal Passe PN1 the townsfolk's two templates, GA-M and GA-F « Production » on the art sheet of chantier 1)
+  for (const glob of src.match(/\{[a-z]+,[a-z,-]+\}-x3-combat/g)) assert.deepEqual(glob.slice(1, glob.indexOf('}')).split(',').sort(), ['hero', ...RIVALS, ...PROD_GEN, ...NPC_TEMPLATES].sort(), glob);
   // the oracle's profiles are the game's (src/narrative/generics.ts), and their faces are the portraits' (src/characters/PlazaCast.ts)
   const { GENERICS } = await load('/src/narrative/generics.ts');
   assert.deepEqual(Object.fromEntries(Object.entries(GENERICS).map(([k, g]) => [k, g.profile])), GENERIC);
@@ -122,7 +125,7 @@ test('the seven rivals, the generic fighters and Ren in production: approved one
     assert.ok(!src.includes(id) && !plaza.includes(id), `${sheet}: loaded by nothing`);
   }
   assert.equal((src.match(/import\.meta\.glob\(/g) ?? []).length, 4);
-  for (const id of ['hero', ...RIVALS, ...PROD_GEN]) {
+  for (const id of ['hero', ...RIVALS, ...PROD_GEN, ...NPC_TEMPLATES]) {
     const m = json(`art-lab/characters/manifests/${id}-x3-combat.manifest.json`);
     assert.equal(m.approved, true, id); assert.equal(m.runtimeUse, 'production', id); assert.equal(m.status, 'approved', id);
     assert.ok(m.approval?.note.includes('Production') || m.approval?.note.includes('Approuvées'), `${id}: the operator's word`);

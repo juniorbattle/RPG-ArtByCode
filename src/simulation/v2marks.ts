@@ -4,6 +4,7 @@ import { offeredBy } from './roles';
 import { talkableHere } from './v2watch';
 import { isV2 } from './v2';
 import { KIND_OF, NEVER_MARKED, UNMARKED_PEOPLE, offerKey, seenOf, talkKey, type MarkKind } from './v2offers';
+import { rehearsalDue } from './v2prep';
 
 export type { MarkKind } from './v2offers';
 
@@ -27,7 +28,8 @@ const strongest = (offers: Mark['offers']): MarkKind => offers.reduce<MarkKind>(
 /** the people present here and everything each offers now, seen or not (none: no entry); a version 2 game only */
 export function offersHere(st: GameState): Mark[] {
   if (!isV2(st) || st.over) return [];
-  const opts = actions(st), out: Mark[] = [];
+  // Master Corvin's rehearsal marks only while it is still to do against the next opponent (the operator's GP-16 « Les corriger », journal Passe GP2)
+  const opts = actions(st).filter((o) => o.action.type !== 'rehearse' || !!rehearsalDue(st)), out: Mark[] = [];
   for (const p of talkableHere(st)) {
     if (UNMARKED_PEOPLE.has(p.id)) continue;
     const offers: Mark['offers'] = [];

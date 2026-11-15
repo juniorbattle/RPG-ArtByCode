@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "npc-m-x3-combat",
+  "kind": "character",
+  "status": "approved",
+  "source": "art-lab/characters/source/npc-m-x3-combat.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/npc-m-x3-combat.png",
+    "metadata": "art-lab/characters/exports/npc-m-x3-combat.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-combat.mjs (lib/combat.mjs: reconstruct-grid + rig-engine, rig art-lab/characters/rigs/npc-m-x3-combat.rig.mjs, the arena cell at x3: 192 x 288, feet on row 270, axis on column 96); Aseprite (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "4 generated pose sheets of the template (NON-CANONICAL until the operator's art sheet): the figures of the sheet",
+      "path": "art-lab/characters/reference/sources/npc-m-combat-x3-2026-11-15-a.png",
+      "note": "task npc-gabarits, journal Passe PN1"
+    },
+    {
+      "category": "B",
+      "label": "vendor-x2-v1, the approved town sheet of the figure: its design and its palette (pinned)",
+      "path": "art-lab/characters/provenance/vendor-x2-v1",
+      "note": "n° 01 « Merchant (Male) » of the NPC reference sheet 01-16 (its approved town sheet vendor-x2-v1), without his apron"
+    }
+  ],
+  "approved": true,
+  "runtimeUse": "production",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the art sheet of chantier 1 (journal Passe PN1, https://claude.ai/artifact/KQCnZRoBiczix5nEYVmDcF): GA-M « Production », and GA-P « En production avec le chantier »; version 2 only, today's game unchanged. the townsfolk template on which the town's men fight themselves (the operator's GP-04 note and his answer « Gabarits d'abord (Recommandé) », journal Passe GP2), n° 01 « Merchant (Male) » of the NPC reference sheet 01-16 (its approved town sheet vendor-x2-v1), without his apron; 34 frames of the § 14 list (guard, dodge, the three skill families); its short sword drawn over at load by each person's weapon (src/characters/NpcWeapons.ts), its skin, hair and clothes recoloured by art-lab/characters/variants/npc.json (src/characters/NpcLook.ts). Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/npc-m-x3-combat.rig.mjs --check.",
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-11-15",
+    "note": "APPROVED FOR PRODUCTION by the operator on the art sheet of chantier 1 (journal Passe PN1, https://claude.ai/artifact/KQCnZRoBiczix5nEYVmDcF): GA-M « Production », and GA-P « En production avec le chantier »; version 2 only, today's game unchanged."
+  }
+}

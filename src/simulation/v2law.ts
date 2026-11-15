@@ -227,6 +227,8 @@ export const V2_LAW_ACTIONS: { [K in V2LawAction['type']]: ActionDef<Extract<V2L
         t.settled = true; add(s, t.from, 5);
         // a passer-by's piece goes back to its owner, who holds it again
         if (s.v2!.passed?.[t.from] !== undefined) delete s.v2!.passed[t.from];
+        // and a passer-by caught at their pocket speaks to the player again (the operator's GP-08 « Le dire, et la restitution lève la bouderie », journal Passe GP2)
+        delete s.flags[`snub:${t.from}`];
       }
       // the owners paid, no muscle waits any more (lot L2b); a shortfall beyond the slot spent now stays owed, the ledger keeping the name until it is worked off
       const left = short ? Math.max(0, r.coins - paid - DEBT_SLOT) : 0;

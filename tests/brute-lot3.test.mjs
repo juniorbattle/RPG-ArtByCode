@@ -77,6 +77,27 @@ test('the scouting by tiers: nothing seen, the style at a first watch or a bout 
   assert.equal(opt(at(o1, 1, 'afternoon', 'forecourt'), (a) => a.type === 'scout' && a.who === 'vessa')?.reason, T.tx('scout.known', { name: 'Vessa Lark' }));
 });
 
+test('GP-16: a town fighter fought is told with the kit it fights with (its profile\'s, as the duel builds it) and under its own name, never Marek\'s kit nor its id', async () => {
+  const { GENERICS } = await load('/src/narrative/generics.ts');
+  const st = G.makeV2(G.namedState('day1-morning'));
+  for (const [id, g] of Object.entries(GENERICS)) {
+    assert.equal(SC.kitOf(id), g.profile, id);
+    // the duel's own opponent: its skills are the ones the lines name
+    const duel = AM.autoFightersFor(st, id, 0, 0).foe.skills.map((s) => s.id).sort();
+    assert.deepEqual(AD.AUTO_FOES[SC.kitOf(id)].skills.map((s) => s.id).sort(), duel, `${id}: the kit told is the kit fought`);
+    const s = structuredClone(st); s.v2.challenged = { [id]: 1 };
+    const lines = SC.scoutLines(s, id), name = SC.scoutName(id);
+    assert.equal(name, g.name);
+    assert.equal(lines[0], SC.styleText(id, name), `${id}: its style once fought`);
+    assert.ok(lines.every((l) => !new RegExp(`\\b${id}\\b`).test(l)), `${id}: never its id: ${lines.join(' / ')}`);
+    assert.ok(lines[0].startsWith(T.tx('auto.style.skills', { name, list: '' }).split(':')[0]), `${id}: its name: ${lines[0]}`);
+    // the negative control: Marek's kit (the fallback of before) is not the one told, unless the profile is Marek's
+    if (g.profile !== 'marek') assert.notEqual(SC.styleText(id, name), SC.styleText('marek', name), id);
+  }
+  // the notebook's page reads the same lines for a town fighter met in a challenge
+  assert.equal(NB.fighterName('aldric'), SC.scoutName('aldric'));
+});
+
 test('the plan in words: each rival skill\'s moment its own condition (AUTO_STYLES), or its role\'s rule; the style\'s roles the duel\'s', () => {
   const ROLE_WHEN = { exploit: 'scout.role.exploit', punish: 'scout.role.punish', pierce: 'scout.role.pierce', breaker: 'scout.role.breaker', opener: 'scout.role.opener', interrupt: 'scout.role.interrupt', ward: 'scout.role.ward', parry: 'scout.role.parry', haste: 'scout.role.haste', slow: 'scout.role.slow', load: 'scout.role.load' };
   for (const id of Object.keys(AD.AUTO_FOES)) {

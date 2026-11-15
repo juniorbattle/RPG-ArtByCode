@@ -7,6 +7,8 @@ import { duelData, dynDuelData, DYN_PROFILES, PROFILES, type Mods } from './prof
 import { mix32, hashString } from '../core/rng';
 import { v2DuelData, type V2Duel, type V2Kit } from './v2duel';
 import { GENERICS } from '../narrative/generics';
+import { NPC_BASE, NPC_FIGHTERS } from '../narrative/npcFighters';
+import { PEOPLE } from '../narrative/people';
 import { borrowedSheet, rivalSheet, stageOf, type FighterStats, type Stage } from './stats';
 
 /** A match sheet (journal Passe L2, used by the arena's play mode in Passe L3): who fights whom, with what the preparation changed. The
@@ -80,8 +82,8 @@ export function dynSheetData(sh: MatchSheet, names?: Partial<Record<string, stri
 /** an opponent's stats in a version 2 duel (the operator's DB7-5 « Ces fiches » and DB7-6, journal Passe DB8): a rival's sheet at the bout's stage,
  *  a generic fighter's borrowed from its rival's (src/combat/stats.ts) */
 export function foeSheetOf(o: SheetFighter, stage: Stage = 0): FighterStats {
-  const g = GENERICS[o.id];
-  return g ? borrowedSheet(g.profile, g, stage) : rivalSheet(o.profile ?? o.id, stage);
+  const g = GENERICS[o.id], n = NPC_FIGHTERS[o.id];
+  return n ? borrowedSheet(NPC_BASE, n, stage) : g ? borrowedSheet(g.profile, g, stage) : rivalSheet(o.profile ?? o.id, stage);
 }
 
 /** the same sheet as a duel of the version 2 (src/combat/v2duel.ts, journal Passe V1): the three buttons, the charge, the skills at their
@@ -94,7 +96,7 @@ export function v2SheetData(sh: MatchSheet, names?: Partial<Record<string, strin
   // a version 2 player's preparation (its gear, lot V3: src/simulation/v2gear.ts v2Mods) replaces today's mods of the sheet
   const pm = player ?? p.mods, gear = player ? { taken: player.taken ?? 1, gauge: player.gauge ?? 1, charge: player.charge ?? 1, effect: player.effect ?? 1 } : undefined;
   // a generic fighter's shares are in its sheet (foeSheetOf): only a rival's state (its injury, its preparation) goes on top
-  const enemy = GENERICS[o.id] ? {} : o.mods;
+  const enemy = GENERICS[o.id] || NPC_FIGHTERS[o.id] ? {} : o.mods;
   return v2DuelData(o.profile ?? o.id, { seed: sh.seed, playerName: p.name, opponentName: o.name, player: { hp: pm.hp, damage: pm.damage, ap: pm.ap }, enemy, names, kit, gear, ren: player?.stats, foeSheet: foeSheetOf(o, sh.stage ?? 0) });
 }
 
@@ -104,10 +106,12 @@ export function v2SheetData(sh: MatchSheet, names?: Partial<Record<string, strin
 export function challengeSheetFor(s: GameState): MatchSheet | null {
   const ch = s.v2?.challenge;
   if (!ch) return null;
-  const g = GENERICS[ch.who], r = RIVALS[ch.who];
-  if (!g && !r) return null;
-  const id = `${ch.reprisal ? 'rp' : 'ch'}:${ch.who}:${ch.day}`;
-  const foe = g ? { id: ch.who, name: g.name, profile: g.profile, mods: { hp: g.hp, damage: g.damage } } : { id: ch.who, name: r.name, profile: s.competitors[ch.who].combatProfile, mods: rivalMods(s.competitors[ch.who]) };
+  const g = GENERICS[ch.who], r = RIVALS[ch.who], n = NPC_FIGHTERS[ch.who];
+  if (!g && !r && !n) return null;
+  // a townsperson who fights themselves (journal Passe PN1): caught at their stall or their pocket, or challenged for their piece; a seed of its own
+  const id = `${ch.reprisal ? 'rp' : ch.kind === 'caught' ? 'cg' : ch.kind === 'seize' ? 'sz' : 'ch'}:${ch.who}:${ch.day}`;
+  const foe = n ? { id: ch.who, name: PEOPLE[ch.who]?.name ?? ch.who, profile: NPC_BASE, mods: { hp: n.hp, damage: n.damage } }
+    : g ? { id: ch.who, name: g.name, profile: g.profile, mods: { hp: g.hp, damage: g.damage } } : { id: ch.who, name: r.name, profile: s.competitors[ch.who].combatProfile, mods: rivalMods(s.competitors[ch.who]) };
   return {
     id, round: 0, day: s.day,
     sides: [{ fighters: [{ id: PLAYER_ID, name: s.player.name, mods: playerMods(s) }] }, { fighters: [foe] }],

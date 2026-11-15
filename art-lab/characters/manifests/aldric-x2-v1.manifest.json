@@ -29,7 +29,7 @@
   ],
   "approved": true,
   "runtimeUse": "production",
-  "notes": "APPROVED FOR PRODUCTION by the operator on the generic fighters' lot sheet (journal Passe GA2, https://claude.ai/artifact/3pJeAdQR47NMaYcpecztgu): « Production » (GA-AL1), and GA-S1 « Les six ensemble »; version 2 only, today's game unchanged. Loaded by a version 2 game's portraits (src/characters/PlazaCast.ts). Ser Aldric Venn, a generic fighter of the version 2 (lot L2b), standing only (12 frames): his or her face in a version 2 game's portraits.",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the generic fighters' lot sheet (journal Passe GA2, https://claude.ai/artifact/3pJeAdQR47NMaYcpecztgu): « Production » (GA-AL1), and GA-S1 « Les six ensemble »; version 2 only, today's game unchanged. Loaded by a version 2 game's portraits (src/characters/PlazaCast.ts). Ser Aldric Venn, a generic fighter of the version 2 (lot L2b), standing only (12 frames): his or her face in a version 2 game's portraits. GP-05, the operator's choice on the general gameplay sheet (https://claude.ai/artifact/WyRKyZbsB1MMp8yMmAw8ho, journal Passe GP2, 15/11/2026), word for word « Debout à leur place et à leur heure (production de leurs feuilles de ville sur les places) »: this town sheet also stands its fighter at their place and hour on the squares and the quay of a version 2 game (src/characters/PlazaCast.ts, src/ui/playTown.ts; journal Passe PN1), under their approved skin.",
   "approval": {
     "by": "operator (git user wonmii)",
     "date": "2026-11-07",

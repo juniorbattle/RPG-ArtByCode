@@ -69,6 +69,13 @@ test('the guide: thirteen chapters (« Earning coins » since journal Passe ECO2
   assert.match(text.challenges, new RegExp(`You stake ${TOWN.STAKE.coins} coins or ${TOWN.STAKE.name} of your reputation`));
   assert.match(text.intel, new RegExp(`${INTEL.RUMOUR.lio.coins} coins, right about 67 %`));
   assert.match(text.intel, new RegExp(`for ${INTEL.STRONGROOM} coins`));
+  // what watching gives since lot 3 of « La Brute » (src/simulation/v2scout.ts), said since the operator's GP-16 « Les corriger » (journal Passe GP2): the style at a
+  // first watch or a bout fought, the plan at a second watch another day, the rehearsal opened; no longer « tells you their skills »
+  assert.doesNotMatch(text.intel, /tells you their skills/);
+  assert.match(text.intel, /A first watch, or a bout or a challenge already fought against them, shows their style: their skills and the role of each\. A second watch, on another day, shows their plan: when they use each skill\. Once you know your next opponent's style, Master Corvin can rehearse your bout against their shadow/);
+  assert.doesNotMatch(FR['tut.ch.intel.body'], /vous apprend ses compétences/);
+  // a challenge teaches up to the training's cap (GP-16), and adds no health (GP-14)
+  assert.match(text.challenges, /teaches it to you or raises it, up to level 3, but adds no health: only the tournament's bouts give vigour\./);
   // a session since journal Passe DB8 (the operator's DB7-3 « +1 à la stat choisie, pour le prochain combat »)
   // since DB11-5 « Le dire partout, et une séance « Santé » (+20 PV au prochain combat) » (journal Passe DB13), a session may go to health, and the guide
   // says where Ren's health comes from, the rules' own numbers

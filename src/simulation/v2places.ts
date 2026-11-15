@@ -14,9 +14,13 @@ export const PLAZA_OF: Partial<Record<PlaceId, PlazaKind>> = { forecourt: 'forec
 // (journal Passe VP7: a few in the morning, the crowd at midday, fewer at the end of the day, a handful at night; « proposé »)
 export const PLAZA_CROWD: Record<Look, number> = { night: 4, morning: 5, midday: 12, afternoon: 8 };
 
+/** the generic fighters who stand on a square (GP-05; their sheets: src/characters/PlazaCast.ts) */
+export const STANDING_GENERICS: ReadonlySet<string> = new Set(['aldric', 'ambrose', 'lucan', 'kell', 'corra', 'piers']);
 export function plazaPeople(s: GameState): string[] {
   // (a person in the Cité some days only, a passer-by of lot L2a, stands there those days; a person met by portrait only, lot L2b, stands nowhere)
-  const out = Object.values(PEOPLE).filter((p) => presentAt(p, s.place, s.slot, true) && !p.generic && (!p.days || (s.day >= p.days[0] && s.day <= p.days[1]))).map((p) => p.id);
+  // (since the operator's GP-05 « Debout à leur place et à leur heure (production de leurs feuilles de ville sur les places) », journal Passes GP2 / PN1, the six generic fighters stand
+  // too; Tobin and Rhosk, « Portrait seulement », stay portraits)
+  const out = Object.values(PEOPLE).filter((p) => presentAt(p, s.place, s.slot, true) && (!p.generic || STANDING_GENERICS.has(p.id)) && (!p.days || (s.day >= p.days[0] && s.day <= p.days[1]))).map((p) => p.id);
   // lot L5 (EV-12, « un garde se poste à l’étal le jour d’un vol »): Wynn of the quay watch at the stall he watches (src/simulation/v2watch.ts); the forecourt's gate
   // keeps one guard, in a colouring of the approved guard sheet neither Hale nor Wynn wears (the operator's « A single guard », journal Passe CO4: the gate's two
   // guards wore Hale's and Wynn's colours while both stood on the quay; src/world/PlazaApp.ts GATE_VARIANT)

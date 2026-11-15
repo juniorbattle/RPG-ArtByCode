@@ -20,12 +20,13 @@ const ok = (st, type) => G.actions(st).filter((o) => o.ok && o.action.type === t
 test('the first morning on the quay: what follows, an event, what pays, an item, in that order; never a theft nor the wait (LA-5, LA-6)', () => {
   const st = v2(), list = T.todoHere(st);
   assert.ok(ok(st, 'steal').length && ok(st, 'wait').length, 'a theft and the wait are open on the quay (the case is reached)');
-  assert.deepEqual(list.map((t) => [t.who ?? t.what, t.kind]), [['tam', 'follow'], ['piers', 'event'], ['mara', 'item'], ['bram', 'item']]);
+  // Nell, the quay's passer-by in the morning (journal Passe PN1, GP-06 « Un passant par lieu et par moment (douze) »), her piece an item
+  assert.deepEqual(list.map((t) => [t.who ?? t.what, t.kind]), [['tam', 'follow'], ['piers', 'event'], ['mara', 'item'], ['bram', 'item'], ['nell', 'item']]);
   assert.equal(list[2].gain, ok(st, 'work')[0]?.gain, 'Mara\'s job: what it pays, as the action says');
   assert.ok(!list.some((t) => /steal|wait|rest|scout/.test(t.key)), JSON.stringify(list.map((t) => t.key)));
 });
 
-test('the training ground in the morning: the people first, then the practice sand and the drills, each once and spending the moment; watching a rival never (LA-5)', () => {
+test('the training ground in the morning: the people first, then the practice sand and the drills, each once and spending the moment; watching a rival who is not the next opponent never (LA-5, GP-16)', () => {
   const st = at(v2(), 'training', 'morning'), list = T.todoHere(st);
   assert.ok(ok(st, 'scout').length >= 1 && ok(st, 'train').length === 5 && ok(st, 'drillSkill').length >= 5, 'the cases are reached');
   const place = list.filter((t) => t.kind === 'place');
@@ -33,7 +34,38 @@ test('the training ground in the morning: the people first, then the practice sa
   assert.deepEqual(list.slice(-2), place, 'the place last');
   assert.ok(list.findIndex((t) => t.kind === 'event') > list.findIndex((t) => t.kind === 'follow'), 'what follows before an event');
   assert.ok(!list.some((t) => /scout/.test(t.key)));
-  assert.deepEqual(T.todoHere(at(v2(), 'training', 'evening')), [], 'the sand shut at night: nothing to do there');
+  // the sand shut at night: only Dov Harl, the lists' passer-by in the evening (GP-06), and his piece
+  assert.deepEqual(T.todoHere(at(v2(), 'training', 'evening')).map((t) => [t.who ?? t.what, t.kind]), [['dov', 'item']], 'the sand shut at night: nothing to do there but the piece of Dov');
+});
+
+test('GP-16: the next opponent watched where they train while there is more to see of them, then Master Corvin\'s rehearsal while it is to do, each a line spending the moment; never another rival', async () => {
+  const UI = await load('/src/ui/todo.ts');
+  // day 1: the next opponent is Vessa (day 2), at practice on the forecourt with Marek
+  const fc = at(v2(), 'forecourt', 'morning'), list = T.todoHere(fc);
+  assert.ok(ok(fc, 'scout').some((o) => o.action.who === 'marek') && ok(fc, 'scout').some((o) => o.action.who === 'vessa'), 'both can be watched there (the case is reached)');
+  assert.deepEqual(list.filter((t) => t.what === 'scout').map((t) => [t.foe, t.kind, t.slot]), [['vessa', 'place', true]]);
+  assert.ok(!list.some((t) => t.foe === 'marek' || t.who === 'marek'), 'another rival never');
+  // the rival herself wears no diamond for being watched (MK-6 kept): her person's line, there for her challenge of the first day, is the same without the watch
+  const her = list.find((t) => t.who === 'vessa'), noWatch = structuredClone(fc); noWatch.facts.push('scouted:vessa', 'scouted2:vessa');
+  assert.equal(her?.key, T.todoHere(noWatch).find((t) => t.who === 'vessa')?.key);
+  assert.match(UI.todoLine(fc, list.find((t) => t.what === 'scout')), /Watch Vessa Lark, your next opponent/);
+  assert.equal(FR['ui.todo.scout'].includes('{name}') && FR['ui.todo.rehearse'].includes('{name}'), true);
+  // watched today: nothing more to see of her today; the rehearsal is open on the training ground
+  const w = act(fc, { type: 'scout', who: 'vessa' });
+  assert.ok(!T.todoHere(at(w, 'forecourt', 'afternoon')).some((t) => t.what === 'scout'), 'the second watch is another day');
+  const tr = at(w, 'training', 'afternoon'), tl = T.todoHere(tr);
+  assert.deepEqual(tl.filter((t) => t.what === 'rehearse').map((t) => [t.foe, t.slot]), [['vessa', true]]);
+  assert.match(UI.todoLine(tr, tl.find((t) => t.what === 'rehearse')), /Rehearse your bout against Vessa Lark's shadow/);
+  // one line for one thing: Master Corvin's own line, when he has something else new, never counts the rehearsal twice
+  assert.ok(!tl.filter((t) => t.who === 'corvin').some((t) => t.key.includes('rehearse')));
+  // rehearsed with what is known of her: the line goes; once her plan is seen it comes back, and the second watch, the next day
+  const done = at(act(tr, { type: 'rehearse' }), 'training', 'afternoon');
+  assert.ok(!T.todoHere(done).some((t) => t.what === 'rehearse'));
+  const plan = structuredClone(done); plan.facts.push('scouted2:vessa');
+  assert.ok(T.todoHere(plan).some((t) => t.what === 'rehearse' && t.foe === 'vessa'));
+  assert.ok(T.todoHere(at(done, 'forecourt', 'morning', 2)).some((t) => t.what === 'scout' && t.foe === 'vessa'), 'the second watch, another day');
+  // her plan known: nothing more to see
+  assert.ok(!T.todoHere(at(plan, 'forecourt', 'morning', 2)).some((t) => t.what === 'scout'));
 });
 
 test('the day\'s bout comes first; a person talked to leaves the list (LA-6; MK-4)', () => {

@@ -14,6 +14,8 @@ const M = await load('/src/combat/match.ts');
 const AM = await load('/src/combat/autoMatch.ts');
 const AU = await load('/src/combat/auto.ts');
 const W = await load('/src/ui/wares.ts');
+const AM_DATA = await load('/src/combat/autoData.ts');
+const TXT = await load('/src/narrative/text/index.ts');
 const ROOT = path.resolve(import.meta.dirname, '..');
 
 const v2 = (name = 'day1-morning') => G.makeV2(G.namedState(name));
@@ -27,7 +29,11 @@ test('the numbers of a bout are the duel\'s own: health as the arena builds it, 
     const m = VG.v2Mods(s), { data: d } = M.v2SheetData(M.matchSheetFor(s), undefined, s.v2.kit, m), n = P.duelStats(s);
     // the health the bout gives (the duel played by the computer doubles it, DB5; the match sheet says the same: journal Passe CO1)
     assert.equal(n.hp, Math.round(AM.autoBoutOf(s).ren.hp * AU.AUTO_RULES.hpScale)); assert.equal(n.ap, undefined, 'no AP (PB-1)'); assert.equal(n.effect, m.effect * 100);
-    assert.deepEqual([n.atk, n.def, n.end, n.viv], [m.stats.atk, m.stats.def, m.stats.end, m.stats.viv]);
+    // the Speed the duel counts, the pieces' Speed points at half (AUTO_PIECE_VIV, PB-1): the page showed them whole (the operator's GP-20 « Les corriger », journal Passe GP2)
+    assert.deepEqual([n.atk, n.def, n.end], [m.stats.atk, m.stats.def, m.stats.end]);
+    assert.equal(n.viv, +AM.autoBoutOf(s).ren.viv.toFixed(2), 'the duel\'s own Speed');
+    const pv = VG.piecesViv(s);
+    assert.equal(n.viv, +(m.stats.viv - pv / 2).toFixed(2)); if (pv) assert.notEqual(n.viv, m.stats.viv, 'the negative control: the sheet\'s whole points are not the bout\'s');
     // the vigour (DB7-4 « +12 PV par victoire ») and the wound's share of it
     assert.equal(d.fighters.ren.maxHp, Math.round(m.stats.hp * (1 - 0.2 * injury))); assert.equal(m.stats.hp - VG.v2Stats({ ...s, v2: { ...s.v2, wins: 0 } }).hp, 24 * wins);
     assert.equal(n.blow, undefined, 'the heavy blow is a skill\'s figure (the skills page)');
@@ -56,9 +62,9 @@ test('every line sold anywhere: the « after » is what buying it really gives, 
 test('better and worse follow the number\'s sense: more Defence is better, less Speed is worse', () => {
   const st = v2('forecourt-morning'); st.player.coins = 300;
   const r = rows(P.preview(st, { type: 'shopBuy', shop: 'armourer', item: 'mail-shirt' }));
-  // the mail (DB7-2, its points doubled by AC-11 since journal Passe LC3): Defence +6, Speed -1
+  // the mail (DB7-2, its points doubled by AC-11 since journal Passe LC3): Defence +6, Speed -1, counted -0.5 in a bout (AUTO_PIECE_VIV, PB-1; said since GP-20)
   assert.equal(r.def.better, true); assert.equal(r.def.after, r.def.now + 6);
-  assert.equal(r.viv.better, false); assert.equal(r.viv.after, r.viv.now - 1);
+  assert.equal(r.viv.better, false); assert.equal(r.viv.after, r.viv.now - 0.5);
   const w = v2(); w.player.coins = 300;
   const b = rows(P.preview(w, { type: 'shopBuy', shop: 'mara', item: 'docker-wrap' }));
   // Ren 300 at the start (journal Passe DB8; DB11-6 « Ren 300 », journal Passe DB13), the wrap +36 (+18 before AC-11): ×3.48 in a bout, as the duel builds it (journal
@@ -121,6 +127,50 @@ test('the dialogue gives one line to the goods: every keeper\'s wares and bargai
   assert.ok(!all.some((o) => o.action.type === 'steal' && W.isGoods(o)), 'stealing stays with the place\'s actions');
   const d = G.namedState('day1-morning');
   assert.ok(G.actions(d).filter(W.isWare).every((o) => o.action.type === 'buy' || o.action.type === 'temper'), 'the default game\'s stall');
+});
+
+test('GP-20: each piece names its effects in a bout, read from the duel\'s tables: its Speed at half, its protections\' length (never « boosts »), every AUTO_GEAR_FX effect', () => {
+  const AD = AM_DATA, T = TXT;
+  // what `effect` lengthens, from the duel itself: a protection's length, never a support's boost (its role's own) nor a parry's window
+  assert.equal(AD.autoSkill('d1', 1, 1.3).ward.dur, +(AD.autoSkill('d1', 1, 1).ward.dur * 1.3).toFixed(2));
+  assert.equal(AD.autoSkill('s1', 1, 1.3).boost.dur, AD.autoSkill('s1', 1, 1).boost.dur, 'a support\'s boost does not move');
+  assert.equal(AD.autoSkill('k_parry', 1, 1.3).ward.dur, AD.autoSkill('k_parry', 1, 1).ward.dur, 'nor a parry\'s window');
+  assert.doesNotMatch(T.tx('ui.stat.effect') + VG.pieceWords('fervour-charm') + VG.pieceWords('pilgrim-medal'), /boost/i);
+  assert.equal(VG.pieceWords('fervour-charm'), `your protections last ${Math.round((GE.GEAR['fervour-charm'].fx.effect - 1) * 100)} % longer`);
+  // one phrase per effect of the table, its number the table's, on the side of 1 its words say
+  const side = { gauge: 'any', lightCharge: 'more', guardGauge: 'any', lightTaken: 'less', dodge: 'any', guardChance: 'less', stun: 'less', cd: 'less' };
+  for (const [id, fx] of Object.entries(AD.AUTO_GEAR_FX)) {
+    if (!GE.GEAR[id]) continue;
+    const words = VG.pieceFx(id), piece = GE.GEAR[id].fx;
+    assert.equal(words.length, Object.keys(fx).length + (piece.viv ? 1 : 0) + (piece.effect ? 1 : 0), `${id}: ${words.join(' / ')}`);
+    for (const [k, v] of Object.entries(fx)) {
+      if (typeof v !== 'number') continue;
+      if (side[k] === 'more') assert.ok(v > 1, `${id} ${k}`); if (side[k] === 'less') assert.ok(v < 1, `${id} ${k}`);
+      const n = k === 'guardGauge' ? Math.round(v * 100) : Math.round(Math.abs(1 - v) * 100);
+      assert.ok(words.some((w) => w.includes(`${n} %`)), `${id} ${k}: ${n} % in « ${words.join(' / ')} »`);
+    }
+  }
+  // the mail's: its points, its Speed counted at half, the light blows and the dodge
+  assert.equal(VG.pieceWords('mail-shirt'), `Defence +6, Speed −1; in a bout its Speed counts for ${AD.AUTO_PIECE_VIV * 100} %, the blows of a light attack deal you 20 % less damage, your chance to dodge 50 % lower`);
+  assert.match(VG.pieceWords('padded-jack'), new RegExp(`a blow you guard fills your gauge at 25 % instead of ${AU.AUTO_RULES.gauge.guardMul * 100} %`));
+  // the ribbon has no words of its own (its AP of before is not read): its effect alone, as before
+  assert.equal(VG.pieceWords('lucky-ribbon'), 'your skills’ gaps and your heavy blow’s cooldown 15 % shorter');
+  // the shop's label says them; today's game's goods keep their words
+  const st = v2('forecourt-morning'); st.player.coins = 300;
+  const mail = G.actions(st).find((o) => o.action.type === 'shopBuy' && o.action.item === 'mail-shirt');
+  assert.ok(mail.label.includes(VG.pieceWords('mail-shirt')));
+  assert.equal(VG.itemAbout('imported-blade'), 'Attack +4');
+});
+
+test('GP-20: the report to Sergeant Hale tags what it pays, as a job does; today\'s game keeps its tag', () => {
+  const st = v2(); st.flags['culprit-known'] = 'cassius';
+  const o = G.actions(st).find((x) => x.action.type === 'report');
+  assert.ok(o?.ok, o?.reason); assert.equal(o.gain, 15);
+  assert.match(W.costTag(o), /\+15 coins/); assert.doesNotMatch(W.costTag(o), /free/);
+  assert.equal(act(st, { type: 'report' }).player.coins - st.player.coins, o.gain, 'the tag says what it pays');
+  const d = G.namedState('day1-morning'); d.flags['culprit-known'] = 'cassius';
+  const od = G.actions(d).find((x) => x.action.type === 'report');
+  assert.ok(!od.gain); assert.match(W.costTag(od), /free/);
 });
 
 test('the page keeps the system: tokens only, no green, no red, no new image, the former slots gone', () => {

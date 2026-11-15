@@ -4,6 +4,8 @@ import { offeredBy } from './roles';
 import { isV2 } from './v2';
 import { offersHere, freshMark } from './v2marks';
 import { offerKey, seenOf, type MarkKind } from './v2offers';
+import { nextBoutOf } from './v2scout';
+import { rehearsalDue } from './v2prep';
 import { hashString } from '../core/rng';
 
 /** What there is to do here and now in a version 2 game (the operator's request of 2026-11-11, journal Passe LA1: « je pense que nous pourrions mettre plus en
@@ -12,7 +14,9 @@ import { hashString } from '../core/rng';
  *  ce qui rapporte, un objet, le lieu », LA-7 « L’aperçu part une fois la liste ouverte (ou après 8 s) ; le nombre reste ; tout revient avec une nouveauté »).
  *  Read from the state alone, as the list (Q, src/ui/townUi.ts openHere) and the marks (src/simulation/v2marks.ts) read it: the day's bout or a challenge
  *  waiting on the sand; each person here with something new for the player (the diamonds, MK-4); the place's own activities that spend the moment (the practice
- *  sand, the drills, the forge to mend). Never a theft, the rest, the wait or watching a rival (MK-6), nor the crowd. What the player has seen of them in the
+ *  sand, the drills, the forge to mend); the preparation of the next bout: watching that opponent while there is more to see of them here and now, Master Corvin's
+ *  rehearsal while it is still to do (the operator's GP-16 « Les corriger », journal Passe GP2, amending LA-5's and MK-6's « never watching a rival »: the rival
+ *  still wears no diamond). Never a theft, the rest, the wait or watching any other rival, nor the crowd. What the player has seen of them in the
  *  list is kept in the version 2's state under a « $ » key: saved with the game, outside its fingerprint. Pure. */
 
 export type TodoKind = 'bout' | MarkKind | 'place';
@@ -23,8 +27,10 @@ export interface Todo {
   kind: TodoKind;
   /** the person (a mark) */
   who?: string;
-  /** the place's activity: train, drill, repair; the bout: fight or challenge */
+  /** the place's activity: train, drill, repair, scout (the next opponent watched), rehearse (Master Corvin's rehearsal); the bout: fight or challenge */
   what?: string;
+  /** the opponent a preparation is for (scout, rehearse) */
+  foe?: string;
   /** coins it pays (a job among the person's new offers) */
   gain?: number;
   /** it spends the moment (the slot) */
@@ -43,14 +49,21 @@ export function todoHere(st: GameState): Todo[] {
   const fight = st.slot === 'afternoon' && st.tournament.matches.some((m) => m.day === st.day && !m.winner && (m.a === 'player' || m.b === 'player'));
   if (fight) out.push({ key: `bout:${st.day}`, kind: 'bout', what: 'fight', slot: true });
   if (st.v2?.challenge) out.push({ key: `challenge:${st.day}:${st.slot}`, kind: 'bout', what: 'challenge', slot: true });
+  // the rehearsal still to do (GP-16) has a line of its own: Master Corvin's line leaves it out, and goes when it was all he had new (one line for one thing)
+  const due = rehearsalDue(st), rehearse = due ? opts.find((o) => o.ok && o.action.type === 'rehearse') : undefined, rehearseKey = rehearse ? offerKey(st, rehearse.action as never) : '';
   for (const m of offersHere(st)) {
-    const f = freshMark(m, seenOf(st, m.who));
+    const f = freshMark({ ...m, offers: m.offers.filter((o) => o.key !== rehearseKey) }, seenOf(st, m.who));
     if (!f) continue;
     const fresh = new Set(f.offers.map((o) => o.key));
     const pays = opts.filter((o) => o.ok && o.gain && offeredBy(o.action as never) === m.who && fresh.has(offerKey(st, o.action as never)));
     // the person and what is new about them, short (a fingerprint of their new offers' keys): it changes when an offer is new
     out.push({ key: `who:${m.who}:${(hashString([...fresh].sort().join(',')) >>> 0).toString(36)}`, kind: f.kind, who: m.who, ...(pays.length ? { gain: Math.max(...pays.map((o) => o.gain!)) } : {}) });
   }
+  // the preparation of the next bout (GP-16), first among the place's activities: watching that opponent here and now while their next tier is still to see (the
+  // action's own check: their plan not known yet, not watched today), then the rehearsal
+  const next = nextBoutOf(st)?.foe, watch = next ? opts.find((o) => o.ok && o.action.type === 'scout' && (o.action as { who?: string }).who === next) : undefined;
+  if (watch && next) out.push({ key: `place:scout:${next}:${st.place}:${st.day}:${st.slot}`, kind: 'place', what: 'scout', foe: next, slot: true });
+  if (rehearse && due) out.push({ key: `place:rehearse:${due.foe}:${due.tier}:${st.place}:${st.day}:${st.slot}`, kind: 'place', what: 'rehearse', foe: due.foe, slot: true });
   const seen = new Set<string>();
   for (const o of opts) {
     const what = PLACE_TODO[o.action.type];

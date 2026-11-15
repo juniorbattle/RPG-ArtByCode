@@ -61,6 +61,18 @@ export const PEOPLE: Record<string, Person> = {
   fenwick: { id: 'fenwick', name: 'Fenwick', title: 'a river trader', place: 'district', hours: NIGHT, v2: true, passer: true, days: [1, 7] },
   edda: { id: 'edda', name: 'Lady Edda', title: 'a knight\'s mother', place: 'forecourt', hours: DAY, v2: true, passer: true },
   sela: { id: 'sela', name: 'Sela', title: 'a pilgrim on the road south', place: 'lanterns', hours: ['afternoon', 'evening'], v2: true, passer: true, days: [1, 9] },
+  // seven more (the operator's GP-06 « Un passant par lieu et par moment (douze) », journal Passe GP2): with Fenwick, Lady Edda and Sela, one passer-by at every place and
+  // every moment of the day, twelve in all (Lady Edda and Sela keep their two moments); each a walker of the place's crowd with a piece, a reason to be there and a line,
+  // « proposé »: a sailmaker mending nets on the quay in the morning, a courier of the river guilds waiting for his barge in the afternoon, a minstrel singing for the
+  // arena's crowd at dusk, a retired sergeant watching the drills, the gallery's hostler, a sell-sword between two contracts by the lists at night, a baker with her basket
+  // on the hall's square in the morning
+  nell: { id: 'nell', name: 'Nell Marrow', title: 'a sailmaker mending nets', place: 'district', hours: ['morning'], v2: true, passer: true },
+  jory: { id: 'jory', name: 'Jory Vane', title: 'a courier of the river guilds', place: 'district', hours: ['afternoon'], v2: true, passer: true },
+  yselle: { id: 'yselle', name: 'Yselle', title: 'a travelling minstrel', place: 'forecourt', hours: ['evening'], v2: true, passer: true },
+  garrick: { id: 'garrick', name: 'Garrick Stone', title: 'a retired sergeant watching the drills', place: 'training', hours: ['morning'], v2: true, passer: true },
+  maud: { id: 'maud', name: 'Maud Fairweather', title: 'the gallery\'s hostler', place: 'training', hours: ['afternoon'], v2: true, passer: true },
+  dov: { id: 'dov', name: 'Dov Harl', title: 'a sell-sword between contracts', place: 'training', hours: ['evening'], v2: true, passer: true },
+  hettie: { id: 'hettie', name: 'Hettie Bell', title: 'a baker with her basket', place: 'lanterns', hours: ['morning'], v2: true, passer: true },
   // the version 2's generic fighters (lot L2b, the operator's note on EV-4 and « En ville, structure gardée (Recommandé) », journal Passes EV2 / EVL3): the
   // qualifiers' losers, held before Ren came, who stayed in the Cité (src/narrative/generics.ts); portrait and words only until their sheets (art sheet)
   aldric: { id: 'aldric', name: 'Ser Aldric Venn', title: 'a knight out in the qualifiers', place: 'training', hours: DAY, v2: true, generic: true },

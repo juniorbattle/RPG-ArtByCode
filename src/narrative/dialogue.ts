@@ -14,6 +14,12 @@ import { festivalWords } from '../simulation/v2festival';
 
 /** what the passers-by make of the player in a version 2 game (lot L5): a name in Sergeant Hale's ledger first, then the fame (src/simulation/v2react.ts) */
 const FOLK: Record<FameTier, TextKey> = { unknown: 'v2.line.folk.unknown', noticed: 'v2.line.folk.noticed', known: 'v2.line.folk.known', celebrated: 'v2.line.folk.celebrated' };
+/** the seven more passers-by's lines (GP-06, journal Passe PN1): while they hold their piece, once it has gone (keys written whole: tests/texts.test.mjs) */
+const PASSER_LINES: Record<string, [TextKey, TextKey]> = {
+  nell: ['v2.line.nell', 'v2.line.nell.gone'], jory: ['v2.line.jory', 'v2.line.jory.gone'], yselle: ['v2.line.yselle', 'v2.line.yselle.gone'],
+  garrick: ['v2.line.garrick', 'v2.line.garrick.gone'], maud: ['v2.line.maud', 'v2.line.maud.gone'], dov: ['v2.line.dov', 'v2.line.dov.gone'], hettie: ['v2.line.hettie', 'v2.line.hettie.gone'],
+};
+
 function folkLine(s: GameState): string {
   const m = marksOf(s);
   return m >= LAW.wanted ? tx('v2.line.folk.wanted') : m > 0 ? tx('v2.line.folk.wary') : tx(FOLK[fameTier(s)], { name: s.player.name });
@@ -218,6 +224,11 @@ function baseLines(s: GameState, who: string): string[] {
         else if (s.facts.includes('armour-asked') && !['tamper-found', 'tamper-foiled', 'tamper-suffered'].some((f) => s.facts.includes(f))) out.push(tx('v2.line.edda.strap'));
       }
       return out;
+    }
+    // the seven more (GP-06, journal Passe PN1): a line while they hold their piece, another once it has gone
+    case 'nell': case 'jory': case 'yselle': case 'garrick': case 'maud': case 'dov': case 'hettie': {
+      const [held, gone] = PASSER_LINES[who];
+      return [tx(s.v2?.passed?.[who] !== undefined ? gone : held)];
     }
     case 'lio':
       return [tx('line.lio.talk', { rhosk: RIVALS.rhosk.name, ilse: RIVALS.ilse.name, cassius: RIVALS.cassius.name })];

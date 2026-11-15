@@ -28,6 +28,15 @@ export const PASSERS: Record<string, Passer> = {
   fenwick: { id: 'fenwick', item: 'river-pearl', price: 26, soft: { label: 'v2.passer.fenwick.soft', won: 'v2.passer.fenwick.won', chance: 0.55 } },
   edda: { id: 'edda', item: 'knight-hauberk', price: 34, soft: { label: 'v2.passer.edda.soft', won: 'v2.passer.edda.won', chance: 0.6 } },
   sela: { id: 'sela', item: 'pilgrim-medal', price: 18, soft: { label: 'v2.passer.sela.soft', won: 'v2.passer.sela.won', chance: 0.5 } },
+  // the seven more of GP-06 (journal Passe PN1, « proposé »): five pieces no shop sells, and two a shop sells, carried by someone else (a sell-sword's spare blade, a baker's
+  // lucky ribbon): another way to them when that stall is barred or shut (GAMEPLAY § 10's designed alternative)
+  nell: { id: 'nell', item: 'mender-gloves', price: 16, soft: { label: 'v2.passer.nell.soft', won: 'v2.passer.nell.won', chance: 0.55 } },
+  jory: { id: 'jory', item: 'courier-boots', price: 14, soft: { label: 'v2.passer.jory.soft', won: 'v2.passer.jory.won', chance: 0.5 } },
+  yselle: { id: 'yselle', item: 'minstrel-charm', price: 15, soft: { label: 'v2.passer.yselle.soft', won: 'v2.passer.yselle.won', chance: 0.6 } },
+  garrick: { id: 'garrick', item: 'sergeant-gorget', price: 20, soft: { label: 'v2.passer.garrick.soft', won: 'v2.passer.garrick.won', chance: 0.5 } },
+  maud: { id: 'maud', item: 'hostler-leathers', price: 22, soft: { label: 'v2.passer.maud.soft', won: 'v2.passer.maud.won', chance: 0.55 } },
+  dov: { id: 'dov', item: 'imported-blade', price: 32, soft: { label: 'v2.passer.dov.soft', won: 'v2.passer.dov.won', chance: 0.45 } },
+  hettie: { id: 'hettie', item: 'lucky-ribbon', price: 10, soft: { label: 'v2.passer.hettie.soft', won: 'v2.passer.hettie.won', chance: 0.6 } },
 };
 
 export function argChance(s: GameState, arg: ShopArg | PasserArg, seller: string): number {

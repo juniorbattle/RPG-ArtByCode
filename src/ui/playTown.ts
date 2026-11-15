@@ -49,7 +49,9 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   const arrive = isV2(st) ? b.params.get('arrive') : null;
   if (arrive === 'forecourt' && !b.params.has('player')) q.set('player', `${WALK.x1 - 1.4},0`);
   if (arrive === 'lanterns' && !b.params.has('player')) q.set('player', `${WALK.x0 + 1.2},0.6`);
-  const app = new App({ canvas: b.canvas, params: q, onProgress: progressOn(b.label, b.bar) });
+  // a version 2 game's quay: the generic fighters who stand there at their hour (the operator's GP-05, journal Passe PN1)
+  const extraCast = isV2(st) ? import('../characters/PlazaCast').then((m) => m.quayGenericEntries()) : undefined;
+  const app = new App({ canvas: b.canvas, params: q, onProgress: progressOn(b.label, b.bar), extraCast });
   (window as any).__app = app;
   // the interface's tone follows the page's day state (the operator's decision L2, journal Passe UI3)
   installDesign(lookOf(st));
@@ -95,6 +97,11 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
     };
     if (!shown.has('tam') && available(st, 'tam') === null) stand('porter', 'tam', [[-1.5, 0.9], [-2.2, 0.5], [1.7, 1.1], [-1.2, 1.6]]);
     if (available(st, 'fenwick') === null) stand('crowd3', 'fenwick', [[2.7, 1.3], [-2.9, 1.2], [3.4, 0.7], [2.2, 1.9]]);
+    // the seven more passers-by of the quay (GP-06, journal Passe PN1), townsfolk of the crowd standing; the generic fighters of the quay at their hour (GP-05), their own sheets
+    if (available(st, 'nell') === null) stand('crowd2', 'nell', [[2.7, 1.3], [-2.9, 1.2], [3.4, 0.7]]);
+    if (available(st, 'jory') === null) stand('crowd4', 'jory', [[2.7, 1.3], [-2.9, 1.2], [3.4, 0.7]]);
+    if (isV2(st) && available(st, 'piers') === null) stand('person-piers', 'piers', [[-4.6, 1.6], [-5.4, 1.0], [4.8, 1.5], [-4.0, 2.2]]);
+    if (isV2(st) && available(st, 'corra') === null) stand('person-corra', 'corra', [[-4.6, 1.6], [-5.4, 1.0], [4.8, 1.5], [-4.0, 2.2]]);
   }
   // the forge is the game's: the DEV switch of the free-roaming district is off in the play mode
   app.setForgeState = () => {};

@@ -2,7 +2,7 @@ import { actions, type Action, type ActionOption, type GameState } from '../simu
 import { offeredBy } from '../simulation/roles';
 import { GEAR, type GearSlot } from '../simulation/gear';
 import { duelStats, preview, STAT_IDS, type Preview, type StatId } from '../simulation/preview';
-import { itemAbout, itemName, weaponTier } from '../simulation/v2gear';
+import { itemAbout, itemName, pieceFx, pieceWords, weaponTier } from '../simulation/v2gear';
 import { PASSERS } from '../simulation/v2barter';
 import { isV2 } from '../simulation/v2';
 import { AUTO_WEAPONS } from '../combat/autoData';
@@ -62,8 +62,14 @@ export const isGoods = (o: ActionOption): boolean => isWare(o) || isArg(o);
 /** a piece's words; a weapon's with the blows of the light attack it gives in a version 2 game's duel (AUTO_WEAPONS, AC-02; journal Passe CO1: the page showed
  *  the Attack and the Speed only, the sabre's three light cuts said by the guide alone) */
 const pieceAbout = (s: GameState, id: string): string => {
-  const w = isV2(s) ? AUTO_WEAPONS[id] : undefined;
-  return w ? `${itemAbout(id)} · ${tx('ui.wares.blows', { n: w.hits.length, pct: Math.round(w.hits[0] * 100) })}` : itemAbout(id);
+  // a version 2 piece: its points and its effects in a bout, read from the duel's tables (the operator's GP-20 « Les corriger », journal Passe GP2)
+  const w = isV2(s) ? AUTO_WEAPONS[id] : undefined, about = isV2(s) ? pieceWords(id) : itemAbout(id);
+  return w ? `${about} · ${tx('ui.wares.blows', { n: w.hits.length, pct: Math.round(w.hits[0] * 100) })}` : about;
+};
+/** « in place of » the piece a line takes off, with what that piece gave in a bout (GP-20: a comparison names both pieces' effects) */
+const insteadOf = (s: GameState, id: string): string => {
+  const fx = isV2(s) ? pieceFx(id) : [];
+  return fx.length ? tx('ui.wares.insteadFx', { item: itemName(id), fx: fx.join(', ') }) : tx('ui.wares.instead', { item: itemName(id) });
 };
 // a name without its article, capitalised (« a whetstone » → « Whetstone », « une pierre à aiguiser » → « Pierre à aiguiser »)
 const bare = (name: string): string => { const n = name.replace(/^(?:an? |une? |des |les? |la |l’)/, ''); return n[0].toUpperCase() + n.slice(1); };
@@ -106,7 +112,7 @@ function bagLines(s: GameState): Line[] {
     const acc = GEAR[id]?.slot === 'accessory' && g.acc[0] && g.acc[1], places: Array<0 | 1 | undefined> = acc ? [0, 1] : [undefined];
     return places.map((slot) => {
       const action = { type: 'equip' as const, item: id, ...(slot === undefined ? {} : { slot }) };
-      return { key: JSON.stringify(action), action, name: bare(itemName(id)), sub: slot === undefined ? tx(SLOT_TEXT[GEAR[id].slot]) : tx('ui.wares.instead', { item: itemName(g.acc[slot]!) }), tag: '', ok: true, about: pieceAbout(s, id), verb: tx('ui.wares.wear') };
+      return { key: JSON.stringify(action), action, name: bare(itemName(id)), sub: slot === undefined ? tx(SLOT_TEXT[GEAR[id].slot]) : insteadOf(s, g.acc[slot]!), tag: '', ok: true, about: pieceAbout(s, id), verb: tx('ui.wares.wear') };
     });
   });
 }
@@ -191,7 +197,7 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
       const v = l.done ? null : l.plain ? { ...preview(s, l.action), rows: [] } : preview(s, l.action);
       card.querySelectorAll('.pm-worn .row.hit').forEach((x) => x.classList.remove('hit'));
       if (v && v.slot !== null) card.querySelector(`.pm-worn [data-slot="${v.slot}"]`)?.classList.add('hit');
-      const what = [...new Set([l.sub, v?.replaces ? tx('ui.wares.instead', { item: itemName(v.replaces) }) : '', v?.toBag ? tx('ui.wares.toBag') : ''])].filter(Boolean).join(' · ');
+      const what = [...new Set([l.sub, v?.replaces ? insteadOf(s, v.replaces) : '', v?.toBag ? tx('ui.wares.toBag') : ''])].filter(Boolean).join(' · ');
       const same = !!v && !l.plain && !v.rows.length && v.slot === null && !v.toBag && l.ok;
       const notes = [v?.tierLost ? tx('ui.wares.tierLost', { tier: v.tierLost }) : '', !l.done && l.list && l.price !== l.list ? tx('ui.wares.list', { n: l.list }) : '', same ? tx('ui.wares.same') : ''].filter(Boolean).join(' ');
       if (mode) {

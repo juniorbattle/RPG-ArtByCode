@@ -17,7 +17,7 @@ import { AUTO_COOLDOWN, AUTO_WEAPONS } from '../combat/autoData';
 import { CINE_RULE } from '../arena/cineRule';
 import { SIGNATURE_DAY } from '../combat/skillbook';
 import { REHEARSAL } from '../simulation/v2prep';
-import { LESSON, SAND_LESSON, lessonPrice } from '../simulation/v2skills';
+import { LESSON, SAND_LESSON, TRAIN_CAP, lessonPrice } from '../simulation/v2skills';
 import { autoOrderView } from '../simulation/preview';
 import { v2KitOf } from '../simulation/v2';
 import { forgetLessons } from './duelTutorial';
@@ -278,9 +278,12 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'places': return `${tx(c.body, { quay: placeShort('district'), a: placeShort('forecourt'), b: placeShort('training'), c: placeShort('lanterns') })}\n${tx('tut.ch.places.ways')}`;
     case 'shops': return tx(c.body, { mara: nameOf('mara'), hilde: nameOf('hilde'), corvin: nameOf('corvin'), pip: nameOf('pip'), bram: nameOf('bram') });
     case 'money': return tx(c.body, { jobs: jobsLine(), pay: WORK.pay, mara: nameOf('mara'), pool: PURSES.pool[0], poolL: PURSES.pool[1], semi: PURSES.semi[0], semiL: PURSES.semi[1], semiDay: dayOf('semis'), third: PURSES.third[0], thirdL: PURSES.third[1], majorDay: dayOf('major'), final: PURSES.final[0], finalL: PURSES.final[1], champ: CHAMPION_PURSE });
-    case 'law': return tx(c.body, { day: STEAL_FINE.day, night: STEAL_FINE.night, max: LAW.wanted, fee: LAW.fee, hale: nameOf('hale') });
-    case 'challenges': return tx(c.body, { names: list(Object.keys(CHALLENGERS).map(nameOf)), coins: STAKE.coins, name: STAKE.name, day: dayOf('semis') });
-    case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM });
+    // (journal Passe PN1, GP-08 « Le dire, et la restitution lève la bouderie »: the muscle, when it is hired and how long it waits; the fight of a thief caught, the piece taken by force)
+    case 'law': return tx(c.body, { day: STEAL_FINE.day, night: STEAL_FINE.night, max: LAW.wanted, fee: LAW.fee, hale: nameOf('hale'), watch: nameOf('wynn'), muscle: nameOf('corra'), grudge: -LAW.grudge, waits: LAW.waits });
+    // a challenge teaches up to the training's cap (the operator's GP-16 « Les corriger », journal Passe GP2)
+    case 'challenges': return tx(c.body, { names: list(Object.keys(CHALLENGERS).map(nameOf)), coins: STAKE.coins, name: STAKE.name, day: dayOf('semis'), cap: TRAIN_CAP });
+    // what watching gives since lot 3 of « La Brute » (the style, then the plan, the rehearsal opened: src/simulation/v2scout.ts), said since GP-16
+    case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM, corvin: nameOf('corvin') });
     // the duel played by the computer (lot 3, journal Passe LC5): the order of the four, the match sheet, the health of a bout (AUTO_RULES.hpScale, DB5)
     case 'prepare': return tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen'), rehearse: REHEARSAL.n, cap: SAND_LESSON.cap, sday: SIGNATURE_DAY, lday: LESSON.day, pnext: lessonPrice(4), plast: lessonPrice(5) });
     // its numbers the duel's own (src/combat/auto.ts AUTO_RULES, src/combat/autoData.ts: the cooldown, the weapons' chains of blows)

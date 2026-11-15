@@ -126,9 +126,10 @@ export const PLAZA_WALKS: Record<PlazaKind, Readonly<Rect>> = { forecourt: W, tr
 export const PLAZA_SPOTS: Record<PlazaKind, Record<string, [number, number]>> = {
   // (wynn: the quay watch's man beside a robbed stall's keeper, lot L5, journal Passe EVL9)
   // (bard: Wren at the crowning, for the verse of the eve, and the rivals who have a sheet at the Lanterns' parade on the festival square: lot L6, journal Passe EVL11)
-  forecourt: { odo: [-7.9, -10.6], hilde: [7.5, -0.8], anwen: [-7.6, -0.6], guardA: [-2.3, -15.9], guardB: [2.3, -15.9], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [6.2, -11.6], edda: [-4.2, -7.4], wynn: [6.1, -1.7], bard: [-5.0, -12.0] },
-  training: { corvin: [-12.6, 3.8], orla: [-3.4, -0.2], ilse: [1.0, -6.2], vessa: [-2.6, -6.8], drill: [11.2, -7.2], wynn: [-11.2, 2.7] },
-  festival: { pip: [-8.4, -5.2], lio: [-7.0, -9.0], cassius: [6.6, -4.6], bard: [-1.2, -10.4], sela: [3.0, -5.2], wynn: [-7.1, -4.2], orla: [-4.6, -6.8], marek: [-2.6, -6.2], ilse: [1.2, -6.6], vessa: [3.6, -7.4] },
+  // (journal Passe PN1: the generic fighters standing at their place and hour, GP-05; the seven more passers-by, GP-06; « proposé »)
+  forecourt: { odo: [-7.9, -10.6], hilde: [7.5, -0.8], anwen: [-7.6, -0.6], guardA: [-2.3, -15.9], guardB: [2.3, -15.9], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [6.2, -11.6], edda: [-4.2, -7.4], wynn: [6.1, -1.7], bard: [-5.0, -12.0], lucan: [3.2, -9.4], yselle: [-3.4, -4.6] },
+  training: { corvin: [-12.6, 3.8], orla: [-3.4, -0.2], ilse: [1.0, -6.2], vessa: [-2.6, -6.8], drill: [11.2, -7.2], wynn: [-11.2, 2.7], aldric: [5.8, -3.0], garrick: [-7.4, 2.4], maud: [9.2, 1.8], dov: [2.6, 1.4] },
+  festival: { pip: [-8.4, -5.2], lio: [-7.0, -9.0], cassius: [6.6, -4.6], bard: [-1.2, -10.4], sela: [3.0, -5.2], wynn: [-7.1, -4.2], orla: [-4.6, -6.8], marek: [-2.6, -6.2], ilse: [1.2, -6.6], vessa: [3.6, -7.4], ambrose: [-3.8, -2.6], kell: [5.6, -1.6], hettie: [-5.8, -1.0] },
 };
 /** the moments of a square's day: the day states' three and the night (the evening) */
 export type PlazaPeriod = 'morning' | 'midday' | 'afternoon' | 'night';

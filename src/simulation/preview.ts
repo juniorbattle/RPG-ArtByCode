@@ -2,7 +2,7 @@ import { ACTIONS, type Action } from './actions';
 import type { GameState } from './state';
 import { isV2, v2KitOf } from './v2';
 import { v2Mods } from './v2gear';
-import { LESSON, TRAIN_CAP, lessonPrice, levelOf } from './v2skills';
+import { LESSON, TRAIN_CAP, lessonCost, levelOf } from './v2skills';
 import { MAX_LEVEL } from '../combat/skills';
 import type { ChargeTier } from '../combat/charge';
 import type { DynActionId } from '../combat/dynamic';
@@ -12,7 +12,7 @@ import { v2DuelData, type V2Duel, type V2Kit } from '../combat/v2duel';
 import { hitFactor, skillPower } from '../combat/stats';
 import { Rng } from '../core/rng';
 import { AUTO_RULES, autoGaugeHit, type AutoFighter, type AutoRole } from '../combat/auto';
-import { autoFoe, autoKitFor, autoOrderOf, autoRaceSheet, autoRen, autoSkill } from '../combat/autoData';
+import { AUTO_PIECE_VIV, autoFoe, autoKitFor, autoOrderOf, autoRaceSheet, autoRen, autoSkill } from '../combat/autoData';
 import { autoNextBout } from '../combat/autoMatch';
 import { piecesViv, v2Stats, wornPieces } from './v2gear';
 
@@ -30,15 +30,17 @@ const LESS_IS_BETTER: ReadonlySet<StatId> = new Set(['taken', 'charge', 'gauge']
 const NAMES = { seed: 1, playerName: '', opponentName: '' };
 
 /** the player's numbers in a bout now: health and the heavy blow's damage in today's game; a version 2 game's stats at the next bout (the operator's
- *  DB7 sheet, journal Passe DB8: health with the injury's share, Attack, Defence, Endurance, Speed, src/simulation/v2gear.ts v2Stats), the AP at the
- *  start and the wards' and boosts' length (% of the bare figure); the opponent's own numbers stay out of it */
+ *  DB7 sheet, journal Passe DB8: health with the injury's share, Attack, Defence, Endurance, Speed as the duel counts it, src/simulation/v2gear.ts v2Stats),
+ *  and the protections' length (% of the bare figure); the opponent's own numbers stay out of it */
 export function duelStats(s: GameState): Stats {
   // a version 2 game: the duel played by the computer's Ren (lot 2, journal Passe LC3): his stats (the gear's points doubled, AC-11), his AP at the start, his
   // effects' length; the health the bout gives him, as the match sheet says it (the duel doubles every fighter's, DB5; the sheet's own figure ×
   // AUTO_RULES.hpScale, journal Passe CO1: the gear page said 300 under « In a bout » where the match sheet and the duel say 600)
   if (isV2(s)) {
-    const m = v2Mods(s), st = v2Stats(s);
-    return { hp: Math.round(st.hp * (m.hp ?? 1) * AUTO_RULES.hpScale), atk: st.atk, def: st.def, end: st.end, viv: st.viv, effect: m.effect * 100 };
+    // the Speed the duel counts (src/combat/autoData.ts autoRen: the pieces' Speed points at AUTO_PIECE_VIV, PB-1): the page showed them whole (the operator's GP-20
+    // « Les corriger », journal Passe GP2); `effect` the protections' length (a support's boost is its role's: autoSkill, autoBrute)
+    const m = v2Mods(s), st = v2Stats(s), viv = +(st.viv - (1 - AUTO_PIECE_VIV) * piecesViv(s)).toFixed(2);
+    return { hp: Math.round(st.hp * (m.hp ?? 1) * AUTO_RULES.hpScale), atk: st.atk, def: st.def, end: st.end, viv, effect: m.effect * 100 };
   }
   const m = playerMods(s), d = s.flags.combat === 'dynamic' ? dynDuelData(DYN_PROFILES.marek, { ...NAMES, player: m }) : duelData(PROFILES.marek, { ...NAMES, player: m });
   return { hp: d.fighters.ren.maxHp, blow: d.actions.heavy.damage };
@@ -136,8 +138,8 @@ export type NextLevel = { level: number; by: 'drill' } | { level: number; by: 'l
 export function nextLevel(s: GameState, id: string): NextLevel | null {
   const lv = levelOf(s, id);
   if (lv < TRAIN_CAP) return { level: lv + 1, by: 'drill' };
-  // beyond the training's cap, Master Corvin's lesson (the operator's NC-11, journal Passe SK4): its price and the day it opens
-  return lv < MAX_LEVEL ? { level: lv + 1, by: 'lesson', price: lessonPrice(lv + 1), day: LESSON.day } : null;
+  // beyond the training's cap, Master Corvin's lesson (the operator's NC-11, journal Passe SK4): its price today (his fifth off of the day included, GP-16) and the day it opens
+  return lv < MAX_LEVEL ? { level: lv + 1, by: 'lesson', price: lessonCost(s, lv + 1), day: LESSON.day } : null;
 }
 
 export interface StatChange { id: StatId; now: number; after: number; better: boolean }

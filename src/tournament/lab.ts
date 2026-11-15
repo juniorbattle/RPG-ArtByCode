@@ -13,7 +13,7 @@ import { SKILL_BOOK } from '../combat/skillbook';
 import { kitRankFault, skillRank } from '../combat/autoData';
 import { marksOf, wanted } from '../simulation/v2law';
 import { argChance, PASSERS } from '../simulation/v2barter';
-import { pocketChance, stealChance } from '../simulation/v2town';
+import { pocketChance, stealChance, stealables } from '../simulation/v2town';
 import { SHOPS, type ShopId } from '../simulation/gear';
 import { scoutable } from '../simulation/roles';
 import { boutTomorrow, nextOpponent, RUMOUR } from '../simulation/v2intel';
@@ -176,9 +176,12 @@ const labSession = (st: GameState): Action => ({ type: 'train', stat: st.player.
 function curiousV2(st: GameState): Action {
   const bout = st.slot === 'afternoon' && !!matchSheetFor(st), hurt = st.player.injury > 0, marks = marksOf(st);
   const there = (place: string): GameState => (st.place === place ? st : { ...st, place: place as PlaceId });
-  const at = (place: string, a: Action): Action | null => (has(there(place), a) ? (st.place === place ? a : { type: 'move', to: place } as Action) : null);
+  // (the move there must be open: the parade's evening shuts the way from the festival square to the forecourt, journal Passe PN1's rebase)
+  const at = (place: string, a: Action): Action | null => (!has(there(place), a) ? null : st.place === place ? a : has(st, { type: 'move', to: place as PlaceId }) ? { type: 'move', to: place } as Action : null);
   const first = (...xs: Array<() => Action | null>): Action | null => { for (const f of xs) { const a = f(); if (a) return a; } return null; };
-  // a challenge accepted is fought at once (its bout takes the slot)
+  // caught (journal Passe PN1, GP-03): fights whoever caught it when whole and its bout is not today, else pays the fine
+  if (st.v2?.caught) return hurt || (st.slot === 'afternoon' && !!matchSheetFor(st)) ? { type: 'payFine' } : { type: 'fightCatch' };
+  // a challenge accepted is fought at once (its bout takes the slot; a thief's fight and a seizure too)
   if (st.v2?.challenge) return { type: 'challengeResult', outcome: challengeOutcome(st, 0.6) };
   // brings what it learnt: a skill won by a challenge takes the place of the start skill of its family and its rank (journal Passe SK4, NC-12: before it, a technique
   // learnt once the Flash cut was gone took the Thrust's place, the kit left without its ultimate, journal Passe SK3); an ultimate, a rival's signature or the
@@ -191,6 +194,8 @@ function curiousV2(st: GameState): Action {
     const four = [...kit.loadout] as string[]; four[i] = k.id;
     if (!kitRankFault(four)) return { type: 'setLoadout', skills: four };
   }
+  // a blade received by a bargain's pair waits in the bag since GP-20 (journal Passe PN1): taken in hand from the gear page, as a player does (found at PN1's rebase on GP4)
+  if (st.v2?.gear?.weapon !== 'imported-blade' && st.v2?.gear?.bag.includes('imported-blade')) return { type: 'equip', item: 'imported-blade' };
   // the watch wants a word: settle with Sergeant Hale
   if (wanted(st)) { const r = at('district', { type: 'restitute' }) ?? at('district', { type: 'workDebt' }); if (r) return r; }
   // lot L3 (EV-10 « Une réponse par lieu »): the forge's signs send it to Hale's watch on the quay, the gear's to Clerk Odo's strongroom on the eve of a bout
@@ -206,7 +211,12 @@ function curiousV2(st: GameState): Action {
   // a rumour of tomorrow's opponent from Lio's room (EV-11), a purse kept for the healer
   const rumour = (): Action | null => (boutTomorrow(st) && nextOpponent(st) && st.player.coins >= RUMOUR.lio.coins + 8 ? at('lanterns', { type: 'rumour', src: 'lio' }) : null);
   // a passer-by's piece, the best argument first, then its price (a purse kept for the healer)
+  // (only while its next planned piece is an accessory, which a passer-by's piece stands for, or once its gear is worn: the twelve passers-by of journal Passe PN1 had it
+  // spend its winnings on their pieces before the blade, found at PN1's rebase on GP4)
   const barter = (): Action | null => {
+    const step = planStep(st, true);
+    if (step < PLAN.length && PLAN[step][1].type === 'shopBuy' && !['docker-wrap', 'iron-ring'].includes((PLAN[step][1] as { item: string }).item)) return null;
+    if (step < PLAN.length && PLAN[step][1].type !== 'shopBuy') return null;
     for (const who of Object.keys(PASSERS)) {
       const place = PEOPLE[who].place, p = PASSERS[who];
       if (st.player.coins < p.price * 0.7 + 8) continue;
@@ -216,16 +226,26 @@ function curiousV2(st: GameState): Action {
     }
     return null;
   };
-  // a theft while Hale's ledger is clean and the chance is good: a stall, or a passer-by's pocket
+  // a theft while Hale's ledger is clean and the chance is good: a stall (the dearest piece it still has 45 % to take, GP-07), or a passer-by's pocket
   const steal = (): Action | null => {
     if (marks > 0) return null;
-    for (const shop of Object.keys(SHOPS) as ShopId[]) { const pl = SHOPS[shop].place; if (stealChance(there(pl), shop) >= 0.45) { const a = at(pl, { type: 'steal', shop }); if (a) return a; } }
+    for (const shop of Object.keys(SHOPS) as ShopId[]) {
+      const pl = SHOPS[shop].place, here = there(pl), item = [...stealables(here, shop)].reverse().find((i) => stealChance(here, shop, i) >= 0.45);
+      if (item) { const a = at(pl, { type: 'steal', shop, item }); if (a) return a; }
+    }
     for (const who of Object.keys(PASSERS)) { const pl = PEOPLE[who].place; if (pocketChance(there(pl)) >= 0.45) { const a = at(pl, { type: 'pickpocket', who }); if (a) return a; } }
+    return null;
+  };
+  // a passer-by's piece taken by force (journal Passe PN1, GP-01 / GP-02) when the purse cannot bargain for it, the ledger clean and the player whole, from day 3 (a theft
+  // first: the mark of a piece taken by force ends the player's thefts, as any mark does)
+  const seize = (): Action | null => {
+    if (marks > 0 || hurt || st.day < 3) return null;
+    for (const who of Object.keys(PASSERS)) { const p = PASSERS[who]; if (st.player.coins >= p.price * 0.7 + 8) continue; const a = at(PEOPLE[who].place, { type: 'seize', who }); if (a) return a; }
     return null;
   };
   // the muscle a robbed owner paid waits on the quay at night (lot L2b): faced when the player is whole, else paid off when the purse allows
   const reprisal = (): Action | null => (!st.v2?.reprisal ? null : (hurt && st.player.coins >= 30 ? at('district', { type: 'payMuscle' }) : null) ?? at('district', { type: 'faceMuscle' }) ?? at('district', { type: 'payMuscle' }));
-  if (st.slot === 'evening') return first(reprisal, sand, () => (forgeSigns ? at('district', { type: 'payWatch' }) : null), investigate, barter, steal, () => (hurt && has(st, { type: 'rest' }) ? { type: 'rest' } : null)) ?? fallback(st, 0.6);
+  if (st.slot === 'evening') return first(reprisal, sand, () => (forgeSigns ? at('district', { type: 'payWatch' }) : null), investigate, barter, steal, seize, () => (hurt && has(st, { type: 'rest' }) ? { type: 'rest' } : null)) ?? fallback(st, 0.6);
   if (bout) return fallback(st, 0.6);
   if (hurt) { const h = at('forecourt', { type: 'heal' }); if (h) return h; if (has(st, { type: 'rest' })) return { type: 'rest' }; }
   const boutToday = st.tournament.matches.some((m) => m.day === st.day && (m.a === PLAYER_ID || m.b === PLAYER_ID));
@@ -256,7 +276,7 @@ function curiousV2(st: GameState): Action {
   // the festival of day 9 (lot L6, FE-9): the good turns on the festival square, the hall's lanterns in the morning, Brother Ambrose's flame in the afternoon, a round at
   // Lio's when the purse keeps the healer's price (the diligent does none of it)
   const festival = (): Action | null => first(() => at('lanterns', { type: 'festDeed', deed: st.slot === 'morning' ? 'hang' : 'flame' }), () => (st.player.coins >= FEST.round + 8 ? at('lanterns', { type: 'festDeed', deed: 'round' }) : null));
-  return first(sand, strongroom, investigate, festival, buy, barter, steal, rumour, challenge, scout, () => at('training', labSession(st))) ?? fallback(st, 0.6);
+  return first(sand, strongroom, investigate, festival, buy, barter, steal, seize, rumour, challenge, scout, () => at('training', labSession(st))) ?? fallback(st, 0.6);
 }
 
 /** a scripted game (journal Passe L5): per slot, the actions to try in order (each once, when the state allows it), then the slot's end
@@ -346,7 +366,7 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
   const games: LabReport['games'] = [], eventCounts: Record<string, number> = {};
   let bouts = 0, cutIn = 0, finals = 0, crowns = 0;
   const ranks = [0, 0, 0, 0, 0, 0, 0, 0];
-  const town: Record<string, number> = { thefts: 0, caught: 0, found: 0, searched: 0, settled: 0, bargains: 0, bargainsWon: 0, barters: 0, challenges: 0, challengesWon: 0, marks: 0, pointsLost: 0 };
+  const town: Record<string, number> = { thefts: 0, caught: 0, found: 0, searched: 0, settled: 0, bargains: 0, bargainsWon: 0, barters: 0, challenges: 0, challengesWon: 0, marks: 0, pointsLost: 0, caughtFought: 0, caughtWon: 0, seizes: 0, seizesWon: 0 };
   const count = (st: GameState, ...ids: string[]) => st.log.filter((e) => ids.includes(e.id)).length;
   const fest = { leaders: {} as Record<string, number>, deeds: 0, lanterns: 0, behind: 0 };
   // the money of a version 2 game (journal Passe ECO2): the purse at the end, the jobs and sales, the gear bought (a piece or a forge tier) by the morning of day 6 and of day 10
@@ -368,6 +388,8 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
       town.searched += count(st, 'theft:search'); town.settled += count(st, 'theft:settled'); town.bargains += count(st, 'bargain:won', 'bargain:lost', 'barter:won', 'barter:lost');
       town.bargainsWon += count(st, 'bargain:won', 'barter:won'); town.barters += Object.keys(st.v2?.passed ?? {}).length; town.challenges += count(st, 'challenge:won', 'challenge:lost');
       town.challengesWon += count(st, 'challenge:won'); town.marks += marksOf(st); town.pointsLost += count(st, 'registrar:point');
+      // the town duels of journal Passe PN1: a thief's fights and their wins, the seizures and theirs
+      town.caughtFought += count(st, 'caught:won', 'caught:lost'); town.caughtWon += count(st, 'caught:won'); town.seizes += count(st, 'seize:won', 'seize:lost'); town.seizesWon += count(st, 'seize:won');
       const f = st.v2?.festival;
       if (f?.leader) fest.leaders[f.leader] = (fest.leaders[f.leader] ?? 0) + 1;
       fest.deeds += f?.deeds?.length ?? 0; fest.lanterns += f?.lanterns?.[PLAYER_ID] ?? 0; fest.behind += f?.behind ? 1 : 0;

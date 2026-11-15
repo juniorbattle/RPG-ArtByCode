@@ -164,16 +164,22 @@ const SKILL_KEYS: Record<string, TextKey> = {
 };
 export function skillName(id: string): string { const k = SKILL_KEYS[id]; return k ? tx(k) : id; }
 
-/** an item's name and what it does (the version 2's gear, src/simulation/gear.ts) */
-const ITEM_KEYS: Record<string, [TextKey, TextKey]> = {
+/** an item's name and its points in words (the version 2's gear, src/simulation/gear.ts); a piece whose points the duel no longer reads (the ribbon's AP) or that has
+ *  none (the charm) has no words of its own: its effects in a bout are read from the duel's tables (src/simulation/v2gear.ts pieceWords, the operator's GP-20 « Les
+ *  corriger », journal Passe GP2) */
+const ITEM_KEYS: Record<string, [TextKey, TextKey | null]> = {
   'training-sword': ['gear.training-sword.name', 'gear.training-sword.about'], 'imported-blade': ['gear.imported-blade.name', 'gear.imported-blade.about'],
   'duelist-sabre': ['gear.duelist-sabre.name', 'gear.duelist-sabre.about'], 'padded-jack': ['gear.padded-jack.name', 'gear.padded-jack.about'],
   'mail-shirt': ['gear.mail-shirt.name', 'gear.mail-shirt.about'], 'dock-leathers': ['gear.dock-leathers.name', 'gear.dock-leathers.about'],
-  'lucky-ribbon': ['gear.lucky-ribbon.name', 'gear.lucky-ribbon.about'], 'iron-ring': ['gear.iron-ring.name', 'gear.iron-ring.about'],
-  'swift-boots': ['gear.swift-boots.name', 'gear.swift-boots.about'], 'fervour-charm': ['gear.fervour-charm.name', 'gear.fervour-charm.about'],
-  'docker-wrap': ['gear.docker-wrap.name', 'gear.docker-wrap.about'], 'champion-token': ['gear.champion-token.name', 'gear.champion-token.about'],
+  'lucky-ribbon': ['gear.lucky-ribbon.name', null], 'iron-ring': ['gear.iron-ring.name', 'gear.iron-ring.about'],
+  'swift-boots': ['gear.swift-boots.name', 'gear.swift-boots.about'], 'fervour-charm': ['gear.fervour-charm.name', null],
+  'docker-wrap': ['gear.docker-wrap.name', 'gear.docker-wrap.about'],
   whetstone: ['gear.whetstone.name', 'gear.whetstone.about'], salve: ['gear.salve.name', 'gear.salve.about'],
   'river-pearl': ['gear.river-pearl.name', 'gear.river-pearl.about'], 'knight-hauberk': ['gear.knight-hauberk.name', 'gear.knight-hauberk.about'],
   'pilgrim-medal': ['gear.pilgrim-medal.name', 'gear.pilgrim-medal.about'],
+  // the seven more passers-by's pieces (journal Passe PN1)
+  'mender-gloves': ['gear.mender-gloves.name', 'gear.mender-gloves.about'], 'courier-boots': ['gear.courier-boots.name', 'gear.courier-boots.about'],
+  'minstrel-charm': ['gear.minstrel-charm.name', 'gear.minstrel-charm.about'], 'sergeant-gorget': ['gear.sergeant-gorget.name', 'gear.sergeant-gorget.about'],
+  'hostler-leathers': ['gear.hostler-leathers.name', 'gear.hostler-leathers.about'],
 };
-export function itemText(id: string, part: 'name' | 'about'): string { const k = ITEM_KEYS[id]; return k ? tx(k[part === 'name' ? 0 : 1]) : id; }
+export function itemText(id: string, part: 'name' | 'about'): string { const k = ITEM_KEYS[id]; if (!k) return id; const key = k[part === 'name' ? 0 : 1]; return key ? tx(key) : ''; }

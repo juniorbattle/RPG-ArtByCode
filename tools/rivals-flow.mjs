@@ -23,6 +23,11 @@ let failed = 0;
 const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (!ok) failed++; };
 const server = await createServer({ root: path.resolve(import.meta.dirname, '..'), configFile: false, logLevel: 'error', appType: 'custom', cacheDir: 'node_modules/.vite-test', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, optimizeDeps: { noDiscovery: true } });
 const G = await server.ssrLoadModule('/src/simulation/index.ts');
+// the taverns' tale of Orla as the game words it (its rumour's own sentence, src/simulation/v2intel.ts rumourText, with Vessa's TALE): the pattern waited for
+// « and is still rusty » after the rumour's words changed (« has trained little: their blows will land softer »), found stale in journal Passe GP1; since GP-15 (journal
+// Passe GP3) a rumour says no health (« is nursing a wound » gone) and says the plan, found stale at journal Passe PN1's rebase
+const { rumourText } = await server.ssrLoadModule('/src/simulation/v2intel.ts'), { TALE } = await server.ssrLoadModule('/src/simulation/v2rivals.ts');
+const TALE_SAID = rumourText('orla', { day: 3, src: 'lio', ...TALE }).replace(/\.$/, '');
 const s0 = G.namedState(kind === 'tale' ? 'v2-tale-day3' : 'v2-sand-day9');
 const saved = G.serialize(s0);
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 }, protocolTimeout: READY });
@@ -56,11 +61,11 @@ try {
     await openTown();
     // the journal (J) holds the taverns' word of this morning, its cause without a name
     const told = await page.evaluate(() => window.__game.state().log.filter((e) => e.id === 'v2-tavern-tale' && e.visible).map((e) => ({ day: e.day, slot: e.slot, text: e.text, cause: e.cause })));
-    check(told.length === 1 && told[0].day === 3 && /Orla Brask is nursing a wound, and is still rusty/.test(told[0].text) && !/Vessa/.test(told[0].cause), `the taverns' word in the journal: ${JSON.stringify(told[0])}`);
+    check(told.length === 1 && told[0].day === 3 && told[0].text.includes(TALE_SAID) && /Orla Brask has trained little/.test(told[0].text) && !/wound/.test(told[0].text) && !/Vessa/.test(told[0].cause), `the taverns' word in the journal: ${JSON.stringify(told[0])}`);
     await page.keyboard.press('j');
     await page.waitForSelector('.pm-days .pm-detail', { timeout: 20000 }).catch(() => {});
     const j = await page.evaluate(() => document.querySelector('.pm-days .pm-detail')?.textContent ?? '');
-    check(/In the taverns they say Orla Brask is nursing a wound/.test(j), 'the journal page shows it');
+    check(/In the taverns they say Orla Brask has trained little/.test(j), 'the journal page shows it');
     await page.screenshot({ path: path.join(outDir, 'tale-0-journal.png') });
     await page.keyboard.press('Escape');
     // the board on Vessa: her grudge and its cause, and the rounds the town saw her pay

@@ -69,12 +69,20 @@ export const GEAR: Record<string, GearDef> = {
   'swift-boots': { id: 'swift-boots', slot: 'accessory', price: 30, fx: { viv: 2 }, shop: 'master' },
   'fervour-charm': { id: 'fervour-charm', slot: 'accessory', price: 16, fx: { effect: 1.3 }, shop: 'trinkets' },
   'docker-wrap': { id: 'docker-wrap', slot: 'accessory', price: 14, fx: { hp: 36 }, shop: 'mara' },
-  'champion-token': { id: 'champion-token', slot: 'accessory', price: 0, fx: { ap: 1, end: 1 } },
+  // (the champion's token, given by nothing and sold by no one, left the catalogue: the operator's GP-20 « Les corriger », journal Passe GP2; no save holds it.
+  // Its effect stays in src/combat/autoData.ts AUTO_GEAR_FX, the laboratory's table the duel is proven identical to)
   // the passers-by's pieces (lot L2a, the operator's note on EV-6: « items unique ou rentable »), sold by no shop: bought, bargained for or stolen
   // from their owner (src/simulation/v2barter.ts PASSERS); the hauberk is the « rentable » one, better and cheaper than the armourer's mail
   'river-pearl': { id: 'river-pearl', slot: 'accessory', price: 26, fx: { end: 3, hp: 20 } },
   'knight-hauberk': { id: 'knight-hauberk', slot: 'armour', price: 34, fx: { def: 7, viv: -1 } },
   'pilgrim-medal': { id: 'pilgrim-medal', slot: 'accessory', price: 18, fx: { hp: 32, effect: 1.15 } },
+  // the seven more passers-by's pieces (the operator's GP-06, journal Passe PN1; « proposé », modest: the catalogue is revised with chantier 5, GP-18): five sold by no shop (two
+  // more of the passers-by carry a shop's piece, Mara's imported blade and Pip's lucky ribbon)
+  'mender-gloves': { id: 'mender-gloves', slot: 'accessory', price: 16, fx: { def: 1, end: 2 } },
+  'courier-boots': { id: 'courier-boots', slot: 'accessory', price: 14, fx: { viv: 1 } },
+  'minstrel-charm': { id: 'minstrel-charm', slot: 'accessory', price: 15, fx: { hp: 12, effect: 1.1 } },
+  'sergeant-gorget': { id: 'sergeant-gorget', slot: 'accessory', price: 20, fx: { def: 2 } },
+  'hostler-leathers': { id: 'hostler-leathers', slot: 'armour', price: 22, fx: { def: 2, end: 1 } },
   // consumables (used up by the next bout, or at once)
   whetstone: { id: 'whetstone', slot: 'consumable', price: 8, fx: { atk: 1 }, shop: 'mara' },
   salve: { id: 'salve', slot: 'consumable', price: 10, fx: {}, shop: 'mara' },

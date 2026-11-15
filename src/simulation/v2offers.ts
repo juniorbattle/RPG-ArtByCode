@@ -1,6 +1,7 @@
 import type { GameState } from './state';
 import { offeredBy } from './roles';
 import { phaseOf } from './v2town';
+import { nextBoutOf, scoutTier } from './v2scout';
 
 /** What a person offers, and what the player has seen of it (the operator's MK1 sheet, journal Passe MK2: MK-3 « Trois sortes, trois formes du losange »,
  *  MK-4 « Ce qui est neuf depuis la dernière conversation avec la personne », MK-5 « Elle part à l’ouverture du dialogue, revient avec une nouveauté », MK-6 « Ni
@@ -16,8 +17,12 @@ export const KIND_OF: Readonly<Record<string, MarkKind>> = {
   work: 'item', restock: 'item', haul: 'item',
   challenge: 'event', spar: 'event', festDeed: 'event', walkBehind: 'event', walkOwn: 'event', keepWatch: 'event', payWatch: 'event', register: 'event', recruit: 'event', rumour: 'event', buyInfo: 'event', listen: 'event',
   report: 'follow', restitute: 'follow', workDebt: 'follow', confront: 'follow', taunt: 'follow', confrontVessa: 'follow', reportRhosk: 'follow', faceMuscle: 'follow', payMuscle: 'follow', askPapers: 'follow', repair: 'follow',
+  // Master Corvin's rehearsal, newly open against the next opponent (the operator's GP-16 « Les corriger », journal Passe GP2, amending MK-6 « Ni l’observation des
+  // rivaux ni la foule » for the preparation that follows a watch): an event, as his spar is; only while it is still to do (src/simulation/v2marks.ts, v2prep.ts rehearsalDue)
+  rehearse: 'event',
 };
-/** MK-6: watching a rival train (open whenever they do) never marks; the passers-by of the crowd (`folk`) never wear a mark */
+/** MK-6: watching a rival train (open whenever they do) never marks: the rival themselves wears no diamond, GP-16 kept it so (the next opponent's watch has a line of
+ *  the list's summary instead, src/simulation/v2todo.ts); the passers-by of the crowd (`folk`) never wear a mark */
 export const NEVER_MARKED = new Set(['talk', 'scout']);
 export const UNMARKED_PEOPLE = new Set(['folk']);
 /** the offers that change every day */
@@ -34,6 +39,8 @@ export function offerKey(st: Pick<GameState, 'day'> & Partial<Pick<GameState, 'f
   if (type === 'workDebt') return `workDebt:${st.v2?.debt ?? 0}`;
   if (type === 'faceMuscle' || type === 'payMuscle') return `${type}:${st.v2?.reprisal?.by ?? ''}:${st.v2?.reprisal?.until ?? 0}`;
   if (type === 'challenge') return `${type}:${String(a.who)}:${phaseOf(st.day)}`;
+  // the rehearsal by the bout it prepares and what is known of that opponent: new with the next opponent, and again once their plan is seen (GP-16)
+  if (type === 'rehearse') { const n = 'tournament' in st ? nextBoutOf(st as GameState) : null; return `rehearse:${n?.foe ?? ''}:${n ? scoutTier(st as GameState, n.foe) : 0}`; }
   return `${type}:${JSON.stringify(rest)}`;
 }
 

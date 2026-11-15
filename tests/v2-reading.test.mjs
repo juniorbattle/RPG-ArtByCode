@@ -247,3 +247,16 @@ test('(6) an unseen theft promises nothing that does not come (the theft found o
   for (let i = 0; i < 3 && !s.over; i++) { const w = G.actions(s).find((o) => o.action.type === 'wait' && o.ok); if (!w) break; s = G.advance(s, w.action).state; }
   assert.ok(!s.log.slice(from).some((e) => /steal|theft/i.test(`${e.id} ${e.cause}`)), 'nothing follows the theft');
 });
+
+test('(7) « Listen » at the tavern says what it gives, the reputation, never fame (the operator\'s GP-16 « Les corriger », journal Passe GP2); today\'s game keeps its words', async () => {
+  const { FR } = await load('/src/narrative/text/fr.ts');
+  const night = G.makeV2(G.namedState('lanterns-night')), o = G.actions(night).find((x) => x.action.type === 'listen');
+  assert.ok(o?.ok, o?.reason);
+  assert.match(o.label, /\(a little reputation\)$/); assert.doesNotMatch(o.label, /fame/);
+  assert.doesNotMatch(FR['v2.listen.label'], /renommée/); assert.match(FR['v2.listen.label'], /réputation/);
+  // its effect, unchanged, on a copy without the clock: the reputation, and no fame
+  const c = structuredClone(night); ACTIONS.listen.apply(c, o.action, { next: () => 0.5, fork() { return this; } }, () => {});
+  assert.equal(c.player.reputation - night.player.reputation, 3); assert.equal(c.pulse.playerFame, night.pulse.playerFame);
+  const today = G.namedState('lanterns-night'), t = G.actions(today).find((x) => x.action.type === 'listen');
+  assert.equal(t.label, 'Spend the evening on a tavern bench, listening (the rivals\' habits, some fame)');
+});

@@ -9,6 +9,8 @@
 // checked (Ren's and the opponent's, approved), and the opponent's face in the dialogue (journal Passe GA2).
 //   node tools/challenge-flow.mjs <outDir> <challenge|reprisal> <win|lose> [seed] [who]   (who: the fighter challenged, orla by default; aldric, ambrose, lucan,
 //   piers or kell, the generic fighters, at their place and hour (journal Passes GA2 / GA3); BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/play-flow.mjs)
+//   The default seed (absent, or « - » before a `who`) is one where the expected result happens against Orla or Corra (DEFAULT_SEED, below); before the browser, Node plays the same steps and
+//   says when a seed does not give the result asked for (a race refitted moves them: the operator's GP-16 « Les corriger », journal Passe GP2)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,8 +18,15 @@ import { createServer } from 'vite';
 
 const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
-const [outDir, kind, mode, seedS = '1842', who = 'orla'] = process.argv.slice(2);
-if (!outDir || !['challenge', 'reprisal'].includes(kind) || !['win', 'lose'].includes(mode)) throw new Error('usage: node tools/challenge-flow.mjs <outDir> <challenge|reprisal> <win|lose> [seed]');
+/** the default seeds, read in Node on the race of journal Passe SK4 (the audit of journal Passe GP1 found 1842 stale for two of them): Orla on day 1's morning
+ *  beats Aster on 1842 and loses on 5; Corra on day 3's evening loses on 1842 and wins on 2 (seeds 1 to 20 scanned by the game's own autoOutcome); since the sheet
+ *  before the sand (journal Passe GP3) both duels are played with the plan the tool sets on it (SHEET_PLAN): Orla beats Aster on 1 with it (journal Passe PN1's rebase) */
+const DEFAULT_SEED = { 'challenge:win': '5', 'challenge:lose': '1', 'reprisal:win': '1842', 'reprisal:lose': '2' };
+/** the plan C sets on the sheet before the sand on a new game's kit: its list's first skill, Rampart (`d1`), its role's next condition after « auto »; Node plays it too */
+const SHEET_PLAN = { skill: 'd1', cond: 'incoming' };
+const [outDir, kind, mode, seedArg, who = 'orla'] = process.argv.slice(2);
+if (!outDir || !['challenge', 'reprisal'].includes(kind) || !['win', 'lose'].includes(mode)) throw new Error('usage: node tools/challenge-flow.mjs <outDir> <challenge|reprisal> <win|lose> [seed] [who]');
+const seedS = seedArg && seedArg !== '-' ? seedArg : DEFAULT_SEED[`${kind}:${mode}`];
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720), READY = +(process.env.READY_MS || 600000);
 fs.mkdirSync(outDir, { recursive: true });
 const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
@@ -40,15 +49,30 @@ if (kind === 'challenge') while (s0.slot !== AT[who][1]) step(boutDue() ? { type
 if (kind === 'reprisal') {
   // Mara's goodwill soured by a first catch, then a second at her stall: under the grudge; the night falls, the dawn hires the muscle; the next evening
   step({ type: 'steal', shop: 'mara' }, LOSE);
+  // held by Mara, the fine paid (since journal Passe PN1, GP-03: a thief caught pays or fights)
+  step({ type: 'payFine' });
   // the second catch on day 3: Wynn of the watch stands by Mara's stall the day of a catch and the next (lot L5, journal Passe EVL9), and the flow stole there
   // on day 2 since then (found in journal Passe CO3); the day's bout on the way is won
   while (!(s0.day === 3 && s0.slot === 'morning')) step(boutDue() ? { type: 'fight', outcome: { winner: 'player', playerHp: 120, playerMaxHp: 200, opponentHp: 0, opponentMaxHp: 600, finisher: 'tech' } } : { type: 'wait' });
   step({ type: 'steal', shop: 'mara' }, LOSE);
+  step({ type: 'payFine' });
   while (!(s0.slot === 'evening' && s0.v2.reprisal)) step(s0.slot === 'afternoon' && s0.tournament.matches.some((m) => m.day === s0.day && !m.winner && (m.a === 'player' || m.b === 'player')) ? { type: 'fight', outcome: { winner: 'player', playerHp: 120, playerMaxHp: 200, opponentHp: 0, opponentMaxHp: 600, finisher: 'tech' } } : { type: 'wait' });
   if (s0.place !== 'district') step({ type: 'move', to: 'district' });
   check(!!s0.v2.reprisal, `Node: the muscle waits for Mara's debt (${JSON.stringify(s0.v2.reprisal)})`);
 }
 const saved = G.serialize(s0), coins0 = s0.player.coins;
+// Node first: the page's own steps (the walk to the fighter, the talk, the challenge put or the muscle faced) and the duel the game decides from them; a seed that does
+// not give the result asked for stops here, before any browser
+{
+  let s = G.deserialize(saved);
+  const go = (a) => { const r = G.advance(s, a); if (!r.ok) throw new Error(`Node: ${a.type}: ${r.reason}`); s = r.state; };
+  if (kind === 'challenge') { if (s.place !== AT[who][0]) go({ type: 'move', to: AT[who][0] }); go({ type: 'talk', who }); go({ type: 'challenge', who, stake: 'coins' }); }
+  else { go({ type: 'talk', who: 'corra' }); go({ type: 'faceMuscle' }); }
+  go({ type: 'setTactic', ...SHEET_PLAN, foe: foeId });
+  const AM0 = await server.ssrLoadModule('/src/combat/autoMatch.ts'), o = AM0.autoOutcome(s, 'challenge'), want = mode === 'win' ? 'player' : 'opponent';
+  console.log(`Node: seed ${seedS}, ${foeId}: ${o.winner} wins at ${o.duel.t.toFixed(1)} s`);
+  if (o.winner !== want) { console.log(`KO  seed ${seedS} gives « ${o.winner === 'player' ? 'win' : 'lose'} », not « ${mode} »: choose another seed`); await server.close(); process.exit(1); }
+}
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 }, protocolTimeout: READY });
 const errors = [], done = [];
 try {
@@ -102,6 +126,7 @@ try {
     await page.keyboard.press('c');
     const plan = await page.evaluate((w) => window.__game.state().v2.kit.plans?.[w] ?? null, foeId), k = plan?.tactic ? Object.keys(plan.tactic)[0] : null;
     check(before === 'null' && !!k, `the plan set on the sheet, kept for ${foeName}: ${JSON.stringify(plan)}`);
+    check(k === SHEET_PLAN.skill && plan.tactic[k] === SHEET_PLAN.cond, `the plan Node played before the browser (${JSON.stringify(SHEET_PLAN)})`);
     if (k) done.push({ type: 'setTactic', skill: k, cond: plan.tactic[k], foe: foeId });
     await page.screenshot({ path: path.join(outDir, `${kind}-${mode}-1b-sheet.png`) });
     // Enter goes onto the sand
