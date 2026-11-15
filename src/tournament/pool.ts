@@ -47,6 +47,17 @@ export function playerMatch(s: GameState, day = s.day): MatchRecord | undefined 
   return s.tournament.matches.find((m) => m.day === day && (m.a === PLAYER_ID || m.b === PLAYER_ID));
 }
 export const opponentOf = (m: MatchRecord): string => (m.a === PLAYER_ID ? m.b : m.a);
+
+/** a version 2 rival changes its plan (the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », 15/11/2026, journal Passe GP2): at the cut (day 6), and after
+ *  each defeat against the player, a bout of the tournament or a challenge; the next of its three plans (src/combat/autoData.ts AUTO_PLANS), the first again after the
+ *  third; the day and the cause kept for the rumour (src/simulation/v2intel.ts). A generic fighter has no plan of its own: nothing changes */
+export const PLANS_PER_RIVAL = 3;
+export function adaptPlan(s: GameState, id: string, why: 'cut' | 'beaten'): void {
+  const c = s.competitors[id];
+  if (!isV2(s) || !c || !RIVALS[id] || id === PLAYER_ID) return;
+  c.plan = ((c.plan ?? 0) + 1) % PLANS_PER_RIVAL;
+  c.planFrom = { day: s.day, why };
+}
 export const matchId = (m: MatchRecord): string => `r${m.round}:${m.a}-${m.b}`;
 
 /** standings: points, then reputation, then id (a stable order) */
@@ -82,7 +93,8 @@ export function playOffscreenMatches(s: GameState, emit: Emit, rng: Rng): void {
     if (autoDuelRules(s)) {
       // the duel played by the computer (a version 2 game): the same duel, the AI on both sides (AC-18); close and crushing read on the winner's health as
       // the player's bout reads them; an upset, the less renowned beating one renowned 15 points more (« proposé » in lot 1, kept: journal Passe LC3)
-      const d = autoOffscreen(A.id, B.id, { stage: stageOf(m.day, m.stage === 'final'), round: autoRound(m.day), seed: Math.floor(r.next() * 4294967296), a: { preparation: A.preparation, hp: rivalMods(A).hp }, b: { preparation: B.preparation, hp: rivalMods(B).hp } });
+      // each with the plan it plays now (GP-15)
+      const d = autoOffscreen(A.id, B.id, { stage: stageOf(m.day, m.stage === 'final'), round: autoRound(m.day), seed: Math.floor(r.next() * 4294967296), a: { preparation: A.preparation, hp: rivalMods(A).hp, plan: A.plan }, b: { preparation: B.preparation, hp: rivalMods(B).hp, plan: B.plan } });
       const wi = autoWinner(d), share = d.hp[wi] / d.maxHp[wi];
       aWins = wi === 0; close = share <= 0.25; crushing = share > 0.7;
       upset = (aWins ? B : A).reputation - (aWins ? A : B).reputation >= 15;
@@ -139,8 +151,11 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
     s.tournament.points[won ? opp : PLAYER_ID] += close ? POINTS.close : POINTS.loss;
   }
   const P = s.player, name = RIVALS[opp].name;
-  // the vigour of a version 2 game (the operator's DB7-4 « +12 PV par victoire », journal Passe DB8: src/simulation/v2gear.ts v2Stats)
+  // the vigour of a version 2 game (the operator's DB7-4 « +12 PV par victoire », journal Passe DB8: src/simulation/v2gear.ts v2Stats): the tournament's bouts alone since
+  // GP-14 « La vigueur pour les combats du tournoi seulement (décision A3 : précise DB7-4) » (journal Passe GP2)
   if (won && s.v2) s.v2.wins = (s.v2.wins ?? 0) + 1;
+  // a rival beaten by the player changes its plan (GP-15 « Les rivaux s’adaptent, la rumeur le dit »)
+  if (won) adaptPlan(s, opp, 'beaten');
   if (won) {
     P.reputation = clamp(P.reputation + (opp === 'marek' ? 20 : 15)); P.coins += boutPurse(s, m, true);
     c.reputation = clamp(c.reputation - (close ? 1 : 4));

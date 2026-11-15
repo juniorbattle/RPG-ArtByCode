@@ -172,14 +172,14 @@ test('Sister Anwen busy the evening a rival was hurt in the afternoon\'s bouts: 
 
 // ------------------------------------------------------------------------------------------------- EV-9: Vessa Lark's tale
 
-test('Vessa beaten on day 2 pays Lio\'s room that evening: the taverns tell the next morning that Orla is hurt and rusty, seen on the board as rounds paid', () => {
+test('Vessa beaten on day 2 pays Lio\'s room that evening: the taverns tell the next morning that Orla is rusty with nothing new in her plan (GP-15: no health), seen on the board as rounds paid', () => {
   const dusk = playV2([W, W, W, W, WON]);
   const r = act(dusk, W), st = r.state;
   assert.deepEqual(st.v2.lie, { who: 'orla', from: 3, until: 4 });
   const word = r.events.find((e) => e.id === 'v2-tavern-tale');
   assert.ok(word && word.visible && word.day === 3 && word.slot === 'morning');
   // the rumours speak of training since the operator's CO-7 « Les rumeurs disent « entraînement » » (journal Passe CO3)
-  assert.match(word.text, /^In the taverns they say Orla Brask is nursing a wound, and has trained little/);
+  assert.match(word.text, /^In the taverns they say Orla Brask has trained little: their blows will land softer\. And their plan is still the one they began the tournament with\.$/);
   assert.doesNotMatch(word.cause, /Vessa/, 'the news does not name who paid');
   assert.match(I.seenInTown(st, 'vessa'), /paid for every round at Lio's/);
   // day 4's evening: the next one, Cassius, until day 5's bout
@@ -187,13 +187,14 @@ test('Vessa beaten on day 2 pays Lio\'s room that evening: the taverns tell the 
   const r4 = act(four, W); assert.deepEqual(r4.state.v2.lie, { who: 'cassius', from: 5, until: 5 });
 });
 
-test('Vessa tells no tale when she did not lose, holds no grudge, was confronted, on another evening, or when the opponent is already hurt and rusty', () => {
+test('Vessa tells no tale when she did not lose, holds no grudge, was confronted, on another evening, or when the opponent is already rusty with their first plan (GP-15)', () => {
   const tells = (s) => act(s, W).state.v2.lie;
   assert.equal(tells(playV2([W, W, W, W, LOST])), undefined, 'she beat the player');
   const kind = playV2([W, W, W, W, WON]); kind.competitors.vessa.relationships.player = -14; assert.equal(tells(kind), undefined, 'no grudge');
   const shamed = playV2([W, W, W, W, WON]); shamed.flags['confronted:vessa'] = 2; assert.equal(tells(shamed), undefined, 'confronted');
-  const weak = playV2([W, W, W, W, WON]); weak.competitors.orla.healthState = 'hurt'; weak.competitors.orla.preparation = 10; assert.equal(tells(weak), undefined, 'a true tale is no lie');
-  const half = playV2([W, W, W, W, WON]); half.competitors.orla.healthState = 'hurt'; half.competitors.orla.preparation = 50; assert.ok(tells(half), 'hurt but in form: still a lie');
+  const weak = playV2([W, W, W, W, WON]); weak.competitors.orla.preparation = 10; assert.equal(tells(weak), undefined, 'a true tale is no lie');
+  const half = playV2([W, W, W, W, WON]); half.competitors.orla.preparation = 50; assert.ok(tells(half), 'in form: still a lie');
+  const turned = playV2([W, W, W, W, WON]); turned.competitors.orla.preparation = 10; turned.competitors.orla.plan = 1; turned.competitors.orla.planFrom = { day: 1, why: 'beaten' }; assert.ok(tells(turned), 'rusty but a new plan: still a lie');
   const three = G.play(playV2([W, W, W, W, WON]), [W]); delete three.v2.lie; assert.equal(tells(G.play(three, [W, W])), undefined, 'day 3\'s evening');
   // today's game: nothing
   const today = G.play(G.newGame(1842, 'Ren'), [W, W, W, W, WON]); assert.equal(G.advance(today, W).state.v2, undefined);
@@ -203,16 +204,16 @@ test('Lio\'s room repeats the tale of that rival until the bout, every time; the
   const st = act(playV2([W, W, W, W, WON]), W).state;
   for (const day of [3, 4]) for (let i = 0; i < 200; i++) {
     const h = I.rumourOf(at(st, day, 'morning'), 'orla', 'lio', new Rng(i));
-    assert.deepEqual([h.hp, h.form], ['hurt', 'rusty'], `day ${day}`);
+    assert.deepEqual([h.hp, h.form, h.plan], [undefined, 'rusty', 'same'], `day ${day}`);
   }
   // after the bout, and of anyone else, the room is as before: right two times in three, never this tale every time
   const after = at(st, 5, 'morning'), other = at(st, 3, 'morning');
-  const told = (s, who) => Array.from({ length: 300 }, (_, i) => I.rumourOf(s, who, 'lio', new Rng(i))).filter((h) => h.hp === 'hurt' && h.form === 'rusty').length;
+  const told = (s, who) => Array.from({ length: 300 }, (_, i) => I.rumourOf(s, who, 'lio', new Rng(i))).filter((h) => h.plan === 'same' && h.form === 'rusty').length;
   assert.ok(told(after, 'orla') < 200 && told(other, 'cassius') < 200);
   // the stranger on day 3's evening: the truth of Orla, and who paid for the tale
   const night = at(st, 3, 'evening', 'district'); night.player.coins = 30;
   const s1 = act(night, { type: 'rumour', src: 'stranger' });
-  assert.match(s1.events[0].text, /Orla Brask is whole/); assert.match(s1.events[0].text, /A duelist from the river towns paid for it/);
+  assert.doesNotMatch(s1.events[0].text, /whole|wound|hurt/, 'no health (GP-15)'); assert.match(s1.events[0].text, /A duelist from the river towns paid for it/);
   assert.ok(s1.state.facts.includes('vessa-lie-known'));
   // Brother Ambrose on the festival square (day 3's afternoon): the consequence, the fact, his words
   const sq = v2('v2-tale-day3');

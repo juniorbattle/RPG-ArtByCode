@@ -59,7 +59,7 @@ export function phaseOf(st: GameState): string {
 }
 export function rulesHtml(st: GameState): string {
   return isV2(st)
-    ? `<p class="pm-sub">${tx('v2.board.rules')}</p><p>${tx('v2.board.points', { win: POINTS.win, close: POINTS.close, loss: POINTS.loss })}</p><p>${tx('v2.board.cut')}</p><p>${tx('v2.board.bracket')}</p>${st.day === FESTIVAL_DAY ? `<p>${tx('v2.fest.rule', { purse: FEST.purse, rep: FEST.rep, fame: FEST.fame })}</p>` : ''}`
+    ? `<p class="pm-sub">${tx('v2.board.rules')}</p><p>${tx('v2.board.points', { win: POINTS.win, close: POINTS.close, loss: POINTS.loss })}</p><p>${tx('v2.board.cut')}</p><p>${tx('v2.board.bracket')}</p><p>${tx('v2.board.plans')}</p>${st.day === FESTIVAL_DAY ? `<p>${tx('v2.fest.rule', { purse: FEST.purse, rep: FEST.rep, fame: FEST.fame })}</p>` : ''}`
     : `<p class="pm-sub">${tx('ui.board.rules')}</p><p>${tx('ui.board.points', { win: POINTS.win, close: POINTS.close, loss: POINTS.loss })}</p><p>${tx('ui.board.after')}</p>`;
 }
 
@@ -98,21 +98,25 @@ function nameHtml(st: GameState): string {
   return `<p class="pm-sub">${tx('ui.name.title')}</p><p>${esc(tx('ui.name.rep', { n: st.player.reputation }))}</p><p>${esc(tx('ui.name.sus', { n: marksOf(st) }))}</p>`;
 }
 
-export function boardPage(st: GameState, rows: Row[], close: () => void): { root: HTMLElement; focus(): void } {
+/** `sheet`: the next opponent's match sheet (the operator's GP-12 « La fiche dès que l’adversaire est connu », journal Passe GP2), Enter on their line */
+export function boardPage(st: GameState, rows: Row[], close: () => void, sheet?: () => void): { root: HTMLElement; focus(): void } {
   const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card pm-two');
   card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('ui.board.title'));
   card.innerHTML = `<section class="pm-col"><header class="pm-head"><h2 class="pm-h">${tx('ui.board.title')}</h2><p>${esc(phaseOf(st))}</p><p class="nx"><b>${tx('ui.board.next')}</b> ${deadline(st)}</p></header><div class="pm-glist pm-grow"></div></section>`
     + `<section class="pm-col"><div class="pm-who-at"></div><div class="pm-detail pm-grow"></div><div class="pm-foot"></div></section>`;
   root.appendChild(card);
   const list = card.querySelector('.pm-glist') as HTMLElement, who = card.querySelector('.pm-who-at') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement;
-  const out = footBtn('Esc', tx('ui.close'), close), fit = scrollFade(detail);
-  fillFoot(card.querySelector('.pm-foot') as HTMLElement, out);
+  const out = footBtn('Esc', tx('ui.close'), close), fit = scrollFade(detail), foot = card.querySelector('.pm-foot') as HTMLElement;
+  fillFoot(foot, out);
   const n = nextBout(st), first = n ? (n.a === PLAYER_ID ? n.b : n.a) : (pendingFinal(st)?.foe ?? PLAYER_ID);
+  // the next opponent's line opens their match sheet (GP-12)
+  const toSheet = sheet ? footBtn('Enter', tx('prep.sheet.short'), sheet) : null, nextFoe = n ? first : pendingFinal(st)?.foe ?? null;
   let start: HTMLElement | null = null;
   rows.forEach((r, i) => {
     const c = st.competitors[r.id], hurt = c && c.healthState !== 'fit' ? `<span class="why">${tx('ui.board.hurt')}</span>` : '';
     const b = pickRow(`<span class="rk">${i + 1}.</span><span>${esc(nameOf(st, r.id))}${r.id === PLAYER_ID ? `<span class="me">${tx('ui.board.you')}</span>` : ''}${hurt}</span><span class="cost">${r.points} ${tx('ui.board.pts')}</span>`, {
-      select: () => { const f = fighterHtml(st, r.id); who.innerHTML = f.head; detail.innerHTML = f.body; detail.scrollTop = 0; fit(); }, press: () => {},
+      select: () => { const f = fighterHtml(st, r.id); who.innerHTML = f.head; detail.innerHTML = f.body; detail.scrollTop = 0; fit(); fillFoot(foot, r.id === nextFoe ? toSheet : null, out); },
+      press: () => { if (r.id === nextFoe) sheet?.(); },
     });
     list.appendChild(b);
     if (r.id === first) start = b;

@@ -1,6 +1,7 @@
 // Lot 3 of « La Brute » (briefs/combat-auto.md § 33.5, the operator's PB-4 « Toutes » and BL1-4 « Au lot 3 : la ville nourrit le build », journal Passe BL3): the
 // preparation. What is proved here, in Node:
-// - the scouting by tiers: nothing seen, the style (a first watch, or a bout fought), the plan (a second watch, another day), the rumour's kit for the next bout; the
+// - the scouting by tiers: nothing seen, the style (a first watch, or a bout fought), the plan (a second watch, another day; said with its day since GP-15, the rumour's
+//   kit out of it, journal Passe GP3); the
 //   lines the match sheet, the board and the notebook read, each skill's « when » against the rivals' own plans (AUTO_STYLES) and their roles' rule;
 // - the rehearsal: where and when it is offered, its slot, its thirty duels on seeds of its own (never the real bout's), the shadow by its roles at tier 1 and its
 //   own plan at tier 2 — then the very bout to come but its seed —, a win and a loss watched again, stale once the set-up changes, outside the fingerprint;
@@ -38,7 +39,7 @@ const inFrench = (f) => { T.useLanguage('fr', FR); try { return f(); } finally {
 
 // ------------------------------------------------------------------------------------------------- the scouting by tiers
 
-test('the scouting by tiers: nothing seen, the style at a first watch or a bout fought, the plan at a second watch another day, the kit by a rumour; today\'s game watches once', () => {
+test('the scouting by tiers: nothing seen, the style at a first watch or a bout fought, the plan at a second watch another day (with its day), no kit by a rumour (GP-15); today\'s game watches once', () => {
   const s0 = v2();
   const foe = SC.nextBoutOf(s0).foe;
   assert.equal(foe, 'vessa', 'the first bout: Vessa');
@@ -57,17 +58,16 @@ test('the scouting by tiers: nothing seen, the style at a first watch or a bout 
   assert.equal(opt(at(w1, 1, 'afternoon', 'forecourt'), (a) => a.type === 'scout' && a.who === 'vessa')?.reason, T.tx('v2.scout.today', { name: 'Vessa Lark' }));
   const w2 = act(at(w1, 2, 'morning', 'forecourt'), { type: 'scout', who: 'vessa' }).state;
   assert.equal(SC.scoutTier(w2, foe), 2);
-  assert.ok(SC.scoutLines(w2, foe).includes(SC.planText('vessa', 'Vessa Lark')));
+  assert.ok(SC.scoutLines(w2, foe).includes(SC.planText('vessa', 'Vessa Lark', 0, 2)), 'the plan seen, with its day (GP-15)');
   assert.equal(opt(at(w2, 3, 'morning', 'forecourt'), (a) => a.type === 'scout' && a.who === 'vessa')?.reason, T.tx('v2.scout.knownPlan', { name: 'Vessa Lark' }));
   void where;
   // a bout fought against a rival shows its style
   const fought = structuredClone(s0); const m = fought.tournament.matches.find((x) => x.a === 'player' || x.b === 'player'); m.winner = 'player';
   assert.equal(SC.scoutTier(fought, m.a === 'player' ? m.b : m.a), 1);
-  // a rumour of the next opponent: its kit for that bout, the uses each skill has at its stage
-  const heard = structuredClone(s0); heard.v2.heard = { vessa: { day: 1, src: 'lio', hp: 'fit', form: 'steady' } };
-  assert.ok(SC.kitKnown(heard, 'vessa'));
-  assert.ok(SC.scoutLines(heard, 'vessa').includes(SC.kitText('vessa', 'Vessa Lark', 0)));
-  assert.match(SC.kitText('vessa', 'Vessa Lark', 0), new RegExp(`${AD.AUTO_BRUTE.uses[0]} uses each`));
+  // a rumour of the next opponent no longer tells their kit (the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit »: the kit never changes, the line out)
+  const heard = structuredClone(s0); heard.v2.heard = { vessa: { day: 1, src: 'lio', form: 'steady', plan: 'same' } };
+  assert.deepEqual(SC.scoutLines(heard, 'vessa'), SC.scoutLines(s0, 'vessa'));
+  assert.equal(SC.kitText, undefined); assert.equal(SC.kitKnown, undefined);
   assert.equal(SC.usesAt(2), AD.AUTO_BRUTE.uses[AD.autoRivalLevel(2) - 1]);
   // the match sheet's word and the board's follow (a version 2 game)
   assert.equal(U.foeIntel(w2, 'vessa'), SC.scoutLines(w2, 'vessa').join(' '));
@@ -89,7 +89,7 @@ test('the plan in words: each rival skill\'s moment its own condition (AUTO_STYL
     }
     if (AD.AUTO_STYLES[id].heavy === 'ready') assert.ok(style.includes(T.tx('auto.style.heavy', { name })));
     // in French too, nothing left unsaid
-    inFrench(() => { for (const x of [SC.planText(id, name), SC.styleText(id, name), SC.kitText(id, name, 1)]) assert.ok(!/[{}]/.test(x), x); });
+    inFrench(() => { for (const x of [SC.planText(id, name), SC.planText(id, name, 2, 7), SC.styleText(id, name)]) assert.ok(!/[{}]/.test(x), x); });
   }
 });
 

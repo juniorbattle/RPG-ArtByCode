@@ -157,6 +157,24 @@ export const AUTO_STYLES: Record<string, AutoStyle & { tactic: Record<string, Au
   marek: { dodge: 0.3, guard: 1.3, tactic: { m_resolve: 'follow', m_ironfall: 'auto', m_bulwark: 'incoming' } },
   rhosk: { dodge: 0.3, guard: 0.8, tactic: { m_hide: 'gauge', m_roar: 'ready', m_cleave: 'ready' } },
 };
+/** each rival's three plans (the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », 15/11/2026, journal Passe GP2): the conditions of its skills, the
+ *  first its plan of the pool (AUTO_STYLES' tactic), each next one taken at the cut (day 6) and after each defeat against Ren, in this order, the first again after
+ *  the third (src/simulation/v2scout.ts shiftPlan); its kit, its pieces and its heavy blow never change (« proposé », on the sheet of chantier 2) */
+export const AUTO_PLANS: Record<string, ReadonlyArray<Readonly<Record<string, AutoCond>>>> = {
+  vessa: [AUTO_STYLES.vessa.tactic, { m_tempo: 'start', m_lunge: 'auto', m_brace: 'auto' }, { m_tempo: 'auto', m_lunge: 'incoming', m_brace: 'gauge' }],
+  tobin: [AUTO_STYLES.tobin.tactic, { m_grit: 'finish', m_wild: 'start' }, { m_grit: 'finish', m_wild: 'incoming' }],
+  cassius: [AUTO_STYLES.cassius.tactic, { m_brace: 'gauge', m_riposte: 'warded', m_gild: 'auto' }, { m_brace: 'ready', m_riposte: 'auto', m_gild: 'finish' }],
+  orla: [AUTO_STYLES.orla.tactic, { m_shoulder: 'start', m_brace: 'auto' }, { m_shoulder: 'start', m_brace: 'ready' }],
+  ilse: [AUTO_STYLES.ilse.tactic, { m_aegis: 'gauge', m_smite: 'auto', m_prayer: 'finish' }, { m_aegis: 'auto', m_smite: 'auto', m_prayer: 'auto' }],
+  marek: [AUTO_STYLES.marek.tactic, { m_resolve: 'finish', m_ironfall: 'auto', m_bulwark: 'incoming' }, { m_resolve: 'auto', m_ironfall: 'auto', m_bulwark: 'gauge' }],
+  rhosk: [AUTO_STYLES.rhosk.tactic, { m_hide: 'auto', m_roar: 'incoming', m_cleave: 'auto' }, { m_hide: 'ready', m_roar: 'hurt', m_cleave: 'start' }],
+};
+/** a rival's plan by its index (GP-15; a kit without plans, or an index out of its table: its plan of the pool) */
+export function autoPlanOf(kitOf: string, plan = 0): Readonly<Record<string, AutoCond>> {
+  const P = AUTO_PLANS[kitOf];
+  return P?.[((plan % P.length) + P.length) % P.length] ?? AUTO_STYLES[kitOf]?.tactic ?? {};
+}
+
 /** the gear's effects on top of its points (PB-1, the laboratory's GEAR_FX, briefs/combat-auto.md § 31.4), each with its counterpart */
 export const AUTO_GEAR_FX: Record<string, AutoGearFx> = {
   // the sabre's last cut goes through the guard; its cuts fill the gauge less
@@ -380,11 +398,13 @@ export function autoFoeActions(kitOf: string, stage: Stage = 0): Pick<AutoFighte
 }
 
 /** a rival or a generic fighter as a fighter: its sheet for the bout (autoRaceSheet), its kit (`kitOf`: its own, a generic fighter's rival's) at the bout's stage
- *  (its skills' uses), its kit's style (AUTO_STYLES: its reactions, its heavy blow, its plan), Speed 10 for its tables as every fighter's (SY-01) */
-export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; brain?: AutoBrain; side?: 'ren' | 'foe'; stage?: Stage } = {}): AutoFighter {
-  const kitOf = o.kitOf ?? (AUTO_FOES[id] ? id : 'marek'), acts = autoFoeActions(kitOf, o.stage ?? 0), S = AUTO_STYLES[AUTO_FOES[kitOf] ? kitOf : 'marek'];
+ *  (its skills' uses), its kit's style (AUTO_STYLES: its reactions, its heavy blow), Speed 10 for its tables as every fighter's (SY-01); its plan (`plan`, GP-15: the
+ *  index of AUTO_PLANS it plays now, the pool's by default; a generic fighter plays its rival's first plan) */
+export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; brain?: AutoBrain; side?: 'ren' | 'foe'; stage?: Stage; plan?: number } = {}): AutoFighter {
+  const kitOf = o.kitOf ?? (AUTO_FOES[id] ? id : 'marek'), acts = autoFoeActions(kitOf, o.stage ?? 0), k = AUTO_FOES[kitOf] ? kitOf : 'marek', S = AUTO_STYLES[k];
   const style: AutoStyle | undefined = S ? { dodge: S.dodge, guard: S.guard, ...(S.heavy ? { heavy: S.heavy } : {}) } : undefined;
-  return { id, side: o.side ?? 'foe', hp: sheet.hp, atk: sheet.atk, def: sheet.def, end: sheet.end, viv: sheet.viv, tempo: 10, taken: 1, ...acts, brain: o.brain ?? 'rival', ...(S ? { style, tactic: acts.skills.map((s) => S.tactic[s.id] ?? 'auto') } : {}) };
+  const plan = autoPlanOf(k, o.plan ?? 0);
+  return { id, side: o.side ?? 'foe', hp: sheet.hp, atk: sheet.atk, def: sheet.def, end: sheet.end, viv: sheet.viv, tempo: 10, taken: 1, ...acts, brain: o.brain ?? 'rival', ...(S ? { style, tactic: acts.skills.map((s) => plan[s.id] ?? 'auto') } : {}) };
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------- the race
@@ -431,7 +451,8 @@ export function autoGenericSheet(profile: string, share: { hp: number; damage: n
 /** A bout the player does not fight, played by the same duel, the same automatic on both sides (the operator's AC-18 « La même simulation, l'IA des deux
  *  côtés », SY-11; TOURNAMENT § 6: « du même modèle de stats/règles »): both rivals at the bout's stage and round, their preparation in Attack points, an
  *  injury's share of their health. */
-export function autoOffscreen(a: string, b: string, o: { stage: Stage; round?: number; seed: number; a?: { preparation?: number; hp?: number }; b?: { preparation?: number; hp?: number } }): AutoResult {
-  const A = autoFoe(a, autoRaceSheet(a, o.stage, o.round ?? 0, o.a ?? {}), { side: 'ren', stage: o.stage }), B = autoFoe(b, autoRaceSheet(b, o.stage, o.round ?? 0, o.b ?? {}), { stage: o.stage });
+export function autoOffscreen(a: string, b: string, o: { stage: Stage; round?: number; seed: number; a?: { preparation?: number; hp?: number; plan?: number }; b?: { preparation?: number; hp?: number; plan?: number } }): AutoResult {
+  // each rival with the plan it plays now (GP-15: changed at the cut and after a defeat against Ren)
+  const A = autoFoe(a, autoRaceSheet(a, o.stage, o.round ?? 0, o.a ?? {}), { side: 'ren', stage: o.stage, plan: o.a?.plan }), B = autoFoe(b, autoRaceSheet(b, o.stage, o.round ?? 0, o.b ?? {}), { stage: o.stage, plan: o.b?.plan });
   return autoDuel(A, B, o.seed);
 }

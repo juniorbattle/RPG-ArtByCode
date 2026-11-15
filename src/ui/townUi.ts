@@ -24,7 +24,10 @@ import { MARK_WORD, installMarkCss, markGlyph } from './npcMarks';
 import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { matchSheetFor } from '../combat/match';
-import { autoBoutOf, autoForms, autoReactions } from '../combat/autoMatch';
+import { autoBoutOf, autoForms, autoNextBout, autoReactions, type NextBout } from '../combat/autoMatch';
+import { GENERICS } from '../narrative/generics';
+import { STAKE } from '../simulation/v2town';
+import { challengeSkill, levelOf } from '../simulation/v2skills';
 import { AUTO_RULES, type AutoAction, type AutoFighter } from '../combat/auto';
 import { AUTO_STYLES } from '../combat/autoData';
 import { roleName } from './skills';
@@ -38,7 +41,7 @@ import type { Act } from '../settings/keys';
 import { bindCap, keyCap } from '../input/caps';
 import { leavePage } from './curtain';
 import { notebookPage, adviceText } from './notebook';
-import { scoutLines } from '../simulation/v2scout';
+import { hasFought, scoutLines, styleText } from '../simulation/v2scout';
 import { rehearsalFresh, rehearsalOf } from '../simulation/v2prep';
 import { notesOf } from '../simulation/v2notes';
 
@@ -176,6 +179,9 @@ export function foeIntel(s: GameState, id: string): string {
   if (s.facts.includes(`scouted:${id}`)) return tx('ui.arena.foeSkills', { name, skills: (V2_FOES[id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') });
   return scoutable(s).includes(id) ? tx('v2.sheet.unknown', { name }) : tx('v2.sheet.unseen', { name });
 }
+
+/** a fighter's name: a person of the town, a fighter of the town, a rival */
+const fighterName = (who: string): string => PEOPLE[who]?.name ?? GENERICS[who]?.name ?? RIVALS[who]?.name ?? who;
 
 export class TownUi {
   private veils = [el('div', 'pm-veil'), el('div', 'pm-veil')];
@@ -324,12 +330,12 @@ export class TownUi {
     if (fight) {
       const b = el('button', 'pm-btn primary', `<span>${tx('ui.enterArena')}</span><span class="cost">${tx('ui.oneSlot')}</span>`);
       // the version 2: the match sheet chooses the four skills first (lot V2, journal Passe V2)
-      b.addEventListener('click', () => { if (isV2(s)) { this.openSkills(true); return; } writeSave(s); this.host.reload({ scene: 'arena' }); }); list.appendChild(b);
+      b.addEventListener('click', () => { if (isV2(s)) { this.openMatchSheet(); return; } writeSave(s); this.host.reload({ scene: 'arena' }); }); list.appendChild(b);
     }
-    // the version 2: a challenge waits on the sand (lot V4)
+    // the version 2: a challenge waits on the sand (lot V4); its short sheet first (the operator's GP-13 « Une fiche courte avant un défi », journal Passe GP2)
     if (s.v2?.challenge) {
       const b = el('button', 'pm-btn primary', `<span>${this.sandLabel(s)}</span><span class="cost">${tx('ui.oneSlot')}</span>`);
-      b.addEventListener('click', () => { writeSave(s); this.host.reload({ scene: 'arena', challenge: '1' }); }); list.appendChild(b);
+      b.addEventListener('click', () => this.openChallengeSheet(() => this.openHere())); list.appendChild(b);
     }
     for (const o of opts) list.appendChild(this.optionButton(v2 && (o.action.type === 'rest' || o.action.type === 'wait') ? { ...o, label: o.action.type === 'rest' ? tx('v2.self.rest') : tx('v2.self.wait') } : o));
     const away = (o: ActionOption) => !o.ok && o.reason === tx('avail.notNow', { name: PEOPLE[(o.action as { who: string }).who].name }), here = people.filter((o) => !away(o)), gone = people.filter(away);
@@ -396,9 +402,11 @@ export class TownUi {
     if (!news.length) return;
     // P6 (lot V9): back from a bout of the version 2, the result first, large
     const duel = isV2(this.st) ? news.find((e) => e.kind === 'match' && (e.id === 'player-won' || e.id === 'player-lost')) : undefined;
-    // the operator's DB11-5 « Le dire partout » (journal Passe DB13): a bout won, the tournament's or a challenge's, says the vigour it gives and the health of the next bout
-    const won = isV2(this.st) && news.some((e) => e.id === 'player-won' || e.id === 'challenge:won');
-    const vigour = won ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(this.st).hp ?? 0, k: num(AUTO_RULES.hpScale) }))}</p>` : '';
+    // the operator's DB11-5 « Le dire partout » (journal Passe DB13): a bout of the tournament won says the vigour it gives and the health of the next bout; a challenge
+    // won that it gives none (GP-14 « La vigueur pour les combats du tournoi seulement (décision A3 : précise DB7-4) », journal Passe GP2)
+    const won = isV2(this.st) && news.some((e) => e.id === 'player-won'), sand = isV2(this.st) && !won && news.some((e) => e.id === 'challenge:won');
+    const vigour = won ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(this.st).hp ?? 0, k: num(AUTO_RULES.hpScale) }))}</p>`
+      : sand ? `<p class="pm-vigour">${esc(tx('v2.result.noVigour'))}</p>` : '';
     if (duel) { this.newsRead = this.card(`<div class="pm-result"><p class="pm-big">${duel.id === 'player-won' ? tx('v2.result.won') : tx('v2.result.lost')}</p>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}${vigour}</div>`, tx('ui.goOn')); return; }
     this.newsRead = this.card(`<h2 class="pm-h">${news.length > 1 ? tx('ui.meanwhile') : tx('ui.news')}</h2>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}${vigour}`, tx('ui.goOn'), true);
   }
@@ -452,6 +460,9 @@ export class TownUi {
     const again = () => { if (this.current === root) this.openPerson(who); }, first = opts.filter((o) => o.action.type === 'rehearse');
     for (const o of first) list.appendChild(this.optionButton(o, again));
     if (who === 'corvin' && isV2(st)) { const b = el('button', 'pm-btn', `<span>${tx('nb.see')}</span>`); b.addEventListener('click', () => { this.openNotebook(); this.back = () => this.openPerson(who); }); list.appendChild(b); }
+    // the plan against the next opponent, which his rehearsal plays (GP-12 « La fiche dès que l’adversaire est connu »)
+    const nb = who === 'corvin' && isV2(st) ? autoNextBout(st) : null;
+    if (nb) { const b = el('button', 'pm-btn', `<span>${esc(tx('prep.sheet.corvin', { name: fighterName(nb.foeId) }))}</span>`); b.addEventListener('click', () => this.openMatchSheet(() => this.openPerson(who))); list.appendChild(b); }
     for (const o of opts) if ((!goods || !isGoods(o)) && !first.includes(o)) list.appendChild(this.optionButton(o, again));
     const leave = footBtn('Esc', tx('ui.leave'), () => this.closeModal());
     side.append(list, footOf(leave)); arrowKeys(side);
@@ -465,28 +476,75 @@ export class TownUi {
     if (opts.some((o) => o.ok && o.action.type === 'challenge')) this.hint('challenge', who);
   }
 
-  /** the version 2's skills (lot V2; the page, journal Passe UM11, src/ui/skills.ts); `enter`: the match sheet, the opponent first (CB-1 § 8), the bout follows */
+  /** the version 2's skills (lot V2; the page, journal Passe UM11, src/ui/skills.ts); `enter`: the match sheet (openMatchSheet since GP-12) */
   openSkills(enter: boolean): void {
-    const s = this.st, m = enter ? playerMatch(s) : null, foe = m ? opponentOf(m) : undefined;
+    if (enter) { this.openMatchSheet(); return; }
     this.page();
-    this.show(skillsPage({
-      state: () => this.st, act: (a) => this.host.act(a), close: () => this.closeModal(),
-      // the plan set on the match sheet is kept for its rival (lot 2 of « La Brute »)
-      ...(foe ? { foe, foeName: RIVALS[foe]?.name ?? foe } : {}),
-      enter: enter ? () => { writeSave(this.st); this.closeModal(); this.host.reload({ scene: 'arena' }); } : undefined,
-    }, enter ? this.matchSheetHtml(s) : null));
-    if (!enter) this.shownPage = 'skills';
+    this.show(skillsPage({ state: () => this.st, act: (a) => this.host.act(a), close: () => this.closeModal() }, null));
+    this.shownPage = 'skills';
   }
 
-  /** P6 (lot V9): the bout's stage, the opponent (face, name, style), what the player knows of their skills, the gear worn, an ally's advice */
-  private matchSheetHtml(s: GameState): string {
-    const m = playerMatch(s); if (!m) return '';
-    const id = opponentOf(m), r = RIVALS[id], url = portraitUrl(id), g = s.v2?.gear;
-    const stage = stageName(m);
-    const heard = heardLine(s, id), strap = strapCut(s);
-    // the duel played by the computer (lot 2, journal Passe LC3): what decides it, side by side (briefs/combat-auto.md § 7: « les stats des deux, les chances de
-    // garde et d'esquive, la préparation du rival, sa forme du jour »), the numbers the duel itself will play (autoBoutOf: the same fighters)
-    const b = autoBoutOf(s), vs = b ? this.autoVsHtml(b.ren, b.foe, autoForms(b), r.name) : '';
+  /** the match sheet of the player's next bout, from the moment the opponent is known (the operator's GP-12 « La fiche dès que l’adversaire est connu », journal Passe
+   *  GP2): the bout's afternoon it enters the arena; before it, the plan set on it is kept for that rival and Master Corvin's rehearsal plays it; `back` where Esc leads */
+  openMatchSheet(back?: () => void): void {
+    const s = this.st, nb = isV2(s) ? autoNextBout(s) : null;
+    if (!nb) return;
+    const enter = nb.today && s.slot === 'afternoon';
+    this.page();
+    this.show(skillsPage({
+      state: () => this.st, act: (a) => this.host.act(a), close: () => this.leave(),
+      // the plan set on the match sheet is kept for its rival (lot 2 of « La Brute »)
+      foe: nb.foeId, foeName: fighterName(nb.foeId),
+      enter: enter ? () => { writeSave(this.st); this.closeModal(); this.host.reload({ scene: 'arena' }); } : undefined,
+    }, this.matchSheetHtml(s, nb)));
+    this.back = back ?? null;
+  }
+
+  /** the short sheet before a fight on the sand (the operator's GP-13 « Une fiche courte avant un défi », journal Passe GP2): the opponent, both fighters as the duel
+   *  builds them, whose model a fighter of the town fights on, what is at stake and what a win gives, and a plan for them, kept for them; Enter goes onto the sand.
+   *  Any fight waiting on the sand (`s.v2.challenge`: a challenge, a reprisal's muscle) takes it */
+  openChallengeSheet(back?: () => void): void {
+    const s = this.st, ch = isV2(s) ? s.v2?.challenge : undefined;
+    if (!ch) return;
+    this.page();
+    this.show(skillsPage({
+      state: () => this.st, act: (a) => this.host.act(a), close: () => this.leave(),
+      foe: ch.who, foeName: fighterName(ch.who), enterLabel: tx('prep.challenge.go'), pickLabel: tx('prep.challenge.pick'),
+      vs: () => { const b = autoBoutOf(this.st, 'challenge'); return b ? { ren: b.ren, foe: b.foe } : null; },
+      enter: () => { writeSave(this.st); this.closeModal(); this.host.reload({ scene: 'arena', challenge: '1' }); },
+    }, this.challengeSheetHtml(s)));
+    this.back = back ?? null;
+  }
+
+  /** GP-13's sheet: the head, the opponent, their model, the table, what the player knows, the stake and what a win gives */
+  private challengeSheetHtml(s: GameState): string {
+    const ch = s.v2?.challenge; if (!ch) return '';
+    const who = ch.who, g = GENERICS[who], r = RIVALS[who], name = fighterName(who), url = portraitUrl(who), b = autoBoutOf(s, 'challenge');
+    const title = r?.epithet ?? g?.epithet ?? (PEOPLE[who] ? titleOf(PEOPLE[who], true) : '');
+    // a fighter of the town fights on a rival's model (src/narrative/generics.ts), now said (GP-13: « que rien ne dit »)
+    const model = g && RIVALS[g.profile] ? RIVALS[g.profile] : null, like = model ? tx('prep.challenge.like', { name, rival: model.name }) : '';
+    // what the player knows of their way of fighting: a rival's scouting; a fighter of the town's style once fought (its model's kit)
+    const known = r ? scoutLines(s, who) : g && model && hasFought(s, who) ? [styleText(g.profile, name)] : [];
+    const teach = ch.reprisal ? null : challengeSkill(s, who);
+    const stake = ch.reprisal ? tx('prep.challenge.reprisal') : ch.stake === 'coins' ? tx('prep.challenge.stakeCoins', { n: STAKE.coins, back: 2 * STAKE.coins }) : tx('prep.challenge.stakeName', { n: STAKE.name });
+    const win = teach ? tx(levelOf(s, teach) > 0 ? 'prep.challenge.raise' : 'prep.challenge.teach', { skill: skillName(teach) }) : '';
+    const vs = b ? this.autoVsHtml(b.ren, b.foe, autoForms(b), name) : '';
+    return `<p class="pm-sub">${esc(tx(ch.reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title'))} · ${esc(tx('ui.dayN', { day: s.day }))}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(name)}</h2><p class="pm-sub">${esc(title)}</p></div></div>`
+      + (like ? `<p class="pm-sub">${esc(like)}</p>` : '') + vs + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('')
+      + `<p class="pm-sub">${esc(stake)}</p>${win ? `<p class="pm-sub">${esc(win)}</p>` : ''}${ch.reprisal ? '' : `<p class="pm-sub">${esc(tx('v2.result.noVigour'))}</p>`}<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p>`;
+  }
+
+  /** P6 (lot V9): the bout's stage, the opponent (face, name, style), what the player knows of their skills, the gear worn, an ally's advice; since GP-12 the next bout's,
+   *  from the moment its opponent is known (`nb`: its fighters as the duel would build them now, its form of the day said on the day) */
+  private matchSheetHtml(s: GameState, nb: NextBout): string {
+    const id = nb.foeId, r = RIVALS[id], url = portraitUrl(id), g = s.v2?.gear;
+    const stage = nb.match ? stageName(nb.match) : tx('v2.stage.final');
+    const heard = heardLine(s, id), strap = nb.today && strapCut(s);
+    // the duel played by the computer (lot 2, journal Passe LC3): what decides it, side by side (briefs/combat-auto.md § 7: « les stats des deux, les chances de
+    // garde et d'esquive, la préparation du rival, sa forme du jour »), the numbers the duel itself will play (autoBoutOf: the same fighters); ahead of the day, as
+    // the duel would build them now (GP-12), the form of the day drawn on the day
+    const b = nb, vs = this.autoVsHtml(b.ren, b.foe, b.seed !== null ? autoForms({ seed: b.seed }) : null, r.name);
+    const ahead = nb.today && s.slot === 'afternoon' ? '' : tx('prep.sheet.ahead', { day: nb.day, name: r.name });
     // what the player knows of the rival (lot 3 of « La Brute », the scouting by tiers: its style, its plan, its kit), the last rehearsal against its shadow and
     // Master Corvin's last note on it (src/simulation/v2scout.ts, v2prep.ts)
     const known = scoutLines(s, id), reh = rehearsalOf(s, id), last = notesOf(s, id)[0];
@@ -498,14 +556,16 @@ export class TownUi {
     const from = [tx('v2.sheet.hp.base', { n: hp.base }), hp.vigour ? tx('v2.sheet.hp.vigour', { n: hp.vigour, per: VIGOUR_HP }) : '', hp.gear ? tx('v2.sheet.hp.gear', { n: hp.gear }) : '',
       hp.train ? tx('v2.sheet.hp.train', { n: hp.train }) : '', hp.wound ? tx('v2.sheet.hp.wound', { n: hp.wound }) : ''].filter(Boolean).join(', ') + '.';
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
-    return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
+    return `<p class="pm-sub">${esc(stage)} · ${esc(tx('ui.dayN', { day: nb.day }))}</p>${ahead ? `<p class="pm-sub">${esc(ahead)}</p>` : ''}<div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
       + vs + (prep ? `<p class="pm-sub pm-fstats">${esc(prep)}</p>` : '') + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('') + (rehLine ? `<p class="pm-sub">${esc(rehLine)}</p>` : '') + (noteLine ? `<p class="pm-sub">${esc(noteLine)}</p>` : '') + `<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p><p class="pm-sub">${esc(tx('auto.sheet.hpWhy'))}</p><p class="pm-sub">${esc(from)}</p>`
       + `${heard ? `<p class="pm-sub">${esc(heard)}</p>` : ''}<p class="pm-sub">${esc(gear)}</p>${strap ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.strap'))}</p>` : ''}${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }
 
   /** the two fighters side by side as the duel played by the computer reads them: the health of the bout (each one's doubled, DB5), the four stats, the form of the
    *  day (AC-08), the dodge and the guard each has against the other (AC-05, the duel's own formulas, the traits in them) */
-  private autoVsHtml(ren: AutoFighter, foe: AutoFighter, form: [number, number], foeName: string): string {
+  private autoVsHtml(ren: AutoFighter, foe: AutoFighter, formOf: [number, number] | null, foeName: string): string {
+    // ahead of the bout's day its form of the day is not drawn yet (GP-12): « on the day », the blows' shares without it
+    const form: [number, number] = formOf ?? [1, 1];
     const pc = (k: number) => tx('auto.sheet.pct', { n: Math.round(k * 100) });
     const signed = (f: number) => `${f >= 1 ? '+' : '−'}${pc(Math.abs(f - 1))}`;
     const rr = autoReactions(ren, foe), fr = autoReactions(foe, ren), n1 = (x: number) => num(+x.toFixed(1));
@@ -518,7 +578,7 @@ export class TownUi {
     const rows: Array<[string, string, string]> = [
       [tx('auto.sheet.hp'), String(Math.round(ren.hp * AUTO_RULES.hpScale)), String(Math.round(foe.hp * AUTO_RULES.hpScale))],
       [tx('stat.atk'), n1(ren.atk), n1(foe.atk)], [tx('stat.def'), n1(ren.def), n1(foe.def)], [tx('stat.end'), n1(ren.end), n1(foe.end)], [tx('stat.viv'), n1(ren.viv), n1(foe.viv)],
-      [tx('auto.sheet.form'), signed(form[0]), signed(form[1])],
+      [tx('auto.sheet.form'), formOf ? signed(form[0]) : tx('prep.sheet.formDay'), formOf ? signed(form[1]) : tx('prep.sheet.formDay')],
       [tx('auto.sheet.dodge'), pc(rr.dodge), pc(fr.dodge)],
       [tx('auto.sheet.guard'), `${pc(rr.guard)} · ${pc(rr.guardSkill)}`, `${pc(fr.guard)} · ${pc(fr.guardSkill)}`],
       // BL1-10 (« Garder ; le dire au lot 2 sur la fiche de match »): what one light attack (its blows together, § 35.6) and one heavy blow take from the other's bar
@@ -631,7 +691,12 @@ export class TownUi {
     this.shownPage = 'notebook';
   }
 
-  private openBoard(): void { this.page(); this.show(boardPage(this.st, standings(this.st), () => this.closeModal())); this.shownPage = 'board'; }
+  private openBoard(): void {
+    this.page();
+    // the next opponent's match sheet from their line (GP-12), Esc back to the board
+    this.show(boardPage(this.st, standings(this.st), () => this.closeModal(), isV2(this.st) && autoNextBout(this.st) ? () => this.openMatchSheet(() => this.openBoard()) : undefined));
+    this.shownPage = 'board';
+  }
 
   private show(p: { root: HTMLElement; focus(): void }): void { document.body.appendChild(p.root); this.current = p.root; p.focus(); }
 
@@ -648,6 +713,9 @@ export class TownUi {
     add(tx('ui.map'), () => this.openMap(), 'map'); add(tx('ui.journal'), () => this.openJournal(), 'journal'); add(tx('ui.tournament'), () => this.openBoard(), 'board');
     // Master Corvin's notebook (lot 3 of « La Brute »): a line of its own, no key
     if (isV2(s)) add(tx('nb.open'), () => this.openNotebook());
+    // the match sheet of the next bout (GP-12 « La fiche dès que l’adversaire est connu »)
+    const nb = isV2(s) ? autoNextBout(s) : null;
+    if (nb) add(tx('prep.sheet.menu', { name: fighterName(nb.foeId), day: nb.day }), () => this.openMatchSheet());
     if (isV2(s)) { add(tx('v2.skills.view'), () => this.openSkills(false), 'skills'); add(tx('v2.gear.view'), () => this.openGear(), 'gear'); add(tx('set.open'), () => this.openSettings(), 'settings'); }
     // the guide (journal Passe TU3, TU-7): a line of its own
     if (isV2(s)) add(tx('tut.guide'), () => this.openGuide(), 'guide');

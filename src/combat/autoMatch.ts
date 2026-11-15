@@ -1,4 +1,6 @@
-import type { GameState } from '../simulation/state';
+import type { GameState, MatchRecord } from '../simulation/state';
+import { nextBoutOf } from '../simulation/v2scout';
+import { PLAYER_ID } from '../narrative/roster';
 import type { DuelOutcome } from '../tournament/pool';
 import { rivalMods } from '../tournament/pool';
 import { piecesViv, v2Mods, v2Stats, wornPieces } from '../simulation/v2gear';
@@ -47,7 +49,7 @@ export function autoFightersFor(st: GameState, foeId: string, stage: Stage, roun
   if (ally !== 1) ren.gfx = { ...ren.gfx, cd: (ren.gfx?.cd ?? 1) * ally };
   const c = st.competitors[o.id];
   const foe = g ? autoFoe(o.id, autoGenericSheet(g.profile, g, stage, round), { kitOf: g.profile, stage })
-    : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c?.preparation, hp: c ? rivalMods(c).hp : 1 }), { stage });
+    : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c?.preparation, hp: c ? rivalMods(c).hp : 1 }), { stage, plan: c?.plan });
   return { ren, foe, prep: g || !c ? 0 : autoPrepPoints(c.preparation) };
 }
 
@@ -60,6 +62,21 @@ export function autoOutcome(st: GameState, kind: 'bout' | 'challenge' = 'bout', 
   // Master Corvin's note (lot 3 of « La Brute »), read from the script when there is one
   const note = o.log ? boutNote(r, b.ren, b.foe, { day: st.day, foe: b.foeId, kind }) : undefined;
   return { winner: win ? 'player' : 'opponent', playerHp: r.hp[0], playerMaxHp: r.maxHp[0], opponentHp: r.hp[1], opponentMaxHp: r.maxHp[1], finisher: r.finisher, ...(note ? { note } : {}), duel: r, bout: b };
+}
+
+/** the player's next bout of the tournament as its match sheet shows it from the moment the opponent is known (the operator's GP-12 « La fiche dès que l’adversaire
+ *  est connu », journal Passe GP2): today's bout as the duel will play it (autoBoutOf), else the next one (src/simulation/v2scout.ts nextBoutOf: a later day, or the final
+ *  before it is drawn) with both fighters as the duel would build them now (Ren's plan kept for that rival, the rival's stats, preparation and plan as they stand);
+ *  `seed` null while the bout is not today (its form of the day is drawn on the day), `match` its record (null for the final before it is drawn); null once every
+ *  bout is fought */
+export interface NextBout extends Omit<AutoBout, 'seed'> { day: number; today: boolean; seed: number | null; match: MatchRecord | null }
+export function autoNextBout(st: GameState): NextBout | null {
+  const n = nextBoutOf(st);
+  if (!n) return null;
+  const m = st.tournament.matches.find((x) => x.day === n.day && !x.winner && (x.a === PLAYER_ID || x.b === PLAYER_ID)) ?? null;
+  if (n.day === st.day && m) { const b = autoBoutOf(st); if (b) return { ...b, day: n.day, today: true, match: m }; }
+  const round = n.stage === 0 ? autoRound(n.day) : 0;
+  return { ...autoFightersFor(st, n.foe, n.stage, round), foeId: n.foe, stage: n.stage, round, day: n.day, today: false, seed: null, match: m };
 }
 
 /** the form of the day of a bout's two fighters (AC-08 « Une forme du jour ±15 %, dite sur la fiche de match »): drawn from the bout's seed before it, as the

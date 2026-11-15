@@ -10,9 +10,9 @@ import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { tx } from '../narrative/text';
 import { autoDuel, autoWinner, type AutoCond, type AutoFighter, type AutoResult } from '../combat/auto';
 import { autoFightersFor } from '../combat/autoMatch';
-import { autoRound } from '../combat/autoData';
+import { AUTO_FOES, autoPlanOf, autoRound } from '../combat/autoData';
 import { boutNote, sumNotes, type BoutNote, type NoteSum } from '../combat/autoNotes';
-import { nextBoutOf, scoutTier, type ScoutTier } from './v2scout';
+import { knownPlan, nextBoutOf, scoutTier, type ScoutTier } from './v2scout';
 import type { Stage } from '../combat/stats';
 
 /** The preparation of a bout (lot 3 of « La Brute », the operator's PB-4 « Toutes », briefs/combat-auto.md § 33.5):
@@ -38,13 +38,15 @@ export interface Rehearsal {
   sum: NoteSum;
 }
 
-/** the shadow bout of the player's next bout: Ren as he would fight it now, the rival at its stage, its plan by what the player knows of it (tier 1: each skill by its
- *  role's automatic; tier 2: its own conditions); null without a next bout */
+/** the shadow bout of the player's next bout: Ren as he would fight it now (the plan kept for that rival, set on its match sheet: GP-12), the rival at its stage, its plan
+ *  by what the player knows of it (tier 1: each skill by its role's automatic; a plan seen: its conditions, `tier` 2, the plan the player saw even when the rival has
+ *  changed it since, GP-15: Master Corvin plays what the player knows); null without a next bout */
 export function shadowBout(s: GameState): { ren: AutoFighter; foe: AutoFighter; foeId: string; stage: Stage; round: number; tier: ScoutTier } | null {
   const n = nextBoutOf(s);
   if (!n) return null;
-  const tier = scoutTier(s, n.foe), round = n.stage === 0 ? autoRound(n.day) : 0, f = autoFightersFor(s, n.foe, n.stage, round);
-  const foe: AutoFighter = tier >= 2 ? f.foe : { ...f.foe, tactic: f.foe.skills.map((): AutoCond => 'auto') };
+  const seen = knownPlan(s, n.foe), tier: ScoutTier = seen !== null ? 2 : scoutTier(s, n.foe), round = n.stage === 0 ? autoRound(n.day) : 0, f = autoFightersFor(s, n.foe, n.stage, round);
+  const plan = seen !== null ? autoPlanOf(AUTO_FOES[n.foe] ? n.foe : 'marek', seen) : null;
+  const foe: AutoFighter = { ...f.foe, tactic: f.foe.skills.map((k): AutoCond => (plan ? plan[k.id] ?? 'auto' : 'auto')) };
   return { ren: f.ren, foe, foeId: n.foe, stage: n.stage, round, tier };
 }
 /** the player's side of a set-up (Ren, and the shadow's plan), canonical */

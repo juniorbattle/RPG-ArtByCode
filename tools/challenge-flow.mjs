@@ -1,7 +1,8 @@
 // A challenge or a reprisal of the version 2 played in a browser (lot L2b, journal Passe EVL3; the operator's EV-3 « Pleine vie, une mise, une fois par
 // phase », EV-5 « L’arène aux gradins vides », his note on EV-2 « une possibilite de combat et de represaille reelle »): the state is built in Node by
 // the game's own actions (for a reprisal, a theft caught at a sore keeper's stall and the dawn it hires the muscle; the draws forced through `advance`'s
-// rng), kept in the browser's save, the town page opened from it, the challenge put or the muscle faced through the page's interface (`__ui.run`), the
+// rng), kept in the browser's save, the town page opened from it, the challenge put or the muscle faced through the page's interface (`__ui.run`), the short
+// sheet before the sand (GP-13, journal Passe GP3: the opponent, the rival a fighter of the town fights like, the stake, a plan set for them with C, Enter), the
 // arena page loaded from the save: its stands empty (no spectator, no crowd), the lists' piece, both fighters at full health; the bout is the duel played by
 // the computer since lot 2 (journal Passe LC3): the state decides it, so <win|lose> is the result the tool expects, the duel skipped (« Skip ») and its result
 // checked against Node's own on the browser's state; the town page again; Node replays the browser's actions and must find the same fingerprint. The arena's two sheets are
@@ -23,7 +24,7 @@ const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(B
 let failed = 0;
 const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (!ok) failed++; };
 const server = await createServer({ root: path.resolve(import.meta.dirname, '..'), configFile: false, logLevel: 'error', appType: 'custom', cacheDir: 'node_modules/.vite-test', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, optimizeDeps: { noDiscovery: true } });
-const G = await server.ssrLoadModule('/src/simulation/index.ts'), { GENERICS } = await server.ssrLoadModule('/src/narrative/generics.ts');
+const G = await server.ssrLoadModule('/src/simulation/index.ts'), { GENERICS } = await server.ssrLoadModule('/src/narrative/generics.ts'), { RIVALS } = await server.ssrLoadModule('/src/narrative/roster.ts');
 /** where and when each fighter takes a challenge (src/narrative/people.ts) */
 const AT = { orla: ['training', 'morning'], aldric: ['training', 'morning'], ambrose: ['lanterns', 'afternoon'], lucan: ['forecourt', 'evening'], piers: ['district', 'morning'], kell: ['lanterns', 'morning'] };
 if (kind === 'challenge' && !AT[who]) throw new Error(`who: one of ${Object.keys(AT).join(', ')}`);
@@ -84,11 +85,33 @@ try {
   await page.screenshot({ path: path.join(outDir, `${kind}-${mode}-1-town.png`) });
   const label = await page.evaluate(() => { window.__ui.openHere(); const b = [...document.querySelectorAll('.pm-talk .pm-btn.primary')].find((x) => /Enter the sand/.test(x.textContent)); const t = b?.textContent ?? ''; b?.click(); return t; });
   check(kind === 'challenge' ? /Enter the sand for your challenge/.test(label) : /Enter the sand to face Corra Dunmere/.test(label), `the list's door: ${label}`);
+  // the short sheet before the sand (the operator's GP-13 « Une fiche courte avant un défi », journal Passe GP3): the opponent, their model, the table, the stake, a plan
+  const foeName = kind === 'challenge' ? (GENERICS[who]?.name ?? 'Orla Brask') : 'Corra Dunmere';
+  const sheet = await page.evaluate(() => { const c = document.querySelector('.pm-skills'); return c ? { text: c.textContent, vs: !!c.querySelector('.pm-vs'), foot: [...c.querySelectorAll('.pm-foot .pm-btn')].map((x) => x.textContent) } : null; });
+  check(!!sheet, 'the short sheet opens before the sand (GP-13)');
+  if (sheet) {
+    check(sheet.text.includes(foeName) && sheet.vs, `the sheet: ${foeName} and both fighters' table`);
+    const model = GENERICS[foeId] ? RIVALS[GENERICS[foeId].profile]?.name : null;
+    if (model) check(sheet.text.includes(`fights on the model of ${model}`), `a fighter of the town: the rival they fight like is said (${model})`);
+    check(kind === 'challenge' ? /At stake: 10 coins, 20 back if you win\./.test(sheet.text) : /A reprisal: nothing staked/.test(sheet.text), 'the stake said');
+    check(kind === 'challenge' ? sheet.text.includes('A challenge won adds no health') : !sheet.text.includes('A challenge won adds no health'), 'the vigour: a challenge gives none (GP-14), a reprisal says nothing of it');
+    check(sheet.foot.some((t) => /Go onto the sand with these four/.test(t)), `its way in: ${sheet.foot.join(' | ')}`);
+    // a plan for them: C on the first skill selected, kept for that fighter (the page's own action, replayed in Node)
+    await page.evaluate(() => document.querySelector('.pm-skills .pm-glist .pm-btn')?.focus());
+    const before = await page.evaluate((w) => JSON.stringify(window.__game.state().v2.kit.plans?.[w] ?? null), foeId);
+    await page.keyboard.press('c');
+    const plan = await page.evaluate((w) => window.__game.state().v2.kit.plans?.[w] ?? null, foeId), k = plan?.tactic ? Object.keys(plan.tactic)[0] : null;
+    check(before === 'null' && !!k, `the plan set on the sheet, kept for ${foeName}: ${JSON.stringify(plan)}`);
+    if (k) done.push({ type: 'setTactic', skill: k, cond: plan.tactic[k], foe: foeId });
+    await page.screenshot({ path: path.join(outDir, `${kind}-${mode}-1b-sheet.png`) });
+    // Enter goes onto the sand
+    await page.keyboard.press('Enter');
+  }
   const to = await page.evaluate(() => window.__go);
   check(/scene=arena/.test(to ?? '') && /challenge=1/.test(to ?? ''), `the town goes to ${to}`);
   await open(to);
   const seen = await page.evaluate(() => { const a = window.__arena, st = a.snapshot(); return { names: [a.sim.D.fighters.ren.name, a.sim.D.fighters.marek.name], hp: [a.sim.f.marek.hp, a.sim.f.marek.maxHp], rules: a.rules, stands: !!st.stands, fans: st.fans, empty: !!a.opts.match?.empty, piece: a.opts.match?.piece, hud: document.querySelector('#arena-hud')?.getAttribute('aria-label') ?? '' }; });
-  const foe = kind === 'challenge' ? (GENERICS[who]?.name ?? 'Orla Brask') : 'Corra Dunmere';
+  const foe = foeName;
   check(seen.rules === 'auto' && seen.names[0] === 'Aster' && seen.names[1] === foe, `the arena seats ${seen.names.join(' vs ')} (${seen.rules})`);
   check(seen.empty && !seen.stands && seen.fans === 0, `the stands empty: no townsfolk (${seen.stands}), no generated spectator (${seen.fans})`);
   check(seen.piece === 'lices', `the lists' piece: ${seen.piece}`);

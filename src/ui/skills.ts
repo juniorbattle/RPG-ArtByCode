@@ -1,5 +1,6 @@
 import type { Action, GameState } from '../simulation';
-import { autoOrderView, nextLevel, skillFigures, type SkillFigures } from '../simulation/preview';
+import { autoOrderView, figuresAgainst, nextLevel, skillFigures, type SkillFigures } from '../simulation/preview';
+import type { AutoFighter } from '../combat/auto';
 import { bindCap } from '../input/caps';
 import { actsOf } from '../settings/settings';
 import { v2KitOf } from '../simulation/v2';
@@ -100,9 +101,14 @@ export interface SkillsHost {
   close(): void;
   /** the match sheet: the four are kept and the bout follows */
   enter?(): void;
-  /** the match sheet's rival and their name: the plan set here is kept for them (lot 2 of « La Brute ») */
+  /** the match sheet's rival and their name: the plan set here is kept for them (lot 2 of « La Brute ») */
   foe?: string;
   foeName?: string;
+  /** the two fighters the figures are reckoned for, when they are not the next bout's (the sheet of a challenge, GP-13) */
+  vs?(): { ren: AutoFighter; foe: AutoFighter } | null;
+  /** the foot's way in, when it is not the arena's (the sheet of a challenge: the sand), and the page's subtitle with it */
+  enterLabel?: string;
+  pickLabel?: string;
 }
 
 /** the page: `sheet` the match sheet's left side, the bout following; null the hero's skills */
@@ -111,14 +117,15 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card pm-two pm-skills');
   card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.skills.title'));
   card.innerHTML = `<section class="pm-self${sheet === null ? '' : ' pm-match'}">${sheet === null ? `${figHtml(s)}<div class="pm-worn pm-ladder"></div><dl class="pm-stats">${statsHtml(s)}</dl>` : `<div class="pm-foe-side">${sheet}</div><div class="pm-stats pm-ladder2"></div>`}</section>`
-    + `<section class="pm-goods"><header class="pm-ghead"><h2 class="pm-h">${tx('v2.skills.title')}<small>${tx(sheet === null ? 'v2.skills.sub' : 'v2.skills.pick')}</small></h2><div class="pm-purse"><b></b><small>${tx('ui.skill.of4')}</small></div></header><div class="pm-glist"></div><div class="pm-detail" aria-live="polite"></div><div class="pm-foot"></div></section>`;
+    + `<section class="pm-goods"><header class="pm-ghead"><h2 class="pm-h">${tx('v2.skills.title')}<small>${sheet === null ? tx('v2.skills.sub') : host.pickLabel ?? tx(host.enter ? 'v2.skills.pick' : 'prep.sheet.pick')}</small></h2><div class="pm-purse"><b></b><small>${tx('ui.skill.of4')}</small></div></header><div class="pm-glist"></div><div class="pm-detail" aria-live="polite"></div><div class="pm-foot"></div></section>`;
   root.appendChild(card);
   const list = card.querySelector('.pm-glist') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement, foot = card.querySelector('.pm-foot') as HTMLElement;
   const fit = scrollFade(detail);
   // the match sheet's side (both fighters, then the order of the four) scrolls under its fade where the window is short (journal Passe LC4: 720 px)
   const side = card.querySelector('.pm-match') as HTMLElement | null, fitSide = side ? scrollFade(side) : null;
   const close = footBtn('Esc', tx('ui.close'), () => host.close());
-  const go = sheet === null ? null : footBtn('Enter', tx('v2.skills.keep'), () => host.enter?.(), true);
+  // the match sheet ahead of its bout (GP-12) has no way in: the plan set on it is kept for that rival until the day
+  const go = sheet === null || !host.enter ? null : footBtn('Enter', host.enterLabel ?? tx('v2.skills.keep'), () => host.enter?.(), true);
   const four = (): string[] => { const was = v2KitOf(host.state()).loadout as string[]; return was.filter((x) => chosen.has(x)).concat([...chosen].filter((x) => !was.includes(x))); };
   // `refused`: why the skill selected cannot join the four (SK-2: one ultimate and one super at most)
   let now = '', full = false, refused = '';
@@ -131,7 +138,9 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     if (ladder) ladder.innerHTML = `<p class="pm-sub">${tx('ui.order.title')}</p>${orderHtml(host.state(), four())}`;
     if (wide) wide.innerHTML = `<p class="ttl">${esc(foe && host.foeName ? tx('ui.order.vs', { name: host.foeName }) : tx('ui.order.title'))}</p><p class="pm-sub">${esc(planLine(host.state(), foe, host.foeName))}</p>${autoOrderView(host.state(), four(), foe).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${tx('ui.order.uses', { n: t.uses, gap: num(t.gapS) })}<br>${esc(tx(COND_TEXT[condOf(host.state(), t.id, foe)]))}</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
     if (go) go.disabled = chosen.size !== 4;
-    const lv = kit.levels[now], st = host.state(), f = skillFigures(st, now, lv), up = nextLevel(st, now), k = SKILL_BOOK[now];
+    const lv = kit.levels[now], st = host.state(), vs = host.vs?.() ?? null, f = skillFigures(st, now, lv, vs), up = nextLevel(st, now), k = SKILL_BOOK[now];
+    // whom the skills page reckons its figures against (GP-12: the next opponent, no longer the pool's Marek)
+    const against = sheet === null ? figuresAgainst(st) : null, vsLine = against ? tx('ui.skill.against', { name: RIVALS[against.foe]?.name ?? against.foe, day: against.day }) : '';
     // the next level: the practice sand's up to its cap, then Master Corvin's lesson (the operator's NC-11, journal Passe SK4)
     const said = !up ? tx('ui.skill.top') : up.by === 'lesson' ? tx('ui.skill.lesson', { level: up.level, price: up.price, day: up.day }) : tx('ui.skill.drill', { level: up.level });
     // a rival's signature says whom it was learnt from (SK-4), and a skill a fighter of the town teaches its teacher (NC-10: « Apprise de Lucan Rook »)
@@ -142,7 +151,7 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     // when it leaves, and on the skills page whose plan that is (the general one; a rival's is set on its match sheet)
     const when = on ? `<p class="ab pm-when">${esc(whenText(st, now, foe))}</p>${sheet === null ? `<p class="what">${esc(planLine(st, undefined, undefined))}</p>` : ''}` : '';
     const role = roleName(now);
-    detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))} · ${esc(rankName(now))}${role ? ` · ${esc(tx('ui.skill.role', { role }))}` : ''} · ${tx('v2.skills.level', { level: lv })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, now, up.level) : null, up?.level ?? lv)}<p class="what">${esc(said)}</p>${sig ? `<p class="what">${esc(sig)}</p>` : ''}${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}${refused ? `<p class="no">${esc(refused)}</p>` : ''}<p class="what">${esc(tx('ui.skill.rule'))}</p>`;
+    detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))} · ${esc(rankName(now))}${role ? ` · ${esc(tx('ui.skill.role', { role }))}` : ''} · ${tx('v2.skills.level', { level: lv })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, now, up.level, vs) : null, up?.level ?? lv)}${vsLine ? `<p class="what">${esc(vsLine)}</p>` : ''}<p class="what">${esc(said)}</p>${sig ? `<p class="what">${esc(sig)}</p>` : ''}${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}${refused ? `<p class="no">${esc(refused)}</p>` : ''}<p class="what">${esc(tx('ui.skill.rule'))}</p>`;
     fit();
     fillFoot(foot, footBtn('Space', tx(on ? 'ui.skill.leave' : 'ui.skill.bring'), toggle), on ? footBtn('C', tx('ui.skill.when'), cycle) : null, movable ? moveBtn('left') : null, movable ? moveBtn('right') : null, go, close);
   };

@@ -4,7 +4,8 @@ import { canonical, fnv64 } from './canonical';
 import { ACTIONS, type Action, type ActionDef } from './actions';
 import { endSlot } from './slot';
 import { initialState, CONTENT_ID } from './content';
-import { playerMatch } from '../tournament/pool';
+import { PLANS_PER_RIVAL, playerMatch } from '../tournament/pool';
+import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { computePulse } from '../tournament/pulse';
 import { inEnglish, refOf, tx, type TextRef } from '../narrative/text';
 import { daysOf, v2AfterSlot } from '../tournament/v2calendar';
@@ -145,8 +146,30 @@ export function deserialize(text: string): GameState {
   // game has no such kit and is read as it was
   if (st.v2?.kit && !(st.v2.kit.levels.heavy > 0)) st.v2.kit.levels.heavy = 1;
   if (st.v2?.kit) heavyOutOfFour(st.v2.kit);
+  // a version 2 game saved while a challenge won counted for the vigour: counted again on the tournament's bouts won alone (the operator's GP-14 « La vigueur pour
+  // les combats du tournoi seulement (décision A3 : précise DB7-4) », journal Passe GP2); the health a challenge gave is the rule's to take back
+  // (written only when it differs: a game without a win keeps no field, its fingerprint the same before and after a reload)
+  if (st.v2 && (st.v2.wins ?? 0) !== tournamentWins(st)) st.v2.wins = tournamentWins(st);
+  // a version 2 game saved before the rivals changed their plans (GP-15 « Les rivaux s’adaptent, la rumeur le dit », journal Passe GP2): the changes its tournament
+  // already made, the cut and each bout the player won (a challenge's are not in a save of before)
+  if (st.v2 && st.flags?.v2 === true && !Object.values(st.competitors).some((c) => c.plan !== undefined)) restorePlans(st);
   return st;
 }
+
+/** the plans a game saved before GP-15 would have reached: the cut once the semi-finals are drawn, and a change for each bout the player won against the rival */
+function restorePlans(st: GameState): void {
+  const cut = st.tournament.matches.some((m) => m.stage === 'semi');
+  for (const [id, c] of Object.entries(st.competitors)) {
+    if (!RIVALS[id]) continue;
+    const beaten = st.tournament.matches.filter((m) => m.winner === PLAYER_ID && (m.a === id || m.b === id)).map((m) => m.day), n = (cut ? 1 : 0) + beaten.length;
+    if (!n) continue;
+    const last = Math.max(cut ? 5 : 0, ...beaten);
+    c.plan = n % PLANS_PER_RIVAL; c.planFrom = { day: last, why: beaten.includes(last) ? 'beaten' : 'cut' };
+  }
+}
+
+/** the tournament's bouts the player won (the vigour's count since GP-14) */
+export const tournamentWins = (st: GameState): number => st.tournament.matches.filter((m) => m.winner === PLAYER_ID).length;
 
 /** a version 2 game saved while the heavy attack could be one of the four (journal Passe CH1, before lot 1 of the second redesign made it a base attack of every
  *  fighter, SY-02): the next skill owned, in the skills page's order after the heavy attack, takes its place in the four and in their order (the operator's SL1-7

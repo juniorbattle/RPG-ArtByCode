@@ -73,7 +73,8 @@ test('the guide: thirteen chapters (« Earning coins » since journal Passe ECO2
   // since DB11-5 « Le dire partout, et une séance « Santé » (+20 PV au prochain combat) » (journal Passe DB13), a session may go to health, and the guide
   // says where Ren's health comes from, the rules' own numbers
   assert.match(text.prepare, new RegExp(`gives \\+${STATS.TRAIN_POINT} to the stat you choose \\(Attack, Defence, Endurance or Speed\\), or \\+${STATS.TRAIN_HP} health, at your next bout, up to ${GEAR.TRAIN_MAX} sessions`));
-  assert.match(text.prepare, new RegExp(`Your health starts at ${STATS.REN_BASE.hp} and grows by ${STATS.VIGOUR_HP} for good with each bout you win`));
+  // GP-14 (A3, « La vigueur pour les combats du tournoi seulement (décision A3 : précise DB7-4) », journal Passe GP3): the tournament's bouts alone
+  assert.match(text.prepare, new RegExp(`Your health starts at ${STATS.REN_BASE.hp} and grows by ${STATS.VIGOUR_HP} for good with each bout of the tournament you win \\(a challenge won adds none\\)`));
   assert.match(text.prepare, new RegExp(`takes ${Math.round(GEAR.INJURY_HP * 100)} % of your health`));
   // (how the places connect, journal Passe AL1: the quay has two ways, the Training Ground opens from the forecourt)
   assert.match(text.places, /the Festival Square at its west end, the Arena Forecourt past the guards at its east end; the Training Ground opens from the Arena Forecourt/);
@@ -319,6 +320,7 @@ test('the guide\'s « The duel » and « Preparing a bout » for the duel played
   T.useLanguage('fr', FR);
   try { assert.equal(T.tx('ui.skill.light'), T.tx('auto.light')); } finally { T.useLanguage('en'); }
   // the eve's hint and the tour's last band say the order and the duel that plays itself
-  assert.match(EN['tut.hint.eve.body'], /choose your four skills and their order/);
+  // GP-12 (« La fiche dès que l’adversaire est connu », journal Passe GP3): the eve's hint sends to the match sheet and the rehearsal
+  assert.match(EN['tut.hint.eve.body'], /set your plan against your opponent on their match sheet \(in the menu\) and rehearse it with Master Corvin/);
   assert.match(EN['tut.tour.end.body'], /you prepare it, and the duel plays itself/);
 });

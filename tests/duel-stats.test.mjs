@@ -199,9 +199,9 @@ test('a training session in a version 2 game: one line per stat, the stat chosen
   assert.deepEqual(G.actions(d).filter((x) => x.action.type === 'train').map((x) => [x.action.stat, x.label]), [[undefined, EN['train.label']]]);
 });
 
-test('a challenge won is a bout won (DB7-4); a generic fighter\'s sheet is its rival\'s, lower, at the day\'s stage', () => {
+test('a challenge won adds no vigour (GP-14, A3: « La vigueur pour les combats du tournoi seulement (décision A3 : précise DB7-4) »); a generic fighter\'s sheet is its rival\'s, lower, at the day\'s stage', () => {
   const st = G.makeV2(G.namedState('day1-morning')); st.v2.challenge = { who: 'aldric', day: 1, stake: 'coins' }; st.v2.wins = 0;
-  T.applyChallenge(st, WON, () => {}); assert.equal(st.v2.wins, 1);
+  T.applyChallenge(st, WON, () => {}); assert.equal(st.v2.wins, 0, 'the tournament\'s bouts alone count (journal Passe GP3)');
   const g = GENERICS.aldric, sh = { ...ST.borrowedSheet(g.profile, g) };
   assert.deepEqual(sh, { ...ST.rivalSheet('ilse'), hp: 620 * 0.9, atk: +(10 * 0.95).toFixed(2) });
   assert.deepEqual(M.foeSheetOf({ id: 'aldric', name: '', profile: 'ilse', mods: {} }, 1), ST.borrowedSheet('ilse', g, 1));
@@ -219,7 +219,8 @@ test('the pages read the stats (DB7-7): the gear page Ren\'s five, the skills pa
   for (let lv = 1; lv <= 5; lv++) assert.equal(P.skillFigures(st, 't4', lv).power, +(AD.autoPower('t4', lv) * AD.AUTO_CADENCE.power * AD.AUTO_BRUTE.usePower).toFixed(1)); // at the common cadence (SY-03), ×1.2 under the model (PB-1)
   assert.equal(P.skillFigures(st, 'd1', 1).power, 0, 'a ward has no power');
   // the match sheet: both fighters as the duel builds them (src/combat/autoMatch.ts autoBoutOf), side by side
-  assert.match(src('src/ui/townUi.ts'), /const b = autoBoutOf\(s\), vs = b \? this\.autoVsHtml\(b\.ren, b\.foe, autoForms\(b\), r\.name\) : '';/);
+  // (since GP-12 the next bout's, its form of the day said on the day: src/combat/autoMatch.ts autoNextBout)
+  assert.match(src('src/ui/townUi.ts'), /const b = nb, vs = this\.autoVsHtml\(b\.ren, b\.foe, b\.seed !== null \? autoForms\(\{ seed: b\.seed \}\) : null, r\.name\);/);
   const FR = src('src/narrative/text/fr-texts.ts');
   for (const key of ['auto.sheet.hp', 'auto.sheet.form', 'auto.sheet.dodge', 'auto.sheet.guard', 'auto.sheet.prep', 'ui.skill.power', 'stat.atk', 'stat.def', 'stat.end', 'stat.viv', 'v2.train.stat', 'v2.spar.stat']) { assert.ok(EN[key], key); assert.match(FR, new RegExp(`"${key.replace(/\./g, '\\.')}": `), key); }
   assert.equal(EN['stat.viv'], 'Speed'); assert.match(FR, /"stat\.viv": "Vivacité"/);

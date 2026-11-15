@@ -7,7 +7,10 @@
 //      reading of it, and nothing of the game changed (the fingerprint before and after);
 //   4. the day's bout: the match sheet says Vessa's style and the rehearsal « with this plan »; the bout skipped, its result Node's, Master Corvin's note on the result
 //      screen as Node reads it from the same duel; back in the town, the notebook keeps it;
-//   5. Node replays the page's actions (the bout's result with its note) and finds the same fingerprint.
+//   5. Node replays the page's actions (the bout's result with its note) and finds the same fingerprint;
+//   0. since journal Passe GP3 (the operator's GP-12 « La fiche dès que l’adversaire est connu »), first: the menu's line, the board's Enter on Vessa and Master Corvin's
+//      dialogue open Vessa's match sheet on the eve of the bout (her day, the form said on the day, no way into the arena); a plan set on it with C is kept for her and
+//      the rehearsal plays it; the skills page reckons against her.
 //   node tools/prep-proof.mjs <outDir> [seed]   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/play-flow.mjs; PAGE_LANG=fr the page in French, its texts
 //   checked against the French table)
 import { createRequire } from 'node:module';
@@ -58,8 +61,44 @@ try {
   const town = `?play=1&vis=0&noreload=1${LQ}`;
   await openTown(town);
 
+  // 0. the match sheet as soon as the opponent is known (GP-12): the menu's line, a plan set on it, the skills page, the board, Master Corvin
+  const menuLine = tx('prep.sheet.menu', { name: 'Vessa Lark', day: 2 });
+  const fromMenu = await page.evaluate((l) => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true }));
+    const b = [...document.querySelectorAll('.pm-menu .pm-btn')].find((x) => x.textContent.replace(/\s+/g, ' ').includes(l));
+    b?.click();
+    const c = document.querySelector('.pm-skills.pm-two, .pm-skills');
+    return { found: !!b, text: c?.querySelector('.pm-match')?.textContent ?? '', foot: [...(c?.querySelectorAll('.pm-foot .pm-btn') ?? [])].map((x) => x.textContent.replace(/\s+/g, ' ').trim()) };
+  }, norm(menuLine));
+  check(fromMenu.found, `the menu's line « ${menuLine} »`);
+  check(norm(fromMenu.text).includes(norm(tx('prep.sheet.ahead', { day: 2, name: 'Vessa Lark' }))), 'the sheet of the bout to come: its day, the plan kept for her, the rehearsal playing it');
+  check(norm(fromMenu.text).includes(norm(tx('prep.sheet.formDay'))), `the form of the day « ${tx('prep.sheet.formDay')} »`);
+  check(!fromMenu.foot.some((t) => t.includes(tx('v2.skills.keep'))), `no way into the arena before the day: ${fromMenu.foot.join(' | ')}`);
+  await page.evaluate(() => document.querySelector('.pm-skills .pm-glist .pm-btn')?.focus());
+  await page.keyboard.press('c');
+  const planned = await page.evaluate(() => window.__game.state().v2.kit.plans?.vessa ?? null), pk = planned?.tactic ? Object.keys(planned.tactic)[0] : null;
+  check(!!pk, `a plan set on the sheet, kept for Vessa: ${JSON.stringify(planned)}`);
+  if (pk) done.push({ type: 'setTactic', skill: pk, cond: planned.tactic[pk], foe: 'vessa' });
+  await shot('0-sheet-ahead');
+  await page.keyboard.press('Escape');
+  // the skills page reckons against her (no longer the pool's Marek)
+  const skillsSaid = await page.evaluate(() => { window.__ui.openSkills(false); return document.querySelector('.pm-skills .pm-detail')?.textContent ?? ''; });
+  await page.keyboard.press('Escape');
+  check(norm(skillsSaid).includes(norm(tx('ui.skill.against', { name: 'Vessa Lark', day: 2 }))), 'the skills page reckons against Vessa, day 2');
+  // the board: Enter on her line opens her sheet, Esc back to the board
+  await page.keyboard.press('t');
+  const onVessa = await page.evaluate(() => document.activeElement?.textContent ?? '');
+  check(onVessa.includes('Vessa Lark'), `the board opens on the next opponent: ${norm(onVessa)}`);
+  await page.keyboard.press('Enter');
+  const fromBoard = await page.evaluate(() => !!document.querySelector('.pm-skills .pm-match'));
+  check(fromBoard, 'the board opens the next opponent\'s match sheet');
+  await page.keyboard.press('Escape');
+  check(await page.evaluate(() => !!document.querySelector('.pm-card .pm-who-at')), 'Esc back to the board');
+  await page.keyboard.press('Escape');
+
   // 1. Master Corvin: the rehearsal and his notebook
   const talk = await page.evaluate(() => { window.__ui.openPerson('corvin'); return [...document.querySelectorAll('.pm-talk .pm-btn')].map((x) => x.textContent.replace(/\s+/g, ' ').trim()); });
+  check(talk.some((t) => t.includes(tx('prep.sheet.corvin', { name: 'Vessa Lark' }))), `Corvin offers « ${tx('prep.sheet.corvin', { name: 'Vessa Lark' })} »`);
   done.push({ type: 'talk', who: 'corvin' });
   const label = tx('prep.rehearse.label', { name: 'Vessa Lark', n: PR.REHEARSAL.n });
   check(talk.some((t) => t.includes(label)), `Corvin offers « ${label} »`);
@@ -72,6 +111,8 @@ try {
   const news = to ? await openTown(to) : '';
   const st1 = await page.evaluate(() => window.__game.state()), reh = st1.v2.$rehearsals?.vessa;
   check(!!reh && reh.wins === nodeReh.wins && reh.n === PR.REHEARSAL.n, `the rehearsal's chances the game's: ${reh?.wins} of ${reh?.n} (Node ${nodeReh.wins})`);
+  // the rehearsal plays the plan set on her sheet (GP-12)
+  if (pk && reh?.ren) { const order = reh.ren.skills.map((x) => x.id), i = order.indexOf(pk); check(i >= 0 && reh.ren.tactic?.[i] === planned.tactic[pk], `the rehearsal plays the plan kept for Vessa (${pk}: ${reh.ren.tactic?.[i]})`); }
   check(news.includes(norm(tx('prep.rehearse.log', { name: 'Vessa Lark', wins: nodeReh.wins, n: nodeReh.n }))), `its line in the news: ${news.slice(0, 160)}`);
 
   // 2. the notebook, from the menu

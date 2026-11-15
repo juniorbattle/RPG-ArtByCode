@@ -39,6 +39,10 @@ export interface PlayerState {
 export interface CompetitorState {
   id: string; phaseStatus: string; combatProfile: string; healthState: string; preparation: number; reputation: number; wealth: number;
   relationships: Record<string, number>; objectives: string[]; knownFacts: string[]; teamId?: string;
+  /** a version 2 rival's plan (the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », journal Passe GP2): the index of its plans it plays now
+   *  (src/combat/autoData.ts AUTO_PLANS; absent: its plan of the pool), and the last change, its day and why (the cut, or a defeat against the player) */
+  plan?: number;
+  planFrom?: { day: number; why: 'cut' | 'beaten' };
 }
 
 /** the individual states aggregated once teams appear (TOURNAMENT § 5): typed only, outside the slice (phase III) */
@@ -130,7 +134,8 @@ export interface V2State {
   /** the stat chosen at each training session since the last bout (the operator's DB7-3 « +1 à la stat choisie, pour le prochain combat », journal
    *  Passe DB8): 'atk', 'def', 'end' or 'viv'; emptied with the sessions after the bout */
   prep?: string[];
-  /** the bouts won, the tournament's and the challenges' (DB7-4 « +12 PV par victoire »: Ren's vigour, src/simulation/v2gear.ts v2Stats) */
+  /** the tournament's bouts won (DB7-4 « +12 PV par victoire »: Ren's vigour, src/simulation/v2gear.ts v2Stats); a challenge counted too until the operator's GP-14
+   *  « La vigueur pour les combats du tournoi seulement (décision A3 : précise DB7-4) » (journal Passe GP2): an older save is counted again as it loads (advance.ts) */
   wins?: number;
   /** what the player has seen of each person's offers, kept as their dialogue opens (the operator's MK-4 / MK-5, journal Passe MK2; src/simulation/v2offers.ts): a « $ »
    *  key, saved with the game and left out of its fingerprint */
@@ -178,9 +183,11 @@ export interface V2State {
    *  order once set (src/simulation/v2festival.ts) */
   festival?: V2Festival;
 }
-/** a rumour as it was told: the day, the source (Lio's room, often right; the hooded stranger, never wrong), the rival's health and form as said, and a
- *  secret only the stranger tells (they watched you train, they meet a hood at night) */
-export interface V2Rumour { day: number; src: 'lio' | 'stranger'; hp: 'fit' | 'hurt' | 'injured'; form: 'rusty' | 'steady' | 'sharp'; secret?: 'spy' | 'plot' }
+/** a rumour as it was told: the day, the source (Lio's room, often right; the hooded stranger, never wrong), the rival's form as said, whether they changed their plan
+ *  and since what (the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », journal Passe GP2: `plan`, `since` the cut or their defeat against the player, absent
+ *  when the source says it without knowing why), and a secret only the stranger tells (they watched you train, they meet a hood at night); `hp` the health a rumour told
+ *  before GP-15 took it out (an older save), never said again */
+export interface V2Rumour { day: number; src: 'lio' | 'stranger'; hp?: 'fit' | 'hurt' | 'injured'; form: 'rusty' | 'steady' | 'sharp'; plan?: 'same' | 'new'; since?: 'cut' | 'beaten'; secret?: 'spy' | 'plot' }
 export interface V2Theft { day: number; from: string; item: string; seen: 'caught' | 'found' | null; night?: boolean; settled?: boolean }
 export interface V2Gear { weapon: string; tier: number; armour: string | null; acc: [string | null, string | null]; bag: string[] }
 

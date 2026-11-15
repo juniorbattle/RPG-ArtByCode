@@ -85,6 +85,9 @@ export const SCOUTED: readonly string[] = ['vessa', 'marek'];
  *  and when they train (src/narrative/people.ts): Vessa and Marek on the forecourt and Orla and Ilse on the training ground by day, Cassius on the festival
  *  square at night, Rhosk and Tobin on the training ground by day from day 6; today's game keeps its two */
 export const SCOUTED_V2: readonly string[] = ['vessa', 'marek', 'orla', 'ilse', 'cassius', 'rhosk', 'tobin'];
+/** the plan a rival was seen playing at the last watch is no longer the one it plays (GP-15; src/simulation/v2scout.ts planStale, written here without importing it) */
+const planChanged = (st: GameState, who: string): boolean => { const p = st.flags[`scoutPlan:${who}`]; return (typeof p === 'number' ? p : 0) !== (st.competitors[who]?.plan ?? 0); };
+
 export const scoutable = (st: Pick<GameState, 'flags'>): readonly string[] => (isV2(st) ? SCOUTED_V2 : SCOUTED);
 /** what an hour of a rival's practice shows in a version 2 game (« proposé »): the style their skills make; the skills' names go to the match sheet */
 const SCOUT_HABIT: Record<string, TextKey> = {
@@ -247,6 +250,7 @@ export const ROLE_ACTIONS: T = {
   },
   scout: {
     by: (a) => a.who,
+    // (planChanged: the plan seen at the last watch is no longer the one played, GP-15)
     // a version 2 game (lot L3): every rival where they train, in the days they are in the Cité (a passer-by's days; Rhosk and Tobin from day 6 until lot L6, from the first day since)
     list: (st) => (isV2(st)
       ? SCOUTED_V2.filter((who) => placeOf(PEOPLE[who], true) === st.place && (!PEOPLE[who].days || st.day >= PEOPLE[who].days![0])).map((who) => ({ type: 'scout', who }))
@@ -254,14 +258,17 @@ export const ROLE_ACTIONS: T = {
     // lot 3 of « La Brute » (PB-4, the scouting by tiers, src/simulation/v2scout.ts): a version 2 game watches a rival twice, the style then (another day) the plan
     label: (st, a) => tx(isV2(st) ? (st.facts.includes(`scouted:${a.who}`) ? 'v2.scout.label2' : 'v2.scout.label') : 'scout.label', { name: RIVALS[a.who].name }),
     cost: () => 1,
+    // a plan seen and changed since (GP-15 « Les rivaux s’adaptent, la rumeur le dit »: src/tournament/pool.ts adaptPlan) can be watched again, another day than the last watch
     check: (st, a) => (isV2(st) && !SCOUTED_V2.includes(a.who) ? tx('avail.nobody') : null) ?? available(st, a.who) ?? (!st.facts.includes(`scouted:${a.who}`) ? null
-      : !isV2(st) ? tx('scout.known', { name: RIVALS[a.who].name }) : st.facts.includes(`scouted2:${a.who}`) ? tx('v2.scout.knownPlan', { name: RIVALS[a.who].name })
-        : st.flags[`scoutDay:${a.who}`] === st.day ? tx('v2.scout.today', { name: RIVALS[a.who].name }) : null),
+      : !isV2(st) ? tx('scout.known', { name: RIVALS[a.who].name }) : st.facts.includes(`scouted2:${a.who}`) && !planChanged(st, a.who) ? tx('v2.scout.knownPlan', { name: RIVALS[a.who].name })
+        : st.flags[`scoutDay:${a.who}`] === st.day || st.flags[`scoutPlanDay:${a.who}`] === st.day ? tx('v2.scout.today', { name: RIVALS[a.who].name }) : null),
     apply: (s, a, _r, emit) => {
-      // the second watch, a version 2 game's: their plan (when they use each skill)
+      // the second watch, a version 2 game's: their plan (when they use each skill), the one they play now and its day kept (GP-15: a watch again after a change)
       if (isV2(s) && s.facts.includes(`scouted:${a.who}`)) {
+        const again = s.facts.includes(`scouted2:${a.who}`);
         fact(s, `scouted2:${a.who}`);
-        emit({ kind: 'action', id: `scout2:${a.who}`, cause: 'action:scout', text: tx('v2.scout.log2', { name: RIVALS[a.who].name }), visible: true });
+        s.flags[`scoutPlan:${a.who}`] = s.competitors[a.who]?.plan ?? 0; s.flags[`scoutPlanDay:${a.who}`] = s.day;
+        emit({ kind: 'action', id: `scout2:${a.who}`, cause: 'action:scout', text: tx(again ? 'v2.scout.logNew' : 'v2.scout.log2', { name: RIVALS[a.who].name }), visible: true });
         return;
       }
       fact(s, `scouted:${a.who}`);

@@ -13,9 +13,10 @@ import { pendingFinal } from '../tournament/v2calendar';
  *  know of a rival, each at a place and an hour, each with its price:
  *  - free, on the tournament's board (T): what the town saw them do since yesterday, their public acts (drilling, buying gear, resting, drinking with
  *    another); their secret acts (watching the player, meeting a hood) are never seen there (`seenInTown`);
- *  - a few coins, a rumour of the next opponent: their health and their form (how hard they will hit: their preparation), from Lio's room on the festival
- *    square at any hour (3 coins, right two times in three: a room repeats what it hears), or from the hooded stranger on the quay at night (8 coins,
- *    never wrong, and he tells the secret acts too) (`rumour`);
+ *  - a few coins, a rumour of the next opponent: their form (how hard they will hit: their preparation) and whether they changed their plan, and since what (the
+ *    operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », journal Passe GP2: their health, which the board gives, and their kit, which never changes, out of
+ *    it), from Lio's room on the festival square at any hour (3 coins, right two times in three: a room repeats what it hears), or from the hooded stranger on the quay
+ *    at night (8 coins, never wrong, and he tells the secret acts too) (`rumour`);
  *  - a slot, watching them practise where they train (src/simulation/roles.ts `scout`, every rival of the pool in a version 2 game): their skills on the
  *    match sheet.
  *  And the second place Cassius reaches: the arena's lockers have their own answer, Clerk Odo's strongroom on the eve of a bout (`lockGear`, 5 coins), the
@@ -49,26 +50,38 @@ export function secretOf(s: GameState, who: string): V2Rumour['secret'] {
   return acts.includes('plot') ? 'plot' : acts.includes('spy') ? 'spy' : undefined;
 }
 
-/** what a source says of a rival now: the stranger the truth, secrets included; Lio's room the truth two times in three, else a health and a form that are not */
+/** the plan a rival plays, as the truth tells it (GP-15): changed since the cut or since their defeat against the player (its last change, src/tournament/pool.ts adaptPlan),
+ *  or the plan they began the tournament with */
+function planNews(s: GameState, who: string): Pick<V2Rumour, 'plan' | 'since'> {
+  const c = s.competitors[who];
+  return c?.planFrom ? { plan: 'new', since: c.planFrom.why } : { plan: 'same' };
+}
+
+/** what a source says of a rival now: the stranger the truth, secrets included; Lio's room the truth two times in three, else a form that is not, and the plan's news
+ *  turned over (a change said without its cause, or none said) */
 export function rumourOf(s: GameState, who: string, src: RumourSrc, r: Rng): V2Rumour {
-  const c = s.competitors[who], hp = (c?.healthState ?? 'fit') as V2Rumour['hp'], form = formOf(c?.preparation ?? 0);
-  if (src === 'stranger') { const secret = secretOf(s, who); return { day: s.day, src, hp, form, ...(secret ? { secret } : {}) }; }
+  const c = s.competitors[who], form = formOf(c?.preparation ?? 0), plan = planNews(s, who);
+  if (src === 'stranger') { const secret = secretOf(s, who); return { day: s.day, src, form, ...plan, ...(secret ? { secret } : {}) }; }
   const right = r.next() < RUMOUR.lio.truth;
   // lot L4 (EV-9): the tale Vessa Lark paid the room to tell of this rival, repeated until the player's bout against them (src/simulation/v2rivals.ts)
   if (taleOf(s) === who) return { day: s.day, src, ...TALE };
-  if (right) return { day: s.day, src, hp, form };
+  if (right) return { day: s.day, src, form, ...plan };
   const others = FORMS.filter((f) => f !== form);
-  return { day: s.day, src, hp: hp === 'fit' ? 'hurt' : 'fit', form: others[r.int(0, others.length - 1)] };
+  return { day: s.day, src, form: others[r.int(0, others.length - 1)], plan: plan.plan === 'new' ? 'same' : 'new' };
 }
 
-const HP: Record<V2Rumour['hp'], TextKey> = { fit: 'v2.rumour.hp.fit', hurt: 'v2.rumour.hp.hurt', injured: 'v2.rumour.hp.injured' };
 const FORM: Record<V2Rumour['form'], TextKey> = { rusty: 'v2.rumour.form.rusty', steady: 'v2.rumour.form.steady', sharp: 'v2.rumour.form.sharp' };
 const SECRET: Record<NonNullable<V2Rumour['secret']>, TextKey> = { spy: 'v2.rumour.secret.spy', plot: 'v2.rumour.secret.plot' };
 const SRC: Record<RumourSrc, TextKey> = { lio: 'v2.heard.lio', stranger: 'v2.heard.stranger' };
+/** the plan's news in words (GP-15): kept, changed since the cut, since their defeat against the player, or lately (the cause unknown to the source) */
+const PLAN_NEWS = (h: V2Rumour): TextKey | null =>
+  h.plan === 'same' ? 'v2.rumour.plan.same' : h.plan === 'new' ? (h.since === 'cut' ? 'v2.rumour.plan.cut' : h.since === 'beaten' ? 'v2.rumour.plan.beaten' : 'v2.rumour.plan.new') : null;
 
-/** what the rumour says, in a sentence */
+/** what the rumour says, in one text (a page in French says it again from its reference): the form, then the plan's news (a rumour of an older save: its form alone,
+ *  the health it told no longer said) */
 export function rumourText(who: string, h: V2Rumour): string {
-  const said = tx('v2.rumour.about', { name: RIVALS[who]?.name ?? who, hp: tx(HP[h.hp]), form: tx(FORM[h.form]) });
+  const name = RIVALS[who]?.name ?? who, p = PLAN_NEWS(h);
+  const said = p ? tx('v2.rumour.about', { name, form: tx(FORM[h.form]), plan: tx(p) }) : tx('v2.rumour.form', { name, form: tx(FORM[h.form]) });
   return h.secret ? `${said} ${tx(SECRET[h.secret])}` : said;
 }
 

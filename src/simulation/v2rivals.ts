@@ -98,8 +98,9 @@ export function stanceWords(s: GameState, who: string): string | null {
 
 /** the days whose evening Vessa can pay Lio's room: the evenings of the player's bouts in the pool, before the next one (the pool's rounds, days 2 and 4) */
 export const LIE_EVENINGS: readonly number[] = [2, 4];
-/** the tale she tells of the player's next opponent: hurt, and still rusty (« proposé »: a story to make the player drill less) */
-export const TALE = { hp: 'hurt', form: 'rusty' } as const;
+/** the tale she tells of the player's next opponent: rusty, and nothing new in their plan (« proposé »: a story to make the player drill less; hurt and rusty until the
+ *  operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit » took the health out of the rumour, journal Passe GP2) */
+export const TALE = { form: 'rusty', plan: 'same' } as const;
 
 /** Vessa resents losing to the player: beaten by them, and her grudge (a proud loser falls 15) */
 export const vessaResents = (s: GameState): boolean =>
@@ -111,13 +112,14 @@ export function taleOf(s: GameState): string | null {
   return l && s.day >= l.from && s.day <= l.until ? l.who : null;
 }
 
-/** the end of a version 2 evening: Vessa's tale, if she resents the player and the player's next opponent is not already hurt and rusty (a true tale is no lie).
+/** the end of a version 2 evening: Vessa's tale, if she resents the player and the tale is not already true of the player's next opponent (a true tale is no lie: rusty
+ *  and their first plan kept since GP-15, hurt and rusty before it took the health out of the rumour, journal Passe GP3).
  *  The taverns tell it the next morning (the news dated there); her paying the rounds is seen in town (the board's « Seen in town »: an act of hers in the log) */
 export function vessaTalks(s: GameState, emit: Emit): void {
   if (!isV2(s) || !s.v2 || !LIE_EVENINGS.includes(s.day) || !vessaResents(s) || s.flags['confronted:vessa']) return;
   const who = nextOpponent(s), c = who ? s.competitors[who] : undefined;
   if (!who || who === 'vessa' || !c) return;
-  if (c.healthState !== 'fit' && formOf(c.preparation) === 'rusty') return;
+  if (formOf(c.preparation) === TALE.form && !c.planFrom) return;
   const m = s.tournament.matches.find((x) => !x.winner && x.day > s.day && ((x.a === PLAYER_ID && x.b === who) || (x.b === PLAYER_ID && x.a === who)));
   if (!m) return;
   s.v2.lie = { who, from: s.day + 1, until: m.day };

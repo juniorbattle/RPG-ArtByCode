@@ -29,7 +29,8 @@
 //   node tools/auto-lab.mjs rehearsal [--policy=planner] [--seeds=101..300]
 //       the rehearsal against the real bouts (lot 3 of « La Brute », journal Passe BL3): at each bout of the policy's whole games, the rehearsal's chances from that
 //       state (the shadow at tier 2, its own plan; at tier 1, its skills by their roles) against the bout's result: the mean chances and the bouts won, by stage,
-//       the Brier score, the bouts by tenths of chances
+//       the Brier score, the bouts by tenths of chances; since GP-15 (journal Passe GP3), against a rival who changed their plan, the rehearsal of the plan they play
+//       now against the one of the pool seen and never watched again
 //   (since journal Passe SK2 the rivals' signature attacks are in Ren's catalogue: AC-12's kits wear them, KITS)
 //   kits --equal: every offensive technique at the Flash cut's level, every ultimate at the Thrust's (journal Passe SK3)
 //   every command: --set=<TABLE>.<path>=<value>[,...] changes RULES (AUTO_RULES), SKILLS (AUTO_SKILLS), FOES (AUTO_FOES), RACE (AUTO_RACE), WEAPONS
@@ -359,7 +360,7 @@ export function captureBank(seeds, pn = 'planner') {
   const P = LAB.POLICIES[pn], out = [];
   const wrap = { name: pn, skill: P.skill, choose: (st) => {
     const a = P.choose(st);
-    if (a.type === 'fight') { const b = AM.autoBoutOf(st, 'bout'), c = st.competitors[b.foeId]; out.push({ seed: b.seed, day: st.day, stage: b.stage, round: b.round, foeId: b.foeId, ren: b.ren, prep: c?.preparation ?? 20, foeHp: c ? POOL.rivalMods(c).hp : 1 }); }
+    if (a.type === 'fight') { const b = AM.autoBoutOf(st, 'bout'), c = st.competitors[b.foeId]; out.push({ seed: b.seed, day: st.day, stage: b.stage, round: b.round, foeId: b.foeId, ren: b.ren, prep: c?.preparation ?? 20, foeHp: c ? POOL.rivalMods(c).hp : 1, plan: c?.plan ?? 0 }); }
     return a;
   } };
   for (const s of seeds) { try { LAB.autoplay(s, wrap, 'Ren', 260, 'auto'); } catch (e) { if (!/refused action/.test(String(e))) throw e; } }
@@ -373,7 +374,7 @@ export function fitPool(bank2, t0 = 0.95) {
     let lo = 0.3, hi = 8;
     for (let i = 0; i < 13; i++) {
       const m = (lo + hi) / 2; AD.AUTO_RACE.norm[id] = m; let w = 0;
-      for (const e of bank2) { const r = AU.autoDuel(e.ren, AD.autoFoe(id, AD.autoRaceSheet(id, 0, 0, { preparation: e.prep, hp: e.foeHp }), { stage: 0 }), e.seed); if (AU.autoWinner(r) === 0) w++; }
+      for (const e of bank2) { const r = AU.autoDuel(e.ren, AD.autoFoe(id, AD.autoRaceSheet(id, 0, 0, { preparation: e.prep, hp: e.foeHp }), { stage: 0, plan: id === e.foeId ? e.plan : 0 }), e.seed); if (AU.autoWinner(r) === 0) w++; }
       if (w / bank2.length > t0) lo = m; else hi = m;
     }
     norm[id] = AD.AUTO_RACE.norm[id] = +((lo + hi) / 2).toFixed(3);
@@ -520,9 +521,11 @@ function cinematics() {
 function rehearsal() {
   const seeds = seedList(arg('seeds', '101..300')), pol = LAB.POLICIES[arg('policy', 'planner')];
   const rows = [];
-  const oddsAt = (st, foe, tier) => {
+  const oddsAt = (st, foe, tier, stale = false) => {
     const s = structuredClone(st); s.facts = s.facts.filter((x) => x !== `scouted:${foe}` && x !== `scouted2:${foe}`);
     if (tier >= 1) s.facts.push(`scouted:${foe}`); if (tier >= 2) s.facts.push(`scouted2:${foe}`);
+    // GP-15: the plan seen, the one they play now (or, `stale`, the plan of the pool never watched again)
+    s.flags[`scoutPlan:${foe}`] = stale ? 0 : s.competitors[foe]?.plan ?? 0;
     const r = PR.runRehearsal(s); return r ? r.wins / r.n : NaN;
   };
   for (const seed of seeds) {
@@ -530,7 +533,8 @@ function rehearsal() {
       const a = pol.choose(st);
       if (a.type === 'fight') {
         const b = AM.autoBoutOf(st), won = a.outcome.winner === 'player';
-        rows.push({ stage: b.stage, won, t2: oddsAt(st, b.foeId, 2), t1: oddsAt(st, b.foeId, 1) });
+        const plan = st.competitors[b.foeId]?.plan ?? 0;
+        rows.push({ stage: b.stage, won, t2: oddsAt(st, b.foeId, 2), t1: oddsAt(st, b.foeId, 1), ...(plan ? { t0: oddsAt(st, b.foeId, 2, true) } : {}) });
       }
       return a;
     } };
@@ -543,6 +547,9 @@ function rehearsal() {
     if (!r.length) continue;
     const brier = (k) => mean(r.map((x) => (x[k] - (x.won ? 1 : 0)) ** 2));
     console.log(`  étape ${st} (${r.length}) : gagnés ${pct(r.filter((x) => x.won).length, r.length)} % ; chances dites, palier 2 ${Math.round(100 * mean(r.map((x) => x.t2)))} % (Brier ${brier('t2').toFixed(3)}), palier 1 ${Math.round(100 * mean(r.map((x) => x.t1)))} % (Brier ${brier('t1').toFixed(3)})`);
+    // GP-15: the bouts against a rival who changed their plan, rehearsed against the plan of the pool seen and never watched again
+    const ch = r.filter((x) => x.t0 !== undefined);
+    if (ch.length) { const b0 = mean(ch.map((x) => (x.t0 - (x.won ? 1 : 0)) ** 2)), b2 = mean(ch.map((x) => (x.t2 - (x.won ? 1 : 0)) ** 2)); console.log(`    contre un plan changé (${ch.length}) : gagnés ${pct(ch.filter((x) => x.won).length, ch.length)} % ; le plan vu à jour ${Math.round(100 * mean(ch.map((x) => x.t2)))} % (Brier ${b2.toFixed(3)}), le plan de la poule vu ${Math.round(100 * mean(ch.map((x) => x.t0)))} % (Brier ${b0.toFixed(3)})`); }
   }
   for (const k of ['t2', 't1']) {
     const bins = Array.from({ length: 10 }, () => ({ n: 0, w: 0, o: 0 }));
@@ -554,7 +561,7 @@ function rehearsal() {
  *  rival of the race in force; `--swaps=<from>:<to>:<level>;...` */
 function price() {
   const bank = captureBank(seedList(arg('seeds', '101..300')), arg('policy', 'planner'));
-  const foeOf = (e) => AD.autoFoe(e.foeId, AD.autoRaceSheet(e.foeId, e.stage, e.round, { preparation: e.prep, hp: e.foeHp }), { stage: e.stage });
+  const foeOf = (e) => AD.autoFoe(e.foeId, AD.autoRaceSheet(e.foeId, e.stage, e.round, { preparation: e.prep, hp: e.foeHp }), { stage: e.stage, plan: e.plan });
   const swaps = [['tel quel', null], ...(arg('swaps', 'd1:k_iron:1;d1:k_iron:3;d1:d1:3;s1:k_sunder:1;s1:k_sunder:3;d1:k_feint:1;d1:k_parry:1;t4:t4:3').split(';').map((x) => [x, x.split(':')]))];
   console.log(`${arg('policy', 'planner')}, poule / tableau / finale (% gagnés), une compétence échangée (de:pour:niveau)`);
   for (const [name, sw] of swaps) {

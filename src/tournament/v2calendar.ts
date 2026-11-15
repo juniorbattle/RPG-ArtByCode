@@ -3,7 +3,7 @@ import type { Emit } from '../simulation/advance';
 import { isV2 } from '../simulation/v2';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { joined, tx } from '../narrative/text';
-import { nameOf, standings } from './pool';
+import { adaptPlan, nameOf, standings } from './pool';
 
 /** The ten days of the version 2's tournament (lot V6, journal Passe V6; the project contract's planning lock, § 4: « 1 arrivée, inscription,
  *  découverte de la ville » ... « 10 finale et résolution des principaux arcs »). Phase I only: the duels of the individual phase (the
@@ -75,6 +75,8 @@ export function v2AfterSlot(s: GameState, ended: string, emit: Emit): void {
 function cut(s: GameState, emit: Emit): void {
   const order = standings(s).map((r) => r.id), top = order.slice(0, 4), rest = order.slice(4, 8);
   for (const id of order) { const c = s.competitors[id]; if (c) c.phaseStatus = top.includes(id) ? 'semi' : 'gate'; }
+  // every rival changes its plan at the cut (GP-15 « Les rivaux s’adaptent, la rumeur le dit »)
+  for (const id of order) adaptPlan(s, id, 'cut');
   s.tournament.matches.push(match(4, 6, top[0], top[3], 'semi'), match(4, 6, top[1], top[2], 'semi'), match(4, 6, rest[0], rest[3], 'gate'), match(4, 6, rest[1], rest[2], 'gate'));
   const inside = top.includes(PLAYER_ID);
   emit({ kind: 'match', id: inside ? 'cut:in' : 'cut:out', cause: 'tournament:cut', visible: true, text: inside

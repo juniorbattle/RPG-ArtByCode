@@ -122,8 +122,10 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     if (!res.ok) { console.error(res.reason); return; }
     writeSave(st);
     const won = r.winner === 'ren', lines = (res.events as Array<{ visible: boolean; text: string; kind: string; $t?: TextRef }>).filter((e) => e.visible && (e.kind === 'match' || e.kind === 'consequence' || (!!challenge && e.kind === 'action'))).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('');
-    // the operator's DB11-5 « Le dire partout » (journal Passe DB13): a version 2 bout won (a reprisal adds none) says the vigour it gives and the health of the next bout
-    const vigour = won && v2 && !reprisal ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(st).hp ?? 0, k: num(AUTO_RULES.hpScale) }))}</p>` : '';
+    // the operator's DB11-5 « Le dire partout » (journal Passe DB13): a version 2 bout won says the vigour it gives and the health of the next bout; a challenge won
+    // says it gives none (GP-14 « La vigueur pour les combats du tournoi seulement (décision A3 : précise DB7-4) », journal Passe GP2), a reprisal nothing
+    const vigour = won && v2 && !challenge ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(st).hp ?? 0, k: num(AUTO_RULES.hpScale) }))}</p>`
+      : won && v2 && !reprisal ? `<p class="pm-vigour">${esc(tx('v2.result.noVigour'))}</p>` : '';
     const corvin = note ? `<p class="pm-sub">${tx('note.title')}</p>${noteLines(note).slice(1).map((l) => `<p>${esc(l)}</p>`).join('')}` : '';
     await overlay(`<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}${vigour}${corvin}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
     go(b.params);

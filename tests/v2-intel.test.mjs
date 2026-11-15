@@ -62,7 +62,8 @@ test('a version 2 game: every rival of the pool watched where and when they trai
   // the plan said where it is read, in the page's language (journal Passe SK2: a log line keeps its slots in English and a plan made of sentences is not said again
   // in French from them): the line points to the match sheet and the notebook, which say it
   assert.match(r2.events[0].text, /^You watch Orla Brask at practice again: their plan, .* is on your match sheet and in Master Corvin's notebook now.$/);
-  assert.match(U.foeIntel(r2.state, 'orla'), /Orla Brask's plan: /);
+  // the plan seen, said with its day (the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », journal Passe GP3)
+  assert.match(U.foeIntel(r2.state, 'orla'), /Orla Brask's plan, as you saw it on day 4: /);
   const third = opt(at(r2.state, 5, 'morning', 'training'), (a) => a.type === 'scout' && a.who === 'orla');
   assert.equal(third.ok, false); assert.equal(third.reason, tx('v2.scout.knownPlan', { name: 'Orla Brask' }));
   // Cassius at night on the festival square, behind the hall's stage
@@ -114,36 +115,43 @@ test('a rumour of the next opponent: Lio\'s room on the festival square at every
   for (const name of ['day1-morning', 'lanterns-night', 'day1-evening']) assert.equal(G.actions(G.namedState(name)).filter((x) => x.action.type === 'rumour' || x.action.type === 'lockGear').length, 0, name);
 });
 
-test('the stranger is never wrong, secrets included; Lio\'s room is right two times in three, never tells a secret, and its lies change the health and the form', () => {
+test('the stranger is never wrong, secrets included; Lio\'s room is right two times in three, never tells a secret, and its lies change the form and turn the plan\'s news over (GP-15: the health out of the rumour)', () => {
   const base = at(v2(), 3, 'evening', 'district');
   // Orla (the next opponent of day 3 is Orla, day 4) with a known state: hurt, preparation 75, she watched the player yesterday and met nobody in a hood
   base.competitors.orla.healthState = 'hurt'; base.competitors.orla.preparation = 75;
   base.log.push({ seq: base.log.length, day: 2, slot: 'evening', kind: 'offscreen', id: 'orla:spy', cause: 'offscreen:orla', text: 'Orla Brask watches the other fighters.', visible: false });
   assert.equal(I.nextOpponent(base), 'orla');
-  const truth = { hp: 'hurt', form: FORM(75) };
+  // GP-15 (journal Passe GP3): the form and the plan's news, never the health (the board gives it); Orla has not changed her plan
+  const truth = { form: FORM(75), plan: 'same' };
   for (let k = 0; k < 40; k++) {
     const s = structuredClone(base); s.step = k;
     const h = act(s, { type: 'rumour', src: 'stranger' }).state.v2.heard.orla;
-    assert.deepEqual({ hp: h.hp, form: h.form, secret: h.secret, src: h.src, day: h.day }, { ...truth, secret: 'spy', src: 'stranger', day: 3 });
+    assert.deepEqual({ hp: h.hp, form: h.form, plan: h.plan, since: h.since, secret: h.secret, src: h.src, day: h.day }, { hp: undefined, ...truth, since: undefined, secret: 'spy', src: 'stranger', day: 3 });
   }
+  // a change of plan (src/tournament/pool.ts adaptPlan): the stranger says it and why
+  const beaten = structuredClone(base); beaten.competitors.orla.plan = 1; beaten.competitors.orla.planFrom = { day: 1, why: 'beaten' };
+  assert.deepEqual((({ plan, since }) => ({ plan, since }))(act(beaten, { type: 'rumour', src: 'stranger' }).state.v2.heard.orla), { plan: 'new', since: 'beaten' });
   // a meeting with a hood tells first; a secret older than yesterday is not told
   const plot = structuredClone(base); plot.log.push({ seq: plot.log.length, day: 3, slot: 'morning', kind: 'offscreen', id: 'orla:plot', cause: 'offscreen:orla', text: 'x', visible: false });
   assert.equal(act(plot, { type: 'rumour', src: 'stranger' }).state.v2.heard.orla.secret, 'plot');
   const old = structuredClone(base); old.day = 5; old.tournament.matches.find((m) => m.day === 4 && m.b === 'orla').winner = 'player';
   assert.equal(I.secretOf(old, 'orla'), undefined);
-  // Lio's room over many evenings: right two times in three, never a secret; a lie flips the health and changes the form
+  // Lio's room over many evenings: right two times in three, never a secret; a lie changes the form and turns the plan's news over (a change said without its cause)
   let right = 0; const n = 900;
   for (let k = 0; k < n; k++) {
     const s = structuredClone(base); s.place = 'lanterns'; s.step = k;
     const h = act(s, { type: 'rumour', src: 'lio' }).state.v2.heard.orla;
-    assert.equal(h.secret, undefined, 'the room tells no secret');
-    if (h.hp === truth.hp && h.form === truth.form) right++;
-    else { assert.equal(h.hp, 'fit', 'a lie: the health flipped'); assert.notEqual(h.form, truth.form, 'a lie: another form'); }
+    assert.equal(h.secret, undefined, 'the room tells no secret'); assert.equal(h.hp, undefined, 'no health (GP-15)');
+    if (h.plan === truth.plan && h.form === truth.form) right++;
+    else { assert.deepEqual([h.plan, h.since], ['new', undefined], 'a lie: a change said, its cause unknown'); assert.notEqual(h.form, truth.form, 'a lie: another form'); }
   }
   assert.ok(Math.abs(right / n - 2 / 3) < 0.05, `right ${right} of ${n}`);
   // the words: the source and the day on the board and the match sheet
   const heard = act(base, { type: 'rumour', src: 'stranger' }).state;
-  assert.equal(I.heardLine(heard, 'orla'), tx('v2.heard.line', { src: EN['v2.heard.stranger'], day: 3, said: `${tx('v2.rumour.about', { name: 'Orla Brask', hp: EN['v2.rumour.hp.hurt'], form: EN['v2.rumour.form.sharp'] })} ${EN['v2.rumour.secret.spy']}` }));
+  assert.equal(I.heardLine(heard, 'orla'), tx('v2.heard.line', { src: EN['v2.heard.stranger'], day: 3, said: `${tx('v2.rumour.about', { name: 'Orla Brask', form: EN['v2.rumour.form.sharp'], plan: EN['v2.rumour.plan.same'] })} ${EN['v2.rumour.secret.spy']}` }));
+  // a rumour an older save kept (its health, no plan) is said without the health
+  const older = structuredClone(base); older.v2.heard = { orla: { day: 2, src: 'lio', hp: 'hurt', form: 'rusty' } };
+  assert.equal(I.heardLine(older, 'orla'), tx('v2.heard.line', { src: EN['v2.heard.lio'], day: 2, said: tx('v2.rumour.form', { name: 'Orla Brask', form: EN['v2.rumour.form.rusty'] }) }));
   assert.equal(I.heardLine(heard, 'vessa'), null);
 });
 

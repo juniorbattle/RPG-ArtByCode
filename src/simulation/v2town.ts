@@ -10,7 +10,7 @@ import { holds, recordTheft, registrarOnCatch, wanted } from './v2law';
 import { PASSERS, passerOpen, passersHere } from './v2barter';
 import { applyReprisal } from './v2law';
 import { GENERICS, MUSCLE } from '../narrative/generics';
-import { playerMatch } from '../tournament/pool';
+import { adaptPlan, playerMatch } from '../tournament/pool';
 import { PEOPLE, placeOf, presentAt } from '../narrative/people';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { tx, skillName } from '../narrative/text';
@@ -254,8 +254,8 @@ export function applyChallenge(s: GameState, o: DuelOutcome, emit: Emit): void {
   if (won) {
     // lot L4 (EV-7 « Les suites des actions »): the day's win, which makes the town talk (src/events/v2catalog.ts v2-challenge-fame: Master Corvin's lesson the next day)
     s.flags['challenge-won'] = true; s.flags[`won-challenge:${s.day}`] = true;
-    // the vigour (DB7-4 « +12 PV par victoire », journal Passe DB8): a challenge won counts
-    v.wins = (v.wins ?? 0) + 1;
+    // no vigour for a challenge (the operator's GP-14 « La vigueur pour les combats du tournoi seulement (décision A3 : précise DB7-4) », 15/11/2026, journal
+    // Passe GP2): the stake, the skill, the sand's lesson and the scouting stay; the +24 health are the tournament's bouts' alone (src/tournament/pool.ts)
     if (stake === 'coins') s.player.coins += 2 * STAKE.coins; else s.player.reputation = clamp(s.player.reputation + STAKE.name);
     const c = s.competitors[who]; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) + (temper === 'proud' ? -6 : 10), -100, 100);
     emit({ kind: 'action', id: 'challenge:won', cause: `challenge:${who}`, visible: true, text: tx(stake === 'coins' ? 'v2.challenge.wonCoins' : 'v2.challenge.wonName', { name, n: stake === 'coins' ? 2 * STAKE.coins : STAKE.name }) });
@@ -265,6 +265,8 @@ export function applyChallenge(s: GameState, o: DuelOutcome, emit: Emit): void {
       if (s.flags[`sand:${s.day}`] || s.flags[`sand:${s.day + 1}`]) emit({ kind: 'consequence', id: 'rhosk:beaten', cause: `challenge:${who}`, visible: true, text: tx('v2.sand.challengeLog') });
     }
     learnFromChallenge(s, who, emit);
+    // a rival beaten on the sand changes its plan too (GP-15 « Les rivaux s’adaptent, la rumeur le dit »: « après une défaite contre toi »)
+    adaptPlan(s, who, 'beaten');
     // the sand's lesson (BL1-4 « Au lot 3 : la ville nourrit le build »): the first blow of the plan under the cap rises a level
     sandLesson(s, who, emit);
   } else {

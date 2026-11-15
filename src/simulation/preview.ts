@@ -13,7 +13,7 @@ import { hitFactor, skillPower } from '../combat/stats';
 import { Rng } from '../core/rng';
 import { AUTO_RULES, autoGaugeHit, type AutoFighter, type AutoRole } from '../combat/auto';
 import { autoFoe, autoKitFor, autoOrderOf, autoRaceSheet, autoRen, autoSkill } from '../combat/autoData';
-import { autoBoutOf } from '../combat/autoMatch';
+import { autoNextBout } from '../combat/autoMatch';
 import { piecesViv, v2Stats, wornPieces } from './v2gear';
 
 /** What a purchase or a change of gear would change (the operator's choice UM7-3 « Lot à part : héros, détail, comparaison », journal Passe UM9): no
@@ -75,20 +75,29 @@ export interface SkillFigures {
 /** the four brought, with this skill among them (in the first slot when it is not) */
 const withSkill = (s: GameState, id: string): string[] => { const k = v2KitOf(s); return k.loadout.includes(id as never) ? k.loadout : [id, ...k.loadout.slice(1)]; };
 
-/** the two fighters of the next bout as the duel played by the computer builds them (the bout of the day, else Ren against the pool's Marek) */
+/** the two fighters of the next bout as the duel played by the computer builds them: the next opponent as soon as they are known (the operator's GP-12 « La fiche dès
+ *  que l’adversaire est connu », journal Passe GP2: the bout of the day, else the next one; the pool's Marek before GP-12), Ren against the pool's Marek only once every
+ *  bout is fought */
 function autoPair(s: GameState): { ren: AutoFighter; foe: AutoFighter } {
-  const b = matchSheetFor(s) ? autoBoutOf(s) : null;
+  const b = autoNextBout(s);
   if (b) return { ren: b.ren, foe: b.foe };
   const m = v2Mods(s);
   return { ren: autoRen(v2Stats(s), v2KitOf(s), { weapon: s.v2?.gear?.weapon, hpShare: m.hp, effect: m.effect, gear: wornPieces(s), pieceViv: piecesViv(s) }), foe: autoFoe('marek', autoRaceSheet('marek', 0, 0)) };
 }
 
+/** whom a version 2 game's skills page reckons its figures against (GP-12): the next opponent and their day, or null (the pool's Marek, every bout fought) */
+export function figuresAgainst(s: GameState): { foe: string; day: number } | null {
+  const b = isV2(s) ? autoNextBout(s) : null;
+  return b ? { foe: b.foeId, day: b.day } : null;
+}
+
 /** what a skill does in a bout at a level (journal Passe UM11): no rule of its own either, the numbers are the duel's. A version 2 game's are the duel played by
  *  the computer's (lot 2, journal Passe LC3): the skill at that level, its damage against the next opponent's Defence from Ren's Attack, what it adds to that
  *  opponent's gauge by its Endurance, its charge at Ren's Speed, its effect's length with his gear */
-export function skillFigures(s: GameState, id: string, level: number): SkillFigures {
+export function skillFigures(s: GameState, id: string, level: number, vs?: { ren: AutoFighter; foe: AutoFighter } | null): SkillFigures {
   if (isV2(s)) {
-    const { ren, foe } = autoPair(s), a = autoSkill(id, level, v2Mods(s).effect), e = a.ward ?? a.boost;
+    // `vs` another pair than the next bout's (the sheet of a challenge, GP-13: the fighter challenged)
+    const { ren, foe } = vs ?? autoPair(s), a = autoSkill(id, level, v2Mods(s).effect), e = a.ward ?? a.boost;
     // each blow as the duel strikes it (src/combat/auto.ts hitOnce: its share of the power, at least 1; its share of the gauge): the page said one blow of the whole
     // power, Tourbillon's three of 0.36 are 1.08 of it (journal Passe CO2)
     const off = !e, hits = a.hits ?? [1], k = hitFactor(ren.atk, foe.def);
