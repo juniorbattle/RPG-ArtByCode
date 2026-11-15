@@ -25,6 +25,7 @@ const I = await load('/src/simulation/v2intel.ts');
 const T = await load('/src/simulation/v2town.ts');
 const VG = await load('/src/simulation/v2gear.ts');
 const POOL = await load('/src/tournament/pool.ts');
+const LAB = await load('/src/tournament/lab.ts');
 const ST = await load('/src/combat/stats.ts');
 const TX = await load('/src/narrative/text/index.ts');
 const { EN } = await load('/src/narrative/text/en.ts');
@@ -253,4 +254,20 @@ test('GP-15: the rumour says the plan\'s news and its cause, never the health no
   const old = structuredClone(d6); for (const c of Object.values(old.competitors)) { delete c.plan; delete c.planFrom; }
   const back = G.deserialize(G.serialize(old));
   for (const id of Object.keys(RIVALS)) assert.equal(back.competitors[id].plan ?? 0, d6.competitors[id].plan ?? 0, id);
+});
+
+// ------------------------------------------------------------------------------------------------- GP3-9: the curious player of the laboratory
+// The operator's GP3-9 « Garder GP-14 ; revoir le curieux du laboratoire à part », its recommendation « qu’il achète une lame avec ses gains et garde l’Estoc »,
+// then his answer on the Thrust, measured, « Porter l'ultime apprise (Recommended) » (journal Passe GP4): the curious still steals and challenges, and now equips
+// with its winnings; it brings what it learns, an ultimate in the Thrust's place, one ultimate at most.
+test('GP3-9: the curious player buys the imported blade and a forge tier with its winnings, one ultimate in its kit, and still steals and challenges', () => {
+  let thefts = 0, challenges = 0;
+  for (const seed of [1, 2, 3, 4, 5, 6]) {
+    const st = LAB.autoplay(seed, LAB.POLICIES.curious, 'Ren', 600, 'v2').state;
+    assert.equal(st.v2.gear.weapon, 'imported-blade', `seed ${seed}: the blade`);
+    assert.ok((st.v2.gear.tier ?? 0) >= 1, `seed ${seed}: a forge tier`);
+    assert.equal(st.v2.kit.loadout.filter((id) => AD.skillRank(id) === 'ultimate').length, 1, `seed ${seed}: one ultimate (${st.v2.kit.loadout})`);
+    thefts += (st.v2.thefts ?? []).length; challenges += st.log.filter((e) => e.id === 'challenge:won' || e.id === 'challenge:lost').length;
+  }
+  assert.ok(thefts >= 6 && challenges >= 12, `its spirit kept: ${thefts} thefts, ${challenges} challenges in six games`);
 });

@@ -122,10 +122,11 @@ const PLAN: ReadonlyArray<readonly [PlaceId, Action]> = [
   ['forecourt', { type: 'shopBuy', shop: 'armourer', item: 'iron-ring' }],
   ['district', { type: 'upgradeWeapon' }],
 ];
-/** how far the planner's purchases went: each one is read in the state (the weapon, its tier, the armour, the accessories) */
-function planStep(st: GameState): number {
-  const g = st.v2?.gear, tier = g?.tier ?? 0, blade = g?.weapon === 'imported-blade', acc: Array<string | null> = g?.acc ?? [];
-  const done = [blade, blade && tier >= 1, g?.armour === 'mail-shirt', acc.includes('docker-wrap'), blade && tier >= 2, acc.includes('iron-ring'), blade && tier >= 3];
+/** how far the planner's purchases went: each one is read in the state (the weapon, its tier, the armour, the accessories); `anyAcc` (the curious player, journal
+ *  Passe GP4): an accessory place already holding a piece, a passer-by's included, counts as bought */
+function planStep(st: GameState, anyAcc = false): number {
+  const g = st.v2?.gear, tier = g?.tier ?? 0, blade = g?.weapon === 'imported-blade', acc: Array<string | null> = g?.acc ?? [], worn = acc.filter(Boolean).length;
+  const done = [blade, blade && tier >= 1, g?.armour === 'mail-shirt', acc.includes('docker-wrap') || (anyAcc && worn >= 1), blade && tier >= 2, acc.includes('iron-ring') || (anyAcc && worn >= 2), blade && tier >= 3];
   const i = done.indexOf(false);
   return i < 0 ? PLAN.length : i;
 }
@@ -181,7 +182,8 @@ function curiousV2(st: GameState): Action {
   if (st.v2?.challenge) return { type: 'challengeResult', outcome: challengeOutcome(st, 0.6) };
   // brings what it learnt: a skill won by a challenge takes the place of the start skill of its family and its rank (journal Passe SK4, NC-12: before it, a technique
   // learnt once the Flash cut was gone took the Thrust's place, the kit left without its ultimate, journal Passe SK3); an ultimate, a rival's signature or the
-  // Finishing Blow, the place of the start ultimate (the Thrust: one at most, the operator's SK-2, journal Passe SK2); never four that break the kit's rule
+  // Finishing Blow, the place of the start ultimate (the Thrust: one at most, the operator's SK-2, journal Passe SK2; kept so after the operator's answer « Porter
+  // l'ultime apprise (Recommended) », journal Passe GP4: 19 % of titles against 13 % with the Thrust kept); never four that break the kit's rule
   const kit = v2KitOf(st), learnt = Object.values(SKILL_BOOK).filter((k) => k.source === 'challenge' && (kit.levels[k.id] ?? 0) > 0 && !(kit.loadout as string[]).includes(k.id));
   for (const k of learnt) {
     const ult = skillRank(k.id) === 'ultimate', i = (kit.loadout as string[]).findIndex((id) => SKILL_BOOK[id]?.source === 'start' && (ult ? skillRank(id) === 'ultimate' : SKILL_BOOK[id]?.family === k.family && skillRank(id) === skillRank(k.id)));
@@ -228,13 +230,18 @@ function curiousV2(st: GameState): Action {
   if (hurt) { const h = at('forecourt', { type: 'heal' }); if (h) return h; if (has(st, { type: 'rest' })) return { type: 'rest' }; }
   const boutToday = st.tournament.matches.some((m) => m.day === st.day && (m.a === PLAYER_ID || m.b === PLAYER_ID));
   if (st.slot === 'morning' && boutToday && st.facts.includes('armour-asked')) { const c = at('forecourt', { type: 'checkGear' }); if (c) return c; }
-  // the armour as the diligent buys it, with an argument first (the best chance), then at its price
-  const armour = st.v2?.gear?.armour, want = !armour ? 'padded-jack' : armour === 'padded-jack' ? 'mail-shirt' : null;
+  // its gear with its winnings (GP3-9, journal Passe GP4; before it, the diligent's padded jack then mail shirt and never a blade, journal Passe EVL2): the planner's
+  // pieces in the DB7 curve's order (PLAN: the blade, a forge tier, the mail shirt, the wrap, the forge, the ring, the forge), a piece of a shop bargained first (the
+  // best chance), then at its price; a cold forge repaired; once all is worn, a whetstone on the morning of a bout
   const buy = (): Action | null => {
-    if (!want || st.player.coins < (want === 'padded-jack' ? 25 : 50)) return null;
-    const args = (['name', 'friend', 'pair'] as const).slice().sort((a, b) => argChance(st, b, 'hilde') - argChance(st, a, 'hilde'));
-    for (const arg of args) { const a = at('forecourt', { type: 'bargain', shop: 'armourer', item: want, arg }); if (a) return a; }
-    return at('forecourt', { type: 'shopBuy', shop: 'armourer', item: want });
+    const step = planStep(st, true);
+    if (step >= PLAN.length) return boutToday && st.slot === 'morning' ? at('district', { type: 'shopBuy', shop: 'mara', item: 'whetstone' }) : null;
+    const [place, a] = PLAN[step];
+    if (a.type === 'upgradeWeapon') return at('district', st.services.forge === 'sabotaged' ? { type: 'repair' } : a);
+    if (a.type !== 'shopBuy') return at(place, a);
+    const keeper = SHOPS[a.shop].keeper, args = (['name', 'friend', 'pair'] as const).slice().sort((x, y) => argChance(st, y, keeper) - argChance(st, x, keeper));
+    for (const arg of args) { const b = at(place, { type: 'bargain', shop: a.shop, item: a.item, arg }); if (b) return b; }
+    return at(place, a);
   };
   // a challenge (lot L2b: a stake, once per phase): the three who teach first, then from day 6 a rival out of the title, then the generic fighters; coins staked
   // when the purse allows, else the name
