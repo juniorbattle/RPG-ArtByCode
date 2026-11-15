@@ -159,8 +159,8 @@ export interface V2State {
   shops?: Record<string, { deal?: number; sour?: number; closed?: number; markup?: number; haggled?: number }>;
   /** a challenge put to a fighter in town, waiting for its bout on the sand (lot V4), and the day each fighter was last challenged; `kind` (journal Passe PN1, the
    *  operator's GP-01 « Les deux : se battre quand on est pris, et prendre de force »): 'caught' the fight of a thief caught (`caught` what is at stake), 'seize' a
-   *  passer-by's piece demanded by force */
-  challenge?: { who: string; day: number; stake?: 'coins' | 'name'; reprisal?: boolean; kind?: 'caught' | 'seize'; caught?: V2Caught };
+   *  passer-by's piece demanded by force, 'encounter' the fight of an event's answer or of Lio's quest (src/simulation/v2encounter.ts) */
+  challenge?: { who: string; day: number; stake?: 'coins' | 'name'; reprisal?: boolean; kind?: 'caught' | 'seize' | 'encounter'; caught?: V2Caught; encounter?: V2EncounterFight };
   /** a thief caught, the fine not yet paid (journal Passe PN1, the operator's GP-03 « Gagné : on s’échappe sans amende (la pièce reste) »): who caught the player (the
    *  keeper by day, Wynn of the watch at night, the passer-by), whom the theft was from, the piece, the fine's cap; settled by paying or by fighting, nothing else in between */
   caught?: V2Caught;
@@ -199,6 +199,9 @@ export interface V2State {
  *  before GP-15 took it out (an older save), never said again */
 export interface V2Rumour { day: number; src: 'lio' | 'stranger'; hp?: 'fit' | 'hurt' | 'injured'; form: 'rusty' | 'steady' | 'sharp'; plan?: 'same' | 'new'; since?: 'cut' | 'beaten'; secret?: 'spy' | 'plot' }
 export interface V2Theft { day: number; from: string; item: string; seen: 'caught' | 'found' | null; night?: boolean; settled?: boolean; /** taken by force from a passer-by (journal Passe PN1) */ seized?: boolean }
+/** the fight an event's answer or Lio's quest opens (src/simulation/v2encounter.ts): the encounter it answers (put back if the player calls the fight off), its cost
+ *  (taken again when lost, given back when won), `quest` Lio's card sharps: won, they leave and the quest is done; lost, they take the quest's price and the quest stays open */
+export interface V2EncounterFight { id: 'cutpurse' | 'sharps'; day: number; slot: SlotId; place: PlaceId; quest?: boolean }
 export interface V2Caught { by: string; from: string; item: string; fine: number; night?: boolean; shop?: string }
 export interface V2Gear { weapon: string; tier: number; armour: string | null; acc: [string | null, string | null]; bag: string[] }
 

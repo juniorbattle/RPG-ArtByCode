@@ -24,12 +24,14 @@ export interface NpcFighter {
   look: NpcLookSpec;
   /** their health and blows against NPC_BASE's sheet at the bout's stage */
   hp: number; damage: number;
+  /** a name of their own, for the ones who are no one of the town's sheets (the encounters' fighters, journal Passe QE2): the town's people take theirs from PEOPLE */
+  name?: string;
 }
 
 /** the pool rival whose sheet a townsperson's is drawn from (the race's level, src/combat/autoData.ts autoGenericSheet) */
 export const NPC_BASE = 'orla';
 
-const f = (id: string, look: NpcLookSpec, hp: number, damage: number): NpcFighter => ({ id, look, hp, damage });
+const f = (id: string, look: NpcLookSpec, hp: number, damage: number, name?: string): NpcFighter => ({ id, look, hp, damage, ...(name ? { name } : {}) });
 export const NPC_FIGHTERS: Record<string, NpcFighter> = {
   // the keepers, by day at their stall, and the watch at night; each look follows the person's town sheet (its hair, its main garment), the skin its own
   mara: f('mara', { template: 'f', skin: 'light', hair: 'chestnut', weapon: 'dagger' }, 0.9, 0.95),
@@ -48,4 +50,11 @@ export const NPC_FIGHTERS: Record<string, NpcFighter> = {
   dov: f('dov', { template: 'm', skin: 'light', hair: 'auburn', cloak: 'umber', weapon: 'sword' }, 0.9, 0.95),
   hettie: f('hettie', { template: 'f', skin: 'light', hair: 'dark', cloak: 'moss', weapon: 'mace' }, 0.85, 0.9),
   sela: f('sela', { template: 'f', skin: 'light', hair: 'ash', weapon: 'dagger' }, 0.85, 0.9),
+  // the events' fighters (the operator's Q-05 « Ainsi, avec « se battre » une fois le chantier 1 fusionné », journal Passe QE2): the leader of the card sharps of the festival square and
+  // the cutpurse of the quay's market, on the same templates, each a name of their own (« proposé »)
+  vane: f('vane', { template: 'm', skin: 'tan', hair: 'dark', cloak: 'plum', weapon: 'mace' }, 0.9, 0.95, 'Marrow Vane'),
+  wick: f('wick', { template: 'm', skin: 'medium', hair: 'ash', cloak: 'moss', weapon: 'dagger' }, 0.85, 0.9, 'Wick Sallow'),
 };
+
+/** a fighter's name: the town's person, else the encounter's own (the arena, the sheets and the notebook say it the same way) */
+export const npcFighterName = (id: string): string | undefined => NPC_FIGHTERS[id]?.name;

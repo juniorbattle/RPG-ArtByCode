@@ -117,7 +117,7 @@ export type V2QuestAction =
   | { type: 'buyTreatise' }
   | { type: 'studyTreatise'; skill: string }
   | { type: 'askWatch' }
-  | { type: 'faceSharps'; how: 'pay' | 'watch' };
+  | { type: 'faceSharps'; how: 'pay' | 'watch' | 'fight' };
 
 type T = { [K in V2QuestAction['type']]: ActionDef<Extract<V2QuestAction, { type: K }>> & { by: string | null } };
 const add = (s: GameState, who: string, n: number) => { s.town[who] = clamp((s.town[who] ?? 0) + n, -100, 100); };
@@ -191,14 +191,21 @@ export const V2_QUEST_ACTIONS: T = {
   faceSharps: {
     by: null,
     list: (s) => (isV2(s) && s.place === 'lanterns' && (s.quests.sharps === 'asked' || s.quests.sharps === 'watch')
-      ? [...(s.quests.sharps === 'watch' ? [{ type: 'faceSharps', how: 'watch' } as const] : []), { type: 'faceSharps', how: 'pay' } as const] : []),
-    label: (_s, a) => (a.how === 'pay' ? tx('v2.quest.sharps.payLabel', { price: QUEST.sharpsPrice }) : tx('v2.quest.sharps.watchLabel')),
-    cost: () => 1,
+      ? [...(s.quests.sharps === 'watch' ? [{ type: 'faceSharps', how: 'watch' } as const] : []), { type: 'faceSharps', how: 'pay' } as const, { type: 'faceSharps', how: 'fight' } as const] : []),
+    label: (_s, a) => (a.how === 'pay' ? tx('v2.quest.sharps.payLabel', { price: QUEST.sharpsPrice }) : a.how === 'fight' ? tx('v2.quest.sharps.fightLabel', { price: QUEST.sharpsPrice }) : tx('v2.quest.sharps.watchLabel')),
+    // the fight is the bout on the sand of chantier 1 (Q-05): its slot is booked now and spent at its result
+    cost: (_s, a) => (a.how === 'fight' ? 0 : 1),
+    later: (_s, a) => (a.how === 'fight' ? 1 : 0),
     coins: (_s, a) => (a.how === 'pay' ? QUEST.sharpsPrice : 0),
     check: (s, a) => v2(s) ?? (s.place !== 'lanterns' ? tx('v2.quest.sharps.notHere') : s.slot !== 'evening' ? tx('v2.quest.sharps.night')
       : !(s.quests.sharps === 'asked' || s.quests.sharps === 'watch') ? tx('v2.quest.none') : a.how === 'watch' && s.quests.sharps !== 'watch' ? tx('v2.quest.sharps.noWatch')
-        : a.how === 'pay' && s.player.coins < QUEST.sharpsPrice ? tx('v2.quest.poor', { price: QUEST.sharpsPrice }) : null),
+        : a.how === 'pay' && s.player.coins < QUEST.sharpsPrice ? tx('v2.quest.poor', { price: QUEST.sharpsPrice }) : (a.how === 'fight' ? !!s.v2?.challenge : !!s.v2?.challenge?.encounter?.quest) ? tx('v2.challenge.pending') : null),
     apply: (s, a, _r, emit) => {
+      if (a.how === 'fight') {
+        s.v2!.challenge = { who: 'vane', day: s.day, kind: 'encounter', encounter: { id: 'sharps', day: s.day, slot: s.slot, place: s.place, quest: true } };
+        emit({ kind: 'action', id: 'quest:sharps:fight', cause: 'quest:sharps', visible: true, text: tx('v2.quest.sharps.fightLog') });
+        return;
+      }
       if (a.how === 'pay') s.player.coins -= QUEST.sharpsPrice;
       s.quests.sharps = 'done'; s.facts.push('sharps-gone'); add(s, 'lio', QUEST.doneGoodwill);
       if (a.how === 'watch') add(s, 'hale', 3);

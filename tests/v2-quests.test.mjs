@@ -213,7 +213,7 @@ test('Q-09: a costly event takes its cost, then asks: the sharps let be or refus
   const s = structuredClone(st), c0 = s.player.coins;
   ENG.runEvents(s, computePulse(s), () => ({}), lucky, V2_EVENTS.filter((e) => e.id === 'v2-card-sharps'));
   assert.equal(s.player.coins, c0 - 5, 'the cost taken as before'); assert.equal(ENC.encounterOf(s), 'sharps');
-  assert.deepEqual(G.actions(s).filter((o) => o.action.type === 'answer').map((o) => o.action.how), ['pay', 'refuse']);
+  assert.deepEqual(G.actions(s).filter((o) => o.action.type === 'answer').map((o) => o.action.how), ['pay', 'refuse', 'fight']);
   assert.ok(has(s, 'talk'), 'nothing blocked: the rest stays open');
   const r = act(s, { type: 'answer', how: 'refuse' });
   assert.equal(r.player.coins, c0); assert.equal(r.player.reputation, Math.max(0, s.player.reputation - 2)); assert.equal(r.town.lio, (s.town.lio ?? 0) - 2); assert.equal(ENC.encounterOf(r), null);
@@ -222,14 +222,53 @@ test('Q-09: a costly event takes its cost, then asks: the sharps let be or refus
   // over once the slot that follows ends (the event fired at the end of day 2's evening: it waits through day 3's morning)
   const later = structuredClone(s); later.day = 3; later.slot = 'morning';
   assert.equal(ENC.encounterOf(later), 'sharps'); assert.equal(ENC.encounterOf(pass(later)), null);
-  // the cutpurse: let go only (until « fight », Q-05 / Q-10)
+  // the cutpurse: let go, or fought
   const q = ripe(at(v2(), 'district', 'afternoon', 1));
   ENG.runEvents(q, computePulse(q), () => ({}), lucky, EVENTS.filter((e) => e.id === 'pickpockets'));
-  assert.equal(ENC.encounterOf(q), 'cutpurse'); assert.deepEqual(G.actions(q).filter((o) => o.action.type === 'answer').map((o) => o.action.how), ['pay']);
+  assert.equal(ENC.encounterOf(q), 'cutpurse'); assert.deepEqual(G.actions(q).filter((o) => o.action.type === 'answer').map((o) => o.action.how), ['pay', 'fight']);
   // today's game: no encounter
   const old = ripe(at(G.namedState('day1-morning'), 'district', 'afternoon'));
   ENG.runEvents(old, computePulse(old), () => ({}), lucky, EVENTS.filter((e) => e.id === 'pickpockets'));
   assert.equal(old.v2, undefined);
+});
+
+const outcome = (winner, finisher = null) => ({ winner, playerHp: winner === 'player' ? 100 : 0, playerMaxHp: 300, opponentHp: winner === 'player' ? 0 : 100, opponentMaxHp: 300, finisher });
+const result = (st, o) => act(st, { type: 'challengeResult', outcome: o });
+
+test('Q-05: « se battre » — the event fight is the bout on the sand of chantier 1 (a slot, the bout first): won the coins it took back, lost as many taken again; called off, the answer waits again', () => {
+  const ripe = (s) => { s.flags['pulse:festivity'] = 100; s.flags['pulse:security'] = -100; return s; };
+  const s = ripe(at(v2(), 'lanterns', 'evening', 2)), c0 = s.player.coins;
+  ENG.runEvents(s, computePulse(s), () => ({}), lucky, V2_EVENTS.filter((e) => e.id === 'v2-card-sharps'));
+  const o = G.actions(s).find((x) => x.action.type === 'answer' && x.action.how === 'fight');
+  assert.ok(o.ok, o.reason); assert.equal(o.later, 1, 'a slot booked for the result'); assert.equal(o.cost, 0);
+  const f = act(s, { type: 'answer', how: 'fight' });
+  assert.equal(ENC.encounterOf(f), null); assert.deepEqual({ who: f.v2.challenge.who, kind: f.v2.challenge.kind }, { who: 'vane', kind: 'encounter' });
+  const won = result(f, outcome('player')); assert.equal(won.player.coins, c0, 'the 5 coins back'); assert.notEqual(won.slot, s.slot, 'the fight took the slot');
+  const lost = result(f, outcome('opponent')); assert.equal(lost.player.coins, c0 - 10, 'the 5 coins taken again');
+  const wounded = result(f, outcome('opponent', 'heavy')); assert.equal(wounded.player.injury, s.player.injury + 1, 'a heavy knock-down wounds as every town duel');
+  const off = act(f, { type: 'cancelChallenge' }); assert.equal(off.v2.challenge, undefined); assert.equal(ENC.encounterOf(off), 'sharps', 'the answer waits again');
+  // the cutpurse: Wick Sallow, 4 coins
+  const q = ripe(at(v2(), 'district', 'afternoon', 1)), q0 = q.player.coins;
+  ENG.runEvents(q, computePulse(q), () => ({}), lucky, EVENTS.filter((e) => e.id === 'pickpockets'));
+  const qf = act(q, { type: 'answer', how: 'fight' }); assert.equal(qf.v2.challenge.who, 'wick');
+  assert.equal(result(qf, outcome('player')).player.coins, q0); assert.equal(result(qf, outcome('opponent')).player.coins, q0 - 8);
+  // the bout comes first: day 2's afternoon
+  const bout = ripe(at(v2(), 'forecourt', 'afternoon', 2)); bout.v2.encounter = { id: 'sharps', day: 2, slot: 'afternoon', place: 'forecourt' };
+  refused(bout, { type: 'answer', how: 'fight' }, /bout is this afternoon/i);
+});
+
+test('Q-05: the card sharps fought on the sand — won, they leave and the quest is done (Lio +10); lost, they take 15 coins and the quest stays open; called off, nothing changed', () => {
+  const st = act(at(v2(), 'lanterns', 'evening', 2), { type: 'talk', who: 'lio' }); st.player.coins = 60;
+  const o = G.actions(st).find((x) => x.action.type === 'faceSharps' && x.action.how === 'fight');
+  assert.ok(o.ok, o.reason); assert.equal(o.later, 1); assert.equal(o.cost, 0); assert.equal(o.coins, 0);
+  const f = act(st, { type: 'faceSharps', how: 'fight' }); assert.equal(f.v2.challenge.who, 'vane'); assert.equal(f.quests.sharps, 'asked');
+  const won = result(f, outcome('player'));
+  assert.equal(won.quests.sharps, 'done'); assert.ok(won.facts.includes('sharps-gone')); assert.equal(won.town.lio, (st.town.lio ?? 0) + 10); assert.equal(won.player.coins, 60);
+  const lost = result(f, outcome('opponent'));
+  assert.equal(lost.quests.sharps, 'asked'); assert.equal(lost.player.coins, 45); assert.equal(lost.v2.challenge, undefined);
+  const poor = structuredClone(f); poor.player.coins = 9; assert.equal(result(poor, outcome('opponent')).player.coins, 0, 'never a dead end');
+  const off = act(f, { type: 'cancelChallenge' }); assert.equal(off.quests.sharps, 'asked'); assert.equal(off.v2.challenge, undefined); assert.equal(ENC.encounterOf(off), null);
+  refused(f, { type: 'faceSharps', how: 'pay' }, /./);
 });
 
 test('the words in both languages: each quest\'s name and offer, the encounter\'s answers, the « In progress » page', () => {
@@ -237,4 +276,5 @@ test('the words in both languages: each quest\'s name and offer, the encounter\'
   for (const [id, [en, fr]] of Object.entries(names)) { assert.equal(T.tx(Q.TITLE[id]), en); assert.equal(inFrench(() => T.tx(Q.TITLE[id])), fr); }
   assert.equal(inFrench(() => T.tx('ui.quests.title')), 'En cours'); assert.equal(T.tx('ui.quests.title'), 'In progress');
   assert.match(inFrench(() => T.tx('v2.encounter.sharps.refuse', { n: 5 })), /5 pièces reprises/);
+  assert.match(inFrench(() => T.tx('v2.encounter.won', { name: 'Marrow Vane', n: 5 })), /Marrow Vane sur le sable/);
 });

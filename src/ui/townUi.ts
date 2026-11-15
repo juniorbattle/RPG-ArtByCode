@@ -12,7 +12,9 @@ import { portraitUrl, portraitsReady } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
 import { arrowKeys, el, esc, footBtn, footOf, injectStyle, overlay, pageShell, scrollFade } from './style';
 import { newsLines } from './news';
-import { encounterOf } from '../simulation/v2encounter';
+import { ENCOUNTERS, encounterOf } from '../simulation/v2encounter';
+import { NPC_FIGHTERS } from '../narrative/npcFighters';
+import { QUEST } from '../simulation/v2questData';
 import { skillsPage } from './skills';
 import { cap, itemText, lang, num, said, shortName, skillName, tx, word, type TextRef } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
@@ -251,7 +253,7 @@ export class TownUi {
     card.innerHTML = `<div class="who"><h2 class="pm-h">${esc(tx('v2.encounter.title'))}</h2><div class="pm-line">${ev ? `<p>${esc(said(ev.text, ev.$t))}</p>` : ''}</div></div>`;
     const list = el('div', 'opts');
     // the answer's words in the bandeau once the band is gone
-    for (const o of opts) list.appendChild(this.optionButton(o, () => { const lines = this.said.splice(0); this.closeModal(); if (lines.length) this.flash(lines); }, false));
+    for (const o of opts) list.appendChild(this.optionButton(o, () => { const lines = this.said.splice(0); this.closeModal(); if (o.action.type === 'answer' && o.action.how === 'fight' && this.st.v2?.challenge) this.openChallengeSheet(); else if (lines.length) this.flash(lines); }, false));
     const leave = footBtn('Esc', tx('ui.leave'), () => this.closeModal());
     side.append(list, footOf(leave)); arrowKeys(side);
     card.appendChild(side); root.appendChild(card);
@@ -340,9 +342,9 @@ export class TownUi {
 
   /** the sand's door: a challenge, or a reprisal's muscle waiting there (lot L2b) */
   private sandLabel(s: GameState): string {
-    const c = s.v2?.challenge, name = esc(PEOPLE[c?.who ?? '']?.name ?? c?.who ?? '');
+    const c = s.v2?.challenge, name = esc(PEOPLE[c?.who ?? '']?.name ?? NPC_FIGHTERS[c?.who ?? '']?.name ?? c?.who ?? '');
     // a thief's fight, a passer-by's piece demanded (journal Passe PN1)
-    return c?.reprisal ? tx('v2.reprisal.enter', { name }) : c?.kind === 'caught' ? tx('v2.caught.enter', { name }) : c?.kind === 'seize' ? tx('v2.seize.enter', { name }) : tx('v2.challenge.enter');
+    return c?.reprisal ? tx('v2.reprisal.enter', { name }) : c?.kind === 'caught' ? tx('v2.caught.enter', { name }) : c?.kind === 'seize' ? tx('v2.seize.enter', { name }) : c?.kind === 'encounter' ? tx('v2.encounter.enter', { name }) : tx('v2.challenge.enter');
   }
 
   /** caught (journal Passe PN1, the operator's GP-03 « Gagné : on s’échappe sans amende (la pièce reste) »): the one who caught the player holds them, a band with their face, the
@@ -589,10 +591,11 @@ export class TownUi {
     const teach = ch.reprisal || ch.kind ? null : challengeSkill(s, who);
     const stake = ch.kind === 'caught' && ch.caught ? tx('prep.challenge.caught', { item: itemName(ch.caught.item), fine: CAUGHT_LOST * ch.caught.fine })
       : ch.kind === 'seize' ? tx('prep.challenge.seize', { item: itemName(PASSERS[who]?.item ?? ''), name, n: SEIZE.coinsLost })
+      : ch.kind === 'encounter' && ch.encounter ? (ch.encounter.quest ? tx('prep.challenge.sharps', { price: QUEST.sharpsPrice }) : tx('prep.challenge.encounter', { n: ENCOUNTERS[ch.encounter.id].coins }))
       : ch.reprisal ? tx('prep.challenge.reprisal') : ch.stake === 'coins' ? tx('prep.challenge.stakeCoins', { n: STAKE.coins, back: 2 * STAKE.coins }) : tx('prep.challenge.stakeName', { n: STAKE.name });
     const win = teach ? tx(levelOf(s, teach) > 0 ? 'prep.challenge.raise' : 'prep.challenge.teach', { skill: skillName(teach) }) : '';
     const vs = b ? this.autoVsHtml(b.ren, b.foe, autoForms(b), name) : '';
-    return `<p class="pm-sub">${esc(tx(ch.kind === 'caught' ? 'v2.caught.title' : ch.kind === 'seize' ? 'v2.seize.title' : ch.reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title'))} · ${esc(tx('ui.dayN', { day: s.day }))}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(name)}</h2><p class="pm-sub">${esc(title)}</p></div></div>`
+    return `<p class="pm-sub">${esc(tx(ch.kind === 'caught' ? 'v2.caught.title' : ch.kind === 'seize' ? 'v2.seize.title' : ch.kind === 'encounter' ? 'v2.encounter.fightTitle' : ch.reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title'))} · ${esc(tx('ui.dayN', { day: s.day }))}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(name)}</h2><p class="pm-sub">${esc(title)}</p></div></div>`
       + (like ? `<p class="pm-sub">${esc(like)}</p>` : '') + vs + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('')
       + `<p class="pm-sub">${esc(stake)}</p>${win ? `<p class="pm-sub">${esc(win)}</p>` : ''}${ch.reprisal || ch.kind ? '' : `<p class="pm-sub">${esc(tx('v2.result.noVigour'))}</p>`}<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p>`;
   }

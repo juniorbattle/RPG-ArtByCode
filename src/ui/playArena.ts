@@ -11,6 +11,7 @@ import { dynamicRules } from '../tournament/pool';
 import { stageName } from '../tournament/v2calendar';
 import { GENERICS } from '../narrative/generics';
 import { PEOPLE } from '../narrative/people';
+import { NPC_FIGHTERS } from '../narrative/npcFighters';
 import { boutPiece } from '../audio/plan';
 import { RIVALS } from '../narrative/roster';
 import { ACTION_NAMES_EN } from '../narrative/texts';
@@ -59,7 +60,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   }
   // a generic fighter of the version 2 (lot L2b): its name and epithet from its own table, the arena's generated fighter in its seat until its sheets
   // a townsperson who fights themselves (journal Passe PN1: a thief caught, a passer-by's piece demanded): their name and what they are
-  const fid = sheet.sides[1].fighters[0].id, opp = RIVALS[fid] ?? (GENERICS[fid] ? { id: fid, name: GENERICS[fid].name, epithet: GENERICS[fid].epithet } : { id: fid, name: PEOPLE[fid]?.name ?? fid, epithet: PEOPLE[fid]?.title ?? '' });
+  const fid = sheet.sides[1].fighters[0].id, opp = RIVALS[fid] ?? (GENERICS[fid] ? { id: fid, name: GENERICS[fid].name, epithet: GENERICS[fid].epithet } : { id: fid, name: PEOPLE[fid]?.name ?? NPC_FIGHTERS[fid]?.name ?? fid, epithet: PEOPLE[fid]?.title ?? '' });
   const reprisal = !!challenge && !!st.v2?.challenge?.reprisal, townKind = challenge ? st.v2?.challenge?.kind : undefined;
   // the slot's day state (the afternoon's bout at midday, journal Passe AD1)
   const q = new URLSearchParams(arenaQuery(st));
@@ -68,7 +69,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   // the version 2: the duel played by the computer, decided from the state now (the same duel the match sheet prepared), its script for the arena
   const ao = v2 ? autoOutcome(st, challenge ? 'challenge' : 'bout', { log: true }) : null;
   if (dyn && b.params.has('dyn')) q.set('dyn', b.params.get('dyn')!);
-  const texts = { ...(v2 ? (lang() === 'fr' ? AUTO_TEXTS_FR : AUTO_TEXTS_EN) : dyn ? (lang() === 'fr' ? DYN_TEXTS_FR_GAME : DYN_TEXTS_EN) : TEXTS_EN), subtitle: challenge ? tx(reprisal ? 'v2.challenge.reprisal' : townKind === 'caught' ? 'v2.caught.title' : townKind === 'seize' ? 'v2.seize.title' : 'v2.challenge.title') : v2 && m ? stageName(m) : tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
+  const texts = { ...(v2 ? (lang() === 'fr' ? AUTO_TEXTS_FR : AUTO_TEXTS_EN) : dyn ? (lang() === 'fr' ? DYN_TEXTS_FR_GAME : DYN_TEXTS_EN) : TEXTS_EN), subtitle: challenge ? tx(reprisal ? 'v2.challenge.reprisal' : townKind === 'caught' ? 'v2.caught.title' : townKind === 'seize' ? 'v2.seize.title' : townKind === 'encounter' ? 'v2.encounter.fightTitle' : 'v2.challenge.title') : v2 && m ? stageName(m) : tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
   const app = new ArenaApp({
     canvas: b.canvas, params: q,
     onProgress: progressOn(b.label, b.bar),

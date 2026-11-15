@@ -129,7 +129,7 @@ test('GP-01 / GP-02: a passer-by\'s piece demanded by force, the passers-by only
 
 test('GP-04: every townsperson who can fight has a fighter on a template, its look in the file\'s ramps and a weapon of the list; no child among them', () => {
   const file = NL.NPC_LOOK_FILE, ramps = file.ramps;
-  const fighters = new Set([...Object.values(GEAR.SHOPS).map((s) => s.keeper), T.CATCH_WATCH, ...Object.keys(B.PASSERS)]);
+  const fighters = new Set([...Object.values(GEAR.SHOPS).map((s) => s.keeper), T.CATCH_WATCH, ...Object.keys(B.PASSERS), 'vane', 'wick']); // the last two, the events' fighters (journal Passe QE2)
   for (const id of fighters) {
     const f = NF.NPC_FIGHTERS[id];
     assert.ok(f, `${id} fights on a template`);
@@ -208,7 +208,7 @@ test('GA-W: the template\'s sword never shows behind another weapon (the operato
   }
   // Master Corvin's note after a townsperson's duel names them (it said « 0 for garrick », found by tools/npc-duel-flow.mjs)
   const NB = await load('/src/ui/notebook.ts');
-  for (const id of Object.keys(NF.NPC_FIGHTERS)) assert.equal(NB.fighterName(id), P.PEOPLE[id].name, `${id}: named in the notebook`);
+  for (const id of Object.keys(NF.NPC_FIGHTERS)) assert.equal(NB.fighterName(id), P.PEOPLE[id]?.name ?? NF.NPC_FIGHTERS[id].name, `${id}: named in the notebook`);
   // the weapon drawn at the common length: the man's brace, whose sword runs 91 texels from his left fist past his right hand, holds a hammer no longer than in the other frames
   const m = NL.NPC_LOOK_FILE.sheets[NL.npcSheetId('m')].weapon.frames['skillDef.1'];
   assert.deepEqual(m, [42, 209, 133, 209], 'the brace\'s line from the crossguard by his left fist to the tip');

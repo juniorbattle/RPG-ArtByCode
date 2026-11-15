@@ -11,7 +11,8 @@ import { holds, recordTheft, registrarOnCatch, wanted } from './v2law';
 import { PASSERS, passerOpen, passersHere } from './v2barter';
 import { applyReprisal } from './v2law';
 import { GENERICS, MUSCLE } from '../narrative/generics';
-import { NPC_FIGHTERS } from '../narrative/npcFighters';
+import { NPC_FIGHTERS, npcFighterName } from '../narrative/npcFighters';
+import { applyEncounterFight } from './v2encounter';
 import { adaptPlan, playerMatch } from '../tournament/pool';
 import { PEOPLE, placeOf, presentAt } from '../narrative/people';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
@@ -64,7 +65,7 @@ export function challengeable(s: GameState, who: string): string | null {
 /** the fighters a challenge can be offered to at this place: the three, the generic fighters, and from day 6 the rivals in town */
 // (the muscle waiting for a debt offers no sport: lot L2b)
 const candidates = (s: GameState): string[] => Object.values(PEOPLE).filter((p) => placeOf(p, true) === s.place && (CHALLENGERS[p.id] || GENERICS[p.id] || (s.day >= RIVALS_CHALLENGE_DAY && RIVALS[p.id])) && !(p.id === MUSCLE && s.v2?.reprisal)).map((p) => p.id);
-const fighterName = (who: string): string => PEOPLE[who]?.name ?? GENERICS[who]?.name ?? RIVALS[who]?.name ?? who;
+const fighterName = (who: string): string => PEOPLE[who]?.name ?? npcFighterName(who) ?? GENERICS[who]?.name ?? RIVALS[who]?.name ?? who;
 
 /** a stall forced at night (lot L2a, EV-2: « La nuit, les étals fermés se forcent : plus facile, puni plus fort »): a day shop shut at dusk */
 export const forced = (s: GameState, shop: ShopId): boolean => s.slot === 'evening' && !SHOPS[shop].open.includes('evening');
@@ -297,6 +298,8 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
       if (c.stake === 'coins') s.player.coins += STAKE.coins;
       // a thief's fight called off: the fine waits again (GP-03: paid or fought, nothing else)
       if (c.kind === 'caught' && c.caught) s.v2!.caught = c.caught;
+      // an event's fight called off: its answer waits again, on its place and in its slot (the quest's fight waits in the list)
+      if (c.kind === 'encounter' && c.encounter && !c.encounter.quest) { const { quest: _q, ...e } = c.encounter; s.v2!.encounter = e; }
       emit({ kind: 'action', id: 'challenge:off', cause: 'action:cancelChallenge', visible: true, text: tx(c.reprisal ? 'v2.reprisal.off' : 'v2.challenge.off', { name: fighterName(c.who) }) });
     },
   },
@@ -372,6 +375,7 @@ export function applyChallenge(s: GameState, o: DuelOutcome, emit: Emit): void {
   if (ch.reprisal) { applyReprisal(s, o, emit); return; }
   if (ch.kind === 'caught') { applyCaught(s, ch.caught!, o, emit); return; }
   if (ch.kind === 'seize') { applySeize(s, who, o, emit); return; }
+  if (ch.kind === 'encounter') { applyEncounterFight(s, ch, o, emit); return; }
   (v.challenged ??= {})[who] = s.day;
   // Master Corvin's note of the challenge (lot 3 of « La Brute »), outside the fingerprint
   keepOutcomeNote(s, o, 'challenge');
