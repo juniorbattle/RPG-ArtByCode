@@ -37,6 +37,7 @@ import { AUTO_RULES, type AutoAction, type AutoFighter } from '../combat/auto';
 import { AUTO_STYLES, autoResistsOf, autoStatesOf } from '../combat/autoData';
 import { roleName } from './skills';
 import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
+import { gearPage } from './gearPage';
 import { tabTo } from '../input/pad';
 import { guidePage, hintChapter, hintSeen, markHint, markTold, runTour, showHint, told, TOUR, type HintId } from './tutorial';
 import { settingsPage, type SettingsSection } from './settings';
@@ -667,7 +668,9 @@ export class TownUi {
 
   private openWares(who: string | null): void {
     this.page();
-    this.show(waresPage(who, { state: () => this.st, act: (a) => this.run(a, true), close: () => this.leave(), poor: () => this.hint('poor') }));
+    // a version 2 game's gear and goods: four places and a catalogue of tiles (the operator's request of 16/11/2026, journal Passes EP1 to EP3); today's game keeps the former page
+    const host = { state: () => this.st, act: (a: Action) => this.run(a, true), close: () => this.leave(), poor: () => this.hint('poor') };
+    this.show(isV2(this.st) && this.st.v2?.gear ? gearPage(who, host) : waresPage(who, host));
     // a keeper's goods, the first time (journal Passe TU3, TU-3: bargaining)
     if (who) this.hint('shop');
   }

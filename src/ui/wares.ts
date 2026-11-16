@@ -37,7 +37,7 @@ export function shortLabel(o: Pick<ActionOption, 'label' | 'coins'>): string {
 }
 
 /** a line of the list */
-interface Line {
+export interface Line {
   key: string; action: Action; name: string; sub: string; tag: string; ok: boolean; reason?: string; about: string; verb: string;
   /** a skill or a word with the keeper: no number of the sheet to compare */
   plain?: boolean;
@@ -52,11 +52,11 @@ interface Line {
 }
 
 const STAT_TEXT: Record<StatId, TextKey> = { hp: 'ui.stat.hp', atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv', blow: 'ui.stat.blow', taken: 'ui.stat.taken', ap: 'ui.stat.ap', charge: 'ui.stat.charge', gauge: 'ui.stat.gauge', effect: 'ui.stat.effect' };
-const SLOT_TEXT: Record<GearSlot, TextKey> = { weapon: 'v2.gear.weapon', armour: 'v2.gear.armour', accessory: 'v2.gear.acc', consumable: 'ui.wares.consumable' };
+export const SLOT_TEXT: Record<GearSlot, TextKey> = { weapon: 'v2.gear.weapon', armour: 'v2.gear.armour', accessory: 'v2.gear.acc', consumable: 'ui.wares.consumable' };
 
 /** the actions the goods hold; a version 2 bargain (lot L2a) is put to a piece of them */
 const WARE_TYPES = ['buy', 'shopBuy', 'upgradeWeapon', 'temper', 'buySkill', 'barter'];
-const isArg = (o: ActionOption): boolean => o.action.type === 'bargain' || (o.action.type === 'barter' && !!o.action.arg);
+export const isArg = (o: ActionOption): boolean => o.action.type === 'bargain' || (o.action.type === 'barter' && !!o.action.arg);
 /** the refusals that say there is nothing more to get */
 const DONE: TextKey[] = ['v2.shop.owned', 'buy.haveBlade', 'buy.haveStone', 'v2.buySkill.owned', 'v2.upgrade.max', 'temper.haveBlade'];
 export const isWare = (o: ActionOption): boolean => WARE_TYPES.includes(o.action.type) && !isArg(o);
@@ -65,18 +65,18 @@ export const isGoods = (o: ActionOption): boolean => isWare(o) || isArg(o);
 /** « a mail shirt » as a line's name */
 /** a piece's words; a weapon's with the blows of the light attack it gives in a version 2 game's duel (AUTO_WEAPONS, AC-02; journal Passe CO1: the page showed
  *  the Attack and the Speed only, the sabre's three light cuts said by the guide alone) */
-const pieceAbout = (s: GameState, id: string): string => {
+export const pieceAbout = (s: GameState, id: string): string => {
   // a version 2 piece: its points and its effects in a bout, read from the duel's tables (the operator's GP-20 « Les corriger », journal Passe GP2)
   const w = isV2(s) ? AUTO_WEAPONS[id] : undefined, about = isV2(s) ? pieceWords(id) : itemAbout(id);
   return w ? `${about} · ${tx('ui.wares.blows', { n: w.hits.length, pct: Math.round(w.hits[0] * 100) })}` : about;
 };
 /** « in place of » the piece a line takes off, with what that piece gave in a bout (GP-20: a comparison names both pieces' effects) */
-const insteadOf = (s: GameState, id: string): string => {
+export const insteadOf = (s: GameState, id: string): string => {
   const fx = isV2(s) ? pieceFx(id) : [];
   return fx.length ? tx('ui.wares.insteadFx', { item: itemName(id), fx: fx.join(', ') }) : tx('ui.wares.instead', { item: itemName(id) });
 };
 // a name without its article, capitalised (« a whetstone » → « Whetstone », « une pierre à aiguiser » → « Pierre à aiguiser »)
-const bare = (name: string): string => { const n = name.replace(/^(?:an? |une? |des |les? |la |l’)/, ''); return n[0].toUpperCase() + n.slice(1); };
+export const bare = (name: string): string => { const n = name.replace(/^(?:an? |une? |des |les? |la |l’)/, ''); return n[0].toUpperCase() + n.slice(1); };
 
 export function statValue(id: StatId, v: number): string {
   // a version 2 game's stats (DB7-7): a whole number, or one decimal (the gear's half points)
@@ -84,7 +84,7 @@ export function statValue(id: StatId, v: number): string {
   return id === 'charge' ? `${num(v, 2)} s` : id === 'taken' || id === 'gauge' || id === 'effect' ? `${Math.round(v)} %` : `${Math.round(v)}`;
 }
 
-function goodsLine(s: GameState, o: ActionOption): Line {
+export function goodsLine(s: GameState, o: ActionOption): Line {
   // a passer-by's piece once it has gone (lot L2a): nothing more to get from them
   const a = o.action, done = (!o.ok && DONE.some((k) => tx(k) === o.reason)) || (a.type === 'barter' && s.v2?.passed?.[a.who] !== undefined), base = { key: JSON.stringify(a), action: a, ok: o.ok, reason: o.reason, done, tag: done ? `<span class="cost">${tx('ui.wares.owned')}</span>` : costTag(o) };
   if (a.type === 'shopBuy' || a.type === 'buy') {
@@ -109,7 +109,7 @@ function goodsLine(s: GameState, o: ActionOption): Line {
 }
 
 /** what Mara would give for a piece, from the bag or from the body (`from`), and whether she can now (GP-19): the sale's own check, so the page holds no rule of its own */
-function sellOf(s: GameState, item: string, from?: WornPlace): Line['sell'] {
+export function sellOf(s: GameState, item: string, from?: WornPlace): Line['sell'] {
   if (!isV2(s) || resaleOf(item) <= 0) return undefined;
   const action: Action = from === undefined ? { type: 'sell', item } : { type: 'sell', item, from };
   const why = (ACTIONS.sell as unknown as { check(s: GameState, a: Action): string | null }).check(s, action);
@@ -165,7 +165,7 @@ export function statsHtml(s: GameState): string {
   return `<p class="ttl">${tx('ui.stat.title')}</p>${STAT_IDS.filter((id) => st[id] !== undefined).map((id) => `<div><dt>${tx(STAT_TEXT[id])}</dt><dd>${statValue(id, st[id]!)}</dd></div>`).join('')}`;
 }
 
-function cmpHtml(l: Line, p: Preview | null): string {
+export function cmpHtml(l: Pick<Line, 'action'>, p: Preview | null): string {
   const purse = l.action.type !== 'equip' && p && p.coins[0] !== p.coins[1];
   if (!p || (!p.rows.length && !purse)) return '';
   const rows = p.rows.map((r) => `<span class="l">${tx(STAT_TEXT[r.id])}</span><span class="v">${statValue(r.id, r.now)}</span><span class="a${r.better ? ' up' : ''}">${statValue(r.id, r.after)}</span><span class="m${r.better ? ' up' : ''}">${tx(r.better ? 'ui.wares.better' : 'ui.wares.worse')}</span>`);

@@ -48,13 +48,14 @@ try {
   // 1b. her goods at the keyboard (journal Passe UM9): the first line opens the page, the arrows walk it and the detail follows, Enter buys and the page stays, Esc goes back to her
   await page.keyboard.press('Enter');
   await page.waitForSelector('.pm-wares .pm-btn.on', { timeout: 20000 }).catch(() => {});
-  const seen = () => page.evaluate(() => ({ on: document.querySelector('.pm-glist .pm-btn.on span')?.firstChild?.textContent, name: document.querySelector('.pm-detail .nm')?.textContent, cmp: document.querySelector('.pm-cmp')?.textContent ?? '', purse: document.querySelector('.pm-purse b')?.textContent, news: document.querySelector('.pm-detail .news')?.textContent ?? '', hero: !!document.querySelector('.pm-hero') }));
+  const seen = () => page.evaluate(() => ({ on: (document.querySelector('.pm-glist .pm-btn.on b') ?? document.querySelector('.pm-glist .pm-btn.on span'))?.firstChild?.textContent, name: document.querySelector('.pm-detail .nm')?.textContent, cmp: document.querySelector('.pm-cmp')?.textContent ?? '', purse: document.querySelector('.pm-purse b')?.textContent, news: document.querySelector('.pm-detail .news')?.textContent ?? '', hero: !!document.querySelector('.pm-hero') }));
   const first = await seen();
   check(!!first.on && first.on === first.name && first.hero, `the goods: ${JSON.stringify(first)}`);
   let line = first;
-  for (let i = 0; i < 20 && line.on !== 'Whetstone'; i++) { await page.keyboard.press('ArrowDown'); line = await seen(); }
+  // a version 2 game's goods are tiles in a grid: the right key goes on in reading order; today's list goes down
+  for (let i = 0; i < 24 && line.on !== 'Whetstone'; i++) { await page.keyboard.press(V2 ? 'ArrowRight' : 'ArrowDown'); line = await seen(); }
   // the whetstone's Attack +0.5 since the fighters' stats (journal Passe DB9; its heavy blow before)
-  check(line.name === 'Whetstone' && /Attack/.test(line.cmp) && /Coins/.test(line.cmp), `the arrows reach the whetstone, the detail with them: ${JSON.stringify(line)}`);
+  check(line.name === 'Whetstone' && (V2 ? /Attack/ : /Heavy blow/).test(line.cmp) && /Coins/.test(line.cmp), `the arrows reach the whetstone, the detail with them: ${JSON.stringify(line)}`);
   await page.screenshot({ path: path.join(outDir, 'day1-mara-goods.png') });
   const coins = await page.evaluate(() => window.__game.state().player.coins);
   await page.keyboard.press('Enter');

@@ -111,7 +111,7 @@ test('the board: every bout on both fighters\' sheets, the wins and the points a
 });
 
 test('every page has one foot: the action with Enter, the way out with Esc, outside what scrolls; a list that goes on fades, never cut', () => {
-  const St = src('src/ui/style.ts'), files = ['townUi', 'wares', 'skills', 'board', 'journal'].map((f) => [f, src(`src/ui/${f}.ts`)]);
+  const St = src('src/ui/style.ts'), files = ['townUi', 'wares', 'gearPage', 'skills', 'board', 'journal'].map((f) => [f, src(`src/ui/${f}.ts`)]);
   for (const [f, t] of files) {
     assert.ok(!/<kbd>Esc<\/kbd>\$\{tx\('ui\.(close|leave)/.test(t), `${f}: the way out goes through footBtn`);
     assert.ok(!/pm-gfoot|pm-acts|pm-sheet/.test(t), f);

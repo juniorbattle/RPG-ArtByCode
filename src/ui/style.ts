@@ -137,25 +137,59 @@ const CSS = `
 .sk-tile b{font-weight:600}
 .sk-tile .st{font-size:var(--ds-fs-small);line-height:1.25;color:var(--ds-accent)}
 .sk-tile.warn{opacity:.65}.sk-tile.warn .st{color:var(--ds-muted)}
+/* the gear page (journal Passes EP1 to EP3): the hero and his four places on the left, a catalogue of tiles on the right, in the skills page's drawing */
+.pm-gear .pm-goods{grid-template-rows:auto auto minmax(0,1fr) auto auto}
+.pm-gear .pm-goods .pm-detail{min-height:0;max-height:min(30vh,250px);padding-top:10px}
+.sk-lab.say{color:var(--ds-accent)}
+.gp-casebox{grid-column:2;grid-row:1;min-width:0;align-self:start;display:flex;flex-direction:column;gap:6px}
+.gp-lab{padding:2px 0}
+.gp-cases{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.gp-case{gap:3px;padding:6px 10px 6px}
+.gp-case .sk-main{gap:1px}
+.gp-case .sk-ctl button{padding:1px 8px}
+.pm-gear .pm-stats{margin-top:10px}
+.pm-gear .pm-stats div{padding:3px 0}
+.gp-case .sk-main .gp-k{display:flex;gap:8px;align-items:baseline;width:100%;font-size:var(--ds-fs-small);letter-spacing:.1em;text-transform:uppercase;color:var(--ds-muted)}
+.gp-case .sk-main .gp-k i{margin-left:auto;font-style:normal;letter-spacing:0;text-transform:none}
+.gp-case.hit,.gp-case:has(.sk-main.on),.gp-case.armed{border-color:var(--ds-accent)}
+.gp-case.armed{outline:1px solid var(--ds-accent)}
+.gp-case.hand .sk-main b{color:var(--ds-muted)}
+.gp-case.free .sk-main small.hint{color:var(--ds-accent)}
+.sk-ctl button.sell{color:var(--ds-accent)}
+.gp-panels{display:inline-flex;margin-right:18px;border:1px solid var(--ds-line)}
+.gp-panels+.pm-purse{margin-left:0}
+.gp-seg{font:inherit;font-size:var(--ds-fs-small);padding:4px 16px;border:0;background:none;color:var(--ds-muted);cursor:pointer}
+.gp-seg[aria-pressed=true]{background:var(--ds-ivory);color:var(--ds-ink)}
+.gp-seg:focus{outline:0;box-shadow:inset 0 0 0 1px var(--ds-accent)}
+.pm-glist.sk-tiles.gp-tiles{grid-template-columns:repeat(auto-fill,minmax(164px,1fr))}
+.gp-tiles .gp-sub,.gp-tiles .gp-empty{grid-column:1 / -1;margin:6px 0 -2px}
+.gp-tiles .pm-where{grid-column:1 / -1}
+.gp-tiles .sk-tile .st{display:flex;justify-content:space-between;align-items:baseline;gap:8px;width:100%}
+.gp-tiles .sk-tile .st em{font-style:normal;color:var(--ds-ivory)}
+.gp-tiles .sk-tile.warn{opacity:.8}
+.gp-tiles .sk-tile .st .cost{margin-left:0}
+.gp-confirm .nm{color:var(--ds-accent)}
+@media (max-height:900px){.pm-overlay .pm-card.pm-two.pm-gear{grid-template-columns:minmax(0,480px) minmax(0,1fr)}.pm-gear .gp-lab{display:none}.pm-gear .pm-ghead img{width:48px;height:48px}}
+@media (max-width:1000px){.pm-gear .gp-casebox{grid-column:1}}
 @media (max-height:760px){.sk-legend{display:none}.pm-skills .pm-goods .pm-detail{max-height:18vh}.sk-slot{padding:7px 10px 6px;gap:5px}}
 .pm-detail .nm{margin:0;font:400 var(--ds-fs-label)/1.2 var(--ds-title)}
 .pm-detail .what{margin:2px 0 0;font-size:var(--ds-fs-small);color:var(--ds-muted)}
 .pm-detail .ab{margin:6px 0 0;font-size:var(--ds-fs-body);line-height:1.3}
 .pm-detail .no{margin:10px 0 0;font-size:var(--ds-fs-body);color:var(--ds-accent)}
 .pm-detail .news{margin:0 0 8px;font-size:var(--ds-fs-body);color:var(--ds-accent)}
-.pm-cmp{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px 64px;margin:10px 0 0;font-size:var(--ds-fs-body)}
+.pm-cmp{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px max-content;margin:10px 0 0;font-size:var(--ds-fs-body)}
 .pm-cmp>*{padding:3px 0;border-top:1px solid var(--ds-line);text-align:right;white-space:nowrap}
 .pm-cmp .l{text-align:left;color:var(--ds-muted)}
 .pm-cmp .h{border-top:0;padding-top:0;font-size:var(--ds-fs-small);color:var(--ds-muted)}
 .pm-cmp .v{color:var(--ds-muted)}
 .pm-cmp .a{color:var(--ds-ivory)}
 .pm-cmp .a.up{color:var(--ds-accent)}
-.pm-cmp .m{font-size:var(--ds-fs-small);line-height:1.5;color:var(--ds-muted)}
+.pm-cmp .m{padding-left:12px;font-size:var(--ds-fs-small);line-height:1.5;color:var(--ds-muted)}
 .pm-cmp .m.up{color:var(--ds-accent)}
 .pm-two.still .pm-btn::before{animation:none}
 @media (max-height:900px){.pm-overlay .pm-card.pm-two{--hs:3;column-gap:56px;grid-template-columns:minmax(0,440px) minmax(0,1fr)}.pm-goods .pm-detail{min-height:216px}}
 @media (max-height:640px){.pm-overlay .pm-card.pm-two{--hs:2}.pm-stats{margin-top:10px}.pm-worn .row{padding:5px 0 6px}.pm-worn .row span{display:none}.pm-goods .pm-detail{min-height:196px}.pm-ghead img{width:48px;height:48px}}
-@media (max-width:1000px){.pm-overlay .pm-card.pm-two{column-gap:32px;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}.pm-self{grid-template-columns:minmax(0,1fr)}.pm-fig{display:none}.pm-stats{grid-column:1}.pm-stats div{font-size:var(--ds-fs-small)}.pm-cmp{grid-template-columns:minmax(0,1fr) 72px 72px 56px}}
+@media (max-width:1000px){.pm-overlay .pm-card.pm-two{column-gap:32px;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}.pm-self{grid-template-columns:minmax(0,1fr)}.pm-fig{display:none}.pm-stats{grid-column:1}.pm-stats div{font-size:var(--ds-fs-small)}.pm-cmp{grid-template-columns:minmax(0,1fr) 72px 72px max-content}}
 @media (max-width:700px){
   .pm-overlay .pm-card.pm-two{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);height:calc(100vh - 26px);row-gap:10px}
   .pm-self{display:block}
@@ -169,7 +203,7 @@ const CSS = `
   .pm-ghead{padding-bottom:6px}
   .pm-ghead img{width:48px;height:48px}
   .pm-goods .pm-detail{min-height:0;padding-top:8px}
-  .pm-cmp{grid-template-columns:minmax(0,1fr) 64px 64px 48px}
+  .pm-cmp{grid-template-columns:minmax(0,1fr) 64px 64px max-content}
 }
 @media (max-height:480px) and (min-width:701px){
   .pm-overlay .pm-card.pm-two{display:block;height:calc(100vh - 26px)}
@@ -180,7 +214,7 @@ const CSS = `
   .pm-glist{grid-column:1;grid-row:2}
   .pm-goods .pm-detail{grid-column:2;grid-row:2;min-height:0;padding-top:0}
   .pm-goods .pm-foot{grid-column:1 / 3;grid-row:3;padding-top:4px}
-  .pm-cmp{grid-template-columns:minmax(0,1fr) 64px 64px 48px;margin-top:4px}
+  .pm-cmp{grid-template-columns:minmax(0,1fr) 64px 64px max-content;margin-top:4px}
 }
 /* a phone both narrow and short (568 x 320: the width rule stacked the hero's column over the list, leaving the list and the detail no height and the foot's second line
    under the card, journal Passe PF1): the skills' and the gear's pages as the short screens above, the list and the detail side by side, the foot below */
@@ -196,6 +230,26 @@ const CSS = `
   .pm-skills .sk-note,.pm-skills .sk-places-lab,.pm-skills .pm-detail,.pm-skills .sk-slot .sk-main small{display:none}
   .pm-skills .sk-places{grid-template-columns:repeat(2,minmax(0,1fr))}
   .pm-skills .pm-glist{max-height:none;overflow:visible}
+}
+@media (max-height:480px){
+  .pm-overlay .pm-card.pm-two.pm-gear{display:flex;flex-direction:column;height:calc(100vh - 26px)}
+  .pm-gear .pm-self{display:block;flex:none;padding-bottom:6px}
+  .pm-gear .pm-fig,.pm-gear .pm-stats,.pm-gear .gp-lab,.pm-gear .sk-note,.pm-gear .sk-bar,.pm-gear .gp-case small,.pm-gear .sk-ctl{display:none}
+  .pm-gear .gp-casebox{grid-column:auto}
+  .pm-gear .gp-cases{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .pm-gear .gp-case{padding:3px 8px;gap:0}
+  .pm-gear .gp-case .sk-main{gap:0}
+  .pm-gear .gp-case .sk-main b{font-size:var(--ds-fs-small);line-height:1.15}
+  .pm-gear .gp-case:not(.free) .gp-k{display:none}
+  .pm-gear .pm-goods{flex:1 1 auto;height:auto;min-height:0;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);grid-template-rows:auto minmax(0,1fr) auto;column-gap:18px}
+  .pm-gear .pm-ghead{grid-column:1 / 3;padding-bottom:2px}
+  .pm-gear .pm-glist{grid-column:1;grid-row:2;max-height:none}
+  .pm-gear .pm-detail{grid-column:2;grid-row:2;max-height:none;padding-top:0}
+  .pm-gear .pm-foot{grid-column:1 / 3;grid-row:3;padding-top:4px;column-gap:18px}
+  .pm-gear .pm-glist.sk-tiles{grid-template-columns:minmax(0,1fr);gap:4px}
+  .pm-gear .sk-tile{flex-direction:row;flex-wrap:wrap;column-gap:8px;align-items:baseline;padding:4px 8px}
+  .pm-gear .sk-tile small{display:none}
+  .pm-gear .gp-tiles .sk-tile .st{width:auto;margin-left:auto}
 }
 @media (max-height:480px) and (min-width:701px){
   .pm-notebook .pm-card.pm-two{display:grid;grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr);column-gap:24px}

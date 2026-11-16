@@ -117,15 +117,18 @@ try {
     check(leave[0]?.key === 'Esc' && leave[0]?.label === 'B', `her foot shows B: ${JSON.stringify(leave)}`);
     await press(B.A);
     await page.waitForSelector('.pm-wares .pm-btn.on', { timeout: 20000 }).catch(() => {});
-    const on = () => page.evaluate(() => document.querySelector('.pm-glist .pm-btn.on span')?.firstChild?.textContent ?? null);
+    const on = () => page.evaluate(() => (document.querySelector('.pm-glist .pm-btn.on b') ?? document.querySelector('.pm-glist .pm-btn.on span'))?.firstChild?.textContent ?? null);
     let line = await on();
-    for (let i = 0; i < 8 && line !== 'Whetstone'; i++) { await press(B.DOWN); line = await on(); }
+    for (let i = 0; i < 16 && line !== 'Whetstone'; i++) { await press(B.RIGHT); line = await on(); }
     check(line === 'Whetstone', `A opens her goods, the D-pad reaches the whetstone: ${line}`);
     const coins = await page.evaluate(() => window.__game.state().player.coins);
     await press(B.A);
     const bought = await page.evaluate(() => ({ coins: window.__game.state().player.coins, items: window.__game.state().player.items, wares: !!document.querySelector('.pm-wares') }));
     check(bought.coins === coins - 8 && bought.items.includes('whetstone') && bought.wares, `A buys it, the page stays: ${JSON.stringify(bought)}`);
     await page.screenshot({ path: path.join(outDir, '1-goods.png') });
+    // and a piece to wear, bought the same way (the gear page below plays it)
+    await page.evaluate(() => [...document.querySelectorAll('.pm-glist .pm-btn b')].find((b) => b.textContent === 'Padded jack')?.closest('button')?.focus());
+    await press(B.A);
     await press(B.B);
     check(await page.evaluate(() => !document.querySelector('.pm-wares') && !!document.querySelector('.pm-talk .pm-dlg')), 'B goes back to Mara');
     await press(B.B);
@@ -135,6 +138,33 @@ try {
     check(await page.evaluate(() => !!document.querySelector('.pm-talk[data-here]')), 'Y opens the list of what can be done here');
     await press(B.B);
     check(await page.evaluate(() => !document.querySelector('.pm-talk')), 'B closes it');
+    // the gear page (journal Passe EP3): from the menu; the pad plays it through the game's own actions (a piece bought at Mara's, taken off, worn again, sold)
+    // A takes the worn piece off, X (Space) wears it again, Y asks to sell and A sells, B leaves
+    await press(B.START);
+    for (let i = 0; i < 14 && !(await page.evaluate(() => document.activeElement?.textContent?.startsWith('Gear') ?? false)); i++) await press(B.DOWN);
+    await press(B.A);
+    await page.waitForSelector('.pm-gear', { timeout: 20000 }).catch(() => {});
+    const gp = () => page.evaluate(() => { const g = window.__game.state().v2.gear, s = window.__game.state(); return { armour: g.armour, bag: g.bag, coins: s.player.coins, on: document.activeElement?.closest?.('[data-fk]')?.dataset.fk ?? null, ask: (document.querySelector('.pm-gear .pm-detail')?.textContent ?? '').includes('?'), open: !!document.querySelector('.pm-gear') }; });
+    let g0 = await gp();
+    check(g0.open && g0.on === 'tile:padded-jack' && g0.armour === 'padded-jack', `the menu opens the gear page, the piece bought has the pad: ${g0.on}`);
+    const gcaps = await caps(page, '.pm-gear .pm-foot kbd');
+    check(gcaps.some((c) => c.key === 'Space' && c.label === 'X') && gcaps.some((c) => c.key === 'Esc' && c.label === 'B') && gcaps.some((c) => c.key === 'C' && c.label === 'Y'), `the foot shows the pad's buttons: ${JSON.stringify(gcaps.map((c) => c.key + ':' + c.label))}`);
+    await press(B.A);
+    g0 = await gp();
+    check(g0.armour === null && g0.bag.includes('padded-jack'), 'A takes the worn armour off, to the bag');
+    await press(B.X);
+    g0 = await gp();
+    check(g0.armour === 'padded-jack' && !g0.bag.includes('padded-jack'), 'X (Space) wears it again');
+    const coins0 = g0.coins;
+    await press(B.Y);
+    g0 = await gp();
+    check(g0.ask && g0.coins === coins0 && g0.armour === 'padded-jack', 'Y asks first, nothing sold yet');
+    await press(B.A);
+    g0 = await gp();
+    check(g0.coins === coins0 + 7 && g0.armour === null && !g0.bag.includes('padded-jack'), `A on the question sells it for 7: ${coins0} -> ${g0.coins}`);
+    await page.screenshot({ path: path.join(outDir, '1-gear.png') });
+    await press(B.B);
+    check(!(await gp()).open, 'B leaves the page');
     // Start: the menu, the journal, the shoulders
     await press(B.START);
     const menu = await caps(page, '.pm-menu kbd');
