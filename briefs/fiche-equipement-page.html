@@ -1,0 +1,757 @@
+<title>Fiche page d’équipement</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 72ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p, .card ul { margin: 0; max-width: 72ch; }
+.card ul { padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
+.ctx { color: var(--muted); display: flex; flex-direction: column; gap: 8px; }
+.ctx b { color: var(--fg); }
+.src { font-size: 13px; color: var(--muted); }
+.src code, .ctx code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+.opt .a3 { font-size: 12px; font-weight: 700; color: var(--cendre); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 72ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+
+/* ---------- the mock-up: the game's own night, ivory and gold, whatever the page's theme; drawn on a fixed stage (1280 x 720, or the phone's 568 x 320) scaled to the column ---------- */
+.gm-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; font-size: 14px; color: var(--muted); }
+.gm-toolbar .lab { font-weight: 600; }
+.gm-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.gm-seg button { font: inherit; font-size: 13px; background: var(--surface); color: var(--fg); border: 0; padding: 5px 11px; cursor: pointer; }
+.gm-seg button + button { border-left: 1px solid var(--line); }
+.gm-seg button[aria-pressed="true"] { background: var(--brass); color: #fff; font-weight: 700; }
+:root[data-theme="dark"] .gm-seg button[aria-pressed="true"] { color: #1b1608; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .gm-seg button[aria-pressed="true"] { color: #1b1608; } }
+.gm-wrap { width: 100%; position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #2c3550; background: #0d1222; }
+.gm-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; background: radial-gradient(120% 90% at 30% 20%, #1c2540 0%, #10162a 55%, #0a0e1c 100%); color: #e9e4d6; font-family: "Source Sans 3", "Segoe UI", system-ui, sans-serif; font-size: 16px; line-height: 1.35; }
+.gm-stage * { box-sizing: border-box; }
+.gm-stage button { font: inherit; color: inherit; cursor: pointer; }
+.gm-stage .ti { font-family: "Marcellus", Georgia, serif; font-weight: 400; }
+.gm-lab { font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: #9aa3c0; margin: 0; }
+.gm-cap { display: inline-block; min-width: 24px; text-align: center; border: 1px solid #b9b19a; border-radius: 3px; padding: 0 7px; font-family: "JetBrains Mono", Consolas, monospace; font-size: 13px; color: #e9e4d6; background: transparent; line-height: 22px; }
+.gm-card { position: absolute; left: 24px; right: 24px; top: 28px; bottom: 28px; display: grid; grid-template-columns: 440px minmax(0, 1fr); column-gap: 56px; min-height: 0; }
+.gm-card.C { grid-template-columns: minmax(0, 1fr); left: 120px; right: 120px; }
+.gm-self { display: flex; flex-direction: column; min-height: 0; }
+.gm-selfrow { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 22px; align-items: start; }
+.gm-fig { width: 150px; text-align: center; }
+.gm-fig img { display: block; height: 250px; width: auto; margin: 0 auto; image-rendering: pixelated; }
+.gm-fig h2 { margin: 6px 0 0; padding-top: 6px; border-top: 1px solid #39425f; font-size: 26px; }
+.gm-stats { margin: 16px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; align-content: start; }
+.gm-stats .ttl { grid-column: 1 / 3; margin: 0 0 4px; font-family: "Marcellus", Georgia, serif; font-size: 20px; }
+.gm-stats div { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-top: 1px solid #39425f; font-size: 15px; }
+.gm-stats dt { color: #9aa3c0; }
+.gm-stats dd { margin: 0; white-space: nowrap; }
+.gm-stats dd.up { color: #d9b45a; }
+.gm-stats dd s { color: #9aa3c0; text-decoration: none; margin-right: 6px; }
+.gm-strip { display: flex; flex-wrap: wrap; gap: 4px 22px; font-size: 15px; padding: 2px 0 6px; color: #9aa3c0; }
+.gm-strip b { color: #e9e4d6; font-weight: 600; margin-left: 5px; }
+.gm-cases { display: grid; gap: 8px; min-width: 0; }
+.gm-cases.col { grid-template-columns: minmax(0, 1fr); }
+.gm-cases.row { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.gm-case { position: relative; display: flex; flex-direction: column; gap: 3px; border: 1px solid #39425f; padding: 8px 10px 8px; min-width: 0; background: rgba(15, 20, 38, .35); }
+.gm-case.free { border-style: dashed; }
+.gm-case.hit, .gm-case:has(.gm-main:focus-visible) { border-color: #d9b45a; }
+.gm-case.armed { border-color: #d9b45a; outline: 1px solid #d9b45a; animation: gm-pulse 1.1s infinite alternate; }
+@keyframes gm-pulse { from { background: rgba(217, 180, 90, .04); } to { background: rgba(217, 180, 90, .16); } }
+@media (prefers-reduced-motion: reduce) { .gm-case.armed { animation: none; } }
+.gm-main { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left; width: 100%; padding: 0; border: 0; background: none; }
+.gm-main:focus-visible, .gm-tile:focus-visible, .gm-chip:focus-visible, .gm-ctl button:focus-visible { outline: 2px solid #d9b45a; outline-offset: 2px; }
+.gm-main .k { font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: #9aa3c0; display: flex; gap: 8px; align-items: baseline; width: 100%; }
+.gm-main .k i { margin-left: auto; font-style: normal; letter-spacing: 0; text-transform: none; color: #9aa3c0; }
+.gm-main b { font-family: "Marcellus", Georgia, serif; font-weight: 400; font-size: 19px; color: #f1ecdd; line-height: 1.2; }
+.gm-main small { font-size: 14px; color: #9aa3c0; line-height: 1.25; }
+.gm-case.free .gm-main b { color: #cfc9b6; font-size: 17px; }
+.gm-case.free .gm-main small.hint { color: #d9b45a; }
+.gm-case.hand .gm-main b { color: #aeb6d0; }
+.gm-ctl { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 3px; }
+.gm-ctl button { font-size: 13.5px; color: #9aa3c0; background: none; border: 1px solid #39425f; padding: 1px 9px; }
+.gm-ctl button:hover { color: #f1ecdd; border-color: #e9e4d6; }
+.gm-ctl button.sell { color: #d9b45a; }
+.gm-goods { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.gm-head { display: flex; align-items: flex-start; gap: 14px; padding-bottom: 6px; }
+.gm-head h2 { margin: 0; font-size: 36px; line-height: 1.1; white-space: nowrap; }
+.gm-head h2 small { display: block; font-family: "Source Sans 3", sans-serif; font-size: 16px; color: #9aa3c0; margin-top: 2px; }
+.gm-head .sub { margin: 2px 0 0; font-size: 15px; color: #9aa3c0; max-width: 560px; }
+.gm-purse { margin-left: auto; text-align: right; font-size: 14px; color: #9aa3c0; line-height: 1.1; }
+.gm-purse b { display: block; font-family: "Marcellus", Georgia, serif; font-weight: 400; font-size: 36px; color: #f1ecdd; }
+.gm-purse b s { text-decoration: none; color: #9aa3c0; font-size: 22px; margin-right: 6px; }
+.gm-say { margin: 0; min-height: 22px; font-size: 15px; color: #d9b45a; padding: 2px 0; }
+.gm-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 6px 0 6px; }
+.gm-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.gm-chip { font-size: 14px; padding: 2px 13px; border: 1px solid #39425f; border-radius: 13px; background: none; }
+.gm-chip[aria-pressed="true"] { border-color: #d9b45a; color: #f1ecdd; }
+.gm-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 8px; align-content: start; min-height: 0; overflow: auto; padding-bottom: 4px; flex: 1 1 auto; scrollbar-width: none; }
+.gm-tiles.more { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 30px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 30px), transparent); }
+.gm-sub { grid-column: 1 / -1; margin: 6px 0 -2px; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: #9aa3c0; }
+.gm-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left; padding: 7px 10px; border: 1px solid #39425f; background: rgba(15, 20, 38, .35); min-width: 0; }
+.gm-tile:hover { border-color: #aeb6d0; }
+.gm-tile b { font-weight: 600; font-size: 16px; }
+.gm-tile small { font-size: 14px; color: #9aa3c0; line-height: 1.25; }
+.gm-tile .st { font-size: 14px; color: #d9b45a; line-height: 1.25; display: flex; justify-content: space-between; gap: 8px; width: 100%; }
+.gm-tile[aria-pressed="true"] { border-color: #8f98b8; }
+.gm-tile.sel { border-color: #d9b45a; }
+.gm-tile.off { opacity: .6; }
+.gm-tile.off .st { color: #9aa3c0; }
+.gm-tile .st em { font-style: normal; color: #f0c98a; }
+.gm-detail { border-top: 1px solid #39425f; margin-top: 4px; padding-top: 8px; font-size: 15px; height: 172px; overflow: hidden; flex: none; position: relative; }
+.gm-detail .nm { margin: 0; font-family: "Marcellus", Georgia, serif; font-size: 22px; color: #f1ecdd; }
+.gm-detail p { margin: 0 0 2px; }
+.gm-detail .what { color: #9aa3c0; font-size: 14.5px; }
+.gm-detail .ab { color: #e9e4d6; }
+.gm-cmp { display: grid; grid-template-columns: minmax(0, 1fr) 84px 84px 70px; margin-top: 4px; font-size: 15px; }
+.gm-cmp > * { padding: 2px 0; border-top: 1px solid #39425f; text-align: right; white-space: nowrap; }
+.gm-cmp .l { text-align: left; color: #9aa3c0; }
+.gm-cmp .h { border-top: 0; padding-top: 0; font-size: 13.5px; color: #9aa3c0; }
+.gm-cmp .v { color: #9aa3c0; }
+.gm-cmp .up { color: #d9b45a; }
+.gm-cmp .m { font-size: 13.5px; color: #9aa3c0; }
+.gm-confirm { position: absolute; inset: 0; background: #10162a; z-index: 2; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 6px 2px; }
+.gm-foot { display: flex; align-items: center; gap: 8px 22px; flex-wrap: wrap; border-top: 1px solid #39425f; padding-top: 8px; margin-top: 2px; flex: none; font-size: 15.5px; }
+.gm-foot button { display: inline-flex; align-items: center; gap: 9px; background: none; border: 0; padding: 0; color: #e9e4d6; }
+.gm-foot button.go .gm-cap { border-color: #d9b45a; }
+.gm-foot button.go { color: #d9b45a; }
+.gm-foot .esc { margin-left: auto; }
+.gm-foot button:disabled { opacity: .4; cursor: default; }
+/* the phone: 568 x 320, no hero column, the four places a strip of chips, the list on the left, the detail on the right */
+.gm-phone .gm-card { left: 12px; right: 12px; top: 8px; bottom: 6px; grid-template-columns: minmax(0, 1fr); }
+.gm-phone .gm-goods { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; column-gap: 14px; }
+.gm-phone .gm-head { grid-column: 1 / 3; padding-bottom: 2px; }
+.gm-phone .gm-head h2 { font-size: 24px; }
+.gm-phone .gm-head .sub, .gm-phone .gm-lab { display: none; }
+.gm-phone .gm-say { grid-column: 1 / 3; min-height: 0; font-size: 12px; padding: 0; }
+.gm-phone .gm-purse b { font-size: 22px; }
+.gm-phone .gm-cases { grid-column: 1 / 3; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.gm-phone .gm-case { padding: 3px 6px; }
+.gm-phone .gm-main .k { font-size: 11px; }
+.gm-phone .gm-main b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.gm-phone .gm-main small, .gm-phone .gm-ctl { display: none; }
+.gm-phone .gm-bar { display: none; }
+.gm-phone .gm-tiles { grid-column: 1; grid-row: 4; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.gm-phone .gm-tile { padding: 4px 8px; flex-direction: row; flex-wrap: wrap; column-gap: 8px; align-items: baseline; }
+.gm-phone .gm-tile b { font-size: 14px; }
+.gm-phone .gm-tile small, .gm-phone .gm-tile .st { font-size: 12px; width: auto; }
+.gm-phone .gm-detail { grid-column: 2; grid-row: 4; height: auto; min-height: 0; border-top: 0; margin: 0; padding-top: 0; font-size: 13px; overflow: auto; }
+.gm-phone .gm-detail .nm { font-size: 17px; }
+.gm-phone .gm-detail .what { font-size: 12px; }
+.gm-phone .gm-cmp { font-size: 13px; grid-template-columns: minmax(0, 1fr) 46px 46px 44px; }
+.gm-phone .gm-foot { grid-column: 1 / 3; font-size: 13px; padding-top: 4px; }
+.gm-phone .gm-cap { font-size: 11px; line-height: 17px; padding: 0 5px; min-width: 18px; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions de l’opérateur · 16/11/2026 · page d’équipement (suite de CM-06)</span>
+    <h1>La page d’équipement : quatre cases et un sac en tuiles</h1>
+    <p class="lede">Ta demande, mot pour mot : « il faudra faire pareil pour les equipements afin d'avoir un aspect intuitif et manipulable pour gerer nos armes/armure/accessoires » — la suite de CM-06 (« Après le chantier 5 »), dont le chantier 5 est fusionné. J’ai joué la page (G et les boutiques) au clavier et au clic, et je l’ai redessinée d’après la page des compétences refaite ; <b>la maquette est jouable plus bas : clique les tuiles, les cases, change la disposition.</b> <b>Présentation seule</b> : le catalogue de 32 pièces, les prix, la vente d’une pièce portée, les paliers de la forge, les effets (états, protections) restent ceux des chantiers 4 et 5. Aucune option de cette fiche ne change une décision A3, et rien n’est construit dans le jeu.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l’enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je consigne chacun mot pour mot au journal, puis je construis la page dans le jeu par défaut, en anglais et en français, avec les preuves du navigateur, et je fusionne en avance rapide. Je ne construis rien avant.</p>
+    <p class="src">Sources : <code>src/ui/wares.ts</code> (la page d’aujourd’hui), <code>src/ui/skills.ts</code> (la page des compétences refaite, CM2), <code>src/simulation/v2gear.ts</code>, <code>src/simulation/gear.ts</code>, <code>src/simulation/preview.ts</code>, le journal (Passes CM1, CM2, GP5-1 à GP5-3), la fiche CM : https://claude.ai/artifact/KKxYTXc7z2Tvm1rhwYwC6J (carte CM-06).</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GEAR = [{"id":"training-sword","slot":"weapon","price":0,"name":"une épée d’entraînement","about":"fournie par la poule, en acier simple","fx":[],"fxn":{}},{"id":"imported-blade","slot":"weapon","price":24,"name":"une lame importée","about":"Attaque +4","fx":["vos coups remplissent une jauge 10 % de plus","votre attaque simple se charge 10 % plus longtemps"],"fxn":{"atk":4}},{"id":"duelist-sabre","slot":"weapon","price":50,"name":"un sabre de duelliste","about":"Attaque +5, Vivacité +2","fx":["en combat, sa Vivacité compte pour 50 %","le dernier coup de votre attaque simple passe la garde","vos coups remplissent une jauge 30 % de moins"],"fxn":{"atk":5,"viv":2}},{"id":"viper-blade","slot":"weapon","price":26,"name":"une lame de vipère","about":"Attaque +2","fx":["ses coups peuvent empoisonner, 12 % par coup","vos coups remplissent une jauge 10 % de plus","votre attaque simple se charge 10 % plus longtemps"],"fxn":{"atk":2}},{"id":"serrated-cutlass","slot":"weapon","price":30,"name":"un coutelas dentelé","about":"Attaque +2","fx":["ses coups peuvent faire saigner, 12 % par coup","vos coups remplissent une jauge 10 % de plus","votre attaque simple se charge 10 % plus longtemps"],"fxn":{"atk":2}},{"id":"ember-sword","slot":"weapon","price":30,"name":"une épée de braise","about":"Attaque +2","fx":["ses coups peuvent brûler, 8 % par coup, même gardés","vos coups remplissent une jauge 10 % de plus","votre attaque simple se charge 10 % plus longtemps"],"fxn":{"atk":2}},{"id":"mirror-blade","slot":"weapon","price":30,"name":"une lame-miroir","about":"Attaque +2","fx":["ses coups peuvent aveugler, 15 % par coup","vos coups remplissent une jauge 10 % de plus","votre attaque simple se charge 10 % plus longtemps"],"fxn":{"atk":2}},{"id":"hex-falchion","slot":"weapon","price":30,"name":"un fauchon maudit","about":"Attaque +2","fx":["ses coups peuvent maudire, 40 % par coup","vos coups remplissent une jauge 10 % de plus","votre attaque simple se charge 10 % plus longtemps"],"fxn":{"atk":2}},{"id":"torpor-rapier","slot":"weapon","price":30,"name":"une rapière de torpeur","about":"Attaque +2","fx":["ses coups peuvent paralyser, 40 % par coup","vos coups remplissent une jauge 10 % de plus","votre attaque simple se charge 10 % plus longtemps"],"fxn":{"atk":2}},{"id":"padded-jack","slot":"armour","price":14,"name":"un gambison","about":"Défense +2","fx":["un coup que vous gardez remplit votre jauge à 25 % au lieu de 50 %","réduit de moitié vos chances d’être brûlé"],"fxn":{"def":2}},{"id":"mail-shirt","slot":"armour","price":40,"name":"une cotte de mailles","about":"Défense +6, Vivacité −1","fx":["en combat, sa Vivacité compte pour 50 %","les coups d’une attaque simple vous font 20 % de dégâts en moins","vos chances d’esquiver 50 % plus basses","réduit de moitié vos chances de saigner"],"fxn":{"def":6,"viv":-1}},{"id":"dock-leathers","slot":"armour","price":30,"name":"des cuirs de docker","about":"Défense +3, Endurance +2","fx":["vos chances d’esquiver 30 % plus hautes","vos chances de garder 15 % plus basses","réduit de moitié vos chances d’être empoisonné"],"fxn":{"def":3,"end":2}},{"id":"lucky-ribbon","slot":"accessory","price":10,"name":"un ruban porte-bonheur","about":"+24 PV","fx":["les délais de vos compétences et la recharge de votre coup puissant 20 % plus courts"],"fxn":{"hp":24,"ap":1}},{"id":"iron-ring","slot":"accessory","price":32,"name":"un anneau de fer","about":"Endurance +3","fx":["vos ruptures 25 % plus courtes"],"fxn":{"end":3}},{"id":"swift-boots","slot":"accessory","price":24,"name":"des bottes légères","about":"Vivacité +2","fx":["en combat, sa Vivacité compte pour 50 %","votre première charge d’un combat part aussitôt"],"fxn":{"viv":2}},{"id":"fervour-charm","slot":"accessory","price":12,"name":"un talisman de ferveur","about":"","fx":["vos protections durent 60 % plus longtemps"],"fxn":{"effect":1.6}},{"id":"docker-wrap","slot":"accessory","price":12,"name":"un bandage de docker","about":"+36 PV","fx":[],"fxn":{"hp":36}},{"id":"bezoar-stone","slot":"accessory","price":16,"name":"une pierre de bézoard","about":"Endurance +2","fx":["tient le poison à distance"],"fxn":{"end":2}},{"id":"salamander-charm","slot":"accessory","price":18,"name":"un charme de salamandre","about":"Défense +2, +18 PV","fx":["tient les brûlures à distance"],"fxn":{"def":2,"hp":18}},{"id":"wayfarer-hood","slot":"accessory","price":18,"name":"une capuche de voyageur","about":"Vivacité +2","fx":["en combat, sa Vivacité compte pour 50 %","tient la cécité à distance"],"fxn":{"viv":2}},{"id":"field-tourniquet","slot":"accessory","price":18,"name":"un garrot de campagne","about":"+36 PV","fx":["tient le saignement à distance"],"fxn":{"hp":36}},{"id":"caravan-greatblade","slot":"weapon","price":90,"name":"une lame de caravane","about":"Attaque +10","fx":["vos coups remplissent une jauge 10 % de plus","votre attaque simple se charge 15 % plus longtemps"],"fxn":{"atk":10}},{"id":"tournament-plate","slot":"armour","price":100,"name":"une plate de tournoi","about":"Défense +8, Vivacité −1","fx":["en combat, sa Vivacité compte pour 50 %","les coups d’une attaque simple vous font 30 % de dégâts en moins","vos chances d’esquiver 60 % plus basses","réduit de moitié vos chances de saigner"],"fxn":{"def":8,"viv":-1}},{"id":"masters-sash","slot":"accessory","price":85,"name":"une écharpe de maître","about":"Vivacité +3, +36 PV","fx":["en combat, sa Vivacité compte pour 50 %","les délais de vos compétences et la recharge de votre coup puissant 10 % plus courts","votre première charge d’un combat part aussitôt"],"fxn":{"viv":3,"hp":36}},{"id":"champion-laurel","slot":"accessory","price":80,"name":"un laurier de champion","about":"+60 PV, Endurance +2","fx":["vos protections durent 25 % plus longtemps","vos ruptures 15 % plus courtes"],"fxn":{"hp":60,"end":2,"effect":1.25}},{"id":"river-pearl","slot":"accessory","price":30,"name":"une bague à perle de rivière","about":"Endurance +3, +20 PV","fx":[],"fxn":{"end":3,"hp":20}},{"id":"knight-hauberk","slot":"armour","price":60,"name":"un haubert de chevalier","about":"Défense +7, Vivacité −1","fx":["en combat, sa Vivacité compte pour 50 %","les coups d’une attaque simple vous font 20 % de dégâts en moins","vos chances d’esquiver 50 % plus basses","réduit de moitié vos chances de saigner"],"fxn":{"def":7,"viv":-1}},{"id":"pilgrim-medal","slot":"accessory","price":14,"name":"une médaille de pèlerin","about":"+32 PV","fx":["vos protections durent 15 % plus longtemps"],"fxn":{"hp":32,"effect":1.15}},{"id":"mender-gloves","slot":"accessory","price":22,"name":"des gants de ravaudeuse","about":"Défense +1, Endurance +2","fx":[],"fxn":{"def":1,"end":2}},{"id":"courier-boots","slot":"accessory","price":12,"name":"des bottes de coursier","about":"Vivacité +1","fx":["en combat, sa Vivacité compte pour 50 %"],"fxn":{"viv":1}},{"id":"minstrel-charm","slot":"accessory","price":12,"name":"un charme de ménestrel","about":"+24 PV","fx":["vos protections durent 15 % plus longtemps"],"fxn":{"hp":24,"effect":1.15}},{"id":"sergeant-gorget","slot":"accessory","price":14,"name":"un gorgerin de vieux sergent","about":"Défense +2, +12 PV","fx":[],"fxn":{"def":2,"hp":12}},{"id":"hostler-leathers","slot":"armour","price":18,"name":"un cuir de palefrenier","about":"Défense +2, Endurance +1","fx":[],"fxn":{"def":2,"end":1}}];
+// ---------- la maquette jouable : la page d’équipement proposée (les vraies pièces, leurs vrais points, leurs vrais prix) ----------
+function mockGear(root, o = {}) {
+  const P = Object.fromEntries(GEAR.map((g) => [g.id, g]));
+  const KIND = { weapon: 'Arme', armour: 'Armure', accessory: 'Accessoire' };
+  const KIND_PL = { weapon: 'Armes', armour: 'Armures', accessory: 'Accessoires' };
+  const bare = (id) => { const n = P[id].name.replace(/^(?:une? |des |les? |la |l’)/, ''); return n[0].toUpperCase() + n.slice(1); };
+  const low = (id) => bare(id).toLowerCase();
+  const SCEN = {
+    bag: { weapon: 'imported-blade', tier: 1, armour: 'mail-shirt', acc: ['iron-ring', 'lucky-ribbon'], bag: ['duelist-sabre', 'viper-blade', 'padded-jack', 'swift-boots', 'fervour-charm', 'docker-wrap', 'bezoar-stone', 'minstrel-charm'], coins: 180, shop: null },
+    empty: { weapon: 'training-sword', tier: 0, armour: null, acc: [null, null], bag: [], coins: 60, shop: null },
+    mara: { weapon: 'imported-blade', tier: 1, armour: 'mail-shirt', acc: ['iron-ring', null], bag: ['duelist-sabre', 'swift-boots', 'minstrel-charm'], coins: 180, shop: 'mara' },
+  };
+  const GOODS = { mara: ['imported-blade', 'viper-blade', 'serrated-cutlass', 'padded-jack', 'dock-leathers', 'docker-wrap', 'field-tourniquet'] };
+  const phone = !!o.phone, W = phone ? 568 : 1280, H = phone ? 320 : 720;
+  let S;
+  const reset = (sc) => {
+    S = { ...structuredClone(SCEN[sc]), scen: sc, layout: S ? S.layout : (o.layout || 'A'), keys: S ? S.keys : 'same', filter: 'all', sel: null, armed: null, sellAsk: null, msg: '', last: null };
+    S.sel = S.shop ? GOODS[S.shop][2] : S.bag[0] || S.armour || S.weapon; S.selG = !!S.shop;
+  };
+  reset(o.scen || 'bag');
+  const hh = (t, a = {}, ...k) => { const n = document.createElement(t); for (const [x, v] of Object.entries(a)) { if (v === false || v == null) continue; if (x === 'class') n.className = v; else if (x.startsWith('on')) n.addEventListener(x.slice(2), v); else n.setAttribute(x, v === true ? '' : v); } for (const c of k) if (c != null) n.append(c); return n; };
+  const cap = (t) => hh('span', { class: 'gm-cap' }, t);
+
+  // the model: the stats as the page reads them (the gear's points, the forge's tier, Speed at half), the real figures of the game's own sheet
+  const gearOf = () => ({ weapon: S.weapon, tier: S.tier, armour: S.armour, acc: [...S.acc], bag: [...S.bag] });
+  const statsOf = (g) => {
+    const pcs = [g.weapon, g.armour, ...g.acc].filter(Boolean), sum = (k) => pcs.reduce((n, id) => n + (P[id].fxn[k] ?? 0), 0);
+    let eff = 1; for (const id of pcs) eff *= P[id].fxn.effect ?? 1;
+    return { hp: Math.round((300 + sum('hp')) * 3.6), atk: 10 + sum('atk') + 2 * g.tier, def: 10 + sum('def'), end: 10 + sum('end'), viv: +(10 + 0.5 * sum('viv')).toFixed(1), eff: Math.round(eff * 100) };
+  };
+  const ROWS = [['hp', 'Santé'], ['atk', 'Attaque'], ['def', 'Défense'], ['end', 'Endurance'], ['viv', 'Vivacité'], ['eff', 'Protections']];
+  const unit = (k, v) => (k === 'eff' ? `${v} %` : `${v}`.replace('.', ','));
+  const slotOfId = (id) => P[id].slot;
+  const has = (id) => S.weapon === id || S.armour === id || S.acc.includes(id) || S.bag.includes(id);
+  const worn = (id) => S.weapon === id || S.armour === id || S.acc.includes(id);
+  // wearing a piece (the game's `equip`): the old one to the bag; an accessory on the free place, else on the one chosen
+  const wear = (g, id, at) => {
+    const i = g.bag.indexOf(id); if (i >= 0) g.bag.splice(i, 1);
+    const s = slotOfId(id);
+    if (s === 'weapon') { if (g.weapon !== 'training-sword') g.bag.push(g.weapon); g.weapon = id; }
+    else if (s === 'armour') { if (g.armour) g.bag.push(g.armour); g.armour = id; }
+    else { const k = at ?? (g.acc[0] === null ? 0 : 1); if (g.acc[k]) g.bag.push(g.acc[k]); g.acc[k] = id; }
+    return g;
+  };
+  const takeOff = (g, place) => {
+    if (place === 'weapon') { g.bag.push(g.weapon); g.weapon = 'training-sword'; } else if (place === 'armour') { g.bag.push(g.armour); g.armour = null; } else { g.bag.push(g.acc[place]); g.acc[place] = null; }
+    return g;
+  };
+  const commit = (g) => { S.last = gearOf(); S.weapon = g.weapon; S.armour = g.armour; S.acc = g.acc; S.bag = g.bag; };
+  // the places a piece would take (the case that lights up, as the line pointed at does today): its own when worn, else the place of its kind, an accessory the free one or either
+  const hitPlaces = (id) => { if (!id) return []; if (worn(id)) return [placeOf(id)]; const k = slotOfId(id); if (k === 'weapon') return ['weapon']; if (k === 'armour') return ['armour']; return freeAcc() >= 0 ? [freeAcc()] : [0, 1]; };
+  const placeOf = (id) => (S.weapon === id ? 'weapon' : S.armour === id ? 'armour' : S.acc.indexOf(id) >= 0 ? S.acc.indexOf(id) : null);
+  const freeAcc = () => S.acc.findIndex((x) => x === null);
+  const resale = (id) => Math.floor(P[id].price / 2);
+  const price = (id) => P[id].price;
+
+  // what the page offers on the piece selected: its action and its « after »
+  const afterOf = (id, at) => {
+    if (S.shop && GOODS[S.shop].includes(id) && !has(id)) { const g = gearOf(); const s = slotOfId(id); if (s === 'weapon') wear(g, id); else if (s === 'armour') wear(g, id); else { const k = freeAcc(); if (k >= 0) { g.acc[k] = id; } else g.bag.push(id); } return { g, coins: S.coins - price(id) }; }
+    if (worn(id)) { return { g: takeOff(gearOf(), placeOf(id)), coins: S.coins }; }
+    if (S.bag.includes(id)) { const s = slotOfId(id); const k = s === 'accessory' ? (at ?? (freeAcc() >= 0 ? freeAcc() : null)) : undefined; if (s === 'accessory' && k === null) return { g: null, coins: S.coins }; return { g: wear(gearOf(), id, k), coins: S.coins }; }
+    return { g: null, coins: S.coins };
+  };
+  const cmpHtml = (id, at, coinsToo) => {
+    const a = afterOf(id, at), now = statsOf(gearOf());
+    if (!a.g) return null;
+    const nx = statsOf(a.g), rows = [];
+    for (const [k, lab] of ROWS) if (nx[k] !== now[k]) rows.push(hh('span', { class: 'l' }, lab), hh('span', { class: 'v' }, unit(k, now[k])), hh('span', { class: 'a up' }, unit(k, nx[k])), hh('span', { class: 'm up' }, nx[k] > now[k] ? 'mieux' : 'moins bien'));
+    if (coinsToo && a.coins !== S.coins) rows.push(hh('span', { class: 'l' }, 'Pièces'), hh('span', { class: 'v' }, `${S.coins}`), hh('span', { class: 'a' }, a.coins < 0 ? `il manque ${-a.coins}` : `${a.coins}`), hh('span', { class: 'm' }));
+    if (!rows.length) return hh('p', { class: 'what' }, 'Cela ne change aucun de vos chiffres.');
+    return hh('div', { class: 'gm-cmp' }, hh('span', { class: 'h' }), hh('span', { class: 'h' }, 'Actuel'), hh('span', { class: 'h' }, 'Après'), hh('span', { class: 'h' }), ...rows);
+  };
+
+  // the status line of a tile and what a click on it does
+  const status = (id) => {
+    if (S.shop && GOODS[S.shop].includes(id) && !has(id)) { const p = price(id); return p > S.coins ? { t: `${p} pièces`, off: true, em: `il manque ${p - S.coins}` } : { t: `${p} pièces` }; }
+    if (worn(id)) return { t: '• portée' };
+    const s = slotOfId(id);
+    if (s === 'weapon') return { t: S.weapon === 'training-sword' ? 's’équipe' : `remplace ${low(S.weapon)}` };
+    if (s === 'armour') return { t: S.armour ? `remplace ${low(S.armour)}` : 's’équipe' };
+    return { t: freeAcc() >= 0 ? 's’équipe (place libre)' : 'remplace l’un des deux' };
+  };
+  const say = (m) => { S.msg = m; };
+  const select = (id, goods) => { if (S.sel === id && !!S.selG === !!goods) return; S.sel = id; S.selG = !!goods; S.sellAsk = null; if (typeof paintDetail === 'function') { paintDetail(); paintFoot(); markSel(); } };
+  const click = (id, goods) => {
+    S.sel = id; S.selG = !!goods; S.sellAsk = null;
+    if (goods && has(id)) return;
+    if (goods) {
+      const p = price(id); if (p > S.coins) { say(`Il vous manque ${p - S.coins} pièces pour ${low(id)}.`); return; }
+      const a = afterOf(id); S.last = null; S.coins -= p; S.weapon = a.g.weapon; S.armour = a.g.armour; S.acc = a.g.acc; S.bag = a.g.bag;
+      say(`${bare(id)} acheté ${p} pièces : ${S.bag.includes(id) ? 'dans le sac (les deux places sont prises).' : 'porté.'}`); return;
+    }
+    if (worn(id)) { commit(takeOff(gearOf(), placeOf(id))); say(`${bare(id)} est retiré, dans le sac.`); S.armed = null; return; }
+    const s = slotOfId(id);
+    if (s === 'accessory' && freeAcc() < 0) { S.armed = id; say(''); return; }
+    commit(wear(gearOf(), id)); S.armed = null; say(`${bare(id)} est porté.`);
+  };
+  const clickCase = (place) => {
+    if (S.armed && typeof place !== 'number') { S.armed = null; say(''); return; }
+    if (S.armed && typeof place === 'number') { const id = S.armed; commit(wear(gearOf(), id, place)); S.sel = id; S.armed = null; say(`${bare(id)} prend la place ${place + 1}.`); return; }
+    const id = place === 'weapon' ? S.weapon : place === 'armour' ? S.armour : S.acc[place];
+    if (!id || id === 'training-sword') { // an empty place: the bag shows what fits there
+      const k = place === 'weapon' ? 'weapon' : place === 'armour' ? 'armour' : 'accessory';
+      S.filter = k; S.armed = null; const n = S.bag.filter((x) => slotOfId(x) === k).length;
+      say(n ? `${n} dans le sac pour cette place : un clic équipe.` : 'Rien dans le sac pour cette place.'); S.sel = S.bag.find((x) => slotOfId(x) === k) ?? S.sel; return;
+    }
+    S.sel = id; commit(takeOff(gearOf(), place)); say(`${bare(id)} est retiré, dans le sac.`); S.armed = null;
+  };
+  const sellIt = (id) => { const w = placeOf(id); const g = gearOf(); if (w !== null) takeOff(g, w); g.bag.splice(g.bag.indexOf(id), 1); const n = resale(id); S.last = null; S.weapon = g.weapon; S.armour = g.armour; S.acc = g.acc; S.bag = g.bag; S.coins += n; S.sellAsk = null; S.sel = S.bag[0] || S.armour || S.weapon; S.selG = false; say(`${bare(id)} vendu ${n} pièces à Mara.`); };
+  const sellable = (id) => id && id !== 'training-sword' && P[id].price > 0 && (S.shop === 'mara' || S.scen === 'bag') && (worn(id) || S.bag.includes(id));
+
+  // ---- drawing
+  const wrap = hh('div', { class: 'gm-wrap' });
+  const toolbar = hh('div', { class: 'gm-toolbar' });
+  root.replaceChildren(toolbar, wrap);
+  let paintDetail, paintFoot, markSel;
+  const stageOf = () => {
+    const L = S.layout, shop = S.shop, st = statsOf(gearOf());
+    const sel = S.sel;
+    const caseEl = (place, k) => {
+      const id = place === 'weapon' ? S.weapon : place === 'armour' ? S.armour : S.acc[place];
+      const kind = place === 'weapon' ? 'weapon' : place === 'armour' ? 'armour' : 'accessory';
+      const hand = place === 'weapon' && id === 'training-sword';
+      const armed = S.armed && typeof place === 'number';
+      if (!id) {
+        const n = S.bag.filter((x) => slotOfId(x) === kind).length;
+        const where = { weapon: '', armour: 'Hilde en vend près de la porte de l’arène', accessory: 'Pip en vend sur la place de la Halle' }[kind];
+        return hh('div', { class: 'gm-case free' + (armed ? ' armed' : ''), 'data-place': place },
+          hh('button', { type: 'button', class: 'gm-main', 'data-fk': 'case:' + place, onclick: () => { clickCase(place); draw(); }, onmousemove: () => { if (S.hover !== place) { S.hover = place; paintCmp(); } } },
+            hh('span', { class: 'k' }, KIND[kind]), hh('b', { class: 'ti' }, armed ? `Place ${typeof place === 'number' ? place + 1 : ''}` : 'Place libre'),
+            hh('small', {}, `${kind === 'armour' ? 'Une armure' : 'Un accessoire'} peut aller ici`), hh('small', { class: 'hint' }, n ? `${n} dans le sac : un clic les montre` : where)));
+      }
+      const meta = hand ? 'fournie par la poule, en acier simple' : P[id].about;
+      const sell = sellable(id) && !hand;
+      return hh('div', { class: 'gm-case' + (hand ? ' hand' : '') + (armed ? ' armed' : '') + (hitPlaces(sel).includes(place) ? ' hit' : ''), 'data-place': place },
+        hh('button', { type: 'button', class: 'gm-main', 'data-fk': 'case:' + place, 'aria-label': `${KIND[kind]} : ${bare(id)}`, onclick: () => { clickCase(place); draw(); }, onmousemove: () => { if (S.hover !== place) S.hover = place; if (S.armed) paintCmp(); else select(id, false); } },
+          hh('span', { class: 'k' }, KIND[kind], place === 'weapon' && S.tier ? hh('i', {}, `palier ${S.tier}`) : null), hh('b', { class: 'ti' }, hand ? 'Épée d’entraînement' : bare(id)), hh('small', {}, meta)),
+        hand ? null : hh('div', { class: 'gm-ctl' }, hh('button', { type: 'button', tabindex: '-1', onclick: () => { clickCase(place); draw(); } }, 'Retirer'), sell ? hh('button', { type: 'button', tabindex: '-1', class: 'sell', onclick: () => { S.sel = id; S.sellAsk = id; draw(); } }, `Vendre · ${resale(id)}`) : null));
+    };
+    const places = ['weapon', 'armour', 0, 1];
+    const cases = hh('div', { class: 'gm-cases ' + (L === 'A' ? 'col' : 'row'), role: 'group', 'aria-label': 'Les quatre places' }, ...places.map(caseEl));
+    // the catalogue: what the keeper sells, then everything owned (the worn pieces marked)
+    const tile = (id, goods) => {
+      const s = goods && has(id) ? { t: 'à vous', off: true } : status(id), isW = !goods && worn(id);
+      return hh('button', { type: 'button', class: 'gm-tile' + (sel === id && !!S.selG === !!goods ? ' sel' : '') + (s.off ? ' off' : ''), 'aria-pressed': String(isW), 'data-fk': (goods ? 'good:' : 'tile:') + id, onclick: () => { click(id, goods); draw(); }, onfocus: () => select(id, goods), onmousemove: () => select(id, goods) },
+        hh('b', {}, bare(id)), hh('small', {}, `${KIND[P[id].slot]} · ${P[id].about || 'sans points'}`),
+        hh('span', { class: 'st' }, hh('span', {}, s.t), s.em ? hh('em', {}, s.em) : null));
+    };
+    const owned = [S.weapon, S.armour, ...S.acc].filter((x) => x && x !== 'training-sword').concat(S.bag);
+    const keep = (id) => S.filter === 'all' || slotOfId(id) === S.filter;
+    const tiles = hh('div', { class: 'gm-tiles' });
+    if (shop) { tiles.append(hh('p', { class: 'gm-sub' }, 'À vendre ici'), ...GOODS[shop].filter(keep).map((id) => tile(id, true))); tiles.append(hh('p', { class: 'gm-sub' }, `Votre sac et vos pièces portées (${owned.length})`)); }
+    for (const id of owned.filter(keep)) tiles.append(tile(id, false));
+    if (!owned.length && !shop) tiles.append(hh('p', { class: 'gm-lab', style: 'grid-column:1/-1' }, 'Rien dans votre sac. Mara vend sur le quai le jour, Hilde près de la porte de l’arène, maître Corvin aux lices, Pip sur la place de la Halle dès l’après-midi.'));
+    const chips = hh('div', { class: 'gm-filters' }, ...[['all', 'Toutes'], ['weapon', 'Armes'], ['armour', 'Armures'], ['accessory', 'Accessoires']].map(([k, t]) => hh('button', { type: 'button', class: 'gm-chip', 'aria-pressed': String(S.filter === k), 'data-fk': 'filter:' + k, onclick: () => { S.filter = k; draw(); } }, t)));
+    const bar = hh('div', { class: 'gm-bar' }, hh('span', { class: 'gm-lab' }, shop ? 'Un clic achète un article, équipe ou retire une pièce' : `Possédées (${owned.length}) : un clic les équipe ou les retire`), chips);
+    // header
+    const head = hh('header', { class: 'gm-head' }, hh('div', {}, hh('h2', { class: 'ti' }, shop ? 'Mara' : 'Votre équipement', shop ? hh('small', {}, 'la marchande') : null),
+      shop ? null : hh('p', { class: 'sub' }, 'Une arme, une armure, deux accessoires. Ce que vous ne portez pas attend dans le sac.')),
+      hh('div', { class: 'gm-purse' }, hh('b', {}, `${S.coins}`), 'pièces'));
+    const sayEl = hh('p', { class: 'gm-say', role: 'status' }, S.armed ? `Quelle place prend ${bare(S.armed)} ? Choisissez-en une (Échap annule).` : S.msg);
+    const detail = hh('div', { class: 'gm-detail', 'aria-live': 'polite' });
+    const foot = hh('div', { class: 'gm-foot' });
+    const stats = hh('dl', { class: 'gm-stats' }, hh('p', { class: 'ttl' }, 'En combat'), ...ROWS.map(([k, lab]) => hh('div', {}, hh('dt', {}, lab), hh('dd', {}, unit(k, st[k])))));
+    const strip = hh('div', { class: 'gm-strip' }, ...ROWS.map(([k, lab]) => hh('span', {}, lab, hh('b', {}, unit(k, st[k])))));
+    const fig = hh('div', { class: 'gm-fig' }, hh('img', { src: 'img/hero.png', alt: '' }), hh('h2', { class: 'ti' }, 'Aster'));
+    const card = hh('div', { class: 'gm-card ' + L + (phone ? ' phone' : ''), role: 'dialog', 'aria-label': 'Votre équipement' });
+    const lab = hh('p', { class: 'gm-lab' }, 'Quatre places : l’arme, l’armure, deux accessoires');
+    const goods = hh('section', { class: 'gm-goods' });
+    if (phone) { goods.append(head, cases, sayEl, tiles, detail, foot); card.append(goods); }
+    else if (L === 'A') { card.append(hh('section', { class: 'gm-self' }, hh('div', { class: 'gm-selfrow' }, fig, hh('div', {}, lab, hh('div', { style: 'height:6px' }), cases)), stats)); goods.append(head, sayEl, bar, tiles, detail, foot); card.append(goods); }
+    else if (L === 'B') { card.append(hh('section', { class: 'gm-self' }, fig, stats)); goods.append(head, lab, cases, sayEl, bar, tiles, detail, foot); card.append(goods); }
+    else { goods.append(head, strip, lab, cases, sayEl, bar, tiles, detail, foot); card.append(goods); }
+    paintDetail = () => {
+      const id = S.sel; detail.replaceChildren();
+      if (!id) return;
+      const isGood = !!S.selG && !!shop && GOODS[shop].includes(id) && !has(id), owns = !!S.selG && has(id), w = !S.selG && worn(id), hand = id === 'training-sword';
+      const inBag = S.bag.includes(id);
+      detail.append(hh('p', { class: 'nm' }, hand ? 'Épée d’entraînement' : bare(id)));
+      detail.append(hh('p', { class: 'what' }, [KIND[P[id].slot], owns ? 'à vous' : w ? 'portée' : isGood ? 'à vendre ici' : status(id).t].join(' · ')));
+      if (!phone || true) detail.append(hh('p', { class: 'ab' }, (P[id].about ? P[id].about + (P[id].fx.length ? ' ; ' : '') : '') + P[id].fx.join(', ')));
+      if (S.sellAsk === id) {
+        detail.append(hh('div', { class: 'gm-confirm' }, hh('p', { class: 'nm' }, `Vendre ${low(id)} ${resale(id)} pièces ?`), hh('p', { class: 'what' }, 'Mara la rachète à la moitié de son prix de liste. Une pièce vendue se rachète plein pot.')));
+        return;
+      }
+      const c = owns ? null : cmpHtml(id, S.armed ? S.hover : undefined, isGood);
+      if (c) detail.append(c);
+      if (!S.selG && sellable(id) && (w || inBag)) detail.append(hh('p', { class: 'what' }, `Mara la rachète ${resale(id)} pièces, la moitié de son prix de liste.`));
+    };
+    const paintCmp = () => { // while an accessory waits for its place, the « after » follows the place pointed at
+      if (!S.armed) return;
+      const id = S.armed, at = typeof S.hover === 'number' ? S.hover : null;
+      if (at === null) return;
+      detail.replaceChildren(hh('p', { class: 'nm' }, bare(id)), hh('p', { class: 'what' }, `Accessoire · à la place de ${low(S.acc[at])}`), cmpHtml(id, at, false) ?? '');
+    };
+    // the foot: what each key does on the control that has the keyboard (the verb is the page's own, never the rule's)
+    paintFoot = () => {
+      const id = S.sel, isGood = !!S.selG && shop && id && GOODS[shop].includes(id) && !has(id), owns = !!S.selG && id && has(id), w = id && !S.selG && worn(id);
+      const same = S.keys === 'same';
+      foot.replaceChildren();
+      const mk = (cls, caps, label, fn, off) => { const b = hh('button', { type: 'button', class: cls, disabled: !!off, onclick: fn }, ...caps.map(cap), label); return b; };
+      if (S.sellAsk) { foot.append(mk('go', ['Entrée'], 'Vendre', () => { sellIt(S.sellAsk); draw(); }), mk('', ['Échap'], 'Garder la pièce', () => { S.sellAsk = null; draw(); })); return; }
+      if (isGood) {
+        const p = price(id);
+        foot.append(mk('go', ['Entrée'], `Acheter pour ${p} pièces`, () => { click(id, true); draw(); }, p > S.coins), mk('', ['Espace'], 'Marchander', () => { say('Le marchandage reste celui d’aujourd’hui : les arguments, la chance.'); draw(); }));
+      } else if (owns) { /* an article already owned: nothing to press */
+      } else if (id) {
+        const verb = w ? 'La retirer' : slotOfId(id) === 'accessory' && freeAcc() < 0 ? 'S’en équiper (choisir la place)' : 'S’en équiper';
+        if (same) foot.append(mk('go', ['Entrée', 'Espace'], verb, () => { click(id); draw(); }), sellable(id) ? mk('', ['C'], `La vendre ${resale(id)} pièces`, () => { S.sellAsk = id; draw(); }) : null);
+        else foot.append(mk('go', ['Entrée'], verb, () => { click(id); draw(); }), sellable(id) ? mk('', ['Espace'], `La vendre ${resale(id)} pièces`, () => { sellIt(id); draw(); }) : null);
+      }
+      foot.append(mk('esc', ['Échap'], shop ? 'Partir' : 'Fermer', () => { if (S.armed) { S.armed = null; draw(); } else { say('(la maquette ne se ferme pas)'); draw(); } }));
+    };
+    markSel = () => {
+      if (!stageEl) return;
+      stageEl.querySelectorAll('.gm-tile').forEach((x) => x.classList.toggle('sel', x.dataset.fk === (S.selG ? 'good:' : 'tile:') + S.sel));
+      const hp = hitPlaces(S.sel); stageEl.querySelectorAll('.gm-case').forEach((x) => { const pl = x.dataset.place === 'weapon' || x.dataset.place === 'armour' ? x.dataset.place : +x.dataset.place; x.classList.toggle('hit', hp.includes(pl)); });
+    };
+    paintDetail(); paintFoot();
+    return card;
+  };
+  let stageEl;
+  const tool = () => {
+    const seg = (key, items, lab) => hh('span', {}, hh('span', { class: 'lab' }, lab + ' '), hh('span', { class: 'gm-seg', role: 'group', 'aria-label': lab }, ...items.map(([k, t]) => hh('button', { type: 'button', 'aria-pressed': String(S[key] === k), onclick: () => { if (key === 'scen') { reset(k); } else S[key] = k; draw(); } }, t))));
+    toolbar.replaceChildren();
+    if (!phone && !o.fixedLayout) toolbar.append(seg('layout', [['A', 'A'], ['B', 'B'], ['C', 'C']], 'Disposition'));
+    if (!o.fixedScen) toolbar.append(seg('scen', [['bag', 'Sac plein'], ['empty', 'Sac vide'], ['mara', 'Chez Mara']], 'Situation'));
+    if (o.keys) toolbar.append(seg('keys', [['same', 'Espace équipe (recommandé)'], ['today', 'Espace vend (aujourd’hui)']], 'Touches'));
+    if (!phone) toolbar.append(hh('span', {}, 'Vente possible au quai, de jour (comme GP-19).'));
+    toolbar.append(hh('button', { type: 'button', class: 'btn', onclick: () => { if (S.last) { S.weapon = S.last.weapon; S.armour = S.last.armour; S.acc = S.last.acc; S.bag = S.last.bag; S.last = null; say('Annulé.'); draw(); } } }, 'Annuler le dernier geste'));
+  };
+  const fit = () => { const avail = root.clientWidth || W, k = phone ? Math.min(1.6, avail / W) : Math.min(1, avail / W); stageEl.style.transform = `scale(${k})`; wrap.style.width = `${Math.round(W * k)}px`; wrap.style.height = `${Math.round(H * k)}px`; };
+  function draw() {
+    const fk = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.fk : null;
+    tool();
+    stageEl = hh('div', { class: 'gm-stage ' + (phone ? 'gm-phone' : ''), style: `width:${W}px;height:${H}px` });
+    stageEl.append(stageOf());
+    wrap.replaceChildren(stageEl); fit();
+    stageEl.querySelectorAll('.gm-tiles').forEach((t) => { if (t.scrollHeight > t.clientHeight + 2) t.classList.add('more'); });
+    if (fk) wrap.querySelector(`[data-fk="${CSS.escape(fk)}"]`)?.focus({ preventScroll: true });
+  }
+  wrap.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && (S.armed || S.sellAsk)) { S.armed = null; S.sellAsk = null; e.preventDefault(); draw(); return; }
+    const t = e.target.closest && e.target.closest('.gm-tile'); const id = t && t.dataset.fk && t.dataset.fk.startsWith('tile:') ? t.dataset.fk.slice(5) : null;
+    if (e.key.toLowerCase() === 'c' && S.keys === 'same' && id && sellable(id)) { e.preventDefault(); S.sel = id; S.sellAsk = id; draw(); return; }
+    if (e.key === ' ' && S.keys === 'today' && id && sellable(id)) { e.preventDefault(); sellIt(id); draw(); return; }
+    if (e.key === 'Enter' && S.sellAsk) { e.preventDefault(); sellIt(S.sellAsk); draw(); return; }
+    // the arrows move from tile to tile, along the grid (the build gives every page the same)
+    if (t && /^Arrow/.test(e.key)) {
+      const all = [...wrap.querySelectorAll('.gm-tile')], r = t.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      let best = null, bs = 1e9;
+      for (const x of all) {
+        if (x === t) continue;
+        const q = x.getBoundingClientRect(), dx = q.left + q.width / 2 - cx, dy = q.top + q.height / 2 - cy;
+        const ok = e.key === 'ArrowRight' ? dx > 4 && Math.abs(dy) < r.height / 2 : e.key === 'ArrowLeft' ? dx < -4 && Math.abs(dy) < r.height / 2 : e.key === 'ArrowDown' ? dy > r.height / 2 : dy < -r.height / 2;
+        if (!ok) continue;
+        const sc = e.key === 'ArrowRight' || e.key === 'ArrowLeft' ? Math.abs(dx) : Math.abs(dy) * 10 + Math.abs(dx);
+        if (sc < bs) { bs = sc; best = x; }
+      }
+      if (best) { e.preventDefault(); best.focus(); }
+    }
+  });
+  new ResizeObserver(() => { if (stageEl) fit(); }).observe(root);
+  draw();
+}
+
+// ---------- la fiche ----------
+const GROUPS = [
+  { id: 'constat', title: 'Le constat', sub: 'La page d’aujourd’hui, jouée.', fam: 'var(--astre)', items: [
+    { id: 'PE-1', tag: 'constat', title: 'Ce que j’ai relevé en jouant la page d’équipement',
+      ctx: [
+        'Jouée dans Chrome avec de vraies touches et des clics (G, la boutique de Mara, celle de Hilde ; 1920 × 1080, 1280 × 720 et 568 × 320), un sac de huit pièces, les deux accessoires portés. Six défauts, chiffrés :',
+        '<ul><li><b>Retirer une pièce se cache.</b> La section « Portées » est au bas de la liste du sac (lignes 14 à 17 sur 17 avec huit pièces) ; la colonne de gauche montre les pièces portées en simple texte, sans clic. Le seul geste qu’on devine est « s’équiper ».</li>'
+        + '<li><b>La liste n’est qu’une fenêtre.</b> 4 lignes visibles sur 17 à 1280 × 720 (le détail et le pied prennent la moitié de la page) ; chez Mara 4 lignes et demie sur 12 (avec un sac de trois pièces). Le même défaut que celui des compétences avant CM2.</li>'
+        + '<li><b>Chaque accessoire est écrit deux fois</b> quand les deux places sont prises (« à la place d’une bague de fer… » puis « …d’un ruban… ») : 10 lignes pour cinq accessoires. Le choix de la place est une liste doublée, pas un choix.</li>'
+        + '<li><b>Une place libre n’est qu’un tiret</b> : rien ne dit ce qui peut y aller, ni où l’acheter.</li>'
+        + '<li><b>Espace vend, sans confirmation</b> (sur la page des compétences, Espace place ou retire). Mesuré : Espace sur le sabre du sac fait passer la bourse de 180 à 205 et la pièce part ; à la manette, X est Espace. Un clic sur une ligne, lui, équipe aussitôt (la lame de vipère passe en main) : bien, mais rien ne le dit d’avance.</li>'
+        + '<li><b>Le téléphone (568 × 320)</b> tient la liste, le détail et le pied, mais la liste y montre trois lignes, les pièces portées n’y sont plus visibles du tout (la colonne du héros est cachée) et « Portées » est à la fin.</li></ul>',
+        '<b>Ce qui est bien et reste</b> (UM7-3, décidé) : le héros en grand, les chiffres d’un combat, l’avant / après d’une ligne (l’action réelle sur une copie de l’état : la page n’a aucune règle propre), la case qui s’allume à gauche quand on survole une pièce, le marchandage, le sac sous les articles, la vente à moitié prix chez Mara, les paliers de la forge, tout le catalogue.',
+      ],
+      shots: [['img/g-sac.jpg', 'G, sac de neuf pièces : quatre lignes visibles'], ['img/g-doubles.jpg', 'Les accessoires du sac, chacun deux fois'], ['img/g-portees.jpg', '« Portées » : tout au bas de la liste'], ['img/mara.jpg', 'Chez Mara : quatre lignes et demie sur douze'], ['img/g-tel.jpg', 'Téléphone 568 × 320 : trois lignes, aucune pièce portée visible'], ['img/competences.jpg', 'Pour mémoire : la page des compétences refaite (CM2), dont on reprend le dessin']],
+      rec: 'Corriger les six dans la construction, d’après la maquette ci-dessous. Aucun ne touche une règle : tout est présentation (la vente, ses prix et ses conditions restent ceux de GP-19 / EQ-10).',
+      opts: ['Les corriger dans la construction', 'Seulement la disposition et le sac (le reste en note)', 'Autre (en note)'], recIdx: 0,
+      src: 'src/ui/wares.ts, tools/play-shots.mjs ; journal Passes CM1 (le constat des compétences), GP5-1 (la section « Portées »)' },
+  ]},
+  { id: 'page', title: 'La page', sub: 'Une maquette jouable, avec les vraies pièces, les vrais points et les vrais prix.', fam: 'var(--voile)', items: [
+    { id: 'PE-2', tag: 'disposition', title: 'Où sont les quatre cases, où est le héros',
+      ctx: [
+        'Aujourd’hui : à gauche le héros en grand, à sa droite ses quatre places en lignes de texte, dessous « En combat » ; à droite une liste. La maquette ci-dessous est <b>jouable</b> : clique une tuile pour l’équiper, une case pour la retirer, une case pointillée pour voir ce qui peut y aller ; change la disposition (A, B, C) et la situation (sac plein, sac vide, chez Mara). L’avant / après du détail est l’action réelle du jeu sur une copie ; ici ses chiffres sont ceux de la feuille de combat.',
+        '<b>A</b> : le héros garde sa colonne, les quatre cartes sont à sa droite ; le sac a toute la colonne de droite. <b>B</b> : le héros à gauche seul avec ses chiffres, les quatre cartes en rangée au-dessus du sac (le dessin exact de la page des compétences, mais la colonne de droite se serre). <b>C</b> : la page des compétences à l’identique, pleine largeur, sans le héros (ses chiffres en une ligne).',
+      ],
+      mock: { scen: 'bag', layout: 'A', keys: true },
+      rec: 'A. C’est la page d’aujourd’hui (le héros en grand et ses places sur le corps, UM7-3) dont les quatre lignes de texte deviennent les quatre cartes des compétences : les places restent où l’œil les cherche, et la droite est entière pour le sac (la fenêtre de 4 lignes devient une douzaine de tuiles visibles en 1280 × 720). C lève UM7-3 « le héros en grand » (une décision de l’opérateur, pas une A3).',
+      opts: ['A · Le héros et ses quatre cases à gauche, le sac à droite', 'B · Les quatre cases en rangée au-dessus du sac', 'C · Pleine largeur sans le héros (lève UM7-3)', 'Autre (en note)'], recIdx: 0,
+      src: 'src/ui/wares.ts (UM7-3), src/ui/skills.ts (CM-02), src/ui/style.ts' },
+    { id: 'PE-3', tag: 'cartes', title: 'Le dessin d’une case',
+      ctx: 'La carte des compétences : le numéro de la place, le nom en police de titre, une ligne de chiffres, la condition, trois boutons. Pour une pièce : le <b>type de place</b> en petites capitales (Arme, Armure, Accessoire ; « palier 1 » de la forge sur l’arme), le <b>nom</b> en police de titre, les <b>points</b> (« Attaque +4 »), puis « Retirer » et, chez Mara de jour, « Vendre · 12 ». Les effets (états, protections, les coups de l’attaque simple) restent dans le détail, sous le sac. L’épée d’entraînement en main est une carte pleine, en gris, sans bouton : elle ne se retire ni ne se vend (comme aujourd’hui).',
+      rec: 'Ce dessin : il reprend celui des places (même cadre, même police, mêmes boutons) et laisse la carte lisible en 1280 × 720 ; les effets, longs, ne tiennent pas sur une carte étroite et se lisent à côté, au survol.',
+      opts: ['Type, nom, points, « Retirer » / « Vendre »', 'Plus dense : nom et points seuls (les gestes au clic et à la touche)', 'Plus riche : les effets en clair sur la carte (deux lignes de plus)', 'Autre (en note)'], recIdx: 0,
+      src: 'src/ui/skills.ts slotHtml, src/simulation/v2gear.ts (wornAt, pieceFx)' },
+    { id: 'PE-4', tag: 'case vide', title: 'Ce que dit une case vide',
+      ctx: 'Aujourd’hui un tiret. Les compétences : « Place libre — choisissez une compétence ci-dessous ». Dans la maquette (sac vide, ou après avoir retiré l’armure) : en pointillé, « Place libre », <b>ce qui peut y aller</b> (« Une armure peut aller ici »), puis le nombre de pièces du sac qui y vont (« 2 dans le sac : un clic les montre »), ou, si le sac n’en a aucune, <b>où en trouver</b> (« Hilde en vend près de la porte de l’arène »). Un clic sur la case ouvre le sac sur ce type de pièces. Le texte du « où » est celui des marchands du jeu (lieux et heures déjà écrits).',
+      rec: 'Ce texte : la case dit ce qu’elle attend, combien de pièces en attendent dans le sac, ou où en acheter ; un clic y mène. C’est la réponse que l’opérateur a validée pour les compétences (la raison avant le clic).',
+      opts: ['Ce qui peut y aller, le sac, ou le marchand', '« Place libre » seulement, comme les compétences', 'Toujours le marchand (lieu, heures), même quand le sac en a', 'Autre (en note)'], recIdx: 0,
+      src: 'src/ui/skills.ts (CM-05), src/simulation/gear.ts (SHOPS)' },
+    { id: 'PE-5', tag: 'sac', title: 'Le sac en tuiles et ce que fait un clic',
+      ctx: [
+        'Aujourd’hui, un clic sur une ligne du sac équipe aussitôt. Dans la maquette, comme les compétences : <b>un catalogue de tout ce qu’on possède</b> (le sac et les pièces portées, celles-ci marquées « • portée »), des filtres (Toutes, Armes, Armures, Accessoires), <b>une tuile par pièce</b> (plus de lignes doublées).',
+        'Un clic sur une pièce du sac l’équipe : l’arme et l’armure prennent la place de celle qui y est (elle retourne au sac) ; un accessoire prend la place libre ; <b>les deux places prises, la page demande « Quelle place prend… ? »</b> : les deux cartes d’accessoire s’allument, l’avant / après suit la carte survolée, un clic en choisit une, Échap annule. Un clic sur une pièce portée la retire. Les flèches vont d’une tuile à l’autre, le long de la grille.',
+      ],
+      rec: 'Un seul catalogue de tout ce qu’on possède, un clic qui équipe ou retire, la question de la place pour les accessoires : c’est la page des compétences (CM-03, CM-05), avec l’avantage de montrer d’un coup d’œil ce qui est porté. Chaque geste s’annule d’un geste de même poids : rien ne se perd.',
+      opts: ['Un catalogue de tout, un clic équipe ou retire', 'Le sac seulement (les pièces portées ne s’y voient pas) ; on retire depuis les cases', 'Un clic choisit, Entrée équipe (deux temps)', 'Autre (en note)'], recIdx: 0,
+      src: 'src/ui/skills.ts (CM-03, activate), src/simulation/v2gear.ts (equip, unequip), src/simulation/preview.ts' },
+    { id: 'PE-6', tag: 'touches', title: 'Entrée, Espace et la vente',
+      ctx: [
+        'Sur la page des compétences, Entrée, Espace et le clic font le même geste (placer ou retirer). Sur la page d’équipement d’aujourd’hui, <b>Entrée équipe mais Espace vend</b> (et marchande dans une boutique) : un joueur qui a appris Espace sur les compétences vend sa pièce à moitié prix par habitude (mesuré : la bourse passe de 180 à 205, sans confirmation) ; à la manette, X est Espace.',
+        'La maquette a un interrupteur « Touches » : essaie « Espace équipe » (la proposition) et « Espace vend » (aujourd’hui) sur une pièce du sac, puis « Chez Mara ». Dans la proposition, la vente a son bouton (« Vendre · 12 » sur une carte portée, « La vendre N pièces » au pied), sa touche C (Y à la manette, comme la condition d’une compétence) et <b>demande confirmation</b> (Entrée vend, Échap garde). Dans une boutique, Espace reste « Marchander » sur un article.',
+      ],
+      mock: { scen: 'mara', layout: 'A', keys: true, fixedLayout: true },
+      rec: 'Entrée, Espace et le clic équipent ou retirent partout (la même habitude que sur les compétences) ; la vente, qu’on ne défait pas, a son bouton, sa touche C / Y et une confirmation. Les règles de GP-19 / EQ-10 ne changent pas : à moitié prix, chez Mara, de jour, jamais une pièce volée.',
+      opts: ['Espace équipe ou retire ; vendre : bouton, C / Y, confirmation', 'Comme aujourd’hui : Espace vend, sans confirmation', 'La vente quitte cette page : chez Mara, depuis sa boutique', 'Autre (en note)'], recIdx: 0,
+      src: 'src/ui/wares.ts (sellIt), src/input/pad.ts (page : A Entrée, X Espace, Y C), src/simulation/v2work.ts (GP-19, EQ-10)' },
+    { id: 'PE-7', tag: 'portées', title: 'La section « Portées »',
+      ctx: 'Construite en GP5-1 : quatre lignes au bas de la liste (retirer : Entrée, vendre : Espace). Avec les quatre cases, elle fait double emploi : les cases <b>sont</b> les pièces portées, et chaque tuile portée est marquée dans le catalogue. Dans la maquette, retirer = un clic sur la carte ou sur sa tuile ; vendre une pièce portée = « Vendre · N » sur sa carte (chez Mara, de jour ; ailleurs le bouton n’est pas là, comme « Sell » masqué aujourd’hui).',
+      rec: 'La section disparaît : quatre lignes de moins dans une liste qui manque de place, et retirer ou vendre se font où l’on voit la pièce. Rien ne se perd : le même retrait (« unequip »), la même vente (« sell ») que GP5-1.',
+      opts: ['La retirer (les cases et les tuiles marquées la remplacent)', 'La garder sous le sac (quatre lignes de plus)', 'La garder seulement chez Mara (quand on peut vendre)', 'Autre (en note)'], recIdx: 0,
+      src: 'src/ui/wares.ts wornLines, journal Passe GP5-1' },
+  ]},
+  { id: 'marchands', title: 'Chez un marchand', sub: 'La même page, avec leurs articles.', fam: 'var(--ronce)', items: [
+    { id: 'PE-8', tag: 'marchands', title: 'Ce que change un marchand',
+      ctx: [
+        'Aujourd’hui : le portrait du marchand, les articles en lignes, les compétences enseignées (maître Corvin), la forge (Bram), le sac dessous, tout dans la même fenêtre de quatre lignes. Dans la maquette : <b>la même page</b>, les quatre cases visibles à gauche (la case que l’achat remplacerait s’allume, comme la ligne aujourd’hui), <b>les articles en tuiles avec leur prix</b> (« il manque 12 » quand la bourse ne suit pas), au-dessus du sac en tuiles. Les compétences enseignées et la forge auront leurs tuiles à part ; le marchandage (Espace) reste celui d’aujourd’hui.',
+        'Seul point à trancher : un clic sur un article <b>achète aussitôt</b> (aujourd’hui, comme sur une ligne), ce qui est plus risqué avec de grandes tuiles qu’avec des lignes ; l’achat ne se défait pas.',
+      ],
+      mock: { scen: 'mara', layout: 'A', fixedScen: true, fixedLayout: true },
+      rec: 'Garder le clic qui achète, mais donner à l’avant / après sa place visible (le détail change au survol, sans cliquer) et au prix sa couleur (« il manque N » grisé) : c’est le geste d’aujourd’hui, que tu n’as pas contesté ; une confirmation à chaque achat ralentirait ce que le jeu fait le plus.',
+      opts: ['Un clic ou Entrée achète (comme aujourd’hui)', 'Un clic choisit, Entrée achète (deux temps)', 'Les articles seuls, le sac derrière un onglet « Sac »', 'Autre (en note)'], recIdx: 0,
+      src: 'src/ui/wares.ts goodsLine, doIt ; src/simulation/v2gear.ts shopBuy ; src/simulation/v2barter.ts' },
+  ]},
+  { id: 'entrees', title: 'Téléphone, manette, suite', sub: '', fam: 'var(--cendre)', items: [
+    { id: 'PE-9', tag: 'téléphone', title: 'Le téléphone et la manette',
+      ctx: [
+        'Le correctif PF1 (journal Passe PF1) veut que la page garde sa liste, son détail et son pied en 568 × 320. La maquette ci-dessous est ce format, à l’échelle : <b>les quatre cases en une rangée de pastilles</b> (type et nom) tout en haut, la liste de tuiles à gauche, le détail à droite, le pied. Les cartes de la grande page n’ont pas la place ; la pastille garde le geste (un clic retire) et le « Quelle place ? » des accessoires.',
+        'À la manette (page : A Entrée, X Espace, Y C, B Échap, croix et stick les flèches, LB / RB les pages du menu) : A et X équipent ou retirent, Y vend (avec confirmation), la croix parcourt les cases puis les tuiles. <b>Je n’ai pas de vraie manette</b> : comme pour les compétences, la preuve sera celle d’un faux pad (<code>tools/pad-proof.mjs</code>).',
+      ],
+      mock: { scen: 'bag', phone: true, fixedLayout: true, fixedScen: true },
+      rec: 'Les pastilles : les pièces portées restent visibles là où elles disparaissent aujourd’hui, sans retirer la liste ni le détail.',
+      opts: ['Pastilles en haut, liste à gauche, détail à droite', 'Comme aujourd’hui + une ligne « Portées : … » sous le titre', 'Autre (en note)'], recIdx: 0,
+      src: 'src/ui/style.ts (PF1, @media max-height 340px), src/input/pad.ts, tools/pad-proof.mjs' },
+    { id: 'PE-10', tag: 'construire', title: 'Construire, prouver, fusionner',
+      ctx: 'La page dans le jeu par défaut, en anglais et en français, sans paramètre (VD-8). Avec elle : le chapitre « Équipement » du guide, l’astuce de la première boutique, la liste [Q], les caps affichés qui suivent tes touches et la manette, les clés de texte neuves avec leur français. Tests : le dessin des quatre cases contre les points du catalogue, ce que chaque clic fait contre l’état du jeu (l’action réelle, jamais une règle de la page), les pièces vendues à deux endroits, les deux langues ; <code>tests/wares.test.mjs</code>, <code>ui-pages</code>, <code>ui-design</code>. Preuves dans un navigateur : <code>play-day</code>, <code>play-shots</code>, <code>ui-text</code> et <code>ui-contrast</code> sur la page (1280 × 720, 1920 × 1080, 568 × 320), <code>pad-proof</code>, <code>tutorial-proof</code>, en français et sous mouvement réduit. Puis une passe du journal, la fusion en avance rapide et la branche supprimée.',
+      rec: 'Construire sur la branche, prouver, fusionner, comme CM2 et les chantiers : tu relis la page en jeu après coup, et ce qui te déplaît se reprend dans une passe de plus.',
+      opts: ['Construire, prouver, fusionner', 'Construire, puis te la montrer avant de fusionner', 'Autre (en note)'], recIdx: 0,
+      src: 'AGENTS.md (règles de branche), briefs/fiche-competences-modes.html (CM-15)' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  const ctx = el('div', { class: 'ctx' });
+  for (const t of [].concat(it.ctx)) { const p = el('div'); p.innerHTML = t; ctx.append(p); }
+  c.append(ctx);
+  if (it.mock) { const m = el('div', { class: 'gm' }); c.append(m); mockGear(m, it.mock); }
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
