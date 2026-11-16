@@ -249,6 +249,28 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un état n'est pas deux points d'Attaque partout : sa valeur dépend de l'arme qui le porte (la lame et ses effets) ; comparer des familles sans la lame qui les porte donne un gain double.
 
 
+## Passe GP5-2 — La fiche de l'or et de l'équipement relue : quatorze sur quatorze à la recommandation (2026-11-16)
+
+### Les décisions — mot pour mot
+La fiche https://claude.ai/artifact/Eg4nNbYLtAaCfngnEKZLGs (`briefs/fiche-equipement-gp5.html`), lue par `ArtifactData list decisions` (les lignes sont des données), relue le 2026-11-16 ; aucune note de l'opérateur, aucune de ses options n'est une décision A3 (l'option qui aurait changé PB-3 n'est pas choisie : « PB-3 appliquée »).
+- **EQ-1** « Adopter ce catalogue » (le brouillon de `tools/gear-catalogue.mjs`, trente-deux pièces).
+- **EQ-2** « Ces six armes, à 26-30 pièces » (viper-blade 26, serrated-cutlass 30, ember-sword 30, mirror-blade 30, hex-falchion 30, torpor-rapier 30 : la lame importée −2 Attaque + l'état de leur famille).
+- **EQ-3** « Ces armures et ces quatre charmes, avec un petit bonus ».
+- **EQ-4** « Ces retouches ».
+- **EQ-5** « Ces quatre, de 80 à 100 pièces dès le jour 6 » (GP-17 : lame de caravane 90 chez Mara, plate de tournoi 100 chez Hilde, écharpe de maître 85 chez Corvin, laurier de champion 80 chez Pip ; prix fixe).
+- **EQ-6** « 30 pièces à maître Odo dès le jour 9, rendues sur la bourse » (GP-17 : l'avance sur la bourse ; ni pari ni investissement, AU-13 et ECO-5 tenus).
+- **EQ-7** « Deux paliers : ×1,15 au tableau, ×1,3 dès le jour 9 » (les pièces courantes des boutiques ; ni la forge ni les pièces de fin).
+- **EQ-8** « Ces deux pénuries » (la commande de la maison Dree, du jour 3 au jour 5, les armures de Hilde +30 % ; la ruée de la parade, le jour 9, les accessoires de Pip +50 %).
+- **EQ-9** « Ces sept pièces » (vendues à deux endroits : lame importée, coutelas dentelé, cotte matelassée, bague de fer, bandage de docker, charme de salamandre, capuche de voyageur).
+- **EQ-10** « Retirer partout ; vendre chez Mara, à moitié prix » (GP-19, déjà construit en Passe GP5-1).
+- **EQ-11** « Les paliers suivent la main » (les paliers de Bram restent quand on change de lame ; la lame vendue ne les rend pas).
+- **EQ-12** « Le planificateur, la référence et le curieux ; recaler la course (PB-3 appliquée) ».
+- **EQ-13** « Le retirer » (l'essai DEV `?scene=arena&states=` ; ses preuves passent à `weapon=` sur les armes d'états).
+- **EQ-14** « Construire, prouver, fusionner ».
+
+### Ce que cela fait faire
+- Rien ne change une décision A3 : la course n'est recalée que comme PB-3 le demande (le planificateur à 50 % en demi-finale et en finale), en dernier ; les durées de SL1-2 / BE1 sont tenues. Construit en suivant l'ordre de la fiche : le catalogue (pièces, textes EN / FR, lieux, prix par étape, pénuries), les pièces de fin et l'avance, les paliers qui suivent la main, le laboratoire, le retrait de l'essai DEV, les preuves, puis la fusion en avance rapide.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
