@@ -35,6 +35,14 @@ export const AUTO_WEAPONS: Record<string, { hits: readonly number[]; gap: number
   'training-sword': { hits: [0.85, 0.85], gap: 0.3 },
   'imported-blade': { hits: [0.8, 0.8], gap: 0.32 },
   'duelist-sabre': { hits: [0.47, 0.47, 0.47], gap: 0.22 },
+  // the weapons of the harmful states strike as the imported blade does (EQ-2); the caravan's greatblade a little slower between its two blows (EQ-5)
+  'viper-blade': { hits: [0.8, 0.8], gap: 0.32 },
+  'serrated-cutlass': { hits: [0.8, 0.8], gap: 0.32 },
+  'ember-sword': { hits: [0.8, 0.8], gap: 0.32 },
+  'mirror-blade': { hits: [0.8, 0.8], gap: 0.32 },
+  'hex-falchion': { hits: [0.8, 0.8], gap: 0.32 },
+  'torpor-rapier': { hits: [0.8, 0.8], gap: 0.32 },
+  'caravan-greatblade': { hits: [0.8, 0.8], gap: 0.34 },
 };
 
 /** one of Ren's skills on the timeline, at level 1 (the level raises its power or its effect's length by LEVEL_POWER and shortens its charge: skills.ts) */
@@ -179,23 +187,80 @@ export function autoPlanOf(kitOf: string, plan = 0): Readonly<Record<string, Aut
   return P?.[((plan % P.length) + P.length) % P.length] ?? AUTO_STYLES[kitOf]?.tactic ?? {};
 }
 
-/** the gear's effects on top of its points (PB-1, the laboratory's GEAR_FX, briefs/combat-auto.md § 31.4), each with its counterpart */
+/** The families of pieces that carry or keep off a harmful state (the operator's sheet https://claude.ai/artifact/DqsBjqLm1UQG4ChPC2EeRW, thirteen of thirteen at the recommendation, journal Passe GP4-2: GE-4 « Ces familles, avec une contrepartie », GE-7 « Ces sept familles », GE-12 « Ainsi »):
+ *  workstream 5 (the gold and the gear, GP-17 to GP-19) made them pieces, with their names, prices, shops and counterparts (the sheet https://claude.ai/artifact/Eg4nNbYLtAaCfngnEKZLGs, EQ-2 and EQ-3, journal Passe GP5-2):
+ *  `AUTO_GEAR_FX` takes a family's `inflict` or `resist` for each piece of src/simulation/gear.ts that carries one. A weapon's state goes on each hit of its light attack and on its heavy blow, its chance per hit; an armour
+ *  halves the chance of being afflicted, an accessory keeps the state off. */
+export type StateWeaponFamily = 'venom' | 'ember' | 'glare' | 'serrated' | 'hex' | 'numb';
+export type StateArmourFamily = 'leather' | 'padded' | 'mail';
+export type StateCharmFamily = 'bezoar' | 'salamander' | 'hood' | 'tourniquet';
+export const STATE_WEAPON_FAMILIES: Record<StateWeaponFamily, AutoInflict> = {
+  /** envenimée: the poison, 12 % a hit (stopped by a guard) */
+  venom: { state: 'poison', chance: 0.12 },
+  /** ardente: the burn, 8 % a hit, a guarded hit too */
+  ember: { state: 'burn', chance: 0.08, on: 'any' },
+  /** éblouissante: the blindness, 15 % a hit */
+  glare: { state: 'blind', chance: 0.15 },
+  /** dentelée: the bleeding, 12 % a hit */
+  serrated: { state: 'bleed', chance: 0.12 },
+  /** maudite (the short sheet's GC-1 « L’adopter », journal Passe GP4-2): the curse, 40 % a hit, the target's Attack −25 % for 8 s (no cumulation: a new one renews the length) */
+  hex: { state: 'curse', chance: 0.4 },
+  /** engourdissante (GC-3 « L’adopter »): the paralysis, 40 % a hit, 30 % of the target's actions freeze 1.5 s for 8 s */
+  numb: { state: 'paralysis', chance: 0.4 },
+};
+/** a weapon of a family against the plain piece of its price: Attack points (GE-4's counterpart; doubled as every piece's, AC-11) */
+export const STATE_WEAPON_COUNTERPART = -2;
+export const STATE_ARMOUR_FAMILIES: Record<StateArmourFamily, Partial<Record<AutoStateId, number>>> = {
+  /** cuir: the poison's chance halved */
+  leather: { poison: 0.5 },
+  /** matelassé: the burn's */
+  padded: { burn: 0.5 },
+  /** maille: the bleeding's (no armour keeps off the blindness: no helmet slot) */
+  mail: { bleed: 0.5 },
+};
+export const STATE_CHARM_FAMILIES: Record<StateCharmFamily, Partial<Record<AutoStateId, number>>> = {
+  bezoar: { poison: 1 }, salamander: { burn: 1 }, hood: { blind: 1 }, tourniquet: { bleed: 1 },
+};
+/** the gear's effects on top of its points (PB-1, the laboratory's GEAR_FX, briefs/combat-auto.md § 31.4), each with its counterpart; the catalogue of the operator's chantier 5
+ *  (GP-18, journal Passe GP5-2) adds the weapons of the families, the armours' and the charms' protections and the pieces of the end of the tournament */
 export const AUTO_GEAR_FX: Record<string, AutoGearFx> = {
   // the sabre's last cut goes through the guard; its cuts fill the gauge less
   'duelist-sabre': { lastPierce: true, gauge: 0.7 },
   // the imported blade's blows fill the gauge more (×1.1); its light attack charges longer
   'imported-blade': { gauge: 1.1, lightCharge: 1.1 },
+  // the weapons of the harmful states (EQ-2): the imported blade, its blows and its effects, with their family's state (and less 2 Attack in the gear's points, GE-4's counterpart)
+  'viper-blade': { gauge: 1.1, lightCharge: 1.1, inflict: { ...STATE_WEAPON_FAMILIES.venom } },
+  'serrated-cutlass': { gauge: 1.1, lightCharge: 1.1, inflict: { ...STATE_WEAPON_FAMILIES.serrated } },
+  'ember-sword': { gauge: 1.1, lightCharge: 1.1, inflict: { ...STATE_WEAPON_FAMILIES.ember } },
+  'mirror-blade': { gauge: 1.1, lightCharge: 1.1, inflict: { ...STATE_WEAPON_FAMILIES.glare } },
+  'hex-falchion': { gauge: 1.1, lightCharge: 1.1, inflict: { ...STATE_WEAPON_FAMILIES.hex } },
+  'torpor-rapier': { gauge: 1.1, lightCharge: 1.1, inflict: { ...STATE_WEAPON_FAMILIES.numb } },
+  // the caravan's greatblade (EQ-5, a piece of the end of the tournament): the blade's effects, its light attack charging a little longer still
+  'caravan-greatblade': { gauge: 1.1, lightCharge: 1.15 },
   // the padded jack: a guarded blow fills one's gauge half as much as the rule says (×1 against DB9's ×2 before; ×0.25 against BL1-9's ×0.5)
-  'padded-jack': { guardGauge: 0.25 },
+  // (EQ-3: and the burn's chance halved)
+  'padded-jack': { guardGauge: 0.25, resist: { ...STATE_ARMOUR_FAMILIES.padded } },
   // the mail: the light blows' damage −20 %; the dodge halved
-  'mail-shirt': { lightTaken: 0.8, dodge: 0.5 },
-  'knight-hauberk': { lightTaken: 0.8, dodge: 0.5 },
+  // (EQ-3: and the bleeding's chance halved, the hauberk's too)
+  'mail-shirt': { lightTaken: 0.8, dodge: 0.5, resist: { ...STATE_ARMOUR_FAMILIES.mail } },
+  'knight-hauberk': { lightTaken: 0.8, dodge: 0.5, resist: { ...STATE_ARMOUR_FAMILIES.mail } },
+  // the tournament plate (EQ-5): the mail's way, harder to hurt by light blows and harder still to dodge in
+  'tournament-plate': { lightTaken: 0.7, dodge: 0.4, resist: { ...STATE_ARMOUR_FAMILIES.mail } },
   // the dock leathers: the dodge ×1.3; the guard ×0.85
-  'dock-leathers': { dodge: 1.3, guardChance: 0.85 },
-  // the iron ring: one's break shorter (−30 %)
-  'iron-ring': { stun: 0.7 },
-  // the lucky ribbon and the champion's token (their AP of before): the cooldowns and gaps −15 % and −10 %
-  'lucky-ribbon': { cd: 0.85 },
+  // (EQ-3: and the poison's chance halved)
+  'dock-leathers': { dodge: 1.3, guardChance: 0.85, resist: { ...STATE_ARMOUR_FAMILIES.leather } },
+  // the iron ring: one's break shorter (−25 %: EQ-4, with its Endurance 3 for 32 coins)
+  'iron-ring': { stun: 0.75 },
+  // the master's sash (EQ-5): the first charge at once, the gaps a tenth shorter; the champion's laurel: one's break 15 % shorter
+  'masters-sash': { firstFast: true, cd: 0.9 },
+  'champion-laurel': { stun: 0.85 },
+  // the four charms that keep a state off (EQ-3)
+  'bezoar-stone': { resist: { ...STATE_CHARM_FAMILIES.bezoar } },
+  'salamander-charm': { resist: { ...STATE_CHARM_FAMILIES.salamander } },
+  'wayfarer-hood': { resist: { ...STATE_CHARM_FAMILIES.hood } },
+  'field-tourniquet': { resist: { ...STATE_CHARM_FAMILIES.tourniquet } },
+  // the lucky ribbon and the champion's token (their AP of before): the cooldowns and gaps −20 % (EQ-4: the ribbon with its +24 health) and −10 %
+  'lucky-ribbon': { cd: 0.8 },
   // (the token left the game's catalogue, src/simulation/gear.ts, by the operator's GP-20 « Les corriger », journal Passe GP2: kept here as the laboratory's table
   // has it, tests/combat-auto.test.mjs's port and tools/auto-final/port-identity.mjs wearing it against tools/auto-final/sim.mjs)
   'champion-token': { cd: 0.9 },
@@ -231,40 +296,6 @@ export const AUTO_SKILL_STATES: Record<string, AutoInflict> = {
   m_riposte: { state: 'poison', chance: 1, dose: 2 },
 };
 
-/** The families of pieces that carry or keep off a harmful state (the operator's sheet https://claude.ai/artifact/DqsBjqLm1UQG4ChPC2EeRW, thirteen of thirteen at the recommendation, journal Passe GP4-2: GE-4 « Ces familles, avec une contrepartie », GE-7 « Ces sept familles », GE-12 « Ainsi »):
- *  workstream 5 (the gold and the gear, GP-17 to GP-19) makes them pieces, with their names, prices, shops and counterparts; until then no piece of the game carries one
- *  (`AUTO_GEAR_FX` takes a family's `inflict` or `resist`). A weapon's state goes on each hit of its light attack and on its heavy blow, its chance per hit; an armour
- *  halves the chance of being afflicted, an accessory keeps the state off. */
-export type StateWeaponFamily = 'venom' | 'ember' | 'glare' | 'serrated' | 'hex' | 'numb';
-export type StateArmourFamily = 'leather' | 'padded' | 'mail';
-export type StateCharmFamily = 'bezoar' | 'salamander' | 'hood' | 'tourniquet';
-export const STATE_WEAPON_FAMILIES: Record<StateWeaponFamily, AutoInflict> = {
-  /** envenimée: the poison, 12 % a hit (stopped by a guard) */
-  venom: { state: 'poison', chance: 0.12 },
-  /** ardente: the burn, 8 % a hit, a guarded hit too */
-  ember: { state: 'burn', chance: 0.08, on: 'any' },
-  /** éblouissante: the blindness, 15 % a hit */
-  glare: { state: 'blind', chance: 0.15 },
-  /** dentelée: the bleeding, 12 % a hit */
-  serrated: { state: 'bleed', chance: 0.12 },
-  /** maudite (the short sheet's GC-1 « L’adopter », journal Passe GP4-2): the curse, 40 % a hit, the target's Attack −25 % for 8 s (no cumulation: a new one renews the length) */
-  hex: { state: 'curse', chance: 0.4 },
-  /** engourdissante (GC-3 « L’adopter »): the paralysis, 40 % a hit, 30 % of the target's actions freeze 1.5 s for 8 s */
-  numb: { state: 'paralysis', chance: 0.4 },
-};
-/** a weapon of a family against the plain piece of its price: Attack points (GE-4's counterpart; doubled as every piece's, AC-11) */
-export const STATE_WEAPON_COUNTERPART = -2;
-export const STATE_ARMOUR_FAMILIES: Record<StateArmourFamily, Partial<Record<AutoStateId, number>>> = {
-  /** cuir: the poison's chance halved */
-  leather: { poison: 0.5 },
-  /** matelassé: the burn's */
-  padded: { burn: 0.5 },
-  /** maille: the bleeding's (no armour keeps off the blindness: no helmet slot) */
-  mail: { bleed: 0.5 },
-};
-export const STATE_CHARM_FAMILIES: Record<StateCharmFamily, Partial<Record<AutoStateId, number>>> = {
-  bezoar: { poison: 1 }, salamander: { burn: 1 }, hood: { blind: 1 }, tourniquet: { bleed: 1 },
-};
 /** the states a fighter puts on its opponent, each with where it comes from ('weapon' its light attack and heavy blow, else a skill's id), in the order weapon then skills */
 export function autoStatesOf(f: Pick<AutoFighter, 'skills' | 'gfx'>): Array<{ state: AutoStateId; from: string }> {
   const out: Array<{ state: AutoStateId; from: string }> = [];
@@ -513,11 +544,14 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
  *  Passe GP4-2: the rivals' states and resistances, on main f55f412 with the rivals' adapting plans: the planner's semi-final 43 %, final 47 %, titles 20 %; the reference's
  *  titles 33 %; held out, seeds 101 to 300); then again on main 5d46dd8 with the townsfolk's duels (journal Passe PN1) and the town's quests (journal Passe QE2, which cost the
  *  pool: the planner's day-2 bouts 91 % before this fit) underneath: the planner's semi-final 51 %, final 52 %, titles 24 %; the reference's titles 33 %, 109 / 178 / 190 s;
- *  held out, seeds 101 to 300). */
+ *  held out, seeds 101 to 300); then once more, last, with the gold and the gear of the operator's chantier 5 (the sheet https://claude.ai/artifact/Eg4nNbYLtAaCfngnEKZLGs read
+ *  back fourteen of fourteen at the recommendation, EQ-12 « Le planificateur, la référence et le curieux ; recaler la course (PB-3 appliquée) », journal Passes GP5-2 / GP5-3: the
+ *  catalogue revised, the shops' prices by stage that make the planner's later purchases dearer, the pieces of the end and Clerk Odo's advance in the laboratory's policies): the
+ *  pool's factors rose with the planner's day-2 gear, the bracket's and the final's fell with its dearer day-6 purchases; PB-3 applied, not changed). */
 export const AUTO_RACE = {
-  norm: { vessa: 1.079, tobin: 1.37, cassius: 1.195, orla: 0.975, ilse: 0.914, marek: 0.851, rhosk: 1.219 } as Record<string, number>,
+  norm: { vessa: 1.291, tobin: 1.491, cassius: 1.238, orla: 0.975, ilse: 0.988, marek: 0.928, rhosk: 1.361 } as Record<string, number>,
   pool: [1, 1.075, 1.15] as readonly number[],
-  stage: { 1: 1.271, 2: 1.628 } as Record<1 | 2, number>,
+  stage: { 1: 1.164, 2: 1.464 } as Record<1 | 2, number>,
   prepFrom: 20, prepPer: 25,
 };
 /** a bout's round of the pool by its day: day 2 the first, day 4 the second, day 5 the third (a challenge of the pool by its day) */

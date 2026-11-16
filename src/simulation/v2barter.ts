@@ -1,7 +1,7 @@
 import { clamp, type GameState, type PlaceId } from './state';
 import type { ActionDef } from './actions';
 import { isV2 } from './v2';
-import { GEAR, SHOPS, type ShopId } from './gear';
+import { GEAR, SHOPS, soldAt, type ShopId } from './gear';
 import { itemName, receive, shopOpen, shopPrice } from './v2gear';
 import { holds } from './v2law';
 import { PEOPLE, presentAt } from '../narrative/people';
@@ -35,7 +35,7 @@ export const PASSERS: Record<string, Passer> = {
   yselle: { id: 'yselle', item: 'minstrel-charm', price: 15, soft: { label: 'v2.passer.yselle.soft', won: 'v2.passer.yselle.won', chance: 0.6 } },
   garrick: { id: 'garrick', item: 'sergeant-gorget', price: 20, soft: { label: 'v2.passer.garrick.soft', won: 'v2.passer.garrick.won', chance: 0.5 } },
   maud: { id: 'maud', item: 'hostler-leathers', price: 22, soft: { label: 'v2.passer.maud.soft', won: 'v2.passer.maud.won', chance: 0.55 } },
-  dov: { id: 'dov', item: 'imported-blade', price: 32, soft: { label: 'v2.passer.dov.soft', won: 'v2.passer.dov.won', chance: 0.45 } },
+  dov: { id: 'dov', item: 'imported-blade', price: 28, soft: { label: 'v2.passer.dov.soft', won: 'v2.passer.dov.won', chance: 0.45 } },
   hettie: { id: 'hettie', item: 'lucky-ribbon', price: 10, soft: { label: 'v2.passer.hettie.soft', won: 'v2.passer.hettie.won', chance: 0.6 } },
 };
 
@@ -49,7 +49,7 @@ export function argChance(s: GameState, arg: ShopArg | PasserArg, seller: string
 
 /** the second piece of « two at once »: the shop's cheapest other piece the player lacks and would use (never the salve) */
 export function pairOf(s: GameState, shop: ShopId, item: string): string | null {
-  const c = Object.values(GEAR).filter((g) => g.shop === shop && g.id !== item && g.id !== 'salve' && !holds(s, g.id)).sort((a, b) => a.price - b.price || (a.id < b.id ? -1 : 1));
+  const c = Object.values(GEAR).filter((g) => soldAt(g, shop, s.day) && g.id !== item && g.id !== 'salve' && !holds(s, g.id)).sort((a, b) => a.price - b.price || (a.id < b.id ? -1 : 1));
   return c[0]?.id ?? null;
 }
 
@@ -85,14 +85,14 @@ export const V2_BARTER_ACTIONS: { [K in V2BarterAction['type']]: ActionDef<Extra
   bargain: {
     by: (a) => SHOPS[a.shop].keeper,
     list: (s) => (!isV2(s) ? [] : (Object.keys(SHOPS) as ShopId[]).filter((k) => SHOPS[k].place === s.place)
-      .flatMap((shop) => Object.values(GEAR).filter((g) => g.shop === shop).flatMap((g) => (['name', 'friend', 'pair'] as ShopArg[]).map((arg) => ({ type: 'bargain' as const, shop, item: g.id, arg }))))),
+      .flatMap((shop) => Object.values(GEAR).filter((g) => soldAt(g, shop, s.day)).flatMap((g) => (['name', 'friend', 'pair'] as ShopArg[]).map((arg) => ({ type: 'bargain' as const, shop, item: g.id, arg }))))),
     label: (s, a) => { const k = SHOPS[a.shop].keeper, pair = a.arg === 'pair' ? pairOf(s, a.shop, a.item) : null; return tx(ARG_LABEL[a.arg], { name: PEOPLE[k]?.name ?? k, item: pair ? itemName(pair) : '', pct: Math.round(argChance(s, a.arg, k) * 100) }); },
     cost: () => 0,
     coins: (s, a) => bargainPrice(s, a.shop, a.item, a.arg),
     check: (s, a) => {
       if (!isV2(s)) return tx('v2.only');
       const d = GEAR[a.item], keeper = SHOPS[a.shop].keeper;
-      if (!d || d.shop !== a.shop) return tx('v2.shop.notSold');
+      if (!d || !soldAt(d, a.shop, s.day)) return tx('v2.shop.notSold');
       const o = shopOpen(s, a.shop); if (o) return o;
       if (d.slot !== 'consumable' && holds(s, a.item)) return tx('v2.shop.owned');
       if (a.item === 'whetstone' && s.player.items.includes('whetstone')) return tx('buy.haveStone');

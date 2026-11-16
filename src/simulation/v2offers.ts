@@ -14,7 +14,7 @@ export type MarkKind = 'item' | 'event' | 'follow';
 /** item: something to get or to earn for coins; event: something happening now, for a while; follow: what follows from what happened */
 export const KIND_OF: Readonly<Record<string, MarkKind>> = {
   buy: 'item', shopBuy: 'item', sell: 'item', barter: 'item', bargain: 'item', upgradeWeapon: 'item', temper: 'follow', buySkill: 'item', heal: 'item', lockGear: 'item', checkGear: 'item',
-  work: 'item', restock: 'item',
+  work: 'item', restock: 'item', purseAdvance: 'item',
   // the town's quests (GP-09): each step follows from the quest taken
   haul: 'follow', buyHerbs: 'follow', brewDraught: 'follow', buyTreatise: 'follow', studyTreatise: 'follow', askWatch: 'follow',
   challenge: 'event', spar: 'event', festDeed: 'event', walkBehind: 'event', walkOwn: 'event', keepWatch: 'event', payWatch: 'event', register: 'event', recruit: 'event', rumour: 'event', buyInfo: 'event', listen: 'event',

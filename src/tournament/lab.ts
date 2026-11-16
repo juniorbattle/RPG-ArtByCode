@@ -14,7 +14,8 @@ import { kitRankFault, skillRank } from '../combat/autoData';
 import { marksOf, wanted } from '../simulation/v2law';
 import { argChance, PASSERS } from '../simulation/v2barter';
 import { pocketChance, stealChance, stealables } from '../simulation/v2town';
-import { SHOPS, type ShopId } from '../simulation/gear';
+import { ADVANCE, GEAR, SHOPS, soldAt, type ShopId } from '../simulation/gear';
+import { itemName, shopPrice } from '../simulation/v2gear';
 import { scoutable } from '../simulation/roles';
 import { boutTomorrow, nextOpponent, RUMOUR } from '../simulation/v2intel';
 import { opponentOf } from './pool';
@@ -161,11 +162,50 @@ const PLAN: ReadonlyArray<readonly [PlaceId, Action]> = [
 /** how far the planner's purchases went: each one is read in the state (the weapon, its tier, the armour, the accessories); `anyAcc` (the curious player, journal
  *  Passe GP4): an accessory place already holding a piece, a passer-by's included, counts as bought */
 function planStep(st: GameState, anyAcc = false): number {
-  const g = st.v2?.gear, tier = g?.tier ?? 0, blade = g?.weapon === 'imported-blade', acc: Array<string | null> = g?.acc ?? [], worn = acc.filter(Boolean).length;
-  const done = [blade, blade && tier >= 1, g?.armour === 'mail-shirt', acc.includes('docker-wrap') || (anyAcc && worn >= 1), blade && tier >= 2, acc.includes('iron-ring') || (anyAcc && worn >= 2), blade && tier >= 3];
+  // (a piece of the end of the tournament, EQ-5, stands for its step once worn: a blade other than the training sword, an armour of the mail's price or more, accessories on the
+  // places; the forge's tiers follow the hand since EQ-11. `anyAcc` kept for its callers: the planner wears only what it bought, so the places counted are its own pieces)
+  const g = st.v2?.gear, tier = g?.tier ?? 0, blade = !!g && g.weapon !== 'training-sword', acc: Array<string | null> = g?.acc ?? [], worn = acc.filter(Boolean).length;
+  void anyAcc;
+  const done = [blade, blade && tier >= 1, !!g?.armour && (GEAR[g.armour]?.price ?? 0) >= 40, worn >= 1, blade && tier >= 2, worn >= 2, blade && tier >= 3];
   const i = done.indexOf(false);
   return i < 0 ? PLAN.length : i;
 }
+/** the pieces of the end of the tournament, in the order of what each is worth a coin in the final (tools/auto-gear.mjs, journal Passe GP5-1: the laurel, the plate, the sash, the
+ *  caravan's blade by gain over their price) */
+const END_PIECES: ReadonlyArray<{ item: string; shop: ShopId; place: PlaceId }> = [
+  { item: 'champion-laurel', shop: 'trinkets', place: 'lanterns' },
+  { item: 'tournament-plate', shop: 'armourer', place: 'forecourt' },
+  { item: 'masters-sash', shop: 'master', place: 'training' },
+  { item: 'caravan-greatblade', shop: 'mara', place: 'district' },
+];
+/** what a policy does with its winnings once the planner's gear is all worn (the operator's EQ-12 « Le planificateur, la référence et le curieux ; recaler la course (PB-3
+ *  appliquée) », journal Passe GP5-2): an accessory of the end waiting in its bag takes the place of the cheapest one it wears; what lies in its bag is sold to Mara (half price,
+ *  the replaced piece included); Clerk Odo's advance when the next piece is a purse and an advance away; the next piece of the end from day 6, bargained for first by the
+ *  curious player. `at` is the policy's own walk */
+function endGear(st: GameState, at: (place: PlaceId, a: Action) => Action | null, bargain: boolean, spare = 8): Action | null {
+  const g = st.v2?.gear;
+  if (!g) return null;
+  const held = (id: string): boolean => g.weapon === id || g.armour === id || g.acc.includes(id) || g.bag.includes(id), end = (id: string): boolean => END_PIECES.some((p) => p.item === id);
+  const wait = g.bag.find((id) => end(id) && GEAR[id].slot === 'accessory');
+  if (wait) { const cost = (id: string | null): number => (id ? GEAR[id].price : -1); return { type: 'equip', item: wait, slot: cost(g.acc[0]) <= cost(g.acc[1]) ? 0 : 1 }; }
+  for (const id of [...new Set(g.bag)]) if (!end(id)) { const a = at('district', { type: 'sell', item: id }); if (a) return a; }
+  // the first piece (in the order of their worth) the purse reaches and the policy can walk to now, a stall shut at this hour waiting for its hour
+  const sold = END_PIECES.filter((p) => !held(p.item) && soldAt(GEAR[p.item], p.shop, st.day));
+  for (const next of sold) {
+    if (st.player.coins < shopPrice(st, next.shop, next.item) + spare) continue;
+    if (bargain) {
+      const keeper = SHOPS[next.shop].keeper, args = (['name', 'friend', 'pair'] as const).slice().sort((x, y) => argChance(st, y, keeper) - argChance(st, x, keeper));
+      for (const arg of args) { const b = at(next.place, { type: 'bargain', shop: next.shop, item: next.item, arg }); if (b) return b; }
+    }
+    const a = at(next.place, { type: 'shopBuy', shop: next.shop, item: next.item });
+    if (a) return a;
+  }
+  // the advance, when it brings a piece within reach that its stall sells at this hour (an advance taken for a stall shut now is spent on something else meanwhile)
+  const rich: GameState = { ...st, player: { ...st.player, coins: st.player.coins + ADVANCE.coins } };
+  if (st.day >= ADVANCE.from && sold.some((p) => { const need = shopPrice(st, p.shop, p.item) + spare; return st.player.coins < need && rich.player.coins >= need && has({ ...rich, place: p.place }, { type: 'shopBuy', shop: p.shop, item: p.item }); })) return at('forecourt', { type: 'purseAdvance' });
+  return null;
+}
+
 function plannerV2(st: GameState): Action {
   const bout = st.slot === 'afternoon' && !!matchSheetFor(st), hurt = st.player.injury > 0;
   const there = (place: PlaceId): GameState => (st.place === place ? st : { ...st, place });
@@ -186,7 +226,8 @@ function plannerV2(st: GameState): Action {
   };
   const train = (): Action | null => (st.player.training < 2 ? at('training', labSession(st)) : null);
   const drill = (): Action | null => first(() => at('training', { type: 'drillSkill', skill: 't1' }), () => at('training', { type: 'drillSkill', skill: 'heavy' }));
-  return first(urgent, buy, quest, train, drill, job) ?? fallback(st, 0.6);
+  const endG = (): Action | null => (step >= PLAN.length ? endGear(st, at, false) : null);
+  return first(urgent, endG, buy, quest, train, drill, job) ?? fallback(st, 0.6);
 }
 
 /** the same diligence in a version 2 game (journal Passe VP1: today's policy only waited there, its practice sand moved to the training
@@ -315,7 +356,8 @@ function curiousV2(st: GameState): Action {
   // the festival of day 9 (lot L6, FE-9): the good turns on the festival square, the hall's lanterns in the morning, Brother Ambrose's flame in the afternoon, a round at
   // Lio's when the purse keeps the healer's price (the diligent does none of it)
   const festival = (): Action | null => first(() => at('lanterns', { type: 'festDeed', deed: st.slot === 'morning' ? 'hang' : 'flame' }), () => (st.player.coins >= FEST.round + 8 ? at('lanterns', { type: 'festDeed', deed: 'round' }) : null));
-  return first(sand, strongroom, investigate, festival, urgent, buy, quest, barter, steal, seize, rumour, challenge, scout, () => at('training', labSession(st))) ?? fallback(st, 0.6);
+  const endG = (): Action | null => (planStep(st, true) >= PLAN.length ? endGear(st, at as (place: PlaceId, a: Action) => Action | null, true) : null);
+  return first(sand, strongroom, investigate, festival, urgent, endG, buy, quest, barter, steal, seize, rumour, challenge, scout, () => at('training', labSession(st))) ?? fallback(st, 0.6);
 }
 
 /** a scripted game (journal Passe L5): per slot, the actions to try in order (each once, when the state allows it), then the slot's end
@@ -409,7 +451,8 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
   const count = (st: GameState, ...ids: string[]) => st.log.filter((e) => ids.includes(e.id)).length;
   const fest = { leaders: {} as Record<string, number>, deeds: 0, lanterns: 0, behind: 0 };
   // the money of a version 2 game (journal Passe ECO2): the purse at the end, the jobs and sales, the gear bought (a piece or a forge tier) by the morning of day 6 and of day 10
-  const money = { coins: 0, jobs: 0, sold: 0, gearD6: 0, gearD10: 0 };
+  // (the end of the tournament's pieces bought and Clerk Odo's advances taken, the operator's EQ-12, journal Passe GP5-2)
+  const money = { coins: 0, jobs: 0, sold: 0, gearD6: 0, gearD10: 0, endPieces: 0, advances: 0 };
   // the town's quests (GP-09): the games where each was done, failed or left open
   const quests: Record<string, number> = {};
   const gearBought = (e: GameEvent) => (e.id.startsWith('shop:') && e.id !== 'shop:whetstone' && e.id !== 'shop:salve') || e.id === 'upgrade' || e.id === 'bargain:won' || e.id === 'barter:won';
@@ -435,6 +478,7 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
       if (f?.leader) fest.leaders[f.leader] = (fest.leaders[f.leader] ?? 0) + 1;
       fest.deeds += f?.deeds?.length ?? 0; fest.lanterns += f?.lanterns?.[PLAYER_ID] ?? 0; fest.behind += f?.behind ? 1 : 0;
       money.coins += st.player.coins; money.jobs += st.log.filter((e) => e.id.startsWith('work:')).length; money.sold += st.log.filter((e) => e.id.startsWith('sell:')).length;
+      money.endPieces += st.log.filter((e) => END_PIECES.some((p) => e.id === `shop:${p.item}` || (e.id === 'bargain:won' && e.text.includes(itemName(p.item))))).length; money.advances += st.log.filter((e) => e.id === 'purseAdvance').length;
       for (const id of QUEST_IDS) { const q = st.quests[id]; if (q) quests[`${id}:${q === 'done' || q === 'failed' ? q : 'open'}`] = (quests[`${id}:${q === 'done' || q === 'failed' ? q : 'open'}`] ?? 0) + 1; }
       money.gearD6 += st.log.filter((e) => e.day < 6 && gearBought(e)).length; money.gearD10 += st.log.filter((e) => e.day < 10 && gearBought(e)).length;
     }

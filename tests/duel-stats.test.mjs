@@ -148,9 +148,10 @@ test('Ren\'s stats from his state (DB7-2, DB7-3, DB7-4): the gear in points, the
   // each piece's points (briefs/stats-combattants.md § 2.3; the health x2 since DB11-6), doubled with the penalties since lot 2 of the duel played by the computer
   // (the operator's AC-11 « Doubler les points de l’équipement (décision A3 : change DB7-2) », journal Passe AC4, applied in journal Passe LC3); the AP and the effects kept
   const POINTS = {
-    'imported-blade': { atk: 4 }, 'duelist-sabre': { atk: 3, viv: 2 }, 'padded-jack': { def: 2 }, 'mail-shirt': { def: 6, viv: -1 }, 'dock-leathers': { def: 3, end: 2 },
-    'knight-hauberk': { def: 7, viv: -1 }, 'iron-ring': { end: 4 }, 'swift-boots': { viv: 2 }, 'docker-wrap': { hp: 36 }, 'river-pearl': { end: 3, hp: 20 },
-    'pilgrim-medal': { hp: 32, effect: 1.15 }, 'lucky-ribbon': { ap: 1 }, 'fervour-charm': { effect: 1.3 }, whetstone: { atk: 1 },
+    // (the sabre, the ring, the ribbon and the fervour charm retouched by the operator's EQ-4 « Ces retouches », journal Passe GP5-2)
+    'imported-blade': { atk: 4 }, 'duelist-sabre': { atk: 5, viv: 2 }, 'padded-jack': { def: 2 }, 'mail-shirt': { def: 6, viv: -1 }, 'dock-leathers': { def: 3, end: 2 },
+    'knight-hauberk': { def: 7, viv: -1 }, 'iron-ring': { end: 3 }, 'swift-boots': { viv: 2 }, 'docker-wrap': { hp: 36 }, 'river-pearl': { end: 3, hp: 20 },
+    'pilgrim-medal': { hp: 32, effect: 1.15 }, 'lucky-ribbon': { hp: 24, ap: 1 }, 'fervour-charm': { effect: 1.6 }, whetstone: { atk: 1 },
   };
   for (const [id, fx] of Object.entries(POINTS)) assert.deepEqual(GE.GEAR[id].fx, fx, id);
   // (the champion's token, given by nothing, left the catalogue: the operator's GP-20 « Les corriger », journal Passe GP2)
@@ -159,7 +160,7 @@ test('Ren\'s stats from his state (DB7-2, DB7-3, DB7-4): the gear in points, the
   const s = structuredClone(st);
   s.v2.gear = { weapon: 'imported-blade', tier: 3, armour: 'dock-leathers', acc: ['iron-ring', 'docker-wrap'], bag: [] };
   s.player.items.push('whetstone'); s.player.training = 2; s.v2.prep = ['viv', 'end']; s.v2.wins = 4;
-  assert.deepEqual(VG.v2Stats(s), { hp: 300 + 4 * 24 + 36, atk: 10 + 4 + 6 + 1, def: 13, end: 10 + 2 + 4 + 1, viv: 11 });
+  assert.deepEqual(VG.v2Stats(s), { hp: 300 + 4 * 24 + 36, atk: 10 + 4 + 6 + 1, def: 13, end: 10 + 2 + 3 + 1, viv: 11 });
   // a session given to health (DB11-5): +20 at the next bout; where the health comes from, as the match sheet says it (journal Passe DB13)
   const h = structuredClone(s); h.v2.prep = ['hp', 'end']; h.player.injury = 1;
   assert.equal(VG.v2Stats(h).hp, 300 + 96 + 36 + 20);

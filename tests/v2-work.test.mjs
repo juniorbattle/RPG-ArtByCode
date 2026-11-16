@@ -88,11 +88,11 @@ test('the resale: Mara buys what lies in the bag at half its list price, by day,
   const st = at(v2(), 'district', 'morning');
   st.v2.gear.bag.push('padded-jack', 'imported-blade');
   const o = opt(st, { type: 'sell', item: 'padded-jack' });
-  assert.equal(o.ok, true, o.reason); assert.equal(o.gain, 9, 'half of 18'); assert.equal(o.cost, 0, 'no slot');
+  assert.equal(o.ok, true, o.reason); assert.equal(o.gain, 7, 'half of 14'); assert.equal(o.cost, 0, 'no slot');
   const r = act(st, { type: 'sell', item: 'padded-jack' });
-  assert.equal(r.state.player.coins, st.player.coins + 9); assert.equal(r.state.slot, 'morning');
+  assert.equal(r.state.player.coins, st.player.coins + 7); assert.equal(r.state.slot, 'morning');
   assert.deepEqual(r.state.v2.gear.bag, ['imported-blade']);
-  assert.equal(opt(st, { type: 'sell', item: 'imported-blade' }).gain, 15, 'half of 30');
+  assert.equal(opt(st, { type: 'sell', item: 'imported-blade' }).gain, 12, 'half of 24');
   // what is worn is not offered; the training sword is worth nothing
   assert.ok(!G.actions(st).some((o) => o.action.type === 'sell' && o.action.item === 'training-sword'));
   // by day only (her stall), at the quay only
@@ -143,10 +143,10 @@ test('GP-19 « Déséquiper et vendre une pièce portée »: a worn piece is tak
   assert.equal(r.state.slot, 'afternoon', 'no slot'); assert.equal(r.state.player.coins, st.player.coins, 'no coin');
   r = act(st, { type: 'unequip', slot: 0 });
   assert.deepEqual(r.state.v2.gear.acc, [null, null]); assert.deepEqual(r.state.v2.gear.bag, ['iron-ring']);
-  // the weapon: the training sword is back in hand, the blade in the bag, the forge's tiers as the rule of EQ-11 says (they go with the blade until the operator's reading)
+  // the weapon: the training sword is back in hand, the blade in the bag, the forge's tiers staying with the hand (the operator's EQ-11 « Les paliers suivent la main », journal Passe GP5-2)
   r = act(st, { type: 'unequip', slot: 'weapon' });
   assert.equal(r.state.v2.gear.weapon, 'training-sword'); assert.deepEqual(r.state.v2.gear.bag, ['imported-blade']);
-  assert.equal(r.state.v2.gear.tier, GE.TIERS_FOLLOW_THE_HAND ? 2 : 0);
+  assert.equal(r.state.v2.gear.tier, 2);
   // nothing to take off: the empty place, and the training sword (the hand's own)
   assert.equal(refused(st, { type: 'unequip', slot: 1 }), tx('v2.unequip.nothing'));
   assert.equal(refused(r.state, { type: 'unequip', slot: 'weapon' }), tx('v2.unequip.nothing'));
@@ -163,10 +163,10 @@ test('GP-19: a worn piece sold at Mara\'s, by day and without a slot, at half it
   let r = act(st, { type: 'sell', item: 'mail-shirt', from: 'armour' });
   assert.equal(r.state.player.coins, st.player.coins + 20, 'half of 40'); assert.equal(r.state.v2.gear.armour, null); assert.equal(r.state.slot, 'morning', 'no slot'); assert.deepEqual(r.state.v2.gear.bag, []);
   r = act(st, { type: 'sell', item: 'iron-ring', from: 0 });
-  assert.equal(r.state.player.coins, st.player.coins + 12, 'half of 24'); assert.deepEqual(r.state.v2.gear.acc, [null, null]);
+  assert.equal(r.state.player.coins, st.player.coins + 16, 'half of 32'); assert.deepEqual(r.state.v2.gear.acc, [null, null]);
   r = act(st, { type: 'sell', item: 'imported-blade', from: 'weapon' });
-  assert.equal(r.state.player.coins, st.player.coins + 15, 'half of 30'); assert.equal(r.state.v2.gear.weapon, 'training-sword');
-  assert.equal(r.state.v2.gear.tier, GE.TIERS_FOLLOW_THE_HAND ? 2 : 0, 'the forge\'s tiers as EQ-11 will say');
+  assert.equal(r.state.player.coins, st.player.coins + 12, 'half of 24'); assert.equal(r.state.v2.gear.weapon, 'training-sword');
+  assert.equal(r.state.v2.gear.tier, 2, 'the forge\'s tiers stay with the hand, the blade sold does not give them back (EQ-11)');
   assert.ok(r.events.some((e) => e.id === 'sell:imported-blade' && e.visible), 'said in the news');
   // what is worn is not listed among the place\'s actions (the marks and the count are the bag\'s); the gear page asks for it
   assert.ok(!opt(st, { type: 'sell', item: 'mail-shirt', from: 'armour' }));

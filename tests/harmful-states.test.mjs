@@ -13,6 +13,7 @@ const AD = await load('/src/combat/autoData.ts'), AU = await load('/src/combat/a
 const AV = await load('/src/arena/autoView.ts'), H = await load('/src/arena/AutoHud.ts'), SFX = await load('/src/audio/sfx.ts'), SC = await load('/src/simulation/v2scout.ts');
 const NB = await load('/src/ui/notebook.ts'), DT = await load('/src/ui/duelTutorial.ts');
 const T = await load('/src/narrative/text/index.ts');
+const GE = await load('/src/simulation/gear.ts');
 const { EN } = await load('/src/narrative/text/en.ts');
 const { FR } = await load('/src/narrative/text/fr.ts');
 
@@ -39,7 +40,7 @@ test('GE-1 / GE-2 / GE-3 and GC-1 / GC-3: six states and their numbers, a state 
   }
 });
 
-test('GE-4 / GE-7 / GE-12: the weapon families and their counterpart, the armours and the accessories, named for workstream 5; no piece of the game carries one yet', () => {
+test('GE-4 / GE-7 / GE-12 and EQ-2 / EQ-3: the weapon families and their counterpart, the armours and the accessories, made pieces by workstream 5', () => {
   assert.deepEqual(AD.STATE_WEAPON_FAMILIES, { venom: { state: 'poison', chance: 0.12 }, ember: { state: 'burn', chance: 0.08, on: 'any' }, glare: { state: 'blind', chance: 0.15 }, serrated: { state: 'bleed', chance: 0.12 }, hex: { state: 'curse', chance: 0.4 }, numb: { state: 'paralysis', chance: 0.4 } });
   assert.equal(AD.STATE_WEAPON_COUNTERPART, -2);
   // (GC-4 « Des familles d’armes seulement »: no rival carries the curse or the paralysis, no armour or accessory keeps them off)
@@ -48,7 +49,23 @@ test('GE-4 / GE-7 / GE-12: the weapon families and their counterpart, the armour
   for (const s of Object.values(AD.AUTO_SKILL_STATES)) assert.ok(!['curse', 'paralysis'].includes(s.state), 'no signature carries them');
   assert.deepEqual(AD.STATE_ARMOUR_FAMILIES, { leather: { poison: 0.5 }, padded: { burn: 0.5 }, mail: { bleed: 0.5 } });
   assert.deepEqual(AD.STATE_CHARM_FAMILIES, { bezoar: { poison: 1 }, salamander: { burn: 1 }, hood: { blind: 1 }, tourniquet: { bleed: 1 } });
-  for (const [id, fx] of Object.entries(AD.AUTO_GEAR_FX)) assert.ok(!fx.inflict && !fx.resist, `${id} carries no state (GE-12: workstream 5)`);
+  // workstream 5 made them pieces (the operator's EQ-2 « Ces six armes, à 26-30 pièces » and EQ-3 « Ces armures et ces quatre charmes, avec un petit bonus », journal Passe GP5-2):
+  // a weapon of a family is the imported blade (its blows, its effects) less 2 Attack with the family's state, nothing else carries a state
+  const FAMILY_WEAPONS = { 'viper-blade': 'venom', 'serrated-cutlass': 'serrated', 'ember-sword': 'ember', 'mirror-blade': 'glare', 'hex-falchion': 'hex', 'torpor-rapier': 'numb' };
+  const blade = AD.AUTO_GEAR_FX['imported-blade'];
+  for (const [id, fam] of Object.entries(FAMILY_WEAPONS)) {
+    assert.deepEqual(AD.AUTO_GEAR_FX[id], { ...blade, inflict: AD.STATE_WEAPON_FAMILIES[fam] }, id);
+    assert.deepEqual(AD.AUTO_WEAPONS[id], AD.AUTO_WEAPONS['imported-blade'], `${id} strikes as the blade`);
+    assert.equal(GE.GEAR[id].fx.atk, GE.GEAR['imported-blade'].fx.atk + AD.STATE_WEAPON_COUNTERPART, `${id}: the blade less 2 Attack`);
+    assert.equal(GE.GEAR[id].slot, 'weapon');
+  }
+  assert.deepEqual(Object.keys(AD.AUTO_GEAR_FX).filter((id) => AD.AUTO_GEAR_FX[id].inflict).sort(), Object.keys(FAMILY_WEAPONS).sort(), 'no other piece carries a state');
+  const PROTECTED = { 'padded-jack': AD.STATE_ARMOUR_FAMILIES.padded, 'mail-shirt': AD.STATE_ARMOUR_FAMILIES.mail, 'knight-hauberk': AD.STATE_ARMOUR_FAMILIES.mail, 'tournament-plate': AD.STATE_ARMOUR_FAMILIES.mail, 'dock-leathers': AD.STATE_ARMOUR_FAMILIES.leather,
+    'bezoar-stone': AD.STATE_CHARM_FAMILIES.bezoar, 'salamander-charm': AD.STATE_CHARM_FAMILIES.salamander, 'wayfarer-hood': AD.STATE_CHARM_FAMILIES.hood, 'field-tourniquet': AD.STATE_CHARM_FAMILIES.tourniquet };
+  for (const [id, r] of Object.entries(PROTECTED)) assert.deepEqual(AD.AUTO_GEAR_FX[id].resist, r, id);
+  assert.deepEqual(Object.keys(AD.AUTO_GEAR_FX).filter((id) => AD.AUTO_GEAR_FX[id].resist).sort(), Object.keys(PROTECTED).sort(), 'no other piece keeps a state off');
+  // each family a weapon, a state of the four kept off by an armour or a charm (no armour keeps off the blindness: no helmet slot; the hood is an accessory)
+  for (const fam of Object.keys(AD.STATE_WEAPON_FAMILIES)) assert.ok(Object.values(FAMILY_WEAPONS).includes(fam), `${fam} has its weapon`);
   // the pieces worn: a state the first piece's that carries one (the weapon), each resistance the highest
   AD.AUTO_GEAR_FX.__w = { inflict: AD.STATE_WEAPON_FAMILIES.venom }; AD.AUTO_GEAR_FX.__a = { resist: { poison: 0.5, bleed: 0.5 } }; AD.AUTO_GEAR_FX.__c = { resist: { poison: 1 }, inflict: AD.STATE_WEAPON_FAMILIES.glare };
   try { assert.deepEqual(AD.autoGearFx(['__w', '__a', '__c']), { inflict: AD.STATE_WEAPON_FAMILIES.venom, resist: { poison: 1, bleed: 0.5 } }); } finally { delete AD.AUTO_GEAR_FX.__w; delete AD.AUTO_GEAR_FX.__a; delete AD.AUTO_GEAR_FX.__c; }

@@ -13,13 +13,33 @@ const { costTag } = await load('/src/ui/townUi.ts');
 /** the rules, written out: Mara's list prices (the shortage on steel, her favour), Bram's tempering, the informant, the watch, the healer
  *  (free once the Temple pays), the bellows (half with Orla's arms) */
 const LIST = { whetstone: 8, salve: 10, 'imported-blade': 30 };
+// the version 2's catalogue as the operator's chantier 5 made it (the sheet https://claude.ai/artifact/Eg4nNbYLtAaCfngnEKZLGs, EQ-1 to EQ-9, journal Passe GP5-2), written out: the list
+// prices of the shops' pieces, the pieces of the end of the tournament (EQ-5: dear, from day 6, their price fixed), the places each is sold at (EQ-9: seven at two places), the
+// stage of the tournament in the prices (EQ-7: the shops' pieces ×1.15 from day 6, ×1.3 from day 9) and the two shortages (EQ-8)
+const LISTV2 = {
+  'imported-blade': 24, 'duelist-sabre': 50, 'padded-jack': 14, 'mail-shirt': 40, 'dock-leathers': 30, 'lucky-ribbon': 10, 'iron-ring': 32, 'swift-boots': 24, 'fervour-charm': 12, 'docker-wrap': 12, whetstone: 8, salve: 10,
+  'viper-blade': 26, 'serrated-cutlass': 30, 'ember-sword': 30, 'mirror-blade': 30, 'hex-falchion': 30, 'torpor-rapier': 30,
+  'bezoar-stone': 16, 'salamander-charm': 18, 'wayfarer-hood': 18, 'field-tourniquet': 18,
+  'caravan-greatblade': 90, 'tournament-plate': 100, 'masters-sash': 85, 'champion-laurel': 80,
+};
+const LIST_PASSERS = { 'river-pearl': 30, 'knight-hauberk': 60, 'pilgrim-medal': 14, 'mender-gloves': 22, 'courier-boots': 12, 'minstrel-charm': 12, 'sergeant-gorget': 14, 'hostler-leathers': 18 };
+const END = ['caravan-greatblade', 'tournament-plate', 'masters-sash', 'champion-laurel'];
+const SOLD = {
+  mara: ['whetstone', 'salve', 'imported-blade', 'viper-blade', 'serrated-cutlass', 'padded-jack', 'dock-leathers', 'docker-wrap', 'field-tourniquet', 'caravan-greatblade'],
+  armourer: ['padded-jack', 'mail-shirt', 'iron-ring', 'salamander-charm', 'wayfarer-hood', 'tournament-plate'],
+  master: ['imported-blade', 'duelist-sabre', 'serrated-cutlass', 'ember-sword', 'mirror-blade', 'hex-falchion', 'torpor-rapier', 'swift-boots', 'wayfarer-hood', 'masters-sash'],
+  trinkets: ['lucky-ribbon', 'fervour-charm', 'docker-wrap', 'iron-ring', 'bezoar-stone', 'salamander-charm', 'champion-laurel'],
+};
+const STEEL = ['imported-blade', 'duelist-sabre', 'padded-jack', 'mail-shirt', 'dock-leathers', 'viper-blade', 'serrated-cutlass', 'ember-sword', 'mirror-blade', 'hex-falchion', 'torpor-rapier', 'caravan-greatblade', 'tournament-plate'];
+const ARMOURS = ['padded-jack', 'mail-shirt', 'dock-leathers', 'tournament-plate'], ACCESSORIES = ['lucky-ribbon', 'iron-ring', 'swift-boots', 'fervour-charm', 'docker-wrap', 'bezoar-stone', 'salamander-charm', 'wayfarer-hood', 'field-tourniquet', 'masters-sash', 'champion-laurel'];
 function rule(st, a) {
   switch (a.type) {
     // the version 2's bargains (lot L2a, EV-6): the piece's price less the argument's share (the name 20 %, a friend 15 %, two at once 25 % on both, what
     // touches a passer-by 30 %), paid only if it works; a passer-by's piece at its price
     case 'bargain': {
       const off = (p, d) => Math.max(1, Math.round(p * (1 - d))), d = { name: 0.2, friend: 0.15, pair: 0.25 }[a.arg];
-      const ITEMS = { mara: ['whetstone', 'docker-wrap', 'dock-leathers', 'imported-blade'], armourer: ['padded-jack', 'iron-ring', 'mail-shirt'], master: ['swift-boots', 'duelist-sabre'], trinkets: ['lucky-ribbon', 'fervour-charm'] }[a.shop];
+      // the pair: the shop's cheapest other piece sold today that the player lacks (list price, then name; the salve never)
+      const ITEMS = SOLD[a.shop].filter((id) => id !== 'salve' && (!END.includes(id) || st.day >= 6)).sort((x, y) => LISTV2[x] - LISTV2[y] || (x < y ? -1 : 1));
       const held = (id) => id === 'whetstone' ? st.player.items.includes('whetstone') : [st.v2.gear.weapon, st.v2.gear.armour, ...st.v2.gear.acc, ...st.v2.gear.bag].includes(id);
       const pair = a.arg === 'pair' ? ITEMS.find((id) => id !== a.item && !held(id)) : null;
       return off(rule(st, { type: 'shopBuy', shop: a.shop, item: a.item }), d) + (pair ? off(rule(st, { type: 'shopBuy', shop: a.shop, item: pair }), d) : 0);
@@ -32,13 +52,13 @@ function rule(st, a) {
     // a restitution at Sergeant Hale's (lot L2a): the pieces still held go back, the others taken are paid at their list price (a theft caught took nothing:
     // journal Passe CO2), his fee of 5; a thin purse pays all it has
     case 'restitute': {
-      const PRICE = { 'imported-blade': 30, 'duelist-sabre': 55, 'padded-jack': 18, 'mail-shirt': 40, 'dock-leathers': 26, 'lucky-ribbon': 12, 'iron-ring': 24, 'swift-boots': 30, 'fervour-charm': 16, 'docker-wrap': 14, whetstone: 8, 'river-pearl': 26, 'knight-hauberk': 34, 'pilgrim-medal': 18, 'mender-gloves': 16, 'courier-boots': 14, 'minstrel-charm': 15, 'sergeant-gorget': 20, 'hostler-leathers': 22 };
+      const PRICE = { ...LISTV2, ...LIST_PASSERS };
       const g = st.v2.gear, held = (id) => id === 'whetstone' ? st.player.items.includes('whetstone') : [g.weapon, g.armour, ...g.acc, ...g.bag].includes(id);
       const open = (st.v2.thefts ?? []).filter((x) => !x.settled), debt = open.filter((x) => x.seen !== 'caught' && !held(x.item)).reduce((n, x) => n + PRICE[x.item], 0) + (open.length || (st.v2.marks ?? 0) > 0 ? 5 : 0);
       return Math.min(debt, st.player.coins);
     }
     // the passers-by of GP-06 (journal Passe PN1, « Un passant par lieu et par moment (douze) »): their pieces' prices, « proposé »
-    case 'barter': { const p = { fenwick: 26, edda: 34, sela: 18, nell: 16, jory: 14, yselle: 15, garrick: 20, maud: 22, dov: 32, hettie: 10 }[a.who]; return !a.arg ? p : Math.max(1, Math.round(p * (a.arg === 'name' ? 0.8 : 0.7))); }
+    case 'barter': { const p = { fenwick: 26, edda: 34, sela: 18, nell: 16, jory: 14, yselle: 15, garrick: 20, maud: 22, dov: 28, hettie: 10 }[a.who]; return !a.arg ? p : Math.max(1, Math.round(p * (a.arg === 'name' ? 0.8 : 0.7))); }
     case 'buy': return Math.round(LIST[a.item] * (a.item === 'salve' ? 1 : st.services.shopFactor) * (st.flags['discount:mara'] ? 0.9 : 1));
     case 'temper': case 'buyInfo': return 10;
     case 'payWatch': return 15;
@@ -46,13 +66,17 @@ function rule(st, a) {
     case 'repair': return (st.competitors.orla?.relationships.player ?? 0) >= 20 ? 6 : 12;
     // the version 2 (journal Passe V2): the weapon master's skills, a tenth off for a reputation of 40 or more
     case 'shopBuy': {
-      const LISTV2 = { 'imported-blade': 30, 'duelist-sabre': 55, 'padded-jack': 18, 'mail-shirt': 40, 'dock-leathers': 26, 'lucky-ribbon': 12, 'iron-ring': 24, 'swift-boots': 30, 'fervour-charm': 16, 'docker-wrap': 14, whetstone: 8, salve: 10 };
       const FACTOR = { mara: 1, armourer: 1.15, master: 1.1, trinkets: 0.9 }, KEEPER = { mara: 'mara', armourer: 'hilde', master: 'corvin', trinkets: 'pip' };
-      const steel = ['imported-blade', 'duelist-sabre', 'padded-jack', 'mail-shirt', 'dock-leathers'].includes(a.item) ? st.services.shopFactor : 1;
+      const steel = STEEL.includes(a.item) ? st.services.shopFactor : 1;
+      // the stage of the tournament (EQ-7) for the shops' pieces, not the salve nor the whetstone nor the pieces of the end (EQ-5); House Dree's order (EQ-8: Hilde's armours, days 3 to 5
+      // once its event fired) and the parade's rush (Pip's accessories on day 9)
+      const stage = a.item === 'whetstone' || a.item === 'salve' || END.includes(a.item) ? 1 : st.day >= 9 ? 1.3 : st.day >= 6 ? 1.15 : 1;
+      const dree = a.shop === 'armourer' && ARMOURS.includes(a.item) && st.flags['ev:v2-dree-order'] !== undefined && st.day >= 3 && st.day <= 5 ? 1.3 : 1;
+      const rush = a.shop === 'trinkets' && ACCESSORIES.includes(a.item) && st.flags['ev:v2-parade-rush'] !== undefined && st.day === 9 ? 1.5 : 1;
       const k = Math.min(0.15, st.player.reputation / 400), rel = (st.town[KEEPER[a.shop]] ?? 0) >= 15 ? 0.9 : 1, night = st.slot === 'evening' ? 1.2 : 1;
       // the keeper's markup after a theft caught (lot V4), reached by a named state since lot L2a (v2-wanted-night)
       const markup = (st.v2?.shops?.[a.shop]?.markup ?? 0) >= st.day ? 1.25 : 1;
-      return Math.max(1, Math.round(LISTV2[a.item] * FACTOR[a.shop] * (1 - k) * rel * steel * night * markup));
+      return Math.max(1, Math.round(LISTV2[a.item] * FACTOR[a.shop] * (1 - k) * rel * steel * dree * rush * stage * night * markup));
     }
     // the forge's own tiers: the Wyrmsteel is no tier since the steel cargo was rewritten (the operator's Q-02 « Attaque +1, en plus des paliers, tout de suite », journal
     // Passe QE2)

@@ -148,7 +148,8 @@ test('(3) « free » only when nothing is spent: every option of a version 2 gam
       }
       const passed = clock(after) !== clock(st), t = tags(U.costTag(o));
       assert.equal(t.includes('1 slot'), passed, `${o.label} (${name}, ${place}): ${t.join(', ')}`);
-      assert.equal(t.includes('free'), !passed && !o.coins, `${o.label} (${name}, ${place}): ${t.join(', ')}`);
+      // (what pays is never « free »: the tag says its gain, ECO-7; the advance of Clerk Odo, EQ-6, spends no slot and pays)
+      assert.equal(t.includes('free'), !passed && !o.coins && !o.gain, `${o.label} (${name}, ${place}): ${t.join(', ')}`);
       n++;
     }
   }
@@ -188,7 +189,8 @@ test('(4) a version 2 journal says a cause in words or not at all, never its cod
 test('(4) every consequence and sign of whole version 2 games reads without a code; a theft caught says why in words', () => {
   let n = 0;
   const check = (s) => { for (const e of s.log) if (e.visible && (e.kind === 'consequence' || e.kind === 'sign')) { const why = J.whyOf(s, e.cause); n++; if (why !== null) assert.doesNotMatch(why, CODE, `${e.id}: ${why}`); } };
-  for (let seed = 1; seed <= 6; seed++) for (const p of ['diligent', 'idle']) check(L.autoplay(seed, L.POLICIES[p], 'Ren', 400, 'v2').state);
+  // (ten seeds since the race fitted last, journal Passe GP5-3: six give 43 entries and eight 49, the bracket's rivals being weaker for the planner's dearer day-6 gear)
+  for (let seed = 1; seed <= 10; seed++) for (const p of ['diligent', 'idle']) check(L.autoplay(seed, L.POLICIES[p], 'Ren', 400, 'v2').state);
   // a thief, caught in the end (the lab's bot never steals)
   let caught = null;
   for (let seed = 1; seed <= 40 && !caught; seed++) {

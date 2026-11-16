@@ -126,6 +126,9 @@ export interface GameState {
 
 /** the version 2's state: the skills and their levels, the four brought (lot V2); the lots after it add their parts */
 export interface V2State {
+  /** Clerk Odo's advance on the final's purse (the operator's EQ-6 « 30 pièces à maître Odo dès le jour 9, rendues sur la bourse », journal Passe GP5-2): the coins still to give back out
+   *  of it, 0 once the final is fought; absent = never taken (src/simulation/v2work.ts, src/tournament/pool.ts) */
+  advance?: number;
   /** the coins a short restitution still owes the watch, worked off at 10 a slot (the operator's CO-3, journal Passe CO3); the ledger keeps the name meanwhile */
   debt?: number;
   /** `order`: the order of priority of the four brought in the duel played by the computer (the operator's AC-09 « le joueur règle ses quatre compétences et

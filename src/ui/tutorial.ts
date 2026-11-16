@@ -5,6 +5,7 @@ import { POINTS } from '../narrative/roster';
 import { CHAMPION_PURSE, V2_DAY_KIND, V2_DAYS } from '../tournament/v2calendar';
 import { PURSES } from '../tournament/pool';
 import { WORK } from '../simulation/v2work';
+import { ADVANCE, GEAR, STAGE_PRICE } from '../simulation/gear';
 import { LAW, marksOf } from '../simulation/v2law';
 import { CHALLENGERS, STAKE, STEAL_FINE } from '../simulation/v2town';
 import { RUMOUR, STRONGROOM } from '../simulation/v2intel';
@@ -279,7 +280,9 @@ export function chapterText(s: GameState, c: Chapter): string {
     // the ways out's chevrons (the operator's MK-15 « Une ligne du guide, pas de conseil », journal Passe MK5), a line after the chapter's text
     case 'places': return `${tx(c.body, { quay: placeShort('district'), a: placeShort('forecourt'), b: placeShort('training'), c: placeShort('lanterns') })}\n${tx('tut.ch.places.ways')}`;
     case 'shops': return tx(c.body, { mara: nameOf('mara'), hilde: nameOf('hilde'), corvin: nameOf('corvin'), pip: nameOf('pip'), bram: nameOf('bram') });
-    case 'money': return tx(c.body, { jobs: jobsLine(), pay: WORK.pay, mara: nameOf('mara'), pool: PURSES.pool[0], poolL: PURSES.pool[1], semi: PURSES.semi[0], semiL: PURSES.semi[1], semiDay: dayOf('semis'), third: PURSES.third[0], thirdL: PURSES.third[1], majorDay: dayOf('major'), final: PURSES.final[0], finalL: PURSES.final[1], champ: CHAMPION_PURSE });
+    case 'money': return tx(c.body, { jobs: jobsLine(), pay: WORK.pay, mara: nameOf('mara'), pool: PURSES.pool[0], poolL: PURSES.pool[1], semi: PURSES.semi[0], semiL: PURSES.semi[1], semiDay: dayOf('semis'), third: PURSES.third[0], thirdL: PURSES.third[1], majorDay: dayOf('major'), final: PURSES.final[0], finalL: PURSES.final[1], champ: CHAMPION_PURSE,
+      // the gold and the gear of the operator's chantier 5 (journal Passe GP5-2): the pieces of the end from day 6 (EQ-5), the prices by stage (EQ-7), Clerk Odo's advance (EQ-6)
+      end: GEAR['tournament-plate'].from!, stepA: Math.round((STAGE_PRICE[0].k - 1) * 100), dayA: STAGE_PRICE[0].from, stepB: Math.round((STAGE_PRICE[1].k - 1) * 100), dayB: STAGE_PRICE[1].from, odo: nameOf('odo'), advance: ADVANCE.coins, advDay: ADVANCE.from });
     // (journal Passe PN1, GP-08 « Le dire, et la restitution lève la bouderie »: the muscle, when it is hired and how long it waits; the fight of a thief caught, the piece taken by force)
     case 'law': return tx(c.body, { day: STEAL_FINE.day, night: STEAL_FINE.night, max: LAW.wanted, fee: LAW.fee, hale: nameOf('hale'), watch: nameOf('wynn'), muscle: nameOf('corra'), grudge: -LAW.grudge, waits: LAW.waits });
     // a challenge teaches up to the training's cap (the operator's GP-16 « Les corriger », journal Passe GP2)

@@ -232,7 +232,7 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
       if (v && v.slot !== null) card.querySelector(`.pm-worn [data-slot="${v.slot}"]`)?.classList.add('hit');
       const what = [...new Set([l.sub, v?.replaces && l.action.type !== 'unequip' ? insteadOf(s, v.replaces) : '', v?.toBag ? tx('ui.wares.toBag') : ''])].filter(Boolean).join(' · ');
       const same = !!v && !l.plain && !v.rows.length && v.slot === null && !v.toBag && l.ok;
-      const notes = [v?.tierLost ? tx('ui.wares.tierLost', { tier: v.tierLost }) : '', !l.done && l.list && l.price !== l.list ? tx('ui.wares.list', { n: l.list }) : '', same ? tx('ui.wares.same') : '', l.sell ? tx('ui.wares.sellHalf') : ''].filter(Boolean).join(' ');
+      const notes = [!l.done && l.list && l.price !== l.list ? tx('ui.wares.list', { n: l.list }) : '', same ? tx('ui.wares.same') : '', l.sell ? tx('ui.wares.sellHalf') : ''].filter(Boolean).join(' ');
       if (mode) {
         // an argument: its chance, what it costs if it works against the piece's price, and what failing costs
         detail.innerHTML = `<p class="nm">${esc(l.name)}</p><p class="what">${esc(tx('ui.wares.chance', { pct: l.sub }))}</p><p class="ab">${esc(tx('ui.wares.ifWon', { n: l.price ?? 0, list: mode.price ?? 0 }))}</p><p class="what">${esc(tx('ui.wares.ifLost'))}</p>${l.ok ? '' : `<p class="no">${esc(l.reason ?? '')}</p>`}`;

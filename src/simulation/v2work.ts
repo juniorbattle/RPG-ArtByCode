@@ -2,12 +2,13 @@ import { clamp, type GameState, type PlaceId } from './state';
 import type { ActionDef } from './actions';
 import type { SlotId } from './state';
 import { isV2 } from './v2';
-import { GEAR } from './gear';
+import { ADVANCE, GEAR } from './gear';
 import { gearOf, itemName, removeWorn, shopOpen, wornAt, type WornPlace } from './v2gear';
 import { takenThefts, wanted } from './v2law';
 import { available } from './roles';
 import { sandRefusal } from './v2rivals';
 import { tx, type TextKey } from '../narrative/text';
+import { PLAYER_ID } from '../narrative/roster';
 
 /** The money of a version 2 game (the operator's sheet of journal Passe ECO2: the request of 2026-11-10, word for word « On doit aussi pouvoir trouver le
  *  moyen de gagner de l'argent pour financer notre equipement et preparer nos prochains combats car ils semble dur de gagner de l'argent par moment »):
@@ -45,7 +46,12 @@ const stolen = (s: GameState, item: string): boolean => takenThefts(s).some((t) 
 export type V2WorkAction =
   | { type: 'work'; job: JobId }
   /** `from`: a piece worn at that place, sold from the body (the operator's GP-19 « Déséquiper et vendre une pièce portée »; the bag's pieces without it) */
-  | { type: 'sell'; item: string; from?: WornPlace };
+  | { type: 'sell'; item: string; from?: WornPlace }
+  /** Clerk Odo's advance on the final's purse (EQ-6) */
+  | { type: 'purseAdvance' };
+
+/** the player's final, drawn and not yet fought (it is drawn after day 8's bouts: the two finalists) */
+const finalAhead = (s: GameState): boolean => s.tournament.matches.some((m) => m.stage === 'final' && !m.winner && (m.a === PLAYER_ID || m.b === PLAYER_ID));
 
 export const V2_WORK_ACTIONS: { [K in V2WorkAction['type']]: ActionDef<Extract<V2WorkAction, { type: K }>> & { by: string | ((a: Extract<V2WorkAction, { type: K }>) => string) } } = {
   work: {
@@ -71,6 +77,25 @@ export const V2_WORK_ACTIONS: { [K in V2WorkAction['type']]: ActionDef<Extract<V
       const j = JOBS[a.job];
       s.player.coins += WORK.pay; s.town[j.by] = clamp((s.town[j.by] ?? 0) + WORK.goodwill, -100, 100); s.flags[`work:${a.job}`] = s.day;
       emit({ kind: 'action', id: `work:${a.job}`, cause: 'action:work', text: tx(j.log, { n: WORK.pay }), visible: true });
+    },
+  },
+  // the operator's EQ-6 « 30 pièces à maître Odo dès le jour 9, rendues sur la bourse » (GP-17, journal Passe GP5-2): once, no slot, to the player who fights the final; given back
+  // out of its purse (src/tournament/pool.ts applyPlayerDuel), whoever wins (a final lost pays 30)
+  purseAdvance: {
+    by: 'odo',
+    list: (s) => (isV2(s) && s.place === 'forecourt' && s.day >= ADVANCE.from ? [{ type: 'purseAdvance' }] : []),
+    label: () => tx('v2.advance.label', { n: ADVANCE.coins }),
+    cost: () => 0,
+    gain: () => ADVANCE.coins,
+    check: (s) => {
+      if (!isV2(s)) return tx('v2.only');
+      const away = available(s, 'odo'); if (away) return away;
+      if (s.v2?.advance !== undefined) return tx('v2.advance.done');
+      return s.day >= ADVANCE.from && finalAhead(s) ? null : tx('v2.advance.noFinal', { day: ADVANCE.from });
+    },
+    apply: (s, _a, _r, emit) => {
+      s.player.coins += ADVANCE.coins; s.v2!.advance = ADVANCE.coins;
+      emit({ kind: 'action', id: 'purseAdvance', cause: 'action:purseAdvance', text: tx('v2.advance.log', { n: ADVANCE.coins }), visible: true });
     },
   },
   sell: {

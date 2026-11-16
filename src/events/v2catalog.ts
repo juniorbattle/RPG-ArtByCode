@@ -26,6 +26,13 @@ export const V2_EVENTS: readonly EventDef[] = [
     outcomes: [{ effects: [{ shop: 1, cause: 'a steel caravan from the river' }, { pulse: 'commerce', add: 6 }], text: 'A caravan of river steel rolls onto the quay: the blades and the mail are back at their prices.' }],
   },
   {
+    // the operator's EQ-8 « Ces deux pénuries » (journal Passe GP5-2): House Dree buys armour by the cartload while Cassius is hostile, the night of day 2 to 4: Hilde's armours cost
+    // three tenths more until day 5 (src/simulation/v2gear.ts shortageOf, dreeOrder); Hilde says it, and the purchase's log names its cause
+    id: 'v2-dree-order', type: 'faction', about: 'House Dree buys up the armourer\'s racks while Cassius is hostile: Hilde\'s armours cost 30 % more until day 5.',
+    slots: ['evening'], when: { all: [HOSTILE, { day: true, gte: 2, lte: 4 }] }, cause: 'House Dree\'s quarrel with the player',
+    outcomes: [{ effects: [{ fact: 'dree-order' }], text: 'House Dree\'s steward buys up the armourer\'s racks for its men: until the fifth day, Hilde\'s armours cost three tenths more.' }],
+  },
+  {
     id: 'v2-quay-alert', type: 'district', about: 'After a theft is caught, the watch doubles its rounds for two nights.',
     slots: ['evening'], once: false, cooldown: 3, when: { any: [{ today: 'caught' }] }, cause: 'a thief caught in the shops today',
     outcomes: [{ effects: [{ pulse: 'security', add: 6 }, { tomorrow: 'alert' }], text: 'Sergeant Hale doubles the night rounds: a thief was caught in the market today. Every stall keeps one eye open tomorrow.' }],
@@ -69,6 +76,12 @@ export const V2_EVENTS: readonly EventDef[] = [
     id: 'v2-lantern-parade', type: 'district', about: 'The lantern parade on the festival square, the night before the final.',
     slots: ['evening'], when: { day: true, gte: 9, lte: 9 }, cause: 'the eve of the final',
     outcomes: [{ effects: [{ pulse: 'festivity', add: 10 }, { pulse: 'commerce', add: 6 }, { pulse: 'security', add: -4 }], text: 'A river of paper lanterns winds round the festival square: the whole Cité walks the eve of the final.' }],
+  },
+  {
+    // EQ-8: the eve of the parade, the whole Cité wants a lantern charm: Pip's accessories cost half as much again on day 9 (src/simulation/v2gear.ts shortageOf, paradeRush)
+    id: 'v2-parade-rush', type: 'district', about: 'The eve of the lantern parade: the whole Cité empties Pip\'s table, his accessories cost 50 % more on day 9.',
+    slots: ['evening'], when: { day: true, gte: 8, lte: 8 }, cause: 'the eve of the parade',
+    outcomes: [{ effects: [{ fact: 'parade-rush' }], text: 'The whole Cité wants a lantern charm for tomorrow\'s parade: Pip\'s table is stripped, and every accessory on it will cost half as much again.' }],
   },
   {
     id: 'v2-card-sharps', type: 'district', about: 'Card sharps on the festival square at night, when the watch is thin.',

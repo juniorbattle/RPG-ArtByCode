@@ -97,9 +97,10 @@ export const GEAR_FX = {
   // the dock leathers: the dodge ×1.3; the guard ×0.85
   'dock-leathers': { dodge: 1.3, guardChance: 0.85 },
   // the iron ring: one's break shorter (−30 %)
-  'iron-ring': { stun: 0.7 },
+  // (the operator's EQ-4 « Ces retouches », journal Passe GP5-2: the ring's break −25 % and the ribbon's gaps −20 % in the game's table, the copy follows)
+  'iron-ring': { stun: 0.75 },
   // the lucky ribbon (its AP without AP): the cooldowns −15 %
-  'lucky-ribbon': { cd: 0.85 },
+  'lucky-ribbon': { cd: 0.8 },
   'champion-token': { cd: 0.9 },
   // the swift boots: the first charge of the duel at once
   'swift-boots': { firstFast: true },

@@ -5,7 +5,7 @@ import { drinkDraught } from './v2questData';
 import { isV2 } from './v2';
 import { learnFromChallenge, sandLesson, challengeSkill } from './v2skills';
 import { keepOutcomeNote } from './v2notes';
-import { GEAR, SHOPS, type ShopId } from './gear';
+import { GEAR, SHOPS, soldAt, type ShopId } from './gear';
 import { gearOf, itemName } from './v2gear';
 import { holds, recordTheft, registrarOnCatch, wanted } from './v2law';
 import { PASSERS, passerOpen, passersHere } from './v2barter';
@@ -83,7 +83,7 @@ export function stealChance(s: GameState, shop: ShopId, item?: string | null): n
 }
 /** the pieces of a stall a thief can reach for (GP-07): its own, the salve aside, the ones the player does not hold (a whetstone only if none held), cheapest first */
 export function stealables(s: GameState, shop: ShopId): string[] {
-  return Object.values(GEAR).filter((x) => x.shop === shop && x.id !== 'salve' && !holds(s, x.id)).sort((a, b) => a.price - b.price || (a.id < b.id ? -1 : 1)).map((x) => x.id);
+  return Object.values(GEAR).filter((x) => soldAt(x, shop, s.day) && x.id !== 'salve' && !holds(s, x.id)).sort((a, b) => a.price - b.price || (a.id < b.id ? -1 : 1)).map((x) => x.id);
 }
 /** a passer-by's pocket (lot L2a): harder by day */
 export function pocketChance(s: GameState): number {
@@ -92,7 +92,7 @@ export function pocketChance(s: GameState): number {
 /** what a theft takes: the shop's cheapest piece the player does not own (a whetstone only if none held) */
 export function stealTarget(s: GameState, shop: ShopId): string | null {
   const g = s.v2?.gear, owned = (id: string) => !!g && (g.weapon === id || g.armour === id || g.acc.includes(id) || g.bag.includes(id));
-  const c = Object.values(GEAR).filter((x) => x.shop === shop && x.id !== 'salve' && !(x.id === 'whetstone' ? s.player.items.includes('whetstone') : owned(x.id))).sort((a, b) => a.price - b.price || (a.id < b.id ? -1 : 1));
+  const c = Object.values(GEAR).filter((x) => soldAt(x, shop, s.day) && x.id !== 'salve' && !(x.id === 'whetstone' ? s.player.items.includes('whetstone') : owned(x.id))).sort((a, b) => a.price - b.price || (a.id < b.id ? -1 : 1));
   return c[0]?.id ?? null;
 }
 /** can this stall be robbed now: open (by its keeper's hours), or a day stall shuttered at night; never the day it is barred after a catch */
@@ -134,7 +134,7 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
     check: (s, a) => {
       if (!isV2(s)) return tx('v2.only');
       const shut = stallOpen(s, a.shop); if (shut) return shut;
-      if (a.item && (GEAR[a.item]?.shop !== a.shop || a.item === 'salve')) return tx('v2.shop.notSold');
+      if (a.item && (!soldAt(GEAR[a.item], a.shop, s.day) || a.item === 'salve')) return tx('v2.shop.notSold');
       if (a.item && holds(s, a.item)) return tx('v2.shop.owned');
       return !(a.item ?? stealTarget(s, a.shop)) ? tx('v2.steal.nothing') : null;
     },

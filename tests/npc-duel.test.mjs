@@ -37,7 +37,7 @@ const at = (st, place, slot, day) => { const s = structuredClone(st); s.place = 
 test('GP-07: a stall offers each of its pieces to steal (the salve aside, nothing already held), and the chance falls with the piece\'s price', () => {
   const st = at(v2(), 'district', 'morning');
   const steals = G.actions(st).filter((o) => o.action.type === 'steal' && o.action.shop === 'mara');
-  const want = Object.values(GEAR.GEAR).filter((g) => g.shop === 'mara' && g.id !== 'salve' && !held(st, g.id)).map((g) => g.id).sort();
+  const want = Object.values(GEAR.GEAR).filter((g) => GEAR.soldAt(g, 'mara', st.day) && g.id !== 'salve' && !held(st, g.id)).map((g) => g.id).sort();
   assert.deepEqual(steals.map((o) => o.action.item).sort(), want, 'one line per piece');
   // the rule written out: today's chance, less (price - 8) / 110 (« proposé »: the whetstone keeps today's chance)
   const base = (s) => Math.min(0.85, Math.max(0.05, (s.slot === 'evening' ? 0.6 : 0.3) + (60 - s.pulse.security) / 200 - (s.town.mara ?? 0) / 400 - (s.flags[`alert:${s.day}`] ? 0.15 : 0)));

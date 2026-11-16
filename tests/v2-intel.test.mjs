@@ -289,7 +289,9 @@ test('the report and the confrontation say which chain they answer: the gear, or
 
 test('the curious player uses lot L3: its next opponent watched where they train, a rumour of tomorrow\'s, the strongroom after a sign at the lockers', () => {
   const seen = { scoutAway: 0, rumour: 0, strongroom: 0, foiled: 0, watchForGear: 0 };
-  for (let seed = 1; seed <= 12; seed++) {
+  // (seed 24 added with the catalogue of the operator's chantier 5, journal Passe GP5-2: with more pieces to steal, the curious player's mornings go to its thefts and its challenges
+  // first, and it watches a rival in one game of twenty-four)
+  for (const seed of [...Array.from({ length: 12 }, (_, i) => i + 1), 24]) {
     const st = LAB.autoplay(seed, LAB.POLICIES.curious, undefined, undefined, 'v2').state;
     seen.scoutAway += st.log.filter((e) => /^scout:(orla|ilse|cassius|rhosk|tobin)$/.test(e.id)).length;
     seen.rumour += st.log.filter((e) => e.id === 'rumour:lio').length;

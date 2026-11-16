@@ -1,9 +1,9 @@
 import { AUTO_RULES, type AutoInflict, type AutoStateId } from '../combat/auto';
-import { AUTO_GEAR_FX, AUTO_SKILL_STATES, AUTO_STYLES, STATE_ARMOUR_FAMILIES, STATE_CHARM_FAMILIES, STATE_WEAPON_FAMILIES } from '../combat/autoData';
+import { AUTO_GEAR_FX, AUTO_SKILL_STATES, AUTO_STYLES } from '../combat/autoData';
 
 /** LABORATORY ONLY — the harmful states (journal Passes GP4-1, GP4-2; briefs/combat-auto.md § 41). The four states decided on the operator's sheet
  *  https://claude.ai/artifact/DqsBjqLm1UQG4ChPC2EeRW are the game's (src/combat/auto.ts AUTO_RULES.states, src/combat/autoData.ts AUTO_SKILL_STATES, AUTO_STYLES,
- *  STATE_*_FAMILIES); this file changes the game's tables for one process (tools/auto-states.mjs, the arena's DEV trial): a weapon family on a piece, a protection, the
+ *  STATE_*_FAMILIES); this file changes the game's tables for one process (tools/auto-states.mjs): a weapon family on a piece, a protection, the
  *  candidates of the operator's note on GE-1 (« paralysie, baisse attaque ( malediction ), baisse defense ( affaiblissement ) peuvent etre des options aussi interessante »,
  *  his answer « Les mesurer, fiche courte (Recommandé) »). Nothing of the game reads it. */
 
@@ -49,13 +49,3 @@ export function resetStates(): void {
   for (const [id, j] of Object.entries(GEAR_KEEP)) { const v = JSON.parse(j); if (v) AUTO_GEAR_FX[id] = v; else delete AUTO_GEAR_FX[id]; delete GEAR_KEEP[id]; }
 }
 
-/** the protections by name (the armours' and the accessories' families, GE-7) */
-export const PROTECTIONS: Record<string, Partial<Record<AutoStateId, number>>> = { ...STATE_ARMOUR_FAMILIES, ...STATE_CHARM_FAMILIES };
-
-/** DEV only (src/main.ts, `?scene=arena&states=<venom|ember|glare|serrated|hex|numb>[&ward=<leather|padded|mail|bezoar|salamander|hood|tourniquet>]`): before the arena's own page
- *  builds its duel, Ren's weapon (`weapon=`, the training sword by default) with a family's state (no piece of the game carries one until workstream 5, GE-12), a
- *  protection on it; the rivals' states are the game's */
-export function installStatesTrial(params: URLSearchParams): void {
-  const fam = params.get('states') ?? '', wid = params.get('weapon') ?? 'training-sword', w = params.get('ward') ?? '', inf = (STATE_WEAPON_FAMILIES as Record<string, AutoInflict>)[fam];
-  applyStates({ weapon: inf ? { id: wid, inflict: inf } : null, resist: PROTECTIONS[w] ? { id: wid, resist: PROTECTIONS[w] } : null });
-}

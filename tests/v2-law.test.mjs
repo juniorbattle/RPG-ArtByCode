@@ -137,7 +137,7 @@ test('a restitution at Sergeant Hale\'s: the pieces held go back, the others are
   assert.ok(G.actions(Object.assign(r, { slot: 'morning' })).some((x) => x.action.type === 'shopBuy' && x.action.shop === 'mara' && x.ok), 'Mara sells again');
   // a piece really taken and no longer held is paid at its list price
   const sold = structuredClone(st); sold.v2.thefts = [{ day: 1, from: 'pip', item: 'lucky-ribbon', seen: 'found' }];
-  assert.equal(G.actions(sold).find((x) => x.action.type === 'restitute').coins, 12 + 5);
+  assert.equal(G.actions(sold).find((x) => x.action.type === 'restitute').coins, 10 + 5);
   // the way out is always open: a purse of 3 pays its 3 and hauls the rest of the slot
   const poor = structuredClone(st); poor.player.coins = 3;
   const p = G.actions(poor).find((x) => x.action.type === 'restitute');
@@ -191,7 +191,7 @@ test('a bargain at the moment of buying: three arguments, each its chance; won, 
   for (const o of opts) assert.match(o.label, new RegExp(`\\(${ch(o.action.arg)} %\\)$`), o.label);
   assert.equal(opts.find((x) => x.action.arg === 'name').coins, off(price('mail-shirt'), 0.2));
   assert.equal(opts.find((x) => x.action.arg === 'friend').coins, off(price('mail-shirt'), 0.15));
-  // two at once: the armourer's cheapest other piece not held (the padded jack, 18), both at a quarter off
+  // two at once: the armourer's cheapest other piece not held (the padded jack, 14), both at a quarter off
   assert.equal(opts.find((x) => x.action.arg === 'pair').coins, off(price('mail-shirt'), 0.25) + off(price('padded-jack'), 0.25));
   const won = act(st, { type: 'bargain', shop: 'armourer', item: 'mail-shirt', arg: 'pair' }, WIN).state;
   assert.equal(won.player.coins, 200 - (off(price('mail-shirt'), 0.25) + off(price('padded-jack'), 0.25)));
@@ -206,7 +206,7 @@ test('a bargain at the moment of buying: three arguments, each its chance; won, 
   // the next day the keeper hears an argument again
   const next = structuredClone(lost); next.day = 2; assert.ok(G.actions(next).some((x) => x.action.type === 'bargain' && x.ok));
   // two at once needs a second piece: nothing left to take
-  const full = structuredClone(st); full.v2.gear.bag.push('padded-jack', 'iron-ring');
+  const full = structuredClone(st); full.v2.gear.bag.push('padded-jack', 'iron-ring', 'salamander-charm', 'wayfarer-hood');
   refused(full, { type: 'bargain', shop: 'armourer', item: 'mail-shirt', arg: 'pair' }, /Nothing else/);
   // the version 2's old « bargain for the day » is gone
   assert.ok(!G.actions(st).some((x) => x.action.type === 'haggle'));

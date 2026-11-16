@@ -176,6 +176,9 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
   // Master Corvin's note of the bout (lot 3 of « La Brute »), outside the fingerprint
   if (s.v2) keepOutcomeNote(s, o, 'bout');
   P.training = 0; if (s.v2?.prep) s.v2.prep = [];
+  // Clerk Odo's advance (the operator's EQ-6, journal Passe GP5-2): given back out of the final's purse, whoever wins
+  let repaid = 0;
+  if (m.stage === 'final' && s.v2?.advance) { repaid = Math.min(s.v2.advance, P.coins); P.coins -= repaid; s.v2.advance = 0; }
   // Sister Anwen's draught (the town's quests, GP-09) is drunk by the bout it served
   drinkDraught(s);
   P.items = P.items.filter((i) => i !== 'whetstone');
@@ -188,6 +191,7 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
       : m.stage ? tx(m.stage === 'semi' ? 'v2.duel.lostSemi' : m.stage === 'gate' ? 'v2.duel.lostGate' : m.stage === 'final' ? 'v2.duel.lostFinal' : 'v2.duel.lostLast', { name, close: close ? tx('v2.duel.lostClose') : '', rep: close ? '+2' : '−5', n: boutPurse(s, m, false) })
         : isV2(s) ? tx('v2.duel.lost', { name, close: close ? tx('v2.duel.lostClose') : '', rep: close ? '+2' : '−5', n: boutPurse(s, m, false) }) : tx('duel.lost', { name, close: close ? tx('duel.lostClose') : '' }),
   });
+  if (repaid) emit({ kind: 'match', id: 'advance-repaid', cause: `match:${matchId(m)}`, visible: true, text: tx('v2.advance.repaid', { n: repaid }) });
   if (hurt) emit({ kind: 'consequence', id: 'player-injured', cause: `match:${matchId(m)}`, visible: true, text: tx('duel.injured') });
   // a version 2 game (lot L3, the operator's EV-10 « Une réponse par lieu, un effet lisible », journal Passe EV2): a strap cut in the night and fought on is found
   // when the gear comes off; Lady Edda can then name the servant's colours (src/narrative/dialogue.ts)

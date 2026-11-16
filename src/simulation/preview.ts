@@ -152,8 +152,6 @@ export interface Preview {
   slot: 'weapon' | 'armour' | 0 | 1 | null;
   /** what stood in that place */
   replaces: string | null;
-  /** the forge's tiers that go with the weapon taken off */
-  tierLost: number;
   /** a version 2 piece that goes to the bag: no place free */
   toBag: boolean;
 }
@@ -166,5 +164,5 @@ export function preview(s: GameState, a: Action): Preview {
   const rows = STAT_IDS.flatMap((id) => (was[id] === undefined || +was[id]!.toFixed(3) === +is[id]!.toFixed(3) ? [] : [{ id, now: was[id]!, after: is[id]!, better: (is[id]! < was[id]!) === LESS_IS_BETTER.has(id) }]));
   const slot = !g0 || !g1 ? null : g0.weapon !== g1.weapon || g0.tier !== g1.tier ? 'weapon' as const : g0.armour !== g1.armour ? 'armour' as const : g0.acc[0] !== g1.acc[0] ? 0 as const : g0.acc[1] !== g1.acc[1] ? 1 as const : null;
   const replaces = !g0 || slot === null ? null : slot === 'weapon' ? (g0.weapon !== g1!.weapon ? g0.weapon : null) : slot === 'armour' ? g0.armour : g0.acc[slot];
-  return { rows, coins: [s.player.coins, c.player.coins], slot, replaces, tierLost: replaces && slot === 'weapon' ? g0!.tier : 0, toBag: !!g0 && !!g1 && g1.bag.length > g0.bag.length && slot === null };
+  return { rows, coins: [s.player.coins, c.player.coins], slot, replaces, toBag: !!g0 && !!g1 && g1.bag.length > g0.bag.length && slot === null };
 }

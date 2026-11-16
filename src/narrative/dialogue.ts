@@ -12,6 +12,7 @@ import { marksOf, LAW } from '../simulation/v2law';
 import { fameTier, type FameTier } from '../simulation/v2react';
 import { festivalWords } from '../simulation/v2festival';
 import { offerQuest } from '../simulation/v2quests';
+import { dreeOrder, paradeRush } from '../simulation/v2gear';
 
 /** what the passers-by make of the player in a version 2 game (lot L5): a name in Sergeant Hale's ledger first, then the fame (src/simulation/v2react.ts) */
 const FOLK: Record<FameTier, TextKey> = { unknown: 'v2.line.folk.unknown', noticed: 'v2.line.folk.noticed', known: 'v2.line.folk.known', celebrated: 'v2.line.folk.celebrated' };
@@ -185,12 +186,14 @@ function baseLines(s: GameState, who: string): string[] {
       // « rich »: the player can pay for the Whirlwind he teaches, at its price today (journal Passe VP1)
       return [night ? tx('line.corvin.night') : s.player.coins >= skillPrice(s, 't3') && !(s.v2?.kit.levels.t3) ? tx('line.corvin.rich') : tx('line.corvin.pitch'), ...keeperMemory(s, 'corvin')];
     case 'hilde':
-      return [s.services.shopFactor > 1 ? tx('line.hilde.shortage') : tx('line.hilde.pitch'), ...keeperMemory(s, 'hilde')];
+      // (EQ-8: House Dree's order, days 3 to 5, when the steel is not what makes her prices dear)
+      return [s.services.shopFactor > 1 ? tx('line.hilde.shortage') : dreeOrder(s) ? tx('v2.line.hilde.dree') : tx('line.hilde.pitch'), ...keeperMemory(s, 'hilde')];
     case 'ilse':
       return [s.v2?.challenged?.ilse ? tx('line.ilse.after') : tx('line.ilse.pitch')];
     case 'pip':
       // the night market at dusk, out of a version 2 game's news (lot L4, EV-8): Pip's stall is in it, one text a day
-      return [isV2(s) && night ? tx(MARKET[s.day % MARKET.length]) : tx('line.pip.pitch'), ...keeperMemory(s, 'pip')];
+      // (EQ-8: the parade's rush, day 9)
+      return [isV2(s) && night ? tx(MARKET[s.day % MARKET.length]) : paradeRush(s) ? tx('v2.line.pip.rush') : tx('line.pip.pitch'), ...keeperMemory(s, 'pip')];
     // the version 2's districts (lot V5): the drill master, the bard
     case 'drill':
       // the morning after a brawl at the barracks (src/events/v2catalog.ts)

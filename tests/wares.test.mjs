@@ -72,15 +72,16 @@ test('better and worse follow the number\'s sense: more Defence is better, less 
   assert.equal(b.hp.better, true); assert.equal(b.hp.after, Math.round(336 * AU.AUTO_RULES.hpScale));
 });
 
-test('what it replaces, and the trap a swap hides: the forge\'s tiers leave with the old weapon', () => {
+test('what it replaces, and no trap in a swap: the forge\'s tiers stay with the hand (the operator\'s EQ-11 « Les paliers suivent la main », journal Passe GP5-2)', () => {
   const st = v2(); st.player.coins = 300; st.v2.gear.tier = 3;
   const p = P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'imported-blade' });
-  assert.deepEqual([p.slot, p.replaces, p.tierLost], ['weapon', 'training-sword', 3]);
+  assert.deepEqual([p.slot, p.replaces, 'tierLost' in p], ['weapon', 'training-sword', false]);
   const r = rows(p);
-  assert.equal(r.atk.better, false, 'three tiers (Attack +6 since AC-11) lost for the blade\'s +4: the Attack falls, and the page says it');
+  assert.equal(r.atk.better, true, 'the three tiers (Attack +6 since AC-11) kept and the blade\'s +4 on top: the Attack rises, as the page says');
+  assert.equal(r.atk.after, r.atk.now + 4);
   st.v2.gear.tier = 1;
   const up = P.preview(st, { type: 'upgradeWeapon' });
-  assert.deepEqual([up.slot, up.replaces, up.tierLost], ['weapon', null, 0], 'the forge keeps the weapon');
+  assert.deepEqual([up.slot, up.replaces], ['weapon', null], 'the forge keeps the weapon');
 });
 
 test('both accessories on: a third goes to the bag and changes nothing; from the bag the player chooses which one it replaces', () => {
@@ -151,10 +152,10 @@ test('GP-20: each piece names its effects in a bout, read from the duel\'s table
     }
   }
   // the mail's: its points, its Speed counted at half, the light blows and the dodge
-  assert.equal(VG.pieceWords('mail-shirt'), `Defence +6, Speed −1; in a bout its Speed counts for ${AD.AUTO_PIECE_VIV * 100} %, the blows of a light attack deal you 20 % less damage, your chance to dodge 50 % lower`);
+  assert.equal(VG.pieceWords('mail-shirt'), `Defence +6, Speed −1; in a bout its Speed counts for ${AD.AUTO_PIECE_VIV * 100} %, the blows of a light attack deal you 20 % less damage, your chance to dodge 50 % lower, halves your chance of bleeding`);
   assert.match(VG.pieceWords('padded-jack'), new RegExp(`a blow you guard fills your gauge at 25 % instead of ${AU.AUTO_RULES.gauge.guardMul * 100} %`));
-  // the ribbon has no words of its own (its AP of before is not read): its effect alone, as before
-  assert.equal(VG.pieceWords('lucky-ribbon'), 'your skills’ gaps and your heavy blow’s cooldown 15 % shorter');
+  // the ribbon's AP of before is not read: its health (EQ-4) and its effect, as before
+  assert.equal(VG.pieceWords('lucky-ribbon'), '+24 health; your skills’ gaps and your heavy blow’s cooldown 20 % shorter');
   // the shop's label says them; today's game's goods keep their words
   const st = v2('forecourt-morning'); st.player.coins = 300;
   const mail = G.actions(st).find((o) => o.action.type === 'shopBuy' && o.action.item === 'mail-shirt');
