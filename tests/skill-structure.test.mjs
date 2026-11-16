@@ -70,9 +70,10 @@ test('SK-2: one ultimate and one super at most among the four; the match sheet\'
   const ok = act(st, { type: 'setLoadout', skills: ['t3', 'm_ironfall', 'd1', 's1'] });
   assert.deepEqual(ok.v2.kit.loadout, ['t3', 'm_ironfall', 'd1', 's1']);
   assert.equal(FR['v2.loadout.ultimate'], 'Une ultime au plus parmi vos quatre.'); assert.equal(FR['v2.loadout.super'], 'Une super au plus parmi vos quatre.');
-  // the skills page refuses the same, with the same words, and says the rule under each skill
+  // the skills page (made again for the operator's CM-02 « A · Quatre places et un catalogue », journal Passe CM2) refuses the same, with the same words, says the rule above the four
+  // places and, on each skill that cannot come, why, before any click
   const page = fs.readFileSync(path.join(ROOT, 'src/ui/skills.ts'), 'utf8');
-  assert.match(page, /kitRankFault\(\[\.\.\.chosen, now\]\)/); assert.match(page, /tx\('ui\.skill\.rule'\)/);
+  assert.match(page, /kitRankFault\(next\)/); assert.match(page, /tx\('ui\.sk\.legend'\)/); assert.match(page, /tx\('ui\.sk\.rankTaken'/); assert.match(page, /v2\.loadout\.ultimate/);
 });
 
 test('SK-7: before day 6 a challenge teaches the first day\'s three their support or defence; from day 6 every rival its signature, named on the challenge', () => {

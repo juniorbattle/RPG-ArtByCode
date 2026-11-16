@@ -3,7 +3,7 @@ import { fontsReady, installDesign } from '../ui/design/system';
 import { CSS } from './ArenaHud';
 import { DYN_CSS, DYN_TEXTS_EN, DYN_TEXTS_FR_GAME, type DynTexts } from './DynamicHud';
 import type { AutoGauge, AutoHudModel, AutoReplay, ReplayEvent, Seat } from './autoView';
-import { skillName, tx, word } from '../narrative/text';
+import { skillName, tx, word, type TextKey } from '../narrative/text';
 import { FOE_SKILLS } from '../combat/v2duel';
 import { AUTO_RULES } from '../combat/auto';
 import { actName, bindCap, keyCap } from '../input/caps';
@@ -65,6 +65,10 @@ body.pm-pad #ah-pause .kb{display:none}
 #arena-hud .ah-ch.off{visibility:hidden}
 #arena-hud.auto #ah-bar{gap:10px;width:max-content;max-width:calc(100vw - 32px)}
 .ah-b.slot{grid-template-columns:auto 1fr;cursor:pointer}
+.ah-b.slot{cursor:default}#arena-hud.hand .ah-b.slot{cursor:pointer}
+.ah-b.slot.ready{box-shadow:inset 0 0 0 1px var(--ds-ivory)}
+.ah-b.slot em .cond{display:block;max-width:15em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ds-muted)}.ah-b.slot.cooling em .cond{display:none}
+.ah-mode{align-self:center;margin-right:10px;font:400 var(--ds-fs-label)/1 var(--ds-title);letter-spacing:.08em;text-transform:uppercase;color:var(--ds-muted)}
 .ah-b.slot.waiting{box-shadow:inset 0 0 0 1px var(--ds-accent)}.ah-b.slot.waiting b{color:var(--ds-accent)}
 .ah-b.slot .ord{grid-row:1 / span 2;grid-column:1;font:400 var(--ds-fs-label)/1 var(--ds-title);color:var(--ds-muted);min-width:14px;text-align:center}
 .ah-b.slot b{color:var(--ds-ivory)}
@@ -98,6 +102,8 @@ export class AutoHud {
   project: (who: Seat) => { x: number; y: number } = () => ({ x: 0, y: 0 });
   readonly ready: Promise<void>;
   private names: Record<Seat, string>;
+  /** the manual mode (the operator's CM-07): key caps on the skills, the ready one ringed; else the plan's conditions */
+  private hand = false;
 
   /** the pause's keyboard line: the words while Space pauses, else the player's key and the words after it (the remapping, journal Passe RM2) */
   private resumeLine(): string { return firstSlot(keysOf().pause)?.c === 'Space' ? this.t.resume : `${actName('pause')} ${this.t.resumePad ?? ''}`.trim(); }
@@ -113,14 +119,19 @@ export class AutoHud {
       if (!document.getElementById(id)) { const st = document.createElement('style'); st.id = id; st.textContent = css; document.head.appendChild(st); }
     }
     this.el = document.createElement('div'); this.el.id = 'arena-hud'; this.el.classList.add('dyn', 'auto');
+    if (replay.fighters.ren.hand) this.el.classList.add('hand');
     const M = replay.hud();
-    const slots = M.slots.map((s, i) => `<button class="ah-b slot wide" type="button" tabindex="-1" data-slot="${s.id}" data-label="${i + 1}. ${this.name(s.id)}" aria-label="${i + 1}. ${this.name(s.id)}"><span class="ord">${bindCap(`skill${i + 1}` as 'skill1')}</span><b>${this.name(s.id)}</b><em><span class="pips" aria-hidden="true">${'<i></i>'.repeat(s.uses)}</span><span class="fam">${t.families[s.family] ?? ''}</span><span class="cdn"></span></em><i class="pg"></i><i class="cdv"></i></button>`).join('');
+    // the two modes (the operator's CM-07, journal Passe CM2): manual, a key cap on each skill and the ready one ringed; auto, its place in the order and its condition (the plan), no key
+    const hand = !!replay.fighters.ren.hand, plan = replay.fighters.ren.tactic;
+    this.hand = hand;
+    const cond = (i: number): string => tx(`auto.cond.${plan?.[i] ?? 'auto'}` as TextKey);
+    const slots = M.slots.map((s, i) => `<button class="ah-b slot wide" type="button" tabindex="-1" data-slot="${s.id}" data-label="${i + 1}. ${this.name(s.id)}" aria-label="${i + 1}. ${this.name(s.id)}${hand ? '' : ` · ${cond(i)}`}"><span class="ord">${hand ? bindCap(`skill${i + 1}` as 'skill1') : i + 1}</span><b>${this.name(s.id)}</b><em><span class="pips" aria-hidden="true">${'<i></i>'.repeat(s.uses)}</span><span class="fam">${t.families[s.family] ?? ''}</span>${hand ? '' : `<span class="cond">${cond(i)}</span>`}<span class="cdn"></span></em><i class="pg"></i><i class="cdv"></i></button>`).join('');
     const ctl = (id: 'speed' | 'skip', act: 'attack' | 'dodge', label: string, sub: string) => `<button class="ah-b ctl wide" type="button" data-act="${id}" aria-label="${label} (${actName(act)})">${bindCap(act)}<b>${label}</b><em>${sub}</em></button>`;
     const card = (who: Seat, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}" aria-label="${names[who]}, ${sub}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${names[who]}<em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(names[who])}" aria-valuemin="0" aria-valuemax="${M[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div><div class="ah-ch off" aria-live="off"><span></span><div class="ah-cb"><i></i></div></div><div class="ah-tags"><b class="op"></b><b class="wd"></b><b class="bs"></b><b class="st"></b></div><div class="ah-state"></div></div></div>`;
     this.el.setAttribute('aria-label', t.subtitle);
     this.el.innerHTML = `<div class="top"></div><div class="bot"></div>
       ${card('ren', 'l', t.subRen)}${card('marek', 'r', t.subMarek)}
-      <div id="ah-dmg"></div><div id="ah-bar" aria-label="${t.order}">${slots}<span class="ah-sep"></span>${ctl('speed', 'attack', t.speed, t.speedSub)}${ctl('skip', 'dodge', t.skip, t.skipSub)}</div>
+      <div id="ah-dmg"></div><div id="ah-bar" aria-label="${t.order}"><span class="ah-mode">${tx(hand ? 'v2.mode.manual' : 'v2.mode.auto')}</span>${slots}<span class="ah-sep"></span>${ctl('speed', 'attack', t.speed, t.speedSub)}${ctl('skip', 'dodge', t.skip, hand ? tx('auto.skip.hand') : t.skipSub)}</div>
       <div id="ah-ko" role="status"><div><b></b><span></span></div></div>
       <div id="ah-pause" role="status"><div><b>${t.pause}</b><span class="kb">${this.resumeLine()}</span><span class="pad-only">${bindCap('pause')}${t.resumePad ?? ''}</span><button class="ah-set" type="button">${keyCap('Esc')}${tx('set.title')}</button></div></div>
       <div id="ah-rotate" role="alert"><div><b>${t.title}</b><span>${t.rotate}</span></div></div>`;
@@ -205,6 +216,8 @@ export class AutoHud {
       this.cls(`a${s.id}`, b, 'spent', s.left <= 0 && !s.charging);
       this.set(`u${s.id}`, s.left, () => { b.querySelectorAll('.pips i').forEach((p, k) => p.classList.toggle('x', k >= s.left)); b.setAttribute('aria-label', `${b.dataset.label ?? ''} · ${t.uses(s.left, s.uses)}`); });
       this.cls(`w${s.id}`, b, 'waiting', s.waiting);
+      // manual: the skill that can leave now (a use left, its gap run out, not charging) is ringed
+      this.cls(`r${s.id}`, b, 'ready', this.hand && s.left > 0 && s.cool <= 0 && !s.charging && !s.waiting && !over);
       const cd = s.cool > 0 && !s.charging ? Math.ceil(s.cool) : 0;
       this.set(`cd${s.id}|${s.waiting}`, cd, () => { (b.querySelector('em .cdn') as HTMLElement).textContent = cd ? t.secs(cd) : ''; b.title = s.waiting ? t.waiting : cd ? t.secs(cd) : ''; });
       const cw = cd ? Math.round(s.coolPct) : 0;

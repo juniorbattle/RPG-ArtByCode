@@ -139,7 +139,7 @@ test('GP-12: the town opens it from the menu, the board and Master Corvin; the d
   assert.match(U, /tx\('prep\.sheet\.corvin', \{ name: fighterName\(nb\.foeId\) \}\)[\s\S]{0,120}this\.openMatchSheet\(\(\) => this\.openPerson\(who\)\)/);
   assert.match(U, /const enter = nb\.today && s\.slot === 'afternoon';/);
   assert.match(B, /press: \(\) => \{ if \(r\.id === nextFoe\) sheet\?\.\(\); \}/);
-  assert.match(K, /const go = sheet === null \|\| !host\.enter \? null : footBtn\('Enter'/);
+  assert.match(K, /const go = solo \|\| !host\.enter \? null : footBtn\('Enter'/);
   for (const k of ['prep.sheet.menu', 'prep.sheet.short', 'prep.sheet.corvin', 'prep.sheet.ahead', 'prep.sheet.formDay', 'prep.sheet.pick']) { assert.ok(EN[k], k); assert.ok(FR[k], `${k} in French`); }
 });
 

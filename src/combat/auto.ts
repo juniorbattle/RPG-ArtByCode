@@ -110,6 +110,9 @@ export interface AutoFighter {
   skills: AutoAction[];
   /** its plan (SY-08): one condition per skill of `skills`, in their order; absent = the automatic's ('auto' on every line) */
   tactic?: readonly AutoCond[];
+  /** the manual mode (the operator's CM-07, journal Passe CM2): a hand fighter's skills leave only by the player's presses (`o.commands`) until `o.handOff`, when its plan takes
+   *  over (« Skip »: the auto plays on); its base attacks are the automatic's either way */
+  hand?: boolean;
   brain: AutoBrain;
   /** the effects of the gear it wears (Ren's) */
   gfx?: AutoGearFx;
@@ -274,7 +277,7 @@ export interface AutoCommand { t: number; skill: string }
  * `o.trace` its gauges (the arena reads them); `o.rules` another set of rules (the laboratory); `o.deciders` replaces a brain's automatic (the laboratory);
  * `o.commands` the player's presses (the hand, SY-09): the first fighter's skills pressed during the duel.
  */
-export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rules?: AutoRules; log?: boolean; trace?: boolean; deciders?: Partial<Record<AutoBrain, AutoDecider>>; commands?: readonly AutoCommand[] } = {}): AutoResult {
+export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rules?: AutoRules; log?: boolean; trace?: boolean; deciders?: Partial<Record<AutoBrain, AutoDecider>>; commands?: readonly AutoCommand[]; handOff?: number } = {}): AutoResult {
   const R = o.rules ?? AUTO_RULES, s0 = seed >>> 0 || 1, log: AutoEvent[] | null = o.log ? [] : null;
   /** a line of the script, with both fighters' gauge just after it when traced */
   const put = (e: AutoEvent): void => { if (o.trace) e.s = [+gaugeNow(F[0]).toFixed(2), +gaugeNow(F[1]).toFixed(2)]; log!.push(e); };
@@ -305,7 +308,8 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
   const cmds = [...(o.commands ?? [])].sort((a, b) => a.t - b.t);
   let cmdDone = -1;
   const pressed = (f: AutoSide): AutoAction | null => {
-    if (f.i !== 0 || !cmds.length) return null;
+    // no semi-automatic (the operator's CM-07): only a hand fighter (the manual mode) takes the player's presses; the auto's skills leave by its plan alone
+    if (f.i !== 0 || !cmds.length || !f.x.hand) return null;
     let k = -1;
     for (let j = 0; j < cmds.length && cmds[j].t <= t + 1e-9; j++) k = j;
     if (k <= cmdDone) return null;
@@ -314,7 +318,12 @@ export function autoDuel(A: AutoFighter, B: AutoFighter, seed: number, o: { rule
     if (!usable(f, a)) return heavyWhen(view(f), f.x) ? f.x.heavy : f.x.light;
     cmdDone = k; return a;
   };
-  const decide = (f: AutoSide): AutoAction => { const p = pressed(f), a = p ?? (o.deciders?.[f.x.brain] ?? DECIDERS[f.x.brain])(view(f), f.x); f.dec++; return a; };
+  // a hand fighter (the manual mode): its skills only by the presses; its base attacks the automatic's; from `o.handOff` on its plan decides (« Skip », CM-10)
+  const decide = (f: AutoSide): AutoAction => {
+    const p = pressed(f), held = !!f.x.hand && !(o.handOff !== undefined && t >= o.handOff - 1e-9);
+    const a = p ?? (held ? (heavyWhen(view(f), f.x) ? f.x.heavy : f.x.light) : (o.deciders?.[f.x.brain] ?? DECIDERS[f.x.brain])(view(f), f.x));
+    f.dec++; return a;
+  };
 
   function start(f: AutoSide, a: AutoAction): void {
     settle(f);

@@ -74,8 +74,9 @@ try {
   check(norm(fromMenu.text).includes(norm(tx('prep.sheet.ahead', { day: 2, name: 'Vessa Lark' }))), 'the sheet of the bout to come: its day, the plan kept for her, the rehearsal playing it');
   check(norm(fromMenu.text).includes(norm(tx('prep.sheet.formDay'))), `the form of the day « ${tx('prep.sheet.formDay')} »`);
   check(!fromMenu.foot.some((t) => t.includes(tx('v2.skills.keep'))), `no way into the arena before the day: ${fromMenu.foot.join(' | ')}`);
-  await page.evaluate(() => document.querySelector('.pm-skills .pm-glist .pm-btn')?.focus());
-  await page.keyboard.press('c');
+  // (a plan is set on a place since journal Passe CM2, the operator's CM-04: C lists the conditions of the first place's role, Down the next one, Enter keeps it)
+  await page.evaluate(() => document.querySelector('.pm-skills [data-fk="slot:0"]')?.focus());
+  await page.keyboard.press('c'); await new Promise((r) => setTimeout(r, 200)); await page.keyboard.press('ArrowDown'); await new Promise((r) => setTimeout(r, 150)); await page.keyboard.press('Enter');
   const planned = await page.evaluate(() => window.__game.state().v2.kit.plans?.vessa ?? null), pk = planned?.tactic ? Object.keys(planned.tactic)[0] : null;
   check(!!pk, `a plan set on the sheet, kept for Vessa: ${JSON.stringify(planned)}`);
   if (pk) done.push({ type: 'setTactic', skill: pk, cond: planned.tactic[pk], foe: 'vessa' });

@@ -46,5 +46,5 @@ const plansCopy = (p: NonNullable<V2Kit['plans']>): NonNullable<V2Kit['plans']> 
  *  today's four skills at level 1, V2_START_KIT) */
 export function v2KitOf(s: Pick<GameState, 'flags' | 'v2'>): V2Kit {
   const k = s.v2?.kit;
-  return k ? { loadout: [...k.loadout] as V2Kit['loadout'], levels: { ...k.levels }, ...(k.order ? { order: [...k.order] } : {}), ...(k.tactic ? { tactic: { ...k.tactic } } : {}), ...(k.plans ? { plans: plansCopy(k.plans) } : {}) } : { loadout: [...V2_START_KIT.loadout], levels: { ...V2_START_KIT.levels } };
+  return k ? { loadout: [...k.loadout] as V2Kit['loadout'], levels: { ...k.levels }, ...(k.order ? { order: [...k.order] } : {}), ...(k.tactic ? { tactic: { ...k.tactic } } : {}), ...(k.mode ? { mode: k.mode } : {}), ...(k.plans ? { plans: plansCopy(k.plans) } : {}) } : { loadout: [...V2_START_KIT.loadout], levels: { ...V2_START_KIT.levels } };
 }

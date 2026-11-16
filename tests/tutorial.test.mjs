@@ -160,7 +160,8 @@ const lessonDuel = (d, names = { ren: 'Ren', marek: 'Marek' }) => ({ ren: d.ren,
 test('the first duel\'s lessons: one per first of the duel played by the computer, their numbers the bout\'s own (TU-11, TU-6)', () => {
   // (the action points' lesson left with them: the model « La Brute » has none, PB-1, journal Passe BL1)
   // (lot 2 of « La Brute », journal Passe BL2: an opening and a clash)
-  assert.deepEqual(DT.LESSONS, ['start', 'charge', 'combo', 'react', 'form', 'gauge', 'break', 'open', 'clash', 'speed']);
+  // (a tenth lesson, the manual mode's, journal Passe CM2: the operator's CM-14 « Une dixième leçon à la première fois qu'on joue en manuel »)
+  assert.deepEqual(DT.LESSONS, ['start', 'hand', 'charge', 'combo', 'react', 'form', 'gauge', 'break', 'open', 'clash', 'speed']);
   assert.ok(!('tut.duel.ap.body' in EN));
   for (const k of tutKeys.filter((x) => /^tut\.duel\./.test(x))) assert.doesNotMatch(EN[k], /\d/, `${k} writes a number`);
   for (const id of DT.LESSONS) assert.ok(`tut.duel.${id}.title` in EN && `tut.duel.${id}.body` in EN, id);
@@ -168,6 +169,11 @@ test('the first duel\'s lessons: one per first of the duel played by the compute
   assert.ok(!('tut.duel.priority.body' in EN) && !('tut.duel.riposte.body' in EN));
   const d = AV.sceneAutoDuel('marek', 1337), D = lessonDuel(d);
   assert.match(DT.lessonText('start', D), new RegExp(`You use your ${d.ren.skills.length} skills in your order`));
+  // a manual bout (CM-07): the first lesson says the hand, not the plan; the manual lesson names the keys, the ring, the pause and « Skip » (the auto plays on)
+  const DH = { ...D, ren: { ...d.ren, hand: true } };
+  assert.match(DT.lessonText('start', DH), new RegExp(`you launch your skills\\.[\\s\\S]*Your ${d.ren.skills.length} skills are at the foot of the screen`));
+  assert.doesNotMatch(DT.lessonText('start', DH), /each when its condition holds/);
+  assert.match(TU.rich(DT.lessonText('hand', D)), /<kbd data-bind="skill1"[^>]*>.*<\/kbd>.*ringed.*pause.*the auto plays on to the result\. Leaving the bout before its end loses it\./s);
   assert.match(DT.lessonText('charge', D), new RegExp(`your light attack charges ${+(AD.AUTO_LIGHT.charge * AD.AUTO_CADENCE.charge).toFixed(2)} seconds at your Speed of ${d.ren.viv}`));
   assert.match(DT.lessonText('combo', D), new RegExp(`your light attack strikes ${AD.AUTO_WEAPONS['training-sword'].hits.length} with your weapon`));
   const rr = AM.autoReactions(d.ren, d.foe), fr = AM.autoReactions(d.foe, d.ren);
@@ -305,7 +311,8 @@ test('the guide\'s « The duel » and « Preparing a bout » for the duel played
   assert.match(duel, new RegExp(`stunned for ${R.brk.stun} seconds and takes ${R.brk.dmg} times the damage`));
   assert.match(duel, new RegExp(`up to ${pc(R.form)} % either way`));
   assert.doesNotMatch(duel, /riposte|priority|Hold \[J\]/, 'nothing of the duel of before');
-  assert.match(prep, /bring four skills, set their order and, with \[C\], when each leaves among the conditions of its role: your general plan, which the duel follows/);
+  assert.match(prep, /bring four skills \(a click puts one in a place or takes it out\), set their order and, with \[C\], when each leaves among the conditions of its role: your general plan, which the duel follows in auto mode\. A switch there chooses the mode of your bouts/);
+  assert.match(duel, /In manual mode your skills do not leave by themselves/); assert.match(duel, /Leaving a bout before its end loses it, in both modes\./);
   assert.match(prep, new RegExp(`every fighter's health is multiplied by ${R.hpScale}`));
   // the plan set on a rival's match sheet is kept for them (lot 2 of « La Brute »)
   assert.match(prep, /The plan you set there, the order with \[Left\] and \[Right\] and when each leaves with \[C\], is kept for your bouts against that rival/);

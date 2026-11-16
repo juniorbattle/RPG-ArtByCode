@@ -9,19 +9,23 @@ import { num, skillName, tx, type TextKey } from '../narrative/text';
 import { PEOPLE } from '../narrative/people';
 import { GENERICS } from '../narrative/generics';
 import { SKILL_BOOK } from '../combat/skillbook';
-import { AUTO_ROLES, AUTO_SKILLS, autoCondOf, autoCondsFor, autoKitFor, kitRankFault, skillRank } from '../combat/autoData';
+import { AUTO_ROLES, autoCondOf, autoCondsFor, autoKitFor, kitRankFault, skillRank } from '../combat/autoData';
 import { AUTO_RULES, type AutoCond, type AutoRole } from '../combat/auto';
 import { COND_TEXT } from '../simulation/v2skills';
-import { figHtml, statsHtml } from './wares';
-import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
+import { el, esc, fillFoot, footBtn, scrollFade } from './style';
 
-/** The skills, and the match sheet that chooses them (journal Passe UM11, the audit of Passe UM10; the structure of the gear's page, journal Passe UM9): on the
- *  right the skills owned, a square marking the four brought, and for the line selected what the skill does and what its next level gives; on the left the
- *  hero or the opponent, and the order in which the automatic uses these four in the duel played by the computer (AC-09, lot 2, journal Passe LC3), each with
- *  its charge, then the light attack; the player's left and right keys (the pad's D-pad) move the skill selected earlier or later. The numbers are the duel's
- *  (src/simulation/preview.ts). The model « La Brute » (PB-1, journal Passe CF3) has no AP; since its lot 2 (briefs/combat-auto.md § 33.5) the page is the plan
- *  of combat: each skill's role, its uses in a bout and the gap between two, a condition per skill among its role's (C), the order of the four; the match sheet's
- *  plan is kept for its rival (`foe`: « un plan par rival », taken up when it is met again), the skills page's the general one. */
+/** The skills, and the match sheet that chooses them (journal Passe UM11, the audit of Passe UM10; the structure of the gear's page, journal Passe UM9), made again for the
+ *  operator's request of 15/11/2026 (« il faut que ce soit intuitif », journal Passes CM1, CM2; the sheet https://claude.ai/artifact/KKxYTXc7z2Tvm1rhwYwC6J) in the look of the
+ *  sheet's mock-up (the operator: « Ce n'est pas plutot un visuel comme cela pour la gestion des competences ? »):
+ *  CM-02 « A · Quatre places et un catalogue »: the four places in a row of cards in the order the duel uses them (the plan's order, AC-09), each with its skill, its level, its
+ *  uses and its condition (CM-04: the role's conditions listed, the current one marked), and below them every skill owned as a tile, a filter by family, each tile saying « place
+ *  2 », « free » or why it cannot come (CM-05: one ultimate and one super at most, said before any click). A click or Enter on a skill puts it in a place (when the four are taken
+ *  it asks which one it replaces) and on a place takes it out (the place stays free on the screen until another skill comes: Esc keeps the one that was there; the game keeps
+ *  four skills, so a replacement is one move); Space does the same on a match sheet, where Enter enters the arena; the left and right keys move a place earlier or later (CM-03);
+ *  C lists the conditions. The mode, auto or manual (CM-07, CM-08), is one switch at the top right: in manual the places show their key and no condition (CM-12: the plan is kept,
+ *  not read). The heavy blow is a base attack since SY-02 and is no skill to bring (CM-01). The skills page is the hero's alone (the whole width); the match sheet's plan is kept
+ *  for its rival (`foe`: « un plan par rival », taken up when it is met again) beside the rival's sheet, the skills page's the general one. The numbers are the duel's
+ *  (src/simulation/preview.ts). */
 const ROLE: Record<AutoRole, TextKey> = {
   exploit: 'ui.role.exploit', punish: 'ui.role.punish', pierce: 'ui.role.pierce', breaker: 'ui.role.breaker', opener: 'ui.role.opener', interrupt: 'ui.role.interrupt',
   ward: 'ui.role.ward', parry: 'ui.role.parry', haste: 'ui.role.haste', slow: 'ui.role.slow', load: 'ui.role.load',
@@ -34,8 +38,6 @@ const FAMILY = { offensive: 'v2.family.offensive', defensive: 'v2.family.defensi
 /** a skill's rank in words (the operator's SK-1 and SK-11 « Ces mots », journal Passe SK2: technique, super, ultimate) */
 const RANK = { technique: 'ui.rank.technique', super: 'ui.rank.super', ultimate: 'ui.rank.ultimate' } as const;
 export const rankName = (id: string): string => tx(RANK[skillRank(id)]);
-/** what a line of the list says beside the level: an attack its rank, a defence or a support its family (a technique too) */
-const tagOf = (id: string): string => { const f = SKILL_BOOK[id]?.family ?? 'offensive'; return f === 'offensive' ? rankName(id) : tx(FAMILY[f]); };
 const pct = (k: number): number => Math.round(Math.abs(k - 1) * 100);
 const cap = (t: string): string => t[0].toUpperCase() + t.slice(1);
 
@@ -83,12 +85,6 @@ function whenText(s: GameState, id: string, foe?: string): string {
   if (c !== 'auto') return tx('ui.skill.leaves', { cond: tx(COND_TEXT[c]) });
   return tx(AUTO_TEXT[AUTO_ROLES[id]?.role ?? 'punish']);
 }
-
-/** the order of the duel played by the computer: the four in the automatic's order with their uses and their conditions (the plan), then the light attack */
-function orderHtml(s: GameState, ids: string[], foe?: string): string {
-  return autoOrderView(s, ids, foe).map((t, i) => `<div class="row"><small>${tx('ui.order.uses', { n: t.uses, gap: num(t.gapS) })} · ${esc(tx(COND_TEXT[condOf(s, t.id, foe)]))}</small><b>${i + 1}. ${esc(skillName(t.id))}</b></div>`).join('')
-    + `<div class="row"><small>${tx('ui.order.else')}</small><b>${esc(tx('ui.skill.light'))}</b></div>`;
-}
 /** whose plan the page sets: the rival's (kept for them, or begun from the general one) or the general one */
 function planLine(s: GameState, foe: string | undefined, name: string | undefined): string {
   if (!foe || !name) return tx('ui.order.general');
@@ -101,7 +97,7 @@ export interface SkillsHost {
   close(): void;
   /** the match sheet: the four are kept and the bout follows */
   enter?(): void;
-  /** the match sheet's rival and their name: the plan set here is kept for them (lot 2 of « La Brute ») */
+  /** the match sheet's rival and their name: the plan set here is kept for them (lot 2 of « La Brute ») */
   foe?: string;
   foeName?: string;
   /** the two fighters the figures are reckoned for, when they are not the next bout's (the sheet of a challenge, GP-13) */
@@ -111,114 +107,248 @@ export interface SkillsHost {
   pickLabel?: string;
 }
 
+type Filter = 'all' | 'offensive' | 'defensive' | 'support';
+
 /** the page: `sheet` the match sheet's left side, the bout following; null the hero's skills */
 export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTMLElement; focus(): void } {
-  const s = host.state(), kit = v2KitOf(s) as { loadout: string[]; levels: Record<string, number> }, chosen = new Set<string>(kit.loadout), owned = Object.keys(kit.levels).filter((k) => kit.levels[k] > 0);
-  const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card pm-two pm-skills');
-  card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.skills.title'));
-  card.innerHTML = `<section class="pm-self${sheet === null ? '' : ' pm-match'}">${sheet === null ? `${figHtml(s)}<div class="pm-worn pm-ladder"></div><dl class="pm-stats">${statsHtml(s)}</dl>` : `<div class="pm-foe-side">${sheet}</div><div class="pm-stats pm-ladder2"></div>`}</section>`
-    + `<section class="pm-goods"><header class="pm-ghead"><h2 class="pm-h">${tx('v2.skills.title')}<small>${sheet === null ? tx('v2.skills.sub') : host.pickLabel ?? tx(host.enter ? 'v2.skills.pick' : 'prep.sheet.pick')}</small></h2><div class="pm-purse"><b></b><small>${tx('ui.skill.of4')}</small></div></header><div class="pm-glist"></div><div class="pm-detail" aria-live="polite"></div><div class="pm-foot"></div></section>`;
-  root.appendChild(card);
-  const list = card.querySelector('.pm-glist') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement, foot = card.querySelector('.pm-foot') as HTMLElement;
-  const fit = scrollFade(detail);
-  // the match sheet's side (both fighters, then the order of the four) scrolls under its fade where the window is short (journal Passe LC4: 720 px)
-  const side = card.querySelector('.pm-match') as HTMLElement | null, fitSide = side ? scrollFade(side) : null;
-  const close = footBtn('Esc', tx('ui.close'), () => host.close());
-  // the match sheet ahead of its bout (GP-12) has no way in: the plan set on it is kept for that rival until the day
-  const go = sheet === null || !host.enter ? null : footBtn('Enter', host.enterLabel ?? tx('v2.skills.keep'), () => host.enter?.(), true);
-  const four = (): string[] => { const was = v2KitOf(host.state()).loadout as string[]; return was.filter((x) => chosen.has(x)).concat([...chosen].filter((x) => !was.includes(x))); };
-  // `refused`: why the skill selected cannot join the four (SK-2: one ultimate and one super at most)
-  let now = '', full = false, refused = '';
-
   const foe = host.foe;
-  const paint = (): void => {
-    (card.querySelector('.pm-purse b') as HTMLElement).textContent = String(chosen.size);
-    const ladder = card.querySelector('.pm-ladder'), wide = card.querySelector('.pm-ladder2');
-    // the plan: the general one on the skills page, the rival's on the match sheet (kept for them), each skill's uses and its condition
-    if (ladder) ladder.innerHTML = `<p class="pm-sub">${tx('ui.order.title')}</p>${orderHtml(host.state(), four())}`;
-    if (wide) wide.innerHTML = `<p class="ttl">${esc(foe && host.foeName ? tx('ui.order.vs', { name: host.foeName }) : tx('ui.order.title'))}</p><p class="pm-sub">${esc(planLine(host.state(), foe, host.foeName))}</p>${autoOrderView(host.state(), four(), foe).map((t, i) => `<div><dt>${i + 1}. ${esc(skillName(t.id))}</dt><dd>${tx('ui.order.uses', { n: t.uses, gap: num(t.gapS) })}<br>${esc(tx(COND_TEXT[condOf(host.state(), t.id, foe)]))}</dd></div>`).join('')}<div><dt>${esc(tx('ui.skill.light'))}</dt><dd>${tx('ui.order.else')}</dd></div>`;
-    if (go) go.disabled = chosen.size !== 4;
-    const lv = kit.levels[now], st = host.state(), vs = host.vs?.() ?? null, f = skillFigures(st, now, lv, vs), up = nextLevel(st, now), k = SKILL_BOOK[now];
+  const s0 = host.state(), owned = Object.keys(v2KitOf(s0).levels).filter((k) => (v2KitOf(s0).levels[k] ?? 0) > 0 && k !== 'heavy');
+  const solo = sheet === null;
+  const root = el('div', 'pm pm-overlay'), card = el('div', `pm-card pm-two pm-skills${solo ? ' pm-solo' : ''}`);
+  card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.skills.title'));
+  // the skills page is the hero's alone, the whole width; the match sheet keeps the rival's sheet on its left
+  card.innerHTML = (solo ? '' : `<section class="pm-self pm-match"><div class="pm-foe-side">${sheet}</div></section>`)
+    + `<section class="pm-goods"><header class="pm-ghead"><h2 class="pm-h">${tx('v2.skills.title')}<small>${solo ? tx('v2.skills.sub') : host.pickLabel ?? tx(host.enter ? 'v2.skills.pick' : 'prep.sheet.pick')}</small></h2><div class="sk-modebox"><span class="sk-lab">${esc(tx('ui.sk.mode'))}</span><button class="sk-mode" type="button" data-fk="mode"></button></div></header>`
+    + `<p class="sk-lab sk-places-lab"></p><div class="sk-places"></div><div class="sk-note"></div><div class="sk-bar"></div><div class="pm-glist sk-tiles"></div><div class="pm-detail" aria-live="polite"></div><div class="pm-foot"></div></section>`;
+  root.appendChild(card);
+  const q = <T extends HTMLElement>(s: string): T => card.querySelector(s) as T;
+  const places = q('.sk-places'), note = q('.sk-note'), tiles = q('.sk-tiles'), bar = q('.sk-bar'), placesLab = q('.sk-places-lab');
+  const detail = q('.pm-detail'), foot = q('.pm-foot'), modeBtn = q<HTMLButtonElement>('.sk-mode');
+  const fit = scrollFade(detail), side = card.querySelector('.pm-match') as HTMLElement | null;
+  if (side) scrollFade(side);
+  scrollFade(tiles);
+  const close = footBtn('Esc', tx('ui.close'), () => host.close());
+  // the match sheet ahead of its bout (GP-12) has no way in: the plan set on it is kept for that rival until the day. On a sheet Enter enters the arena; Space places and removes
+  const go = solo || !host.enter ? null : footBtn('Enter', host.enterLabel ?? tx('v2.skills.keep'), () => host.enter?.(), true);
+
+  /** what the page holds besides the game: the skill selected, a skill waiting for its place (`pick`, the four being taken), a place emptied on the screen (`free`: the game still
+   *  holds its skill until another comes), the place whose conditions are listed, the family shown in the catalogue, the line said under the places */
+  const S: { sel: string; pick: string | null; free: number | null; conds: number | null; filter: Filter; msg: string } = { sel: '', pick: null, free: null, conds: null, filter: 'all', msg: '' };
+  const manual = (): boolean => v2KitOf(host.state()).mode === 'manual';
+  const four = (): string[] => autoOrderView(host.state(), v2KitOf(host.state()).loadout as string[], foe).map((t) => t.id);
+  const lvOf = (id: string): number => v2KitOf(host.state()).levels[id] ?? 1;
+  const famOf = (id: string): 'offensive' | 'defensive' | 'support' => SKILL_BOOK[id]?.family ?? 'offensive';
+  /** where a skill stands: its place (0 to 3) or -1 */
+  const placeOf = (id: string): number => four().indexOf(id);
+  /** why a skill cannot be one of these four (SK-2, said before any click: CM-05), or '' */
+  const rankMsg = (id: string, of: string[], except = -1): string => {
+    const r = skillRank(id);
+    if (r === 'technique') return '';
+    const at = of.findIndex((x, i) => i !== except && x !== id && skillRank(x) === r);
+    return at < 0 ? '' : tx('ui.sk.rankTaken', { rank: tx(RANK[r]).toLowerCase(), name: skillName(of[at]), n: at + 1 });
+  };
+  const said = (m: string): void => { S.msg = m; };
+  const focusKey = (): string => (document.activeElement as HTMLElement | null)?.closest<HTMLElement>('[data-fk]')?.dataset.fk ?? '';
+  const refocus = (k: string): void => { (card.querySelector<HTMLElement>(`[data-fk="${CSS.escape(k)}"]`) ?? card.querySelector<HTMLElement>('[data-fk]'))?.focus({ preventScroll: false }); };
+
+  /** the game's four and their order, in one move: `next` the ids by place; the order is set as the places show it (the newcomer takes the leaver's place) */
+  const apply = (next: string[]): boolean => {
+    const now = four();
+    if (next.join() === now.join()) return true;
+    if (next.some((id) => !now.includes(id))) {
+      const r = host.act({ type: 'setLoadout', skills: next }) as { ok?: boolean } | undefined;
+      if (r && r.ok === false) return false;
+    }
+    host.act({ type: 'setOrder', skills: next, ...(foe ? { foe } : {}) });
+    return true;
+  };
+  /** a skill into a place (a free place, or the one it replaces) */
+  const place = (id: string, at: number): void => {
+    const now = four(), next = [...now]; next[at] = id;
+    const fault = kitRankFault(next);
+    if (fault) { said(rankMsg(id, next, at) || tx(fault === 'ultimate' ? 'v2.loadout.ultimate' : 'v2.loadout.super')); return; }
+    if (!apply(next)) { said(tx('v2.loadout.four')); return; }
+    S.sel = id; S.pick = null; S.free = null; said(tx('ui.sk.placed', { name: skillName(id), n: at + 1 }));
+  };
+  const move = (k: number, by: -1 | 1): void => {
+    const o = four(), j = k + by;
+    if (j < 0 || j >= o.length) return;
+    [o[k], o[j]] = [o[j], o[k]];
+    host.act({ type: 'setOrder', skills: o, ...(foe ? { foe } : {}) });
+    S.free = null; S.pick = null; said('');
+    paint(`slot:${j}`);
+  };
+  const setCond = (k: number, cond: AutoCond): void => {
+    const id = four()[k];
+    host.act({ type: 'setTactic', skill: id, cond, ...(foe ? { foe } : {}) });
+    S.conds = null; said('');
+    paint(`slot:${k}`);
+  };
+
+  // ---- the parts
+  const paintMode = (): void => {
+    const m = manual();
+    modeBtn.innerHTML = `<span class="${m ? '' : 'on'}">${esc(tx('v2.mode.auto'))}</span><span class="${m ? 'on' : ''}">${esc(tx('v2.mode.manual'))}</span>`;
+    modeBtn.setAttribute('aria-label', `${tx('ui.sk.mode')}: ${tx(m ? 'v2.mode.manual' : 'v2.mode.auto')}`);
+    modeBtn.setAttribute('aria-pressed', String(m));
+    placesLab.textContent = tx(m ? 'ui.sk.placesManual' : 'ui.sk.placesAuto');
+  };
+  const slotHtml = (id: string | null, k: number): string => {
+    const m = manual(), n = m ? bindCap(`skill${k + 1}` as 'skill1') : String(k + 1);
+    if (id === null) {
+      const was = S.free === k ? four()[k] : '';
+      return `<div class="sk-slot free"><button class="pm-btn sk-main" type="button" data-fk="slot:${k}" data-skill="${esc(was)}"><span class="n">${n}</span><b>${esc(tx('ui.sk.free'))}</b><small>${esc(tx('ui.sk.freeHint', { name: skillName(was) }))}</small></button></div>`;
+    }
+    const t = autoOrderView(host.state(), v2KitOf(host.state()).loadout as string[], foe).find((x) => x.id === id);
+    const meta = `${cap(tx(FAMILY[famOf(id)]))} · ${rankName(id)} · ${tx('v2.skills.level', { level: lvOf(id) })} · ${tx('ui.order.uses', { n: t?.uses ?? 0, gap: num(t?.gapS ?? 0) })}`;
+    const cond = m ? tx('ui.sk.byHand') : tx('ui.sk.cond', { cond: tx(COND_TEXT[condOf(host.state(), id, foe)]) });
+    return `<div class="sk-slot${S.pick !== null ? ' armed' : ''}"><button class="pm-btn sk-main" type="button" data-fk="slot:${k}" data-skill="${esc(id)}" aria-label="${k + 1}. ${esc(skillName(id))} · ${esc(meta)} · ${esc(cond)}"><span class="n">${n}</span><b>${esc(skillName(id))}</b><small>${esc(meta)}</small></button>`
+      + (m ? `<p class="cd">${esc(cond)}</p>` : `<button type="button" tabindex="-1" class="cd chip" data-cd="${k}">${esc(cond)} ▾</button>`)
+      + `<span class="sk-ctl"><button type="button" tabindex="-1" data-mv="${k}:-1" aria-label="${esc(tx('ui.order.earlier'))}"${k === 0 ? ' disabled' : ''}>←</button><button type="button" tabindex="-1" data-mv="${k}:1" aria-label="${esc(tx('ui.order.later'))}"${k === 3 ? ' disabled' : ''}>→</button><button type="button" tabindex="-1" data-rm="${k}">${esc(tx('ui.sk.remove'))}</button></span></div>`;
+  };
+  const condsHtml = (k: number): string => {
+    const id = four()[k], cur = condOf(host.state(), id, foe);
+    return `<div class="sk-conds" role="group" aria-label="${esc(tx('ui.sk.condTitle', { name: skillName(id) }))}"><p class="pm-sub">${esc(tx('ui.sk.condTitle', { name: skillName(id) }))}</p>${autoCondsFor(id).map((c) => `<button class="pm-btn" type="button" data-fk="cond:${c}" data-cond="${c}" aria-pressed="${c === cur}"><i class="pm-check"></i><span>${esc(tx(COND_TEXT[c]))}</span></button>`).join('')}</div>`;
+  };
+  const paintPlaces = (): void => {
+    const o = four();
+    places.innerHTML = o.map((id, k) => slotHtml(S.free === k ? null : id, k)).join('') + (S.conds !== null && !manual() && S.free === null ? condsHtml(S.conds) : '');
+  };
+  const paintNote = (): void => {
+    const pend = S.pick !== null ? tx('ui.sk.pick', { name: skillName(S.pick) }) : S.msg;
+    const lines = [`<p class="sk-say" role="status">${esc(pend)}</p>`];
+    // a match sheet says whose plan it sets; every page says what is always the automatic's and the rank rule (CM-05, CM-07)
+    if (!solo && !manual()) lines.push(`<p>${esc(planLine(host.state(), foe, host.foeName))}</p>`);
+    lines.push(`<p class="sk-legend">${esc(tx('ui.sk.legend'))} ${esc(tx('ui.sk.alwaysLine', { list: [tx('ui.skill.light'), skillName('heavy'), tx('ui.sk.guard'), tx('ui.sk.dodge')].join(', ') }))}</p>`);
+    note.innerHTML = lines.join('');
+  };
+  const paintBar = (): void => {
+    const f = (k: Filter, label: string): string => `<button class="pm-btn sk-chipf" type="button" data-fk="filter:${k}" aria-pressed="${S.filter === k}">${esc(label)}</button>`;
+    bar.innerHTML = `<span class="sk-lab">${esc(tx('ui.sk.owned', { n: owned.length }))}</span><span class="sk-filters">${f('all', tx('ui.sk.all'))}${f('offensive', cap(tx(FAMILY.offensive)))}${f('defensive', cap(tx(FAMILY.defensive)))}${f('support', cap(tx(FAMILY.support)))}</span>`;
+  };
+  const paintTiles = (): void => {
+    const o = four();
+    tiles.innerHTML = owned.filter((id) => S.filter === 'all' || famOf(id) === S.filter).map((id) => {
+      const at = o.indexOf(id), why = at < 0 ? rankMsg(id, S.free !== null ? o.map((x, i) => (i === S.free ? '' : x)) : o) : '';
+      const st = at >= 0 ? tx('ui.sk.inPlace', { n: at + 1 }) : why || tx('ui.sk.tileFree');
+      return `<button class="pm-btn sk-tile${why ? ' warn' : ''}" type="button" data-fk="tile:${esc(id)}" data-skill="${esc(id)}" aria-pressed="${at >= 0}"><b>${esc(skillName(id))}</b><small>${esc(`${cap(tx(FAMILY[famOf(id)]))} · ${rankName(id)} · ${tx('v2.skills.level', { level: lvOf(id) })}`)}</small><span class="st">${esc(st)}</span></button>`;
+    }).join('');
+  };
+  const paintDetail = (): void => {
+    const st = host.state(), id = S.sel || owned[0];
+    if (!id) { detail.innerHTML = ''; return; }
+    const lv = lvOf(id), vs = host.vs?.() ?? null, f = skillFigures(st, id, lv, vs), up = nextLevel(st, id), k = SKILL_BOOK[id];
     // whom the skills page reckons its figures against (GP-12: the next opponent, no longer the pool's Marek)
-    const against = sheet === null ? figuresAgainst(st) : null, vsLine = against ? tx('ui.skill.against', { name: RIVALS[against.foe]?.name ?? against.foe, day: against.day }) : '';
+    const against = solo ? figuresAgainst(st) : null, vsLine = against ? tx('ui.skill.against', { name: RIVALS[against.foe]?.name ?? against.foe, day: against.day }) : '';
     // the next level: the practice sand's up to its cap, then Master Corvin's lesson (the operator's NC-11, journal Passe SK4)
-    const said = !up ? tx('ui.skill.top') : up.by === 'lesson' ? tx('ui.skill.lesson', { level: up.level, price: up.price, day: up.day }) : tx('ui.skill.drill', { level: up.level });
+    const next = !up ? tx('ui.skill.top') : up.by === 'lesson' ? tx('ui.skill.lesson', { level: up.level, price: up.price, day: up.day }) : tx('ui.skill.drill', { level: up.level });
     // a rival's signature says whom it was learnt from (SK-4), and a skill a fighter of the town teaches its teacher (NC-10: « Apprise de Lucan Rook »)
     const from = k?.signature ? RIVALS[k.signature]?.name ?? k.signature : k?.teacher ? PEOPLE[k.teacher]?.name ?? GENERICS[k.teacher]?.name ?? k.teacher : null;
     const sig = from ? tx('ui.skill.signature', { name: from }) : '';
-    const on = chosen.has(now), movable = on && chosen.size === 4;
-    // the tactic (SY-08): when a skill brought leaves, its condition chosen with C (the pad's Y)
-    // when it leaves, and on the skills page whose plan that is (the general one; a rival's is set on its match sheet)
-    const when = on ? `<p class="ab pm-when">${esc(whenText(st, now, foe))}</p>${sheet === null ? `<p class="what">${esc(planLine(st, undefined, undefined))}</p>` : ''}` : '';
-    const role = roleName(now);
-    detail.innerHTML = `<p class="nm">${esc(skillName(now))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))} · ${esc(rankName(now))}${role ? ` · ${esc(tx('ui.skill.role', { role }))}` : ''} · ${tx('v2.skills.level', { level: lv })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, now, up.level, vs) : null, up?.level ?? lv)}${vsLine ? `<p class="what">${esc(vsLine)}</p>` : ''}<p class="what">${esc(said)}</p>${sig ? `<p class="what">${esc(sig)}</p>` : ''}${full ? `<p class="no">${tx('ui.skill.full')}</p>` : ''}${refused ? `<p class="no">${esc(refused)}</p>` : ''}<p class="what">${esc(tx('ui.skill.rule'))}</p>`;
+    const when = placeOf(id) >= 0 ? `<p class="ab pm-when">${esc(manual() ? tx('ui.sk.handDetail') : whenText(st, id, foe))}</p>` : '';
+    const role = roleName(id);
+    detail.innerHTML = `<p class="nm">${esc(skillName(id))}</p><p class="what">${esc(cap(tx(FAMILY[k?.family ?? 'offensive'])))} · ${esc(rankName(id))}${role ? ` · ${esc(tx('ui.skill.role', { role }))}` : ''} · ${tx('v2.skills.level', { level: lv })}</p><p class="ab">${esc(doesWhat(f))}</p>${when}${cmpHtml(f, up ? skillFigures(st, id, up.level, vs) : null, up?.level ?? lv)}${vsLine ? `<p class="what">${esc(vsLine)}</p>` : ''}<p class="what">${esc(next)}</p>${sig ? `<p class="what">${esc(sig)}</p>` : ''}`;
     fit();
-    fillFoot(foot, footBtn('Space', tx(on ? 'ui.skill.leave' : 'ui.skill.bring'), toggle), on ? footBtn('C', tx('ui.skill.when'), cycle) : null, movable ? moveBtn('left') : null, movable ? moveBtn('right') : null, go, close);
   };
-  /** the order of the four (AC-09): the skill selected one place earlier (left) or later (right), the game's at once (setOrder) */
-  const ordered = (): string[] => autoOrderView(host.state(), four(), foe).map((t) => t.id);
-  /** the order in sight under the side's fade (the keys that move it touched, whether it moves or not) */
-  const showOrder = (): void => {
-    const ladder = card.querySelector<HTMLElement>('.pm-ladder2');
-    if (side && ladder) { const d = ladder.getBoundingClientRect().bottom - side.getBoundingClientRect().bottom; if (d > 0) side.scrollTop += d; fitSide?.(); }
-  };
-  const move = (by: -1 | 1): void => {
-    showOrder();
-    if (!chosen.has(now) || chosen.size !== 4) return;
-    const o = ordered(), i = o.indexOf(now), j = i + by;
-    if (i < 0 || j < 0 || j >= o.length) return;
-    [o[i], o[j]] = [o[j], o[i]];
-    host.act({ type: 'setOrder', skills: o, ...(foe ? { foe } : {}) });
-    paint();
-    showOrder();
-    list.querySelector<HTMLElement>('.pm-btn.on')?.focus();
-  };
+  const slotOf = (fk: string): number => (/^slot:\d$/.test(fk) ? +fk.slice(5) : -1);
   const moveBtn = (dir: 'left' | 'right'): HTMLButtonElement => {
     const b = el('button', 'pm-btn', `${bindCap(dir)}<span>${esc(tx(dir === 'left' ? 'ui.order.earlier' : 'ui.order.later'))}</span>`);
-    b.addEventListener('click', () => move(dir === 'left' ? -1 : 1));
+    b.addEventListener('click', () => { const k = slotOf(focusKey()); if (k >= 0) move(k, dir === 'left' ? -1 : 1); });
     return b;
   };
-  list.addEventListener('keydown', (e) => {
-    const a = actsOf(e, 'walk');
-    if (!a.includes('left') && !a.includes('right')) return;
-    e.preventDefault(); e.stopPropagation();
-    if (!e.repeat) move(a.includes('left') ? -1 : 1);
-  });
-  /** the tactic (the operator's SY-08 « Une condition par compétence, l’ordre gardé », journal Passe SY2): the skill selected, if brought, takes the next condition its
-   *  role offers (src/combat/autoData.ts autoCondsFor, lot 2 of « La Brute »), the game's at once (setTactic), for the match sheet's rival or the general plan */
-  const cycle = (): void => {
-    if (!chosen.has(now) || !(v2KitOf(host.state()).loadout as string[]).includes(now)) return;
-    if (!AUTO_SKILLS[now]?.family) return;
-    // the conditions of its role (PB-1, lot 2 of « La Brute »), the plan of the match sheet's rival or the general one
-    const opts = autoCondsFor(now), c = condOf(host.state(), now, foe);
-    host.act({ type: 'setTactic', skill: now, cond: opts[(opts.indexOf(c) + 1) % opts.length], ...(foe ? { foe } : {}) });
-    paint();
-    list.querySelector<HTMLElement>('.pm-btn.on')?.focus();
+  const paintFoot = (): void => {
+    const fk = focusKey(), onSlot = /^slot:/.test(fk), onCond = /^cond:/.test(fk), onTile = fk.startsWith('tile:');
+    // what Space does on the control that has the keyboard: switch the mode, take a place's skill out, place a skill (or take it out again), choose a condition, a family
+    const verb = fk === 'mode' ? 'ui.sk.switch' : onSlot ? 'ui.sk.remove' : onCond || fk.startsWith('filter:') ? 'ui.sk.choose' : onTile && placeOf(fk.slice(5)) >= 0 ? 'ui.sk.remove' : 'ui.sk.place';
+    fillFoot(foot, footBtn('Space', tx(verb as TextKey), () => activate(focusKey())), onSlot && !manual() ? footBtn('C', tx('ui.skill.when'), () => openConds()) : null,
+      onSlot ? moveBtn('left') : null, onSlot ? moveBtn('right') : null, go, close);
+    if (go) go.disabled = S.free !== null;
   };
-  list.addEventListener('keydown', (e) => { if (e.key.toLowerCase() !== 'c' || e.ctrlKey || e.metaKey || e.altKey) return; e.preventDefault(); e.stopPropagation(); if (!e.repeat) cycle(); });
-  const toggle = (): void => {
-    // the foot's button is drawn again: the selection keeps the keyboard
-    list.querySelector<HTMLElement>('.pm-btn.on')?.focus();
-    full = !chosen.has(now) && chosen.size >= 4;
-    // one ultimate and one super at most among the four (the operator's SK-2, journal Passe SK2): refused, and said why
-    const fault = !chosen.has(now) && !full ? kitRankFault([...chosen, now]) : null;
-    refused = fault ? tx(fault === 'ultimate' ? 'v2.loadout.ultimate' : 'v2.loadout.super') : '';
-    if (chosen.has(now)) chosen.delete(now); else if (!full && !fault) chosen.add(now);
-    list.querySelector('.pm-btn.on')?.setAttribute('aria-pressed', String(chosen.has(now)));
-    // the four are the game's as soon as there are four: a page left by Esc keeps them too
-    if (chosen.size === 4 && four().join() !== (v2KitOf(host.state()).loadout as string[]).join()) host.act({ type: 'setLoadout', skills: four() });
-    paint();
-  };
-  for (const id of owned) {
-    const lv = kit.levels[id];
-    const b = pickRow(`<i class="pm-check"></i><span>${esc(skillName(id))}<span class="why">${tx('v2.skills.level', { level: lv })} · ${esc(tagOf(id))}</span></span><span class="cost"></span>`, { select: () => { now = id; full = false; refused = ''; paint(); }, press: toggle });
-    b.setAttribute('aria-pressed', String(chosen.has(id)));
-    list.appendChild(b);
+  /** every part drawn again, the control that had the keyboard keeping it (`keep`, else the one focused now) */
+  function paint(keep?: string): void {
+    const fk = keep ?? focusKey();
+    paintMode(); paintPlaces(); paintNote(); paintBar(); paintTiles(); paintDetail(); paintFoot();
+    if (fk) refocus(fk);
+    paintFoot();
   }
-  arrowKeys(list); scrollFade(list);
-  // the match sheet: Enter enters the arena, whatever line is selected; a held Enter from the list that led here does nothing
-  if (go) card.addEventListener('keydown', (e) => { if (e.key !== 'Enter') return; e.preventDefault(); e.stopPropagation(); if (!e.repeat && !go.disabled) go.click(); });
-  now = owned.find((id) => chosen.has(id)) ?? owned[0];
+
+  // ---- the gestures (CM-03)
+  function activate(fk: string): void {
+    if (fk === 'mode') { host.act({ type: 'setMode', mode: manual() ? 'auto' : 'manual' }); S.conds = null; paint('mode'); return; }
+    if (fk.startsWith('filter:')) { S.filter = fk.slice(7) as Filter; paint(fk); return; }
+    if (fk.startsWith('cond:')) { if (S.conds !== null) setCond(S.conds, fk.slice(5) as AutoCond); return; }
+    if (fk.startsWith('slot:')) {
+      const k = +fk.slice(5);
+      if (S.pick !== null) { place(S.pick, k); paint(`slot:${k}`); return; }
+      if (S.free === k) { S.free = null; paint(`slot:${k}`); return; }
+      // a place taken out: free on the screen, its skill kept by the game until another comes (Esc keeps it)
+      S.free = k; S.pick = null; S.conds = null; said(''); paint(`slot:${k}`);
+      return;
+    }
+    if (fk.startsWith('tile:')) {
+      const id = fk.slice(5), at = placeOf(id);
+      S.sel = id;
+      if (at >= 0) { S.free = at; S.pick = null; said(''); paint(`slot:${at}`); return; }
+      if (S.free !== null) { const k = S.free; place(id, k); paint(`slot:${placeOf(id) >= 0 ? placeOf(id) : k}`); return; }
+      S.pick = id; S.conds = null; said(''); paint('slot:0');
+    }
+  }
+  function openConds(): void {
+    const k = slotOf(focusKey());
+    if (k < 0 || manual()) return;
+    S.conds = k; S.pick = null; S.free = null; said(''); paint();
+    card.querySelector<HTMLElement>('.sk-conds [aria-pressed=true]')?.focus();
+  }
+  card.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('button');
+    if (!b) return;
+    if (b.dataset.mv) { const [k, by] = b.dataset.mv.split(':').map(Number); move(k, by as -1 | 1); return; }
+    if (b.dataset.rm) { activate(`slot:${b.dataset.rm}`); return; }
+    if (b.dataset.cd) { refocus(`slot:${b.dataset.cd}`); openConds(); return; }
+    const fk = b.dataset.fk; if (fk) activate(fk);
+  });
+  card.addEventListener('focusin', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-fk]');
+    if (!b) return;
+    card.querySelectorAll('.pm-btn.on').forEach((x) => x.classList.remove('on')); b.classList.add('on');
+    if (b.dataset.skill) { S.sel = b.dataset.skill; paintDetail(); }
+    paintFoot();
+  });
+  card.addEventListener('mouseover', (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>('.pm-btn[data-fk]'); if (b && document.activeElement !== b) b.focus({ preventScroll: true }); });
+  const ctrls = (): HTMLElement[] => (S.conds !== null && !manual() ? [...card.querySelectorAll<HTMLElement>('.sk-conds [data-fk]')] : [...card.querySelectorAll<HTMLElement>('[data-fk]')]);
+  card.addEventListener('keydown', (e) => {
+    const fk = focusKey(), a = actsOf(e, 'walk');
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      const all = ctrls(); if (!all.length) return;
+      e.preventDefault(); e.stopPropagation();
+      const i = all.findIndex((x) => x.dataset.fk === fk), down = e.key === 'ArrowDown';
+      all[i < 0 ? (down ? 0 : all.length - 1) : (i + (down ? 1 : -1) + all.length) % all.length].focus();
+      return;
+    }
+    // Space places or removes everywhere (the squares' own handler no longer takes it from a page), and on a sheet Enter enters the arena
+    if (e.key === ' ') { e.preventDefault(); e.stopPropagation(); if (!e.repeat && fk) activate(fk); return; }
+    if (e.key === 'Enter') {
+      if (fk.startsWith('cond:')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) activate(fk); return; }
+      if (go) { e.preventDefault(); e.stopPropagation(); if (!e.repeat && !go.disabled) go.click(); }
+      else { e.preventDefault(); e.stopPropagation(); if (!e.repeat && fk) activate(fk); }
+      return;
+    }
+    if (e.key === 'Escape') {
+      // the innermost thing first: the list of conditions, a skill waiting for its place, a place emptied (its skill stays)
+      if (S.conds !== null) { const k = S.conds; S.conds = null; e.preventDefault(); e.stopPropagation(); paint(`slot:${k}`); return; }
+      if (S.pick !== null) { S.pick = null; said(''); e.preventDefault(); e.stopPropagation(); paint(); return; }
+      if (S.free !== null) { const k = S.free; S.free = null; said(''); e.preventDefault(); e.stopPropagation(); paint(`slot:${k}`); }
+      return;
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+    const k = slotOf(fk);
+    if (k >= 0 && S.free === null && (a.includes('left') || a.includes('right'))) { e.preventDefault(); e.stopPropagation(); move(k, a.includes('left') ? -1 : 1); return; }
+    if (k >= 0 && (e.key === 'Delete' || e.key === 'Backspace')) { e.preventDefault(); e.stopPropagation(); activate(fk); return; }
+    if (e.key.toLowerCase() === 'c' && k >= 0) { e.preventDefault(); e.stopPropagation(); openConds(); }
+  });
+  card.addEventListener('keyup', (e) => { if (e.key === ' ') e.preventDefault(); });
+
+  S.sel = four().find(Boolean) ?? owned[0] ?? '';
   paint();
-  return { root, focus: () => { list.querySelector<HTMLElement>('.pm-btn')?.focus(); } };
+  return { root, focus: () => { refocus('slot:0'); } };
 }

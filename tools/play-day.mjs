@@ -81,11 +81,12 @@ try {
   if (V2) {
     await page.keyboard.press('k');
     await page.waitForSelector('.pm-skills .pm-btn.on', { timeout: 20000 }).catch(() => {});
-    const four = () => page.evaluate(() => ({ n: document.querySelector('.pm-skills .pm-purse b')?.textContent, on: document.querySelectorAll('.pm-skills .pm-glist [aria-pressed=true]').length, what: document.querySelector('.pm-skills .pm-detail .ab')?.textContent, kit: window.__game.state().v2.kit.loadout.join() }));
+    // (the four places in a row of cards since journal Passe CM2: a place taken out is free on the screen, the game keeps its skill until another comes)
+    const four = () => page.evaluate(() => ({ n: String(document.querySelectorAll('.pm-skills .sk-slot:not(.free)').length), on: document.querySelectorAll('.pm-skills .pm-glist [aria-pressed=true]').length, what: document.querySelector('.pm-skills .pm-detail .ab')?.textContent, kit: window.__game.state().v2.kit.loadout.join() }));
     const k0 = await four();
     await page.keyboard.press('Space'); const k1 = await four();
     await page.keyboard.press('Space'); const k2 = await four();
-    check(k0.n === '4' && !!k0.what && k1.n === '3' && k1.on === 3 && k2.n === '4' && k2.kit.split(',').length === 4, `K: a skill left out and brought back at the keyboard: ${JSON.stringify([k0, k1, k2])}`);
+    check(k0.n === '4' && !!k0.what && k1.n === '3' && k1.kit === k0.kit && k2.n === '4' && k2.kit.split(',').length === 4, `K: a skill left out and brought back at the keyboard: ${JSON.stringify([k0, k1, k2])}`);
     await page.keyboard.press('Escape');
     // 1d. the list (Q) at the keyboard, a theft taken from it (journal Passe EVL1): seen or caught, its news stand in the band, under the place
     await page.keyboard.press('q');

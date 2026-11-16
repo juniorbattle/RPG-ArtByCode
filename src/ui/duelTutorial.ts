@@ -16,11 +16,13 @@ import { rich, spotlight, tutorialOn, tutorialStyle } from './tutorial';
  *  without them unless the address asks for it (`tutorial=1`). Fades only (TU-10; the reduced motion is the game's setting, RG-5). */
 
 /** (the lesson of the action points, lot 3's « ap », left with them: the model « La Brute » has none, PB-1) */
-export type LessonId = 'start' | 'charge' | 'combo' | 'react' | 'form' | 'gauge' | 'break' | 'open' | 'clash' | 'speed';
+export type LessonId = 'start' | 'hand' | 'charge' | 'combo' | 'react' | 'form' | 'gauge' | 'break' | 'open' | 'clash' | 'speed';
 /** an event of the duel's replay (src/arena/autoView.ts: `commandStart`, `impact`, `break`, `ko`...) */
 export type DuelEvent = { type: string } & Record<string, unknown>;
 const LESSON: Record<LessonId, { title: TextKey; body: TextKey; lit?: (e?: DuelEvent) => string }> = {
   start: { title: 'tut.duel.start.title', body: 'tut.duel.start.body', lit: () => '#ah-bar .ah-b.slot' },
+  // the manual mode's own lesson (the operator's CM-14 « Une dixième leçon à la première fois qu'on joue en manuel », journal Passe CM2): said right after the first, a manual bout only
+  hand: { title: 'tut.duel.hand.title', body: 'tut.duel.hand.body', lit: () => '#ah-bar .ah-b.slot' },
   charge: { title: 'tut.duel.charge.title', body: 'tut.duel.charge.body', lit: () => '#ah-ren .ah-ch' },
   combo: { title: 'tut.duel.combo.title', body: 'tut.duel.combo.body' },
   react: { title: 'tut.duel.react.title', body: 'tut.duel.react.body' },
@@ -57,7 +59,9 @@ const signed = (f: number): string => `${f >= 1 ? '+' : '−'}${Math.round(Math.
 export function lessonText(id: LessonId, d: LessonDuel, e?: DuelEvent): string {
   const k = LESSON[id].body, R = AUTO_RULES, foe = d.names.marek;
   switch (id) {
-    case 'start': return tx(k, { n: d.ren.skills.length });
+    // a manual bout's first lesson says the hand, not the plan
+    case 'start': return tx(d.ren.hand ? 'tut.duel.start.handBody' : k, { n: d.ren.skills.length });
+    case 'hand': return tx(k);
     // Ren's light attack's charge at his Speed (DB7-1: × 10 / Speed)
     case 'charge': return tx(k, { light: +((d.ren.light.charge * d.ren.tempo) / Math.max(1, d.ren.viv)).toFixed(2), viv: +d.ren.viv.toFixed(1) });
     case 'combo': return tx(k, { n: d.ren.light.hits?.length ?? 1 });
@@ -115,7 +119,7 @@ export class DuelCoach {
   constructor(private arena: CoachArena, params: URLSearchParams = new URLSearchParams(location.search)) { this.off = !tutorialOn(params); }
 
   /** the bout starts (after « Fight »): its first lesson */
-  begin(): void { this.want('start'); }
+  begin(): void { this.want('start'); if (this.arena.data()?.ren.hand) this.want('hand'); }
 
   /** the replay's events of a step, and the duel's clock after it */
   onEvents(evs: ReadonlyArray<DuelEvent>, t?: number): void {

@@ -115,7 +115,8 @@ export type V2SkillAction =
   | { type: 'lessonSkill'; skill: string }
   | { type: 'setLoadout'; skills: string[] }
   | { type: 'setOrder'; skills: string[]; foe?: string }
-  | { type: 'setTactic'; skill: string; cond: string; foe?: string };
+  | { type: 'setTactic'; skill: string; cond: string; foe?: string }
+  | { type: 'setMode'; mode: 'auto' | 'manual' };
 
 // the skills are taught and drilled at the training ground (lot V5)
 const atForecourt = (s: GameState) => s.place === 'training';
@@ -190,7 +191,15 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
       if (fault) return tx(fault === 'ultimate' ? 'v2.loadout.ultimate' : 'v2.loadout.super');
       return null;
     },
-    apply: (s, a, _r, emit) => { v2State(s).kit.loadout = [...a.skills]; emit({ kind: 'action', id: 'loadout', cause: 'action:setLoadout', visible: false, text: tx('v2.loadout.log', { skills: joined(a.skills.map(skillName)) }) }); },
+    apply: (s, a, _r, emit) => {
+      const k = v2State(s).kit, was = [...k.loadout], out = was.filter((x) => !a.skills.includes(x)), inn = a.skills.filter((x) => !was.includes(x));
+      // one skill for another (the page's replacement, the operator's CM-02): the newcomer takes the leaver's place in every order kept (the general plan's and each rival's)
+      if (out.length === 1 && inn.length === 1) {
+        const put = (o: string[] | undefined): void => { const i = o?.indexOf(out[0]) ?? -1; if (o && i >= 0) o[i] = inn[0]; };
+        put(k.order); for (const p of Object.values(k.plans ?? {})) put(p.order);
+      }
+      k.loadout = [...a.skills]; emit({ kind: 'action', id: 'loadout', cause: 'action:setLoadout', visible: false, text: tx('v2.loadout.log', { skills: joined(a.skills.map(skillName)) }) });
+    },
   },
   /** the order of priority of the four brought, that the automatic follows in the duel played by the computer (the operator's AC-09 « L’automatique qui place
    *  ses soutiens ; le joueur règle ses quatre compétences et leur ordre », journal Passe AC4): set on the match sheet (lot 2, journal Passe LC3), a minor action
@@ -231,6 +240,22 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
       if (a.cond === 'auto') delete t[a.skill]; else t[a.skill] = a.cond;
       if (Object.keys(t).length) k.tactic = t; else delete k.tactic;
       emit({ kind: 'action', id: 'tactic', cause: 'action:setTactic', visible: false, text: tx('v2.tactic.log', { skill: skillName(a.skill), cond: tx(COND_TEXT[a.cond as AutoCond]) }) });
+    },
+  },  /** the combat mode (the operator's CM-07 « Adopter les deux modes et amender le § 6.1 (décision A3) », journal Passe CM2): auto (the plan launches the skills) or manual (the
+   *  player does); kept in the kit, absent = auto (a game that never touches it keeps its fingerprint), a minor action as the order and the tactic are */
+  setMode: {
+    by: null,
+    list: () => [],
+    label: () => tx('v2.mode.label'),
+    cost: () => 0,
+    check: (s, a) => {
+      if (!isV2(s)) return tx('v2.only');
+      return a.mode === 'auto' || a.mode === 'manual' ? null : tx('v2.mode.bad');
+    },
+    apply: (s, a, _r, emit) => {
+      const k = v2State(s).kit;
+      if (a.mode === 'manual') k.mode = 'manual'; else delete k.mode;
+      emit({ kind: 'action', id: 'mode', cause: 'action:setMode', visible: false, text: tx('v2.mode.log', { mode: tx(a.mode === 'manual' ? 'v2.mode.manual' : 'v2.mode.auto') }) });
     },
   },
 };

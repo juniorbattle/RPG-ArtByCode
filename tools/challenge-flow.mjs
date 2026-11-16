@@ -121,9 +121,10 @@ try {
     check(kind === 'challenge' ? sheet.text.includes('A challenge won adds no health') : !sheet.text.includes('A challenge won adds no health'), 'the vigour: a challenge gives none (GP-14), a reprisal says nothing of it');
     check(sheet.foot.some((t) => /Go onto the sand with these four/.test(t)), `its way in: ${sheet.foot.join(' | ')}`);
     // a plan for them: C on the first skill selected, kept for that fighter (the page's own action, replayed in Node)
-    await page.evaluate(() => document.querySelector('.pm-skills .pm-glist .pm-btn')?.focus());
+    // (a plan is set on a place since journal Passe CM2, the operator's CM-04: C lists the first place's conditions, Down the next one, Enter keeps it)
+    await page.evaluate(() => document.querySelector('.pm-skills [data-fk="slot:0"]')?.focus());
     const before = await page.evaluate((w) => JSON.stringify(window.__game.state().v2.kit.plans?.[w] ?? null), foeId);
-    await page.keyboard.press('c');
+    await page.keyboard.press('c'); await new Promise((r) => setTimeout(r, 200)); await page.keyboard.press('ArrowDown'); await new Promise((r) => setTimeout(r, 150)); await page.keyboard.press('Enter');
     const plan = await page.evaluate((w) => window.__game.state().v2.kit.plans?.[w] ?? null, foeId), k = plan?.tactic ? Object.keys(plan.tactic)[0] : null;
     check(before === 'null' && !!k, `the plan set on the sheet, kept for ${foeName}: ${JSON.stringify(plan)}`);
     check(k === SHEET_PLAN.skill && plan.tactic[k] === SHEET_PLAN.cond, `the plan Node played before the browser (${JSON.stringify(SHEET_PLAN)})`);

@@ -304,6 +304,8 @@ export class TownUi {
 
   /** E (or Space) in the scene */
   interact(): void { if (!this.modal && this.near) this.openPerson(this.near); }
+  /** a page or a dialogue is open: the squares' talk key (E and Space) leaves the keyboard to it (the operator's CM-01: Space did nothing on a square's skills page, journal Passe CM2) */
+  get pageOpen(): boolean { return !!this.modal; }
 
   /** the day's bout, open now: its prompt stays on screen, the action in the list */
   private boutNow(): boolean {
@@ -623,7 +625,7 @@ export class TownUi {
       hp.train ? tx('v2.sheet.hp.train', { n: hp.train }) : '', hp.draught ? tx('v2.sheet.hp.draught', { n: hp.draught }) : '', hp.wound ? tx('v2.sheet.hp.wound', { n: hp.wound }) : ''].filter(Boolean).join(', ') + '.';
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)} · ${esc(tx('ui.dayN', { day: nb.day }))}</p>${ahead ? `<p class="pm-sub">${esc(ahead)}</p>` : ''}<div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
-      + vs + (prep ? `<p class="pm-sub pm-fstats">${esc(prep)}</p>` : '') + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('') + (rehLine ? `<p class="pm-sub">${esc(rehLine)}</p>` : '') + (noteLine ? `<p class="pm-sub">${esc(noteLine)}</p>` : '') + `<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p><p class="pm-sub">${esc(tx('auto.sheet.hpWhy'))}</p><p class="pm-sub">${esc(from)}</p>`
+      + vs + (prep ? `<p class="pm-sub pm-fstats">${esc(prep)}</p>` : '') + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('') + (rehLine ? `<p class="pm-sub">${esc(rehLine)}</p>${s.v2?.kit.mode === 'manual' ? `<p class="pm-sub">${esc(tx('prep.sheet.rehearsalHand'))}</p>` : ''}` : '') + (noteLine ? `<p class="pm-sub">${esc(noteLine)}</p>` : '') + `<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p><p class="pm-sub">${esc(tx('auto.sheet.hpWhy'))}</p><p class="pm-sub">${esc(from)}</p>`
       + `${heard ? `<p class="pm-sub">${esc(heard)}</p>` : ''}<p class="pm-sub">${esc(gear)}</p>${strap ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.strap'))}</p>` : ''}${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }
 

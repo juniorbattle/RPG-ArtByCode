@@ -96,7 +96,7 @@ export const V2_RIPOSTE = { after: 3, delay: 0.3 };
  *  puissante à côté », journal Passe CH2) */
 /** `order`: the four's order of priority in the duel played by the computer (AC-09; src/combat/autoData.ts autoRen), absent = the automatic's own */
 /** the kit (`plans`: a plan of combat kept for a rival, its order and its conditions, set on its match sheet: lot 2 of « La Brute ») */
-export interface V2Kit { loadout: DynActionId[]; levels: Record<string, number>; order?: string[]; tactic?: Record<string, string>; plans?: Record<string, { order?: string[]; tactic?: Record<string, string> }> }
+export interface V2Kit { loadout: DynActionId[]; levels: Record<string, number>; order?: string[]; tactic?: Record<string, string>; /** the combat mode (the operator's CM-07 « Adopter les deux modes », journal Passe CM2): absent = auto, the plan launches the skills; 'manual' = the player does */ mode?: 'manual'; plans?: Record<string, { order?: string[]; tactic?: Record<string, string> }> }
 export const V2_START_KIT: V2Kit = { loadout: ['t1', 't4', 'd1', 's1'], levels: { t1: 1, t4: 1, d1: 1, s1: 1, heavy: 1 } };
 
 export interface V2Duel { data: DynData; tiers: ChargeTier[] }

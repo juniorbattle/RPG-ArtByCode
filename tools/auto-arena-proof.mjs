@@ -202,7 +202,7 @@ try {
   await open(`?play=1&state=v2-day2-afternoon&tutorial=0&noreload=1&vis=0&lang=${L}`);
   const st0 = await page.evaluate(() => window.__game.state());
   await page.evaluate((enter) => { document.querySelectorAll('.pm-news .pm-btn, .pm-overlay .pm-btn.primary').forEach((x) => x.click()); window.__ui.openHere(); [...document.querySelectorAll('.pm-talk .pm-btn')].find((x) => x.textContent.includes(enter))?.click(); }, inLang(() => T.tx('ui.enterArena')));
-  const sheet = await page.evaluate(() => ({ rows: [...document.querySelectorAll('.pm-vs tbody tr')].map((tr) => [...tr.children].map((td) => td.textContent)), order: [...document.querySelectorAll('.pm-ladder2 dt')].map((x) => x.textContent), text: document.querySelector('.pm-skills')?.textContent ?? '', foe: document.querySelector('.pm-foe .pm-h')?.textContent ?? '' }));
+  const sheet = await page.evaluate(() => ({ rows: [...document.querySelectorAll('.pm-vs tbody tr')].map((tr) => [...tr.children].map((td) => td.textContent)), order: [...document.querySelectorAll('.sk-slot .sk-main b')].map((x) => x.textContent), text: document.querySelector('.pm-skills')?.textContent ?? '', foe: document.querySelector('.pm-foe .pm-h')?.textContent ?? '' }));
   // the harmful states' two rows (journal Passe GP4-2): what each puts on the other and resists, the opponent's read from the scouting (its style, tier 1), « ? » before
   const SCO = await server.ssrLoadModule('/src/simulation/v2scout.ts'), ADS = await server.ssrLoadModule('/src/combat/autoData.ts');
   const bout = AM.autoBoutOf(st0), forms = AM.autoForms(bout), rr = AM.autoReactions(bout.ren, bout.foe), fr = AM.autoReactions(bout.foe, bout.ren);
@@ -223,13 +223,12 @@ try {
   ];
   check(JSON.stringify(sheet.rows) === JSON.stringify(want), `the match sheet's table is the duel's fighters: ${sheet.rows.map((r) => r.join(' ')).join(' | ')}`);
   check(bout.prep < 0.05 || sheet.text.includes(inLang(() => T.tx('auto.sheet.prep', { name: sheet.foe, n: T.num(+bout.prep.toFixed(1)) }))), `the rival's training as Attack points (${+bout.prep.toFixed(1)})`);
-  check(sheet.order.join() === inLang(() => [...bout.ren.skills.map((x, i) => `${i + 1}. ${T.skillName(x.id)}`), T.tx('ui.skill.light')].join()), `the order shown: ${sheet.order.join(', ')}`);
+  // (the four places in a row of cards since journal Passe CM2, the operator's CM-02: each place's name, in the order the duel uses them)
+  check(sheet.order.join() === inLang(() => bout.ren.skills.map((x) => T.skillName(x.id)).join()), `the order shown: ${sheet.order.join(', ')}`);
   await page.screenshot({ path: path.join(outDir, 'sheet-1.png') });
   // the order set at the keyboard: the last skill one place earlier (the player's left key)
   const last = bout.ren.skills[3].id;
-  const names = await page.evaluate(() => [...document.querySelectorAll('.pm-glist .pm-btn')].map((x) => x.textContent));
-  const idx = names.findIndex((t) => t.startsWith(inLang(() => T.skillName(last))));
-  await page.focus(`.pm-glist .pm-btn:nth-child(${idx + 1})`);
+  await page.focus('[data-fk="slot:3"]');
   await page.keyboard.press('ArrowLeft');
   const st1 = await page.evaluate(() => window.__game.state());
   // the order set on the match sheet is kept for its rival (lot 2 of « La Brute »: « un plan par rival »), the general plan unchanged

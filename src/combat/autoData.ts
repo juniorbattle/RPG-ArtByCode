@@ -356,7 +356,7 @@ export function autoDefaultOrder(loadout: readonly string[], levels: Record<stri
 export interface AutoPlan { order?: readonly string[]; tactic?: Readonly<Record<string, string>> }
 /** the kit: the four brought, the levels, the general plan (`order`, `tactic`: the skills page's), and the plans kept for a rival (`plans`, set on its match
  *  sheet, taken up when it is met again) */
-export interface AutoKit { loadout: readonly string[]; levels: Record<string, number>; order?: readonly string[]; tactic?: Readonly<Record<string, string>>; plans?: Readonly<Record<string, AutoPlan>> }
+export interface AutoKit { loadout: readonly string[]; levels: Record<string, number>; order?: readonly string[]; tactic?: Readonly<Record<string, string>>; mode?: 'manual'; plans?: Readonly<Record<string, AutoPlan>> }
 /** the kit a bout against `foe` plays: its plan kept for that rival in place of the general one, when there is one (lot 2 of « La Brute ») */
 export function autoKitFor<K extends AutoKit>(kit: K, foe: string | null | undefined): K {
   const p = foe ? kit.plans?.[foe] : undefined;

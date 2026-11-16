@@ -116,3 +116,9 @@ Durées (planificateur) : 109 / 167 / 199 s en auto (poule, tableau, finale) ; 1
 7. Tests : `tests/auto-hand.test.mjs` refait pour le mode ; chaque règle contre un oracle ; chaque texte dans les deux langues ; `tests/pad.test.mjs`, `settings`, `tutorial`, `language`, `texts`.
 8. Preuves dans le navigateur (DEV port libre) : `auto-arena-proof`, `gauge-proof`, `tutorial-proof`, `play-flow`, `pad-proof` (mis à jour), `remap-proof`, `ui-text`, en `PAGE_LANG=fr`, `REDUCED=1`, `MOTION=reduce`.
 9. La course n'est recalée que si une mesure l'exige (aucune règle du duel ne change). Rebase sur `origin/main` (le chantier 5), journal, fusion en avance rapide.
+
+## 9. La suite (16/11/2026, journal Passe CM2)
+
+La fiche a été relue le 16/11 : quinze décisions, treize à la recommandation, **CM-13** « Un combat manuel quitté est perdu » avec la note « je pense que un combat quitte doit etre perdu qu'importe le mode » (la recommandation faisait décider le plan) ; **CM-07 est une décision A3** et le § 6.1 du contrat projet est amendé (la note d'amendement du 2026-11-16 dans l'en-tête du contrat, qui cite la demande de l'opérateur mot pour mot). Tout est construit dans le jeu par défaut, en anglais et en français : voir `briefs/combat-auto.md` § 42 et le journal, Passe CM2. Après la maquette jouée sur la fiche, l'opérateur a demandé : « Ce n'est pas plutot un visuel comme cela pour la gestion des competences ? » : la page construite suit la maquette (quatre cartes en rangée, l'interrupteur Auto / Manuel en haut à droite, des filtres, un catalogue de tuiles).
+
+Écarts avec ce rapport, consignés au journal : la page K n'a plus le héros ; Entrée entre dans l'arène sur une fiche de match (Espace place ou retire) ; la place retirée reste libre à l'écran tant qu'une autre compétence ne vient pas (le jeu exige quatre) ; un défaut plus ancien est apparu en construisant : en partie réelle la main n'a jamais marché (l'arène ne recevait pas la graine du duel), corrigé.

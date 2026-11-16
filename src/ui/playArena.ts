@@ -2,7 +2,7 @@ import { ArenaApp } from '../arena/ArenaApp';
 import { TEXTS_EN } from '../arena/ArenaHud';
 import { DYN_TEXTS_EN, DYN_TEXTS_FR_GAME } from '../arena/DynamicHud';
 import { challengeSheetFor, dynSheetData, dynSheetView, matchSheetFor, sheetData } from '../combat/match';
-import { autoOutcome } from '../combat/autoMatch';
+import { autoOutcome, leftOutcome } from '../combat/autoMatch';
 import { AUTO_TEXTS_EN, AUTO_TEXTS_FR } from '../arena/AutoHud';
 import { isV2 } from '../simulation/v2';
 import { duelStats } from '../simulation/preview';
@@ -75,7 +75,9 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     onProgress: progressOn(b.label, b.bar),
     match: ao
       // a challenge or a reprisal in town (lot L2b, EV-5 « L’arène aux gradins vides »): the stands empty, no crowd, the lists' piece of the band
-      ? { rules: 'auto', auto: { result: ao.duel, ren: ao.bout.ren, foe: ao.bout.foe, names: { ren: st.player.name, marek: opp.name } }, foe: opp.id, assist: 'subtle', texts, piece: challenge ? 'lices' : boutPiece(m?.stage), ...(challenge ? { empty: true } : {}), onOver: (r) => void finish(r) }
+      // the duel's seed goes with its script: the manual mode's presses replay the duel with it (journal Passe CM2: until then a game's arena had none, `press` always refused and the hand
+      // only worked on the arena's own page)
+      ? { rules: 'auto', auto: { result: ao.duel, ren: ao.bout.ren, foe: ao.bout.foe, names: { ren: st.player.name, marek: opp.name }, seed: ao.bout.seed }, foe: opp.id, assist: 'subtle', texts, piece: challenge ? 'lices' : boutPiece(m?.stage), ...(challenge ? { empty: true } : {}), onOver: (r) => void finish(r) }
       : dyn
       ? { data: dynSheetData(sheet, actionNames()), rules: 'dynamic', foe: opp.id, assist: view.assist, texts, onOver: (r) => void finish(r) }
       : { data: sheetData(sheet, actionNames()), foe: opp.id, assist: sheet.assist, texts, onOver: (r) => void finish(r) },
@@ -97,12 +99,16 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   // one preparation screen (journal Passe UM4): the version 2's is its match sheet in the town, here its stage and the name; today's game keeps its report
   // here, in the band at the foot of the screen, the fighters in view; the command bar says the keys
   const gate = `<p class="pm-sub">${challenge ? tx(reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</p><h2 class="pm-h">${esc(opp.name)}</h2><p class="pm-sub">${esc(opp.epithet)}</p>`;
-  await overlay(v2 ? gate : `${gate}${report}${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }], true).done;
+  // the version 2's gate says the mode (the operator's CM-08: recalled at « Fight ») and that leaving the bout loses it (CM-13)
+  const gateV2 = `${gate}<p class="pm-sub">${esc(tx('ui.sk.mode'))}: ${esc(tx(st.v2?.kit.mode === 'manual' ? 'v2.mode.manual' : 'v2.mode.auto'))}</p><p class="pm-sub">${tx('v2.arena.leaveLoses')}</p>`;
+  await overlay(v2 ? gateV2 : `${gate}${report}${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }], true).done;
   app.paused = false; app.moment = false;
-  // SY-10 (the operator's « Le résultat de la tactique écrit à l’ouverture », journal Passe SY2): the fight under way, the result the tactic gives is the bout's if the
-  // page is left before its end (applied at the next page, src/ui/play.ts settlePending); the bout's own result replaces it at its end (finish)
+  // SY-10 (the operator's « Le résultat de la tactique écrit à l’ouverture », journal Passe SY2) as the operator's CM-13 changed it (« Un combat manuel quitté est perdu », his
+  // note « je pense que un combat quitte doit etre perdu qu'importe le mode », journal Passe CM2): the fight under way, a duel the page leaves before its end is LOST, in both
+  // modes (applied at the next page, src/ui/play.ts settlePending); the duel's own result replaces it at its end (finish). A defeat by leaving is whole (the opponent
+  // untouched, no finisher: it never wounds)
   if (ao && st.v2) {
-    st.v2.$pending = { kind: challenge ? 'challenge' : 'bout', outcome: { winner: ao.winner, playerHp: ao.playerHp, playerMaxHp: ao.playerMaxHp, opponentHp: ao.opponentHp, opponentMaxHp: ao.opponentMaxHp, finisher: ao.finisher } };
+    st.v2.$pending = { kind: challenge ? 'challenge' : 'bout', outcome: leftOutcome(ao) };
     writeSave(st);
   }
   // the first duel's tutorial (TU-11), written for the duel played by the computer (lot 3, journal Passe LC5; the three-button duel's of journal Passe TU4 went

@@ -471,17 +471,25 @@ export class ArenaApp {
    *  goes on from now on the new script; « Skip » plays the rest by the tactic with the presses made. Nothing while a lesson is read or after the K.O. */
   press(i: number, quiet = false): boolean {
     const a = this.auto;
-    if (!a || a.over || this.lesson || this.skipFade || this.autoSeed === null || this.settingsOpen) return false;
+    // the two modes (the operator's CM-07, journal Passe CM2): in auto the plan launches the skills and the keys do nothing; in manual the player's presses do (a press is accepted in the pause too, CM-10)
+    if (!a || a.over || this.lesson || this.skipFade || this.autoSeed === null || this.settingsOpen || !a.fighters.ren.hand) return false;
     const sk = a.fighters.ren.skills[i];
     if (!sk) return false;
     // after the last line played (its time written to the hundredth: a choice it shows took place before this press)
     const t = +(Math.max(a.t, a.lastLineT() + 0.006) + 1e-6).toFixed(6), p: AutoCommand = { t, skill: sk.id };
     this.presses.push(p);
-    a.replace(autoDuel(a.fighters.ren, a.fighters.marek, this.autoSeed, { log: true, trace: true, commands: this.presses }), p);
-    if (this.cineOn) void import('./cine').then((c) => { this.cineList = c.cineMoments(a.result, a.fighters); const k = this.cineList.findIndex((m) => m.t > a.t + 1e-6); this.cineNext = k < 0 ? this.cineList.length : k; });
+    this.reduel(p);
     this.snd?.duelEvent({ type: 'press', quiet });
     this.opts.match?.onPress?.(p);
     return true;
+  }
+
+  /** the duel played again with the presses so far (one draw per blow keeps every line already played) and, once « Skip » was asked in the manual mode, the plan deciding from that time (`handOff`) */
+  private handOff: number | undefined;
+  private reduel(pressed: AutoCommand | null): void {
+    const a = this.auto; if (!a || this.autoSeed === null) return;
+    a.replace(autoDuel(a.fighters.ren, a.fighters.marek, this.autoSeed, { log: true, trace: true, commands: this.presses, ...(this.handOff !== undefined ? { handOff: this.handOff } : {}) }), pressed ?? a.pressed);
+    if (this.cineOn) void import('./cine').then((c) => { this.cineList = c.cineMoments(a.result, a.fighters); const k = this.cineList.findIndex((m) => m.t > a.t + 1e-6); this.cineNext = k < 0 ? this.cineList.length : k; });
   }
 
   /** the settings page over a paused duel of the version 2 (the operator's RG-2 « Depuis la pause du duel aussi », journal Passe RG2): Esc, the gamepad's
@@ -547,6 +555,8 @@ export class ArenaApp {
   /** « Skip »'s curtain under way: its time on the arena's clock, whether the duel has reached its K.O. under it */
   private skipFade: { t: number; done: boolean; el: HTMLDivElement | null } | null = null;
   private beginSkip(quiet = false): void {
+    // the manual mode: « Skip » gives the rest of the bout to the plan, from this moment (the presses made stay)
+    if (this.auto?.fighters.ren.hand && this.handOff === undefined) { this.handOff = this.auto.t; this.reduel(null); }
     let el: HTMLDivElement | null = null;
     if (typeof document !== 'undefined') {
       el = document.createElement('div');

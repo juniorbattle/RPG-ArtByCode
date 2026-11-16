@@ -36,16 +36,18 @@ export function autoBoutOf(st: GameState, kind: 'bout' | 'challenge' = 'bout'): 
   const sh = autoSheetOf(st, kind);
   if (!sh) return null;
   const o = sh.sides[1].fighters[0], stage = sh.stage ?? 0, round = stage === 0 ? autoRound(st.day) : 0;
-  return { ...autoFightersFor(st, o.id, stage, round), foeId: o.id, seed: (sh.seed ^ 0x5bd1e995) >>> 0, stage, round };
+  return { ...autoFightersFor(st, o.id, stage, round, { hand: true }), foeId: o.id, seed: (sh.seed ^ 0x5bd1e995) >>> 0, stage, round };
 }
 
 /** Ren and an opponent as the duel builds them for a bout against `foeId` at this stage and round, from the state now: the day's bout and challenge (autoBoutOf), and the
  *  rehearsal's shadow of a coming bout (lot 3 of « La Brute », src/simulation/v2prep.ts) */
-export function autoFightersFor(st: GameState, foeId: string, stage: Stage, round: number): Pick<AutoBout, 'ren' | 'foe' | 'prep'> {
+export function autoFightersFor(st: GameState, foeId: string, stage: Stage, round: number, o2: { hand?: boolean } = {}): Pick<AutoBout, 'ren' | 'foe' | 'prep'> {
   const o = { id: foeId }, mods = v2Mods(st), g = GENERICS[o.id];
   // the plan kept for this rival, else the general one (lot 2 of « La Brute »: « un plan par rival », set on its match sheet)
   const ren = autoRen(autoRenStats(st), autoKitFor(v2KitOf(st), o.id), { weapon: st.v2?.gear?.weapon, hpShare: mods.hp, taken: mods.taken, effect: mods.effect, gear: wornPieces(st), pieceViv: piecesViv(st) });
   // Orla's advice from the gate (BL1-6): the gaps and the cooldown × 0.9, on top of the gear's
+  // the manual mode (CM-07): in the player's own bout or challenge Ren's skills leave by his presses; the rehearsal, the previews and the lab play the plan
+  if (o2.hand && st.v2?.kit.mode === 'manual') ren.hand = true;
   const ally = allyCd(st);
   if (ally !== 1) ren.gfx = { ...ren.gfx, cd: (ren.gfx?.cd ?? 1) * ally };
   const c = st.competitors[o.id];
@@ -66,6 +68,12 @@ export function autoOutcome(st: GameState, kind: 'bout' | 'challenge' = 'bout', 
   // Master Corvin's note (lot 3 of « La Brute »), read from the script when there is one
   const note = o.log ? boutNote(r, b.ren, b.foe, { day: st.day, foe: b.foeId, kind }) : undefined;
   return { winner: win ? 'player' : 'opponent', playerHp: r.hp[0], playerMaxHp: r.maxHp[0], opponentHp: r.hp[1], opponentMaxHp: r.maxHp[1], finisher: r.finisher, ...(note ? { note } : {}), duel: r, bout: b };
+}
+
+/** The result of a duel the player leaves before its end (the operator's CM-13 « Un combat manuel quitté est perdu », his note « je pense que un combat quitte doit etre perdu qu'importe le mode »,
+ *  journal Passe CM2; it changes SY-10): a defeat, whole (the opponent untouched), with no finisher: it never wounds. Written when the arena opens (`$pending`), replaced by the duel's own result at its end */
+export function leftOutcome(b: { playerMaxHp: number; opponentMaxHp: number }): DuelOutcome {
+  return { winner: 'opponent', playerHp: 0, playerMaxHp: b.playerMaxHp, opponentHp: b.opponentMaxHp, opponentMaxHp: b.opponentMaxHp, finisher: null };
 }
 
 /** the player's next bout of the tournament as its match sheet shows it from the moment the opponent is known (the operator's GP-12 « La fiche dès que l’adversaire

@@ -90,6 +90,53 @@ const CSS = `
 .pm-btn[aria-disabled=true]:hover .cost,.pm-btn[aria-disabled=true]:focus .cost{color:var(--ds-muted)}
 .pm-btn.on{box-shadow:inset 3px 0 0 var(--ds-accent);padding-left:12px}
 .pm-goods .pm-detail{min-height:236px;padding:14px 0 0}
+/* the skills page (the operator's CM-02 « A · Quatre places et un catalogue » in the look of the sheet's mock-up, journal Passe CM2): the four places in a row of cards, the catalogue of tiles under them */
+.pm-overlay .pm-card.pm-two.pm-skills.pm-solo{grid-template-columns:minmax(0,1fr);width:min(1040px,100%)}
+.pm-skills .pm-goods{grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto}
+.pm-skills .pm-goods .pm-detail{min-height:0;max-height:min(23vh,220px);padding-top:10px}
+.sk-lab{margin:0;font-size:var(--ds-fs-small);letter-spacing:.1em;text-transform:uppercase;color:var(--ds-muted)}
+.sk-modebox{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
+.sk-mode{display:inline-flex;flex:none;border:1px solid var(--ds-line);background:none;color:var(--ds-muted);font:inherit;cursor:pointer;padding:0}
+.sk-mode span{padding:4px 14px;font-size:var(--ds-fs-small)}
+.sk-mode span.on{background:var(--ds-ivory);color:var(--ds-ink)}
+.sk-mode:focus,.sk-mode.on{outline:0;box-shadow:inset 0 0 0 1px var(--ds-accent)}
+.sk-places-lab{padding:2px 0 8px}
+.sk-places{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:10px}
+.sk-slot{position:relative;display:flex;flex-direction:column;gap:8px;min-width:0;border:1px solid var(--ds-line);padding:10px 12px 9px}
+.sk-slot:has(.sk-main.on),.sk-slot.armed{border-color:var(--ds-accent)}
+.sk-slot.free{border-style:dashed}
+.sk-slot .sk-main{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:0;text-align:left;width:100%;border-top:0}
+.sk-slot .sk-main.on,.sk-tile.on{box-shadow:none;padding-left:0}
+.sk-slot .sk-main .n{position:absolute;top:8px;right:11px;font:400 var(--ds-fs-small)/1 var(--ds-title);color:var(--ds-muted)}
+.sk-slot .sk-main b{font:400 var(--ds-fs-label)/1.2 var(--ds-title);color:var(--ds-ivory)}
+.sk-slot .sk-main small,.sk-tile small{display:block;font-size:var(--ds-fs-small);line-height:1.3;color:var(--ds-muted)}
+.sk-slot .cd{margin:0;font-size:var(--ds-fs-small);line-height:1.3;color:var(--ds-ivory)}
+.sk-slot .cd.chip{font:inherit;font-size:var(--ds-fs-small);text-align:left;color:var(--ds-ivory);background:none;border:1px solid var(--ds-line);padding:3px 8px;cursor:pointer}
+.sk-slot .cd.chip:hover{border-color:var(--ds-ivory)}
+.sk-ctl{display:flex;flex-wrap:wrap;gap:6px}
+.sk-ctl button{font:inherit;font-size:var(--ds-fs-small);color:var(--ds-muted);background:none;border:1px solid var(--ds-line);padding:2px 9px;cursor:pointer}
+.sk-ctl button:hover{color:var(--ds-ivory);border-color:var(--ds-ivory)}
+.sk-ctl button:disabled{opacity:.35;cursor:default}
+.sk-conds{grid-column:1 / -1;display:flex;flex-direction:column;padding:6px 0 4px}
+.sk-conds .pm-sub{margin:0 0 4px}
+.sk-conds .pm-btn{padding:5px 0}
+.sk-note{padding:8px 0 2px}
+.sk-note p{margin:0 0 2px;font-size:var(--ds-fs-small);line-height:1.3;color:var(--ds-muted)}
+.sk-note .sk-say{min-height:1.3em;color:var(--ds-accent)}
+.sk-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0 6px}
+.sk-filters{display:flex;flex-wrap:wrap;gap:6px}
+.sk-chipf{width:auto;padding:2px 12px;border:1px solid var(--ds-line);border-radius:12px;font-size:var(--ds-fs-small)}
+.sk-chipf[aria-pressed=true]{border-color:var(--ds-accent);color:var(--ds-ivory)}
+.sk-chipf.on{box-shadow:none;padding-left:12px;border-color:var(--ds-ivory)}
+.pm-glist.sk-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:8px;align-content:start;border-bottom:0;padding-bottom:6px}
+.sk-tile{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:auto;padding:7px 10px;border:1px solid var(--ds-line);text-align:left}
+.sk-tile.on{border-color:var(--ds-accent)}
+.sk-tile[aria-pressed=true]{border-color:var(--ds-muted)}
+.sk-tile[aria-pressed=true].on{border-color:var(--ds-accent)}
+.sk-tile b{font-weight:600}
+.sk-tile .st{font-size:var(--ds-fs-small);line-height:1.25;color:var(--ds-accent)}
+.sk-tile.warn{opacity:.65}.sk-tile.warn .st{color:var(--ds-muted)}
+@media (max-height:760px){.sk-legend{display:none}.pm-skills .pm-goods .pm-detail{max-height:18vh}.sk-slot{padding:7px 10px 6px;gap:5px}}
 .pm-detail .nm{margin:0;font:400 var(--ds-fs-label)/1.2 var(--ds-title)}
 .pm-detail .what{margin:2px 0 0;font-size:var(--ds-fs-small);color:var(--ds-muted)}
 .pm-detail .ab{margin:6px 0 0;font-size:var(--ds-fs-body);line-height:1.3}
@@ -144,6 +191,10 @@ const CSS = `
   .pm-skills .pm-glist,.pm-wares .pm-glist{grid-column:1;grid-row:2}
   .pm-skills .pm-detail,.pm-wares .pm-detail{grid-column:2;grid-row:2;min-height:0;padding-top:0}
   .pm-skills .pm-foot,.pm-wares .pm-foot{grid-column:1 / 3;grid-row:3;padding-top:4px;column-gap:18px}
+  .pm-skills .pm-goods{display:flex;flex-direction:column;overflow:auto;height:100%}
+  .pm-skills .sk-note,.pm-skills .sk-places-lab,.pm-skills .pm-detail,.pm-skills .sk-slot .sk-main small{display:none}
+  .pm-skills .sk-places{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pm-skills .pm-glist{max-height:none;overflow:visible}
 }
 @media (max-height:480px) and (min-width:701px){
   .pm-notebook .pm-card.pm-two{display:grid;grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr);column-gap:24px}

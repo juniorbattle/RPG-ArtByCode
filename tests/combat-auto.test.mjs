@@ -58,7 +58,10 @@ test('the port: the same duels as the final workshop\'s copy under SK2, event fo
     const B = Gn ? AD.autoFoe(foe, AD.autoGenericSheet(Gn.profile, Gn, stage, 0), { kitOf: Gn.profile, stage }) : AD.autoFoe(foe, AD.autoRaceSheet(foe, stage, stage === 0 ? ki % 3 : 0, { preparation: 20 + 15 * (ki % 5) }), { stage });
     for (const seed of [11 + gi, 4242 + ki * 7]) {
       const cmds = seed % 3 === 0 ? [{ t: 12, skill: loadout[1] }, { t: 40, skill: loadout[2] }] : undefined;
-      const m = AU.autoDuel(A, B, seed, { log: true, commands: cmds }), p = SIM.duel({ ...A, gear: g }, B, seed, { log: true, commands: cmds }, cfg); n++;
+      // the presses are the manual mode's (journal Passe CM2: no semi-automatic): the port's hand fighter takes them and launches no skill by itself, which the copy plays as a
+      // plan whose every line is « never » with the same presses
+      const Ap = cmds ? { ...A, hand: true } : A, As = cmds ? { ...A, tactic: A.skills.map(() => 'never') } : A;
+      const m = AU.autoDuel(Ap, B, seed, { log: true, commands: cmds }), p = SIM.duel({ ...As, gear: g }, B, seed, { log: true, commands: cmds }, cfg); n++;
       assert.deepEqual(m.log, p.log, `${loadout} against ${foe} (stage ${stage}, gear ${gi}), seed ${seed}`);
       assert.deepEqual([m.t, m.hp, m.maxHp, m.winner, m.leadChanges], [p.t, p.hp, p.maxHp, p.winner, p.leadChanges]);
       for (const e of m.log) { if (e.ev in seen) seen[e.ev]++; if (e.beat) seen.beat++; if ((e.hit ?? 1) > 1) seen.chain++; if (e.act === 'heavy' || e.act === 'm_heavy') seen.heavy++; }

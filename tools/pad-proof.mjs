@@ -143,7 +143,7 @@ try {
     const title = () => page.evaluate(() => document.querySelector('.pm-overlay .pm-card')?.getAttribute('aria-label') ?? null);
     const pages = [await title()];
     await press(B.RB); pages.push(await title()); await press(B.RB); pages.push(await title()); await press(B.LB); pages.push(await title());
-    check(pages.join(' > ') === 'Journal > The tournament > Your skills > The tournament', `A opens the journal, RB / LB walk the menu's pages: ${pages.join(' > ')}`);
+    check(pages.join(' > ') === 'Journal > The tournament > Master Corvin\'s notebook > The tournament', `A opens the journal, RB / LB walk the menu's pages: ${pages.join(' > ')}`);
     await press(B.LB);
     const sc = await page.evaluate(() => { const d = document.querySelector('.pm-overlay .pm-detail'); return d ? { top: d.scrollTop, can: d.scrollHeight > d.clientHeight + 1 } : null; });
     await stick(0, 0, 0, 1); await sleep(400); await stick(0, 0, 0, 0); await frames(2);
@@ -152,7 +152,8 @@ try {
     await press(B.B);
     // the settings page (journal Passe RG3, in place of lot V8's sound page): the menu's « Settings », the sound's sliders, the vibration's switch in the controls
     await press(B.START);
-    for (let i = 0; i < 5; i++) await press(B.DOWN);
+    // (seven lines down since Master Corvin's notebook and the next bout's match sheet are lines of the menu, journal Passes BL3, GP3)
+    for (let i = 0; i < 7; i++) await press(B.DOWN);
     await press(B.A);
     await page.waitForFunction(() => !!document.querySelector('.pm-settings'), { timeout: 20000 }).catch(() => {});
     const part = () => page.evaluate(() => document.querySelector('.pm-settings section:last-child .pm-h')?.textContent ?? null);
@@ -208,12 +209,13 @@ try {
     check(/Enter the arena/.test(first), `Y opens the list on « Enter the arena »: ${first}`);
     await press(B.A);
     await page.waitForSelector('.pm-skills', { timeout: 20000 }).catch(() => {});
-    const four = () => page.evaluate(() => document.querySelector('.pm-skills .pm-purse b')?.textContent);
+    // the four places (a free place on the screen is not counted: journal Passe CM2, the operator's CM-02)
+    const four = () => page.evaluate(() => String(document.querySelectorAll('.pm-skills .sk-slot:not(.free)').length));
     const n0 = await four(); await press(B.X); const n1 = await four(); await press(B.X); const n2 = await four();
     const sheetCaps = await caps(page, '.pm-skills .pm-foot kbd');
-    check(n0 === '4' && n1 === '3' && n2 === '4' && sheetCaps.map((c) => c.label).join() === 'X,D-pad left,D-pad right,A,B', `the match sheet: X leaves a skill out and brings it back (${n0} ${n1} ${n2}), its foot X, the D-pad's left and right (the order, lot 2), A, B (${sheetCaps.map((c) => `${c.key}:${c.label}`).join(' ')})`);
+    check(n0 === '4' && n1 === '3' && n2 === '4' && sheetCaps.map((c) => c.label).join() === 'X,Y,D-pad left,D-pad right,A,B', `the match sheet: X leaves a skill out and brings it back (${n0} ${n1} ${n2}), its foot X, the D-pad's left and right (the order, lot 2), A, B (${sheetCaps.map((c) => `${c.key}:${c.label}`).join(' ')})`);
     // the order of the four (AC-09) at the D-pad: the skill selected one place later, else one earlier (journal Passe LC4)
-    const order = () => page.evaluate(() => [...document.querySelectorAll('.pm-ladder2 dt')].map((x) => x.textContent).join(', '));
+    const order = () => page.evaluate(() => [...document.querySelectorAll('.sk-slot .sk-main b')].map((x) => x.textContent).join(', '));
     const o0 = await order(); await press(B.RIGHT); let o1 = await order();
     if (o1 === o0) { await press(B.LEFT); o1 = await order(); }
     check(o1 !== o0, `the D-pad moves the selected skill in the order: ${o0} → ${o1}`);

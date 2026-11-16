@@ -5,8 +5,9 @@
 // - SL1-3 as PB-1 changed it (the general plan, journal Passe CF3): the Thrust, an exploit, kept for an opening or a break long enough for it to land, or to finish;
 // - each condition of a tactic against an oracle written from SY-08's words (and PB-1's « dans une faille », « au début »); 'never' never leaves by itself; the
 //   tactic is part of the game (setTactic);
-// - the hand: a press changes nothing before it (one draw per blow), leaves at Ren's next choice once it is ready (a use left, its gap run out), waits meanwhile, a later
-//   press replacing it; the arena's replay swaps its script at the press, keeps every line it played, and ends on the new duel's result;
+// - the manual mode's hand (the operator's CM-07, journal Passe CM2, which replaced the semi-automatic: the auto ignores a press, tests/combat-modes.test.mjs): a press
+//   changes nothing before it (one draw per blow), leaves at Ren's next choice once it is ready (a use left, its gap run out), waits meanwhile, a later press replacing it;
+//   the arena's replay swaps its script at the press, keeps every line it played, and ends on the new duel's result;
 // - SL1-7: a save whose four held the heavy blow gives its place to the next skill owned, in the skills page's order; setLoadout refuses the heavy blow.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -92,9 +93,9 @@ test('the tactic is part of the game: setTactic', () => {
   assert.ok(!G.advance(st, { type: 'setTactic', skill: 'd1', cond: 'follow' }).ok, 'only a condition its family takes');
 });
 
-test('the hand: nothing before the press changes, the skill leaves at the next choice once it is ready (a use left, its gap run out), one waits at a time', () => {
+test('the manual mode: nothing before the press changes, the skill leaves at the next choice once it is ready (a use left, its gap run out), one waits at a time', () => {
   for (const foe of ['marek', 'vessa', 'rhosk']) for (const seed of [5, 88]) {
-    const A = renOf(), B = foeOf(foe), base = AU.autoDuel(A, B, seed, { log: true });
+    const A = { ...renOf(), hand: true }, B = foeOf(foe), base = AU.autoDuel(A, B, seed, { log: true });
     for (const at of [8, 20.5, 47]) for (const sk of ['t1', 't4', 'd1', 's1']) {
       const r = AU.autoDuel(A, B, seed, { log: true, commands: [{ t: at, skill: sk }] });
       const before = (L) => L.filter((e) => e.t < at - 0.006).map(line);
@@ -116,7 +117,9 @@ test('the hand: nothing before the press changes, the skill leaves at the next c
 
 test('the hand in the arena: the replay swaps its script at the press and ends on the new duel', () => {
   for (const foe of ['marek', 'orla', 'cassius']) {
-    const d = AV.sceneAutoDuel(foe, 1337), rp = new AV.AutoReplay(d.result, { ren: d.ren, marek: d.foe }), presses = [];
+    const d0 = AV.sceneAutoDuel(foe, 1337), d = { ...d0, ren: { ...d0.ren, hand: true } };
+    d.result = AU.autoDuel(d.ren, d.foe, d.seed, { log: true, trace: true });
+    const rp = new AV.AutoReplay(d.result, { ren: d.ren, marek: d.foe }), presses = [];
     for (let k = 0; k < 12 * 120; k++) rp.step();
     const played = d.result.log.slice(0, d.result.log.findIndex((e) => e.t > rp.t)).map(line);
     const t = +(Math.max(rp.t, rp.lastLineT() + 0.006) + 1e-6).toFixed(6), p = { t, skill: d.ren.skills[2].id };
@@ -148,7 +151,8 @@ test('SL1-7: the heavy blow out of the four of an old save; setLoadout refuses i
   assert.ok(!G.advance(back, { type: 'setLoadout', skills: ['heavy', 't1', 'd1', 's1'] }).ok, 'never one of the four again');
 });
 
-test('SY-10: the tactic\'s result written when the fight starts is the bout\'s if the page is left; outside the fingerprint; dropped once the bout is settled', () => {
+// (what the pending result holds changed with the operator's CM-13, journal Passe CM2: a defeat, tests/combat-modes.test.mjs; this test keeps its plumbing, written with the plan's result)
+test('the pending result: written when the fight starts, applied when the page is left; outside the fingerprint; dropped once the bout is settled', () => {
   const st = G.namedState('v2-day2-afternoon'), o = AM.autoOutcome(st, 'bout');
   const outcome = { winner: o.winner, playerHp: o.playerHp, playerMaxHp: o.playerMaxHp, opponentHp: o.opponentHp, opponentMaxHp: o.opponentMaxHp, finisher: o.finisher };
   const h0 = G.hash(st);
