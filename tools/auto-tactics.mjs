@@ -1,55 +1,42 @@
 // Ways of deciding a fighter's skills in the duel played by the computer, for the laboratory (tools/auto-lab.mjs `modes`, `autos`): the tactic of the second
-// workshop (briefs/combat-auto.md § 25.5, SY-08: one condition per skill, read in the order of the four), and the measuring hands (random presses). Built on
-// the game's own automatic (src/combat/auto.ts: autoSkillChoice, heavyWhen). Nothing in src/ reads this file. Since the model « La Brute » (journal Passe BL1) the duel has
-// no AP: the full-AP rules and the AP conditions hold only on a duel that has them (the rules' `ap`), the hands are keyed by the decision's rank.
+// workshop (briefs/combat-auto.md § 25.5, SY-08: one condition per skill, read in the order of the four), the page's own tactics (a condition by family or by skill,
+// only those the page offers the skill) and the measuring hands (random presses). Built on the game's own plan (src/combat/auto.ts: planChoice, condHolds, autoRole,
+// heavyWhen; src/combat/autoData.ts: autoCondsFor). Nothing in src/ reads this file.
+// Kept to the game as it is (journal Passe OP1): since the model « La Brute » (journal Passe BL1) the duel has no AP, and since lot 2 (journal Passe BL2) its plan is `planChoice`,
+// a condition per skill among its role's. The former file read `AU.tacticChoice` and the AP (both gone): it skipped the modes that needed them and measured the others
+// against a duel without the rule they named (« à PA pleins » played as the same tactic three times). So no mode here speaks of AP any more, the page's modes keep
+// to the lines the page offers a skill (its role's, or its family's; one the page refuses is the automatic's, as the game's `autoCondOf` makes it), and a function of the
+// game that is gone stops the laboratory with its name (tests/auto-tactics.test.mjs) instead of being skipped.
 
 /** a keyed draw in [0, 1) (the hands' own stream, never the duel's) */
 function h(a, b, c, d) { let x = (a * 2654435761 + b * 40503 + c * 9973 + d * 31) >>> 0; x ^= x >>> 15; x = Math.imul(x, 2246822519) >>> 0; x ^= x >>> 13; x = Math.imul(x, 3266489917) >>> 0; x ^= x >>> 16; return (x >>> 0) / 4294967296; }
-const active = (e, t) => !!e && e.until > t;
 
-export function makeTactics(AU) {
-  const offensive = (a) => !a.ward && !a.boost && a.kind === 'skill';
-  /** the conditions a tactic line may hold (each reads only what the arena shows: the bars of charge, the gauges, the health, the AP) */
-  const CONDS = {
-    ready: () => true,
-    broken: (v, x, s) => v.foe.broken && v.foe.stunEnd - v.t >= v.chargeOf(v.me, s),
-    incoming: (v, x, s) => { const f = v.foe; if (!f.act || f.act.kind === 'light') return false; const land = v.t + v.chargeOf(v.me, s); return s.ward ? f.at > land && f.at < land + s.ward.dur : f.at >= land; },
-    gauge: (v) => v.gauge(v.me) >= (2 / 3) * v.rules.gauge.max,
-    hurt: (v) => v.me.hp / v.me.maxHp < 0.5,
-    finish: (v) => v.foe.hp / v.foe.maxHp < 1 / 3,
-    full: (v) => !!v.rules.ap && v.me.ap >= v.rules.ap.max,
-    follow: (v, x, s) => x.skills.some((o) => offensive(o) && v.usable(o) && v.me.ap >= (o.ap ?? 0) + (s.ap ?? 0)),
-    never: () => false,
-    cue: (v, x, s) => CONDS.broken(v, x, s) || CONDS.incoming(v, x, s),
-  };
-  /** a tactic: `spec(x)` (or an array) the condition of each skill of the fighter's order ('auto' = the automatic's own rule for that skill); the first skill whose
-   *  condition holds and that can go is charged; else, at full AP with `full` ('first' | 'cheap' | false), an offensive skill; else the base attacks */
-  function tactic(spec, { full = 'first' } = {}) {
+/** `AU` the game's src/combat/auto.ts, `AD` its src/combat/autoData.ts (both as the laboratory loads them) */
+export function makeTactics(AU, AD) {
+  for (const f of ['planChoice', 'condHolds', 'autoRole', 'autoSkillChoice', 'heavyWhen', 'offensive', 'autoDecider', 'DECIDERS']) if (typeof AU?.[f] === 'undefined') throw new Error(`tools/auto-tactics.mjs: src/combat/auto.ts exports no ${f} any more`);
+  for (const f of ['autoCondsFor', 'AUTO_CONDS_OF']) if (typeof AD?.[f] === 'undefined') throw new Error(`tools/auto-tactics.mjs: src/combat/autoData.ts exports no ${f} any more`);
+  const offensive = AU.offensive;
+  /** a skill's family as the plan's page sorts it: 'w' a ward or a defensive skill, 'b' a boost or a support, 'o' the rest */
+  const fam = (s) => (s.ward || s.family === 'defensive' ? 'w' : s.boost || s.family === 'support' ? 'b' : 'o');
+  /** the line this file adds to the game's conditions: 'cue', the workshop's two signs (the opponent broken long enough for the skill to land, or charging a big action it
+   *  can be ready for); every other line is the game's own (src/combat/auto.ts AUTO_CONDS) */
+  const holds = (c, v, x, s) => (c === 'cue' ? AU.condHolds('broken', v, x, s) || AU.condHolds('incoming', v, x, s) : AU.condHolds(c, v, x, s));
+  /** a tactic: `spec(x)` (or an array) the line of each skill of the fighter's order ('auto' = the automatic's own rule for the skill's role, a missing line too); the plan's
+   *  choice by the game's `planChoice` (the first skill usable, its effect not running, whose line holds), else the base attacks as the automatic's */
+  function tactic(spec) {
     return (v, x) => {
-      const auto = AU.autoSkillChoice(v, x), conds = typeof spec === 'function' ? spec(x) : spec;
-      for (let i = 0; i < x.skills.length; i++) {
-        const s = x.skills[i], c = conds[i] ?? 'ready';
-        if (!v.usable(s)) continue;
-        if (c === 'auto') { if (auto === s) return s; continue; }
-        if (s.ward && active(v.me.ward, v.t)) continue;
-        if (s.boost && active(v.me.boost, v.t)) continue;
-        if (CONDS[c](v, x, s)) return s;
-      }
-      if (full && v.rules.ap && v.me.ap >= v.rules.ap.max) {
-        const can = x.skills.filter((s) => offensive(s) && v.usable(s));
-        const o = full === 'cheap' ? can.sort((a, b) => (a.ap ?? 0) - (b.ap ?? 0) || a.charge - b.charge)[0] : can[0];
-        if (o && !(full === 'cheap' && v.usable(x.heavy))) return o;
-      }
-      return AU.heavyWhen(v, x) ? x.heavy : x.light;
+      const lines = typeof spec === 'function' ? spec(x) : spec;
+      const conds = x.skills.map((s, i) => { const c = lines[i] ?? 'auto'; return c === 'cue' ? (holds('cue', v, x, s) ? 'ready' : 'never') : c; });
+      return AU.planChoice(v, x, conds) ?? (AU.heavyWhen(v, x) ? x.heavy : x.light);
     };
   }
   /** a careless hand: on top of a decider, one time in `p` at a choice where a skill can go, a skill drawn among those that can go (`which`: 'all', 'supports',
    *  'offensive') */
   function careless(base, p = 0.25, seed = 7, which = 'all') {
     return (v, x) => {
-      const r = h(seed, Math.floor(v.t * 100), v.me.ap ?? v.me.dec, v.me.n.acts);
+      const r = h(seed, Math.floor(v.t * 100), v.me.dec, v.me.n.acts);
       const can = x.skills.filter((s) => v.usable(s) && (which === 'all' || (which === 'supports' ? !offensive(s) : offensive(s))));
-      if (can.length && r < p) return can[Math.floor(h(seed + 1, Math.floor(v.t * 100), v.me.ap ?? v.me.dec, v.me.n.acts) * can.length)];
+      if (can.length && r < p) return can[Math.floor(h(seed + 1, Math.floor(v.t * 100), v.me.dec, v.me.n.acts) * can.length)];
       return base(v, x);
     };
   }
@@ -58,9 +45,7 @@ export function makeTactics(AU) {
   /** the presets the laboratory measures */
   const MODES = {
     'automatique': null,
-    'aux signaux, la première à PA pleins': tactic(cueSpec, { full: 'first' }),
-    'aux signaux seulement': tactic(cueSpec, { full: false }),
-    'aux signaux, la moins chère à PA pleins': tactic(cueSpec, { full: 'cheap' }),
+    'aux signaux': tactic(cueSpec),
     'la plus forte à la rupture': tactic((x) => x.skills.map((s) => (s.ward || s.boost ? 'auto' : s === strongest(x) ? 'broken' : 'ready'))),
     'la plus forte pour finir': tactic((x) => x.skills.map((s) => (s.ward || s.boost ? 'auto' : s === strongest(x) ? 'finish' : 'ready'))),
     'protections dès que prêtes': tactic((x) => x.skills.map((s) => (s.ward ? 'ready' : s.boost ? 'auto' : 'ready'))),
@@ -71,15 +56,17 @@ export function makeTactics(AU) {
     'appuis au hasard, soutiens seuls (1 sur 4)': 'careless:0.25:supports',
     'appuis au hasard, offensives seules (1 sur 4)': 'careless:0.25:offensive',
   };
-  /** the page's tactics (lot 2 of the second redesign, journal Passe SL3; SL1-4 « Le reprendre au lot 2, avant mon essai »): the game's own conditions and rule
-   *  (src/combat/auto.ts tacticChoice, the conditions AUTO_CONDS_OF offers), a condition by family or by skill; 'auto' the automatic's own */
-  const page = (by) => (v, x) => AU.tacticChoice(v, x, x.skills.map((s) => by(s, x))) ?? (AU.heavyWhen(v, x) ? x.heavy : x.light);
-  const fam = (s) => (s.ward ? 'w' : s.boost ? 'b' : 'o');
+  /** the page's tactics (lot 2 of the second redesign, journal Passe SL3; SL1-4 « Le reprendre au lot 2, avant mon essai »): the game's own conditions and rule, a line by
+   *  family or by skill, `legal` keeping to what the page offers a skill (its role's conditions, or its family's for a plan written before: `autoCondOf`), 'auto' the automatic's own */
+  const legal = (s, c) => (c === 'auto' || AD.autoCondsFor(s.id).includes(c) || AD.AUTO_CONDS_OF[s.family]?.includes(c) ? c : 'auto');
+  const page = (by) => tactic((x) => x.skills.map((s) => legal(s, by(s, x))));
   const PAGE = {
+    // the control: every line the automatic's, which is the automatic (the first two rows of a `modes` run must be equal, as tools/auto-manual.mjs's)
+    'page : tout comme l’automatique (le contrôle)': page(() => 'auto'),
     'page : offensives à la rupture': page((s) => (fam(s) === 'o' ? 'broken' : 'auto')),
     'page : offensives quand il charge un gros coup': page((s) => (fam(s) === 'o' ? 'incoming' : 'auto')),
-    'page : la plus forte à la rupture, les autres quand il charge': page((s, x) => (fam(s) !== 'o' ? 'auto' : s === AU.strongestOf(x) ? 'broken' : 'incoming')),
-    'page : la plus forte pour finir': page((s, x) => (fam(s) === 'o' && s === AU.strongestOf(x) ? 'finish' : 'auto')),
+    'page : la plus forte à la rupture, les autres quand il charge': page((s, x) => (fam(s) !== 'o' ? 'auto' : s === strongest(x) ? 'broken' : 'incoming')),
+    'page : la plus forte pour finir': page((s, x) => (fam(s) === 'o' && s === strongest(x) ? 'finish' : 'auto')),
     'page : offensives dès que prêtes': page((s) => (fam(s) === 'o' ? 'ready' : 'auto')),
     'page : protections quand il charge un gros coup': page((s) => (fam(s) === 'w' ? 'incoming' : 'auto')),
     'page : protections à la jauge': page((s) => (fam(s) === 'w' ? 'gauge' : 'auto')),
@@ -88,23 +75,8 @@ export function makeTactics(AU) {
     'page : protections et soutiens dès que prêts': page((s) => (fam(s) === 'o' ? 'auto' : 'ready')),
     'page : les signaux partout': page((s) => (fam(s) === 'w' ? 'incoming' : fam(s) === 'b' ? 'follow' : 'broken')),
   };
-  if (AU.tacticChoice) Object.assign(MODES, PAGE);
-  // a rule at full AP for every tactic (SL1-4's remedy, measured in journal Passe SL3): nothing held and the AP full, (A) the first skill of the order whose line is
-  // not « never » and that can go, or (B) the cheapest offensive skill whose line is not « never »; the automatic's own rule stays for its lines
-  const fullA = (by) => (v, x) => { const c = x.skills.map((s) => by(s, x)), t = AU.tacticChoice(v, x, c); if (t) return t; if (v.me.ap >= v.rules.ap.max) { const s = x.skills.find((s, i) => c[i] !== 'never' && v.usable(s) && !(s.ward && v.me.ward && v.me.ward.until > v.t) && !(s.boost && v.me.boost && v.me.boost.until > v.t)); if (s) return s; } return AU.heavyWhen(v, x) ? x.heavy : x.light; };
-  const fullB = (by) => (v, x) => { const c = x.skills.map((s) => by(s, x)), t = AU.tacticChoice(v, x, c); if (t) return t; if (v.me.ap >= v.rules.ap.max) { const s = x.skills.filter((s, i) => c[i] !== 'never' && offensive(s) && v.usable(s)).sort((a, b) => (a.ap ?? 0) - (b.ap ?? 0) || a.charge - b.charge)[0]; if (s) return s; } return AU.heavyWhen(v, x) ? x.heavy : x.light; };
-  const SPECS = {
-    'offensives à la rupture': (s) => (fam(s) === 'o' ? 'broken' : 'auto'),
-    'offensives quand il charge': (s) => (fam(s) === 'o' ? 'incoming' : 'auto'),
-    'soutiens quand une offensive peut suivre': (s) => (fam(s) === 'b' ? 'follow' : 'auto'),
-    'soutiens à la rupture': (s) => (fam(s) === 'b' ? 'broken' : 'auto'),
-    'protections quand il charge': (s) => (fam(s) === 'w' ? 'incoming' : 'auto'),
-    'protections à la jauge': (s) => (fam(s) === 'w' ? 'gauge' : 'auto'),
-    'les signaux partout': (s) => (fam(s) === 'w' ? 'incoming' : fam(s) === 'b' ? 'follow' : 'broken'),
-    'tout comme l’automatique': () => 'auto',
-  };
-  if (AU.tacticChoice) for (const [n, by] of Object.entries(SPECS)) { MODES[`A pleins : ${n}`] = fullA(by); MODES[`B pleins : ${n}`] = fullB(by); }
+  Object.assign(MODES, PAGE);
   /** a preset's decider on top of a base automatic */
   const deciderOf = (m, base) => (m == null ? base : typeof m === 'string' ? (() => { const [, p, w] = m.split(':'); return careless(base, +p, p === '0.5' ? 11 : 7, w); })() : m);
-  return { CONDS, tactic, careless, strongest, cueSpec, MODES, deciderOf, offensive };
+  return { tactic, page, legal, fam, careless, strongest, cueSpec, MODES, deciderOf, offensive };
 }

@@ -54,12 +54,12 @@ const PR = await load('/src/simulation/v2prep.ts');
 const LAB = await load('/src/tournament/lab.ts'), ST = await load('/src/combat/stats.ts'), V2 = await load('/src/simulation/v2.ts');
 const TABLES = { CADENCE: AD.AUTO_CADENCE, RULES: AU.AUTO_RULES, SKILLS: AD.AUTO_SKILLS, FOES: AD.AUTO_FOES, RACE: AD.AUTO_RACE, WEAPONS: AD.AUTO_WEAPONS, LIGHT: AD.AUTO_LIGHT, BRUTE: AD.AUTO_BRUTE, ROLES: AD.AUTO_ROLES, STYLES: AD.AUTO_STYLES, GEARFX: AD.AUTO_GEAR_FX };
 const RIVALS = Object.keys(ST.RIVAL_SHEETS);
-export const TAC = makeTactics(AU);
+export const TAC = makeTactics(AU, AD);
 /** candidate automatics for every fighter (SY-07): the game's, and tactics of the second workshop played by everyone */
 export const AUTOS = {
   jeu: AU.autoDecider,
   rupture: TAC.tactic((x) => x.skills.map((s) => (s.ward || s.boost ? 'auto' : s === TAC.strongest(x) ? 'broken' : 'ready'))),
-  signaux: TAC.tactic(TAC.cueSpec, { full: 'cheap' }),
+  signaux: TAC.tactic(TAC.cueSpec),
   'soutiens-prets': TAC.tactic((x) => x.skills.map((s) => (s.boost ? 'ready' : s.ward ? 'auto' : 'ready'))),
 };
 /** run fn with every fighter's automatic set to `auto` and Ren's to `ren` (the game's DECIDERS), given back after */

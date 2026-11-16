@@ -1,29 +1,52 @@
 // The player's keys (the remapping sheet, journal Passes RM1 / RM2, ten of ten at the recommendation), proven at the keyboard in a browser that does not
 // announce automation. The keys are typed as a real keyboard sends them (the DevTools protocol's key events, trusted, each with its place `code` and the
 // character `key`), a fake gamepad defined before the page's scripts:
-//   1. a fresh profile: nothing kept, today's keys (W walks, the list's cap Q, the controls' slots W / Up ... Space);
+//   1. a fresh profile: nothing kept, today's keys (W walks, the list's cap Q, the controls' twenty-two lines in forty-four slots: walking, ×2, Skip, Pause and, since the
+//      hand of journal Passe SL3, the first to the fourth skill on 1 to 4; the duel's rows named as the duel plays them);
 //   2. the controls: Enter on a slot waits for a key, I typed: walk up is I, kept in `cite-du-tournoi.settings`, said on its line; I walks, W no more,
 //      the arrow still (RM-2); the title's line names I;
 //   3. a key taken in the same moment swaps (RM-4): run on E, talk takes Shift, both said; Tab refused (reserved), Esc cancels a wait without closing
 //      the page; Backspace empties a second slot, never an action's last key; the pad's A waits, its B cancels (the pad gives no key, RM-3);
 //   4. the list on L: its cap at the foot of the screen shows L, L opens and closes it (RM-6);
 //   5. talk on F: a cutscene's next line follows F, E (run now) does not; Enter still;
-//   6. the duel: attack on U: U held charges and its bar's cap shows U, J no more, the second slot's 1 still; the menu's caps the player's;
+//   6. the duel: attack on U, the first skill on Y: the three-button duel (`duel=charge`, kept for its proofs until lot 5): U held charges and its bar's cap shows U, J no more,
+//      and 1 no more (the attack has no second key since the hand took 1 to 4); the duel played by the computer, a bout of the first afternoon in the manual mode (journal Passe
+//      CM2: the hand's keys do nothing in auto): the HUD's caps are the player's (U on ×2, Y on the first skill, L on « Skip »), U gives ×2 and J does not, 1 presses nothing,
+//      Y presses the first skill; the menu's caps the player's;
 //   7. AZERTY: each keyboard keeps its keys (RM-5): the AZERTY table at its starting keys, a real AZERTY keyboard's Z walks, its A opens the list,
-//      its top-row « 1 » (typing « & ») charges in the duel; the map moved on AZERTY, QWERTY's kept;
+//      its top-row « 1 » (typing « & ») presses the first skill in a manual bout; the map moved on AZERTY, QWERTY's kept;
 //   8. the French names (RM-7): Espace, Maj, Échap on the caps;
 //   9. Explore's tool keys give way (RM-4): F toggles the forge, but not once talk is on F; « Default keys » puts the starting keys back.
-// A DEV server (named states).   node tools/remap-proof.mjs <outDir>   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs)
+// A DEV server (named states).   node tools/remap-proof.mjs <outDir>   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs; PAGE_LANG=fr every page in French,
+// the texts it says checked against the game's own French table, the keyboard staying QWERTY: the browser is launched in English as the other proofs' and the address carries `lang=fr`)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createServer } from 'vite';
 
 const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
 const [outDir] = process.argv.slice(2);
 if (!outDir) throw new Error('usage: node tools/remap-proof.mjs <outDir>');
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1600), H = +(process.env.H || 900), READY = +(process.env.READY_MS || 600000);
+const L = process.env.PAGE_LANG === 'fr' ? 'fr' : 'en', LQ = L === 'fr' ? '&lang=fr' : '';
 fs.mkdirSync(outDir, { recursive: true });
+// the game's texts in the page's language, from its own tables (no sentence copied here)
+const server = await createServer({ root: path.resolve(import.meta.dirname, '..'), configFile: false, logLevel: 'error', appType: 'custom', cacheDir: 'node_modules/.vite-test', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, optimizeDeps: { noDiscovery: true } });
+const TX = await server.ssrLoadModule('/src/narrative/text/index.ts'), { FR } = await server.ssrLoadModule('/src/narrative/text/fr.ts');
+const tIn = (lang, k, v) => { TX.useLanguage(lang, lang === 'fr' ? FR : undefined); try { return TX.tx(k, v); } finally { TX.useLanguage('en'); } };
+const t = (k, v) => tIn(L, k, v);
+/** the name a key cap carries in the page's language (RM-7) */
+const KEY = (n) => t(`key.${n}`);
+/** a page of this run: the address's own parameters, then the language */
+const url = (q) => `${BASE}${q}${LQ && !q.includes('lang=') ? LQ : ''}`;
+/** the bare address, which shows the title screen to a person: in French it carries `title=1` (an address with parameters shows none by itself) and the language */
+const TITLE = L === 'fr' ? `${BASE}?title=1${LQ}` : BASE;
+/** the controls' starting keys by line in the page's reading order: each action's two slots, « — » an empty one (the walking's fifteen, then ×2, Skip, Pause, the hand's four) */
+const START = (lay) => [lay === 'azerty' ? 'Z' : 'W', KEY('up'), 'S', KEY('down'), lay === 'azerty' ? 'Q' : 'A', KEY('left'), 'D', KEY('right'), KEY('shift'), '—', 'E', KEY('space'), lay === 'azerty' ? 'A' : 'Q', '—',
+  'M', '—', 'J', '—', 'T', '—', 'K', '—', 'G', '—', 'V', '—', 'H', '—', 'N', '—', 'J', '—', 'L', 'A', KEY('space'), '—', '1', '—', '2', '—', '3', '—', '4', '—'].join(' ');
+/** twenty-two actions, two slots each */
+const SLOTS = 44;
 const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--lang=en-US', '--hide-scrollbars', '--disable-background-timer-throttling', '--disable-renderer-backgrounding'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 }, protocolTimeout: READY });
 const XBOX = 'Xbox Wireless Controller (STANDARD GAMEPAD Vendor: 045e Product: 0b13)';
@@ -61,16 +84,40 @@ try {
   const walked = async (code, key) => { const p0 = await pos(); await hold(code, key); const p1 = await pos(); return Math.hypot(p1.x - p0.x, p1.z - p0.z); };
   const slots = (act) => page.evaluate((a) => [...document.querySelectorAll(`.pm-slot[data-act="${a}"]`)].map((x) => x.textContent), act);
   const said = (act) => page.evaluate((a) => document.querySelector(`.pm-keys tr[data-row="${a}"] .why`)?.textContent ?? '', act);
-  const game = async (extra = '') => {
-    await page.goto(`${BASE}?play=1&noreload=1&state=v2-day1-morning&name=Aster&vis=0&tutorial=0${extra}`, { waitUntil: 'load', timeout: READY });
+  const game = async (extra = '', state = 'v2-day1-morning') => {
+    await page.goto(url(`?play=1&noreload=1&state=${state}&name=Aster&vis=0&tutorial=0${extra}`), { waitUntil: 'load', timeout: READY });
     await page.waitForFunction('window.__ready === true && !!window.__ui', { timeout: READY });
     await sleep(900);
     for (let i = 0; i < 4 && await page.evaluate(() => !!document.querySelector('.pm-overlay .pm-btn, .pm-band')); i++) { await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn, .pm-band .pm-btn')?.click()); await sleep(300); }
   };
-  const controls = async () => {
+  /** the controls part open; `lang` the page's language (a page opened with its own `lang=` is in it, whatever this run's) */
+  const controls = async (lang = L) => {
     await page.evaluate(() => window.__ui.openSettings('controls'));
-    await until(() => document.querySelectorAll('.pm-slot').length === 36, 5000, 'the controls\' slots');
+    await until((n) => document.querySelectorAll('.pm-slot').length === n, 5000, 'the controls\' slots', SLOTS);
+    // the part is drawn twice: at once, then again when the gamepad's layer is loaded (it adds the vibration's switch before the slots) and the focus is given back by its
+    // index, one control early: a key typed in between lands on the line above (journal Passe OP1: a run of this proof gave « E » to « walk right » and « talk » its arrow).
+    // Typing waits for the second drawing, which is the page as a player sees it
+    await until((v) => [...document.querySelectorAll('.pm-settings .pm-detail button')].some((x) => x.textContent.includes(v)), 5000, 'the controls\' second drawing (the vibration\'s switch)', tIn(lang, 'v2.sound.vibration'));
+    await sleep(150);
   };
+  /** a bout of the first afternoon in the arena, as a player enters it (the match sheet's Enter, then the gate's), in the mode asked and with the profile's keys in force
+   *  (the arena page reads them from the browser's storage): the duel played by the computer, the hand's presses counted by `window.__arena.presses` */
+  const bout = async (mode) => {
+    await game('', 'v2-day2-afternoon');
+    await page.evaluate((m) => { window.__game.act({ type: 'setMode', mode: m }); window.__ui.openMatchSheet(); }, mode);
+    await sleep(800);
+    await tap('Enter', 'Enter');
+    const to = await until(() => window.__go ?? null, 5000, 'the arena\'s address');
+    check(/scene=arena/.test(to ?? ''), `Enter on the match sheet enters the arena: ${to}`);
+    await page.goto(new URL(to, BASE).href, { waitUntil: 'load', timeout: READY });
+    await page.waitForFunction('window.__ready === true && !!window.__arena?.auto', { timeout: READY });
+    await sleep(900);
+    await tap('Enter', 'Enter');   // the gate: the mode said and that leaving the bout is a defeat
+    await sleep(900);
+    check(await page.evaluate((m) => !!window.__arena.auto.fighters.ren.hand === (m === 'manual'), mode), `the bout is played in the ${mode} mode`);
+  };
+  const presses = () => page.evaluate(() => window.__arena.presses.length);
+  const speed = () => page.evaluate(() => window.__arena.speed);
   /** a slot given a key from the controls: the slot focused, Enter, the key */
   const give = async (act, col, code, key) => {
     await page.evaluate((a, c) => document.querySelector(`.pm-slot[data-act="${a}"][data-col="${c}"]`).focus(), act, col);
@@ -89,37 +136,41 @@ try {
   check(await walked('KeyW', 'w') > 0.3, 'W walks');
   await controls();
   const start = await page.evaluate(() => [...document.querySelectorAll('.pm-slot')].map((x) => x.textContent).join(' '));
-  check(start === 'W Up S Down A Left D Right Shift — E Space Q — M — J — T — K — G — V — H — N — J 1 L A Space —', `today's keys in the slots: ${start}`);
+  check(start === START('qwerty'), `today's keys in the slots: ${start}`);
+  // the duel's rows are named for the duel played by the computer (journal Passes LC3, CO1) and its hand (SL3): the attack's key gives ×2, the dodge's « Skip », 1 to 4 the skills
+  const rowNames = await page.evaluate(() => ['attack', 'dodge', 'pause', 'skill1', 'skill2', 'skill3', 'skill4'].map((a) => document.querySelector(`.pm-keys tr[data-row="${a}"] td`)?.textContent ?? ''));
+  check(rowNames.join('|') === ['set.keys.attack', 'set.keys.dodge', 'set.keys.pause', 'set.keys.skill1', 'set.keys.skill2', 'set.keys.skill3', 'set.keys.skill4'].map((k) => t(k)).join('|'), `the duel's rows: ${rowNames.join(' | ')}`);
+  check(await page.evaluate(() => !document.querySelector('.pm-keys tr[data-row="guard"]')), 'the guard (the earlier duel) has no line');
   await page.screenshot({ path: path.join(outDir, '1-controls.png') });
 
   // 2. walk up on I
   check(await give('up', 0, 'KeyI', 'i'), 'Enter on a slot waits for a key');
-  check((await slots('up')).join() === 'I,Up', `walk up: ${(await slots('up')).join(' ')}`);
+  check((await slots('up')).join() === `I,${KEY('up')}`, `walk up: ${(await slots('up')).join(' ')}`);
   check(JSON.stringify((await stored())?.keys) === JSON.stringify({ qwerty: { up: [{ c: 'KeyI', k: 'i' }, { c: 'ArrowUp', k: 'ArrowUp' }] } }), `kept: ${JSON.stringify((await stored())?.keys)}`);
-  check((await said('up')) === 'I: Walk up.', `said on its line: ${await said('up')}`);
+  check((await said('up')) === t('set.keys.done', { key: 'I', act: t('set.keys.up') }), `said on its line: ${await said('up')}`);
   await close();
   check(await walked('KeyI', 'i') > 0.3, 'I walks');
   check(await walked('KeyW', 'w') < 0.05, 'W does not any more');
   check(await walked('ArrowUp', 'ArrowUp') > 0.3, 'the arrow, the second slot, still walks');
-  await page.goto(BASE, { waitUntil: 'load', timeout: READY });
+  await page.goto(TITLE, { waitUntil: 'load', timeout: READY });
   await page.waitForSelector('#title-screen .keys', { timeout: READY });
   const line = await page.evaluate(() => document.querySelector('#title-screen .keys')?.textContent);
-  check(line === 'Keyboard: arrows or IASD to walk, E to talk', `the title's line: ${line}`);
+  check(line === t('ui.title.keys', { move: t('ui.title.move', { a: t('ui.title.arrows'), b: 'IASD' }), talk: 'E' }), `the title's line: ${line}`);
 
   // 3. a swap, a refusal, a cancel, an empty slot, the last key kept, the pad
   await game(); await controls();
   await give('run', 0, 'KeyE', 'e');
-  check((await slots('run')).join() === 'E,—' && (await slots('talk')).join() === 'Shift,Space', `run on E, talk takes Shift: ${(await slots('run')).join(' ')} / ${(await slots('talk')).join(' ')}`);
-  check((await said('run')) === 'E: Run (held). Talk, take a way out takes Shift.', `the swap said: ${await said('run')}`);
+  check((await slots('run')).join() === 'E,—' && (await slots('talk')).join() === `${KEY('shift')},${KEY('space')}`, `run on E, talk takes Shift: ${(await slots('run')).join(' ')} / ${(await slots('talk')).join(' ')}`);
+  check((await said('run')) === t('set.keys.swapped', { key: 'E', act: t('set.keys.run'), other: t('set.keys.talk'), old: KEY('shift') }), `the swap said: ${await said('run')}`);
   await give('map', 0, 'Tab', 'Tab');
-  check((await slots('map')).join() === 'M,—' && /^Tab stays with the game or the browser/.test(await said('map')), `Tab refused: ${await said('map')}`);
+  check((await slots('map')).join() === 'M,—' && (await said('map')) === t('set.keys.reserved', { key: 'Tab' }), `Tab refused: ${await said('map')}`);
   await give('map', 0, null);
   await tap('Escape', 'Escape');
   check(await page.evaluate(() => !!document.querySelector('.pm-settings') && !document.querySelector('.pm-slot.wait')), 'Esc cancels a wait, the page stays open');
   await give('talk', 1, 'Backspace', 'Backspace');
-  check((await slots('talk')).join() === 'Shift,—', `Backspace empties the second slot: ${(await slots('talk')).join(' ')}`);
+  check((await slots('talk')).join() === `${KEY('shift')},—`, `Backspace empties the second slot: ${(await slots('talk')).join(' ')}`);
   await give('list', 0, 'Backspace', 'Backspace');
-  check((await slots('list')).join() === 'Q,—' && (await said('list')) === 'What can be done here needs at least one key.', `the last key kept: ${await said('list')}`);
+  check((await slots('list')).join() === 'Q,—' && (await said('list')) === t('set.keys.last', { act: t('set.keys.here') }), `the last key kept: ${await said('list')}`);
   await page.evaluate(() => document.querySelector('.pm-slot[data-act="map"][data-col="0"]').focus());
   await pad(PAD.A);
   check(await page.evaluate(() => document.activeElement?.classList.contains('wait')), 'the pad\'s A waits on a slot');
@@ -142,9 +193,10 @@ try {
   await controls();
   await give('talk', 0, 'KeyF', 'f');
   await close();
-  await page.goto(`${BASE}?play=1&state=v2-gate-day6&vis=0&noreload=1&cutscene=1&tutorial=0`, { waitUntil: 'load', timeout: READY });
+  await page.goto(url('?play=1&state=v2-gate-day6&vis=0&noreload=1&cutscene=1&tutorial=0'), { waitUntil: 'load', timeout: READY });
   await page.waitForFunction('window.__ready === true', { timeout: READY });
-  for (let i = 0; i < 40 && !(await page.evaluate(() => !!document.querySelector('.pm-scene q'))); i++) { await page.evaluate(() => [...document.querySelectorAll('.pm .pm-btn')].find((x) => /Go on|Continue/.test(x.textContent))?.click()); await sleep(250); }
+  const goOn = `${t('ui.goOn')}|${t('ui.continue')}`;
+  for (let i = 0; i < 40 && !(await page.evaluate(() => !!document.querySelector('.pm-scene q'))); i++) { await page.evaluate((w) => { const re = new RegExp(w); [...document.querySelectorAll('.pm .pm-btn')].find((x) => re.test(x.textContent))?.click(); }, goOn); await sleep(250); }
   const lineOf = () => page.evaluate(() => document.querySelector('.pm-scene q')?.textContent ?? '');
   const l0 = await lineOf();
   check(!!l0 && await page.evaluate(() => document.querySelector('.pm-scene kbd[data-bind="talk"]')?.textContent === 'F'), `a scene, its next line's cap F: « ${l0.slice(0, 40)} »`);
@@ -159,16 +211,20 @@ try {
   const l2 = await until((a) => { const q = document.querySelector('.pm-scene q')?.textContent; return q && q !== a ? q : null; }, 20000, 'Enter\'s line', l1);
   check(!!l1 && !!l2, `Enter still goes on: « ${(l2 ?? '').slice(0, 40)} »`);
 
-  // 6. the duel: attack on U
+  // 6. the duel: attack on U, the first skill on Y
   await game(); await controls();
   await give('attack', 0, 'KeyU', 'u');
-  check((await slots('attack')).join() === 'U,1', `attack: ${(await slots('attack')).join(' ')}`);
+  check((await slots('attack')).join() === 'U,—', `attack: ${(await slots('attack')).join(' ')} (no second key: 1 is the first skill's since the hand, journal Passe SL3)`);
+  await give('skill1', 0, 'KeyY', 'y');
+  check((await slots('skill1')).join() === 'Y,—', `the first skill: ${(await slots('skill1')).join(' ')}`);
+  check((await slots('skill2')).join() === '2,—', 'the second skill keeps its 2');
   await close();
   await tap('Escape', 'Escape');
   const menu = await page.evaluate(() => [...document.querySelectorAll('.pm-menu kbd[data-bind]')].map((k) => `${k.dataset.bind}:${k.textContent}`).join(' '));
   check(menu === 'map:M journal:J board:T skills:K gear:G settings:V guide:H', `the menu's caps, by action: ${menu}`);
   await tap('Escape', 'Escape');
-  await page.goto(`${BASE}?scene=arena&duel=charge`, { waitUntil: 'load', timeout: READY });
+  // the three-button duel (kept behind `duel=charge` for its proofs until lot 5): the attack held charges
+  await page.goto(url('?scene=arena&duel=charge'), { waitUntil: 'load', timeout: READY });
   await page.waitForFunction('window.__ready === true && window.__arena?.ready', { timeout: READY });
   await sleep(600);
   const held = () => page.evaluate(() => !!window.__arena.snapshot().charge?.held);
@@ -178,37 +234,54 @@ try {
   await send('keyDown', 'KeyJ', 'j'); await sleep(250); const j = await held(); await send('keyUp', 'KeyJ', 'j'); await frames(3);
   check(!j, 'J does not any more');
   await send('keyDown', 'Digit1', '1'); await sleep(250); const one = await held(); await send('keyUp', 'Digit1', '1'); await frames(3);
-  check(one, 'the second slot\'s 1 still charges');
-  await page.screenshot({ path: path.join(outDir, '6-duel.png') });
+  check(!one, '1 does not charge any more: the attack has no second key, 1 is the first skill\'s');
+  await page.screenshot({ path: path.join(outDir, '6-duel-charge.png') });
+  // the duel played by the computer, in the manual mode (the hand's keys do nothing in auto, journal Passe CM2)
+  await bout('manual');
+  const caps = await page.evaluate(() => ({ x2: document.querySelector('#ah-bar .ah-b.ctl[data-act="speed"] kbd')?.textContent, skip: document.querySelector('#ah-bar .ah-b.ctl[data-act="skip"] kbd')?.textContent, hand: [...document.querySelectorAll('#ah-bar .ah-b.slot .ord kbd')].map((k) => k.textContent).join('') }));
+  check(caps.x2 === 'U' && caps.hand === 'Y234' && caps.skip === 'L', `the HUD's caps are the player's: ×2 ${caps.x2}, the hand ${caps.hand}, Skip ${caps.skip}`);
+  check((await speed()) === 1, 'the bout starts at ×1');
+  await tap('KeyJ', 'j');
+  check((await speed()) === 1, 'J (the old attack key) does not give ×2');
+  await tap('KeyU', 'u');
+  check((await speed()) === 2, 'U (the attack\'s key) gives ×2');
+  await tap('KeyU', 'u');
+  check((await speed()) === 1, 'U again, back to ×1');
+  const n0 = await presses();
+  await tap('Digit1', '1');
+  check((await presses()) === n0, '1 presses nothing any more: the first skill is on Y');
+  await tap('KeyY', 'y');
+  check((await presses()) === n0 + 1, 'Y presses the first skill');
+  await page.screenshot({ path: path.join(outDir, '6-duel-manual.png') });
 
   // 7. AZERTY: each keyboard its own keys
   await game(); await controls();
   await page.evaluate(() => document.querySelector('.pm-settings .pm-detail .pm-btn').focus());
   await tap('ArrowRight', 'ArrowRight');
   check((await stored())?.keyboard === 'azerty', 'AZERTY chosen');
-  await until(() => document.querySelectorAll('.pm-slot').length === 36, 3000, 'the AZERTY slots');
+  await until((n) => document.querySelectorAll('.pm-slot').length === n, 3000, 'the AZERTY slots', SLOTS);
   const az = await page.evaluate(() => [...document.querySelectorAll('.pm-slot')].map((x) => x.textContent).join(' '));
-  check(az === 'Z Up S Down Q Left D Right Shift — E Space A — M — J — T — K — G — V — H — N — J 1 L A Space —', `AZERTY's starting keys, the QWERTY changes left on QWERTY: ${az}`);
+  check(az === START('azerty'), `AZERTY's starting keys, the QWERTY changes left on QWERTY: ${az}`);
   await give('map', 0, 'KeyU', 'u');
   await close();
   check(await walked('KeyW', 'z') > 0.3, 'a real AZERTY keyboard\'s Z (at QWERTY\'s W) walks');
   await tap('KeyQ', 'a');
   check(await until(() => !!document.querySelector('[data-here]'), 3000, 'the list'), 'its A (at QWERTY\'s Q) opens the list');
   await tap('Escape', 'Escape');
-  await page.goto(`${BASE}?scene=arena&duel=charge`, { waitUntil: 'load', timeout: READY });
-  await page.waitForFunction('window.__ready === true && window.__arena?.ready', { timeout: READY });
-  await sleep(600);
-  await send('keyDown', 'Digit1', '&'); await sleep(250); const amp = await held(); await send('keyUp', 'Digit1', '&'); await frames(3);
-  check(amp, 'its top-row « 1 », which types « & », charges in the duel');
+  // the top row of AZERTY types « & » at the place of QWERTY's 1: the hand's first key by its place
+  await bout('manual');
+  const m0 = await presses();
+  await tap('Digit1', '&');
+  check((await presses()) === m0 + 1, 'its top-row « 1 », which types « & », presses the first skill in the duel');
   await game(); await controls();
   check((await slots('map')).join() === 'U,—', 'the map on U on AZERTY');
   await page.evaluate(() => document.querySelector('.pm-settings .pm-detail .pm-btn').focus());
   await tap('ArrowRight', 'ArrowRight');
   await until(() => document.querySelector('.pm-slot[data-act="map"]')?.textContent === 'M', 3000, 'QWERTY\'s map');
-  check((await slots('map')).join() === 'M,—' && (await slots('up')).join() === 'I,Up', 'QWERTY again: its own keys, the map on M, walk up on I');
+  check((await slots('map')).join() === 'M,—' && (await slots('up')).join() === `I,${KEY('up')}`, 'QWERTY again: its own keys, the map on M, walk up on I');
 
   // 8. the French names
-  await game('&lang=fr'); await controls();
+  await game('&lang=fr'); await controls('fr');
   const fr = await page.evaluate(() => [document.querySelector('.pm-slot[data-act="pause"]').textContent, document.querySelector('.pm-slot[data-act="run"][data-col="0"]').textContent, document.querySelector('.pm-settings .pm-foot kbd').outerHTML]);
   check(fr[0] === 'Espace' && fr[2] === '<kbd data-key="Esc">Échap</kbd>', `the French names: ${fr.join(' | ')}`);
   await page.screenshot({ path: path.join(outDir, '8-controls-fr.png') });
@@ -219,7 +292,7 @@ try {
 
   // 9. Explore: F the forge, unless talk is on F
   const explore = async () => {
-    await page.goto(BASE, { waitUntil: 'load', timeout: READY });
+    await page.goto(TITLE, { waitUntil: 'load', timeout: READY });
     await page.waitForSelector('#title-screen #title-menu .pm-btn', { timeout: READY });
     await page.evaluate(() => document.querySelector('#title-menu .pm-btn[data-id="explore"]').click());
     await page.waitForFunction('window.__app?.ready === true', { timeout: READY });
@@ -236,7 +309,7 @@ try {
   await explore();
   f0 = await forge(); await tap('KeyF', 'f'); await sleep(300);
   check((await forge()) === f0, 'talk on F: F talks, the forge stays');
-} finally { await b.close(); }
+} finally { await b.close(); await server.close(); }
 if (errors) console.log(`${errors} page error(s)`);
 console.log(failed || errors ? `FAIL: ${failed} check(s)` : 'PASS');
 process.exit(failed || errors ? 1 : 0);
