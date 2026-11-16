@@ -1,0 +1,826 @@
+<title>Or et équipement</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--line); border-radius: 6px; }
+.shots.vids { grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.tblwrap { overflow-x: auto; max-width: 100%; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl th { font-weight: 600; color: var(--muted); font-size: 13px; }
+.tbl td:first-child { font-weight: 600; }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · fiche · 15/11/2026 · chantier 5 du gameplay général</span>
+    <h1>L’or et l’équipement : le catalogue revu</h1>
+    <p class="lede">Tes décisions GP-17 (des pièces de fin de tournoi et une avance sur la bourse), GP-18 (revoir le catalogue, avec les familles d’états) et GP-19 (retirer et vendre une pièce portée) sont prises ; cette fiche en règle le détail avec les mesures. Chaque pièce est mesurée sur le duel du jeu, contre les sept rivaux. Aucune option ne change une décision A3 sauf celle qui le dit.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je consigne tes choix mot pour mot, je construis, je recale la course une fois et je fusionne.</p>
+    <p class="src">Sources : briefs/audit-gameplay-gp1.md §§ 7 et 8 ; journal Passes GP2, GP4-2 ; tools/auto-gear.mjs ; tools/gear-catalogue.mjs.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Les apostrophes : typographiques (’) partout dans les chaînes.
+const GROUPS = [
+ {
+  "id": "cat",
+  "fam": "var(--voile)",
+  "title": "Le catalogue",
+  "sub": "Mesuré sur le duel du jeu (tools/auto-gear.mjs) : chaque pièce portée à la place de celle de l’équipement du planificateur (lame, cotte de mailles, bandage, bague), contre les sept rivaux à leur niveau, 150 graines. « Gain » : les points de victoire de la moyenne des sept rivaux, par rapport à la case vide, au tableau puis en finale.",
+  "items": [
+   {
+    "id": "EQ-1",
+    "tag": "GP-18",
+    "title": "Le catalogue revu : chaque pièce un rôle, les familles d’états dedans",
+    "ctx": "Aujourd’hui, mesuré : le haubert d’Edda (34 pièces) vaut +43 au tableau et +39 en finale, la cotte de Hilde (40) +36 et +33 : mieux et moins cher, la cotte ne sert à rien. La bague de fer (24) vaut +40 au tableau, le meilleur accessoire à portée +30. Le sabre (55) vaut +10, la lame à 30 +19 puis +13. Le ruban ne vaut rien (+0), le charme de ferveur +4, le charme de ménestrel +7. Aucune pièce ne porte un état ni une protection : les familles du chantier 4 attendent ici. Le catalogue revu (le tableau) : 32 pièces, dont quatorze neuves : six armes d’états, quatre charmes, quatre pièces de fin de tournoi ; les trois armures prennent leurs familles ; les prix suivent la valeur mesurée (de 1,0 à 1,4 point de victoire par pièce d’or au tableau pour les pièces courantes, la moitié pour les pièces de fin). Chacune est la meilleure réponse contre certains rivaux, ou l’entrée de gamme de sa case. Les gains sont ceux d’une pièce seule dans sa case : on en porte quatre à la fois.",
+    "table": [
+     [
+      "Pièce",
+      "Case",
+      "Prix",
+      "Vendue par",
+      "Ce qu’elle fait",
+      "Gain tableau / finale : aujourd’hui → proposé",
+      "La meilleure réponse contre"
+     ],
+     [
+      "Lame importée",
+      "arme",
+      "24",
+      "Mara, Corvin",
+      "la lame simple : l’attaque légère charge ×1,1, ses coups remplissent la jauge ×1,1",
+      "19 / 13 → 18 / 14",
+      "Cassius"
+     ],
+     [
+      "Sabre de duelliste",
+      "arme",
+      "50",
+      "Corvin",
+      "trois coupes légères, la dernière passe la garde, la jauge ×0,7",
+      "10 / 10 → 24 / 19",
+      "Vessa, Tobin, Orla, Ilse, Marek, Cassius"
+     ],
+     [
+      "Lame de vipère",
+      "arme",
+      "26",
+      "Mara",
+      "la lame −2 en Attaque ; poison 12 % par coup, que la garde arrête",
+      "— → 16 / 19",
+      "Rhosk, Ilse"
+     ],
+     [
+      "Coutelas dentelé",
+      "arme",
+      "30",
+      "Mara, Corvin",
+      "la lame −2 ; saignement 12 % par coup",
+      "— → 17 / 20",
+      "Vessa, Cassius, Tobin, Ilse, Marek"
+     ],
+     [
+      "Épée de braise",
+      "arme",
+      "30",
+      "Corvin",
+      "la lame −2 ; brûlure 8 % par coup, même gardé",
+      "— → 21 / 21",
+      "Cassius, Rhosk, Ilse"
+     ],
+     [
+      "Lame-miroir",
+      "arme",
+      "30",
+      "Corvin",
+      "la lame −2 ; aveuglement 15 % par coup",
+      "— → 20 / 19",
+      "Vessa, Cassius, Orla, Marek"
+     ],
+     [
+      "Fauchon maudit",
+      "arme",
+      "30",
+      "Corvin",
+      "la lame −2 ; malédiction 40 % par coup",
+      "— → 20 / 20",
+      "Tobin, Orla, Ilse"
+     ],
+     [
+      "Rapière de torpeur",
+      "arme",
+      "30",
+      "Corvin",
+      "la lame −2 ; paralysie 40 % par coup",
+      "— → 20 / 21",
+      "Vessa, Orla, Marek"
+     ],
+     [
+      "Cotte matelassée",
+      "armure",
+      "14",
+      "Hilde, Mara",
+      "garde : un coup gardé remplit la jauge ×0,25 ; brûlure ×0,5",
+      "17 / 18 → 18 / 14",
+      "Marek"
+     ],
+     [
+      "Cuir de docker",
+      "armure",
+      "30",
+      "Mara",
+      "esquive ×1,3, garde ×0,85 ; poison ×0,5",
+      "39 / 30 → 41 / 27",
+      "Tobin, Orla, Ilse, Marek, Cassius"
+     ],
+     [
+      "Cotte de mailles",
+      "armure",
+      "40",
+      "Hilde",
+      "coups légers −20 %, esquive ×0,5 ; saignement ×0,5",
+      "36 / 33 → 36 / 32",
+      "Orla, Cassius, Ilse, Rhosk"
+     ],
+     [
+      "Haubert de chevalier",
+      "armure",
+      "60",
+      "Edda (passante)",
+      "comme la cotte, Défense +7 ; saignement ×0,5 ; pièce unique",
+      "43 / 39 → 44 / 37",
+      "Vessa, Tobin, Cassius, Orla, Ilse, Rhosk, Marek"
+     ],
+     [
+      "Cuir de l’écurie",
+      "armure",
+      "18",
+      "Maud (passante)",
+      "Défense +2, Endurance +1 : la plus simple",
+      "20 / 18 → 21 / 15",
+      "aucun en particulier (pièce d’entrée de gamme)"
+     ],
+     [
+      "Ruban porte-bonheur",
+      "accessoire",
+      "10",
+      "Pip, Hettie",
+      "santé +24, recharges −20 %",
+      "0 / 0 → 13 / 5",
+      "aucun en particulier (pièce d’entrée de gamme)"
+     ],
+     [
+      "Bandage de docker",
+      "accessoire",
+      "12",
+      "Mara, Pip",
+      "santé +36",
+      "16 / 5 → 15 / 9",
+      "aucun en particulier (pièce d’entrée de gamme)"
+     ],
+     [
+      "Charme de ferveur",
+      "accessoire",
+      "12",
+      "Pip",
+      "protections et renforts ×1,6 plus longs",
+      "4 / 2 → 13 / 9",
+      "aucun en particulier (pièce d’entrée de gamme)"
+     ],
+     [
+      "Bottes de coursier",
+      "accessoire",
+      "12",
+      "Jory (passant)",
+      "Vivacité +1",
+      "12 / 5 → 13 / 4",
+      "aucun en particulier (pièce d’entrée de gamme)"
+     ],
+     [
+      "Charme de ménestrel",
+      "accessoire",
+      "12",
+      "Yselle (passante)",
+      "santé +24, protections ×1,15",
+      "7 / 2 → 14 / 8",
+      "aucun en particulier (pièce d’entrée de gamme)"
+     ],
+     [
+      "Médaille de pèlerin",
+      "accessoire",
+      "14",
+      "Sela (passante)",
+      "santé +32, protections ×1,15",
+      "16 / 6 → 16 / 10",
+      "Orla"
+     ],
+     [
+      "Gorgerin de sergent",
+      "accessoire",
+      "14",
+      "Garrick (passant)",
+      "Défense +2, santé +12",
+      "15 / 4 → 18 / 10",
+      "aucun en particulier (pièce d’entrée de gamme)"
+     ],
+     [
+      "Gants de raccommodeuse",
+      "accessoire",
+      "22",
+      "Nell (passante)",
+      "Défense +1, Endurance +2",
+      "26 / 10 → 27 / 15",
+      "aucun en particulier (pièce d’entrée de gamme)"
+     ],
+     [
+      "Bottes rapides",
+      "accessoire",
+      "24",
+      "Corvin",
+      "Vivacité +2, la première charge d’un coup",
+      "29 / 13 → 29 / 15",
+      "Vessa, Cassius, Orla"
+     ],
+     [
+      "Bague de fer",
+      "accessoire",
+      "32",
+      "Hilde, Pip",
+      "Endurance +3, la rupture −25 %",
+      "40 / 28 → 33 / 25",
+      "Vessa, Cassius, Orla, Ilse, Marek, Rhosk"
+     ],
+     [
+      "Perle de rivière",
+      "accessoire",
+      "30",
+      "Fenwick (passant)",
+      "Endurance +3, santé +20",
+      "30 / 18 → 31 / 24",
+      "Vessa, Cassius, Marek, Rhosk"
+     ],
+     [
+      "Pierre de bézoard",
+      "accessoire",
+      "16",
+      "Pip",
+      "Endurance +2 ; arrête le poison",
+      "— → 20 / 12",
+      "Cassius"
+     ],
+     [
+      "Charme de salamandre",
+      "accessoire",
+      "18",
+      "Pip, Hilde",
+      "Défense +2, santé +18 ; arrête la brûlure",
+      "— → 24 / 12",
+      "Orla"
+     ],
+     [
+      "Capuche de voyageur",
+      "accessoire",
+      "18",
+      "Hilde, Corvin",
+      "Vivacité +2 ; arrête l’aveuglement",
+      "— → 24 / 16",
+      "Tobin"
+     ],
+     [
+      "Garrot de campagne",
+      "accessoire",
+      "18",
+      "Mara",
+      "santé +36 ; arrête le saignement",
+      "— → 17 / 10",
+      "aucun en particulier (pièce d’entrée de gamme)"
+     ],
+     [
+      "Lame de caravane (fin)",
+      "arme",
+      "90",
+      "Mara, jour 6",
+      "Attaque +10, charge ×1,15, jauge ×1,1",
+      "— → 38 / 31",
+      "pièce de fin"
+     ],
+     [
+      "Plate de tournoi (fin)",
+      "armure",
+      "100",
+      "Hilde, jour 6",
+      "coups légers −30 %, esquive ×0,4 ; saignement ×0,5",
+      "— → 55 / 51",
+      "pièce de fin"
+     ],
+     [
+      "Écharpe de maître (fin)",
+      "accessoire",
+      "85",
+      "Corvin, jour 6",
+      "Vivacité +3, santé +36, première charge d’un coup, recharges −10 %",
+      "— → 43 / 36",
+      "pièce de fin"
+     ],
+     [
+      "Laurier de champion (fin)",
+      "accessoire",
+      "80",
+      "Pip, jour 6",
+      "santé +60, Endurance +2, protections ×1,25, la rupture −15 %",
+      "— → 44 / 40",
+      "pièce de fin"
+     ]
+    ],
+    "shots": [
+     [
+      "img/hilde-shop-1280x720.png",
+      "Aujourd’hui : la boutique de Hilde, trois pièces ; le prix du jour (la liste de la cotte matelassée est 18)."
+     ],
+     [
+      "img/mara-shop-1280x720.png",
+      "Aujourd’hui : la boutique de Mara."
+     ]
+    ],
+    "rec": "Adopter ce catalogue : la valeur de chaque pièce est mesurée contre chaque rival, le haubert ne rend plus la cotte inutile, chaque état a ses armes et ses protections.",
+    "opts": [
+     "Adopter ce catalogue",
+     "Seulement les familles d’états sur les pièces d’aujourd’hui (aucun prix ni point retouché)",
+     "Garder le catalogue d’aujourd’hui"
+    ],
+    "recIdx": 0,
+    "src": "tools/auto-gear.mjs, tools/gear-catalogue.mjs (le brouillon) ; src/simulation/gear.ts ; audit § 8 ; journal Passe GP4-2 (GE-4, GE-7, GE-12)"
+   },
+   {
+    "id": "EQ-2",
+    "tag": "les armes",
+    "title": "Les six familles d’armes deviennent six armes",
+    "ctx": "Chaque famille du chantier 4 (GE-4 « Ces familles, avec une contrepartie ») est une arme : la lame importée moins 2 en Attaque (la contrepartie décidée), avec le même coup, les mêmes effets, et un état à chaque coup. Mesurées en finale : de +19 à +21 (la lame +14), chacune la meilleure réponse contre deux à cinq rivaux, faible contre celui qui y résiste (Cassius le poison, Marek la brûlure, Ilse l’aveuglement, Rhosk le saignement) : le repérage dit laquelle prendre. Prix 30 ; 26 pour la vipère (la garde arrête le poison, Cassius y résiste : sans cela elle était battue par une autre à prix égal). Mara en vend deux (vipère, dentelé), maître Corvin quatre (braise, miroir, maudit, torpeur) et le dentelé aussi.",
+    "rec": "Ces six armes, de 26 à 30 pièces : c’est la contrepartie que tu as décidée (GE-4), et elles donnent au repérage un usage.",
+    "opts": [
+     "Ces six armes, à 26-30 pièces",
+     "Quatre seulement (sans la malédiction ni la paralysie)",
+     "Plus chères (45 pièces)"
+    ],
+    "recIdx": 0,
+    "src": "src/combat/autoData.ts STATE_WEAPON_FAMILIES, STATE_WEAPON_COUNTERPART ; journal Passe GP4-2"
+   },
+   {
+    "id": "EQ-3",
+    "tag": "les protections",
+    "title": "Les trois armures et quatre charmes arrêtent les états",
+    "ctx": "Les trois armures portent chacune sa famille (GE-7) : la cotte matelassée la brûlure ×0,5, le cuir de docker le poison ×0,5, la cotte de mailles (et le haubert, la plate) le saignement ×0,5. Quatre accessoires neufs arrêtent un état tout à fait : la pierre de bézoard (poison), le charme de salamandre (brûlure), la capuche de voyageur (aveuglement), le garrot de campagne (saignement), à 16-18 pièces. Chacun garde un petit bonus (Endurance, Défense, Vivacité ou santé) pour valoir d’être porté sans l’état en face. Mesurés au tableau : +20 le bézoard (le plus net contre Cassius), +24 la salamandre et la capuche (contre Marek, Orla et Tobin), +17 le garrot (le moins net : Vessa et Rhosk saignent). Il n’y a rien contre la malédiction ni la paralysie (GC-4).",
+    "rec": "Ces armures et ces quatre charmes : un charme se porte quand le repérage dit quel état vient, une bonne raison de regarder.",
+    "opts": [
+     "Ces armures et ces quatre charmes, avec un petit bonus",
+     "Les armures seules (pas de charme)",
+     "Charmes sans bonus (pure protection, 12 pièces)"
+    ],
+    "recIdx": 0,
+    "src": "src/combat/autoData.ts STATE_ARMOUR_FAMILIES, STATE_CHARM_FAMILIES ; journal Passe GP4-2"
+   },
+   {
+    "id": "EQ-4",
+    "tag": "retouches",
+    "title": "Les pièces d’aujourd’hui qui ne tenaient pas",
+    "ctx": "Le haubert d’Edda passe à 60 pièces et prend la protection de la cotte : une pièce unique, meilleure (Défense +7), dont la cotte reste la réponse moins chère (40). Le sabre gagne +2 en Attaque (5) et coûte 50 : +24 au lieu de +10. La lame importée coûte 24, la lame simple (les armes d’états la battent en finale). La bague de fer perd 1 d’Endurance et la rupture −25 % au lieu de −30 %, 32 pièces : +33 au lieu de +40. Le ruban gagne +24 de santé (10 pièces), le charme de ferveur ×1,6 au lieu de ×1,3, le charme de ménestrel +24 de santé, le gorgerin +12 de santé : de +0 à +7 vers +13 à +18. Prix d’entrée de gamme revus (14, 12, 12 pièces). Les points de chaque pièce sont dans le tableau. Aucun point retouché ne change la règle de l’équipement (AC-11, les points doublés ; BL1-3, la Vivacité des pièces à moitié) : seulement des pièces.",
+    "rec": "Ces retouches : sans elles, huit pièces ne servent à rien et deux en dominent d’autres.",
+    "opts": [
+     "Ces retouches",
+     "Les prix seulement (aucun point ni effet retouché)",
+     "Aucune (le haubert et la bague gardés)"
+    ],
+    "recIdx": 0,
+    "src": "tools/gear-catalogue.mjs ; tools/auto-gear.mjs ; audit § 8 (le haubert, la cotte)"
+   }
+  ]
+ },
+ {
+  "id": "or",
+  "fam": "var(--cendre)",
+  "title": "L’argent et les prix",
+  "sub": "Mesuré sur cent parties : la bourse médiane au matin du jour 10 est de 87 pièces (planificateur), 71 (référence), 79 (curieux) ; rien d’utile à acheter, et les bourses de la finale (80 ou 30) et du champion (100) tombent après le dernier combat.",
+  "items": [
+   {
+    "id": "EQ-5",
+    "tag": "GP-17",
+    "title": "Des pièces de fin de tournoi, chères, à partir du jour 6",
+    "ctx": "Une par boutique, dès le jour 6 : la lame de caravane (Mara, 90 pièces : Attaque +10), la plate de tournoi (Hilde, 100 : Défense +8, les coups légers −30 %), l’écharpe de maître (Corvin, 85 : Vivacité +3, santé +36) et le laurier de champion (Pip, 80 : santé +60, Endurance +2). Mesurées en finale : de +31 à +51, de 10 à 15 points de plus que la meilleure pièce courante de leur case, pour environ deux fois le prix en valeur ; une seule se paie avec la bourse du joueur moyen. Leur prix est fixe (la hausse par étape ne les touche pas).",
+    "rec": "Ces quatre pièces, dès le jour 6 : l’argent des jours 6 à 10 garde un but, sans toucher aux paris ni à l’investissement (AU-13 et ECO-5 tenus).",
+    "opts": [
+     "Ces quatre, de 80 à 100 pièces dès le jour 6",
+     "Deux seulement (l’arme et l’armure)",
+     "Aucune"
+    ],
+    "recIdx": 0,
+    "src": "tools/gear-catalogue.mjs ; audit § 7 ; journal Passe AU2 (AU-13), Passe ECO2 (ECO-5)"
+   },
+   {
+    "id": "EQ-6",
+    "tag": "l’avance",
+    "title": "Une avance sur la bourse de la finale",
+    "ctx": "Maître Odo, le greffier du parvis, avance 30 pièces dès le jour 9, une fois, sans créneau : la bourse d’une finale perdue. Elle se rend sur la bourse après la finale (une victoire paie 80 ou 100 moins 30, une défaite 30 moins 30 : rien à rendre en plus). Ce n’est ni un pari ni un investissement : de l’argent que le joueur a déjà gagné ou va gagner, pas de risque. Elle permet d’acheter une pièce de fin le jour 9 ou la matinée du jour 10.",
+    "rec": "30 pièces dès le jour 9 : l’avance rend la pièce de fin possible pour le joueur moyen, sans coût ni risque réel.",
+    "opts": [
+     "30 pièces à maître Odo dès le jour 9, rendues sur la bourse",
+     "Pas d’avance"
+    ],
+    "recIdx": 0,
+    "src": "src/tournament/pool.ts PURSES (ECO-4) ; audit § 7"
+   },
+   {
+    "id": "EQ-7",
+    "tag": "les prix",
+    "title": "Les prix suivent l’étape du tournoi",
+    "ctx": "Aujourd’hui le prix suit le lieu, la réputation, l’amitié, l’acier et le soir, jamais l’étape. Les bourses montent en trois paliers (20 / 5 en poule, 35 / 10 et 45 / 15 au tableau, 80 / 30 en finale). Deux paliers de prix sur les pièces courantes des boutiques (pas la forge, pas les pièces de fin) : ×1,15 du jour 6 au jour 8, ×1,3 les jours 9 et 10. Un acheteur tardif paie plus ; les achats de la poule ne changent pas.",
+    "rec": "Deux paliers, comme les bourses : la ville qui s’échauffe se lit dans les prix (et dans les nouvelles).",
+    "opts": [
+     "Deux paliers : ×1,15 au tableau, ×1,3 dès le jour 9",
+     "Un palier : ×1,15 dès le jour 6",
+     "Aucun"
+    ],
+    "recIdx": 0,
+    "src": "src/simulation/v2gear.ts shopPrice ; audit § 8"
+   },
+   {
+    "id": "EQ-8",
+    "tag": "les pénuries",
+    "title": "Deux pénuries de plus que l’acier",
+    "ctx": "Aujourd’hui il n’y en a qu’une : l’acier (+40 % sur les armes et les armures après le sabotage de la forge, jusqu’à la caravane). Deux de plus, chacune par un événement qui existe : la commande de la maison Dree, quand Cassius est hostile, du jour 3 au jour 5 (les armures de Hilde +30 %) ; la ruée de la parade, le jour 9 (les accessoires de Pip +50 %). Chacune dite dans les nouvelles et par les marchands, comme l’acier.",
+    "rec": "Ces deux : elles donnent un second sens aux deux boutiques qui n’en ont aucun, et l’alternative (EQ-9) sert à les contourner.",
+    "opts": [
+     "Ces deux pénuries",
+     "La parade seule",
+     "Aucune de plus"
+    ],
+    "recIdx": 0,
+    "src": "src/events/catalog.ts (la pénurie d’acier), src/events/v2catalog.ts"
+   },
+   {
+    "id": "EQ-9",
+    "tag": "deux lieux",
+    "title": "Sept pièces vendues à deux endroits",
+    "ctx": "Aujourd’hui chaque pièce n’est vendue qu’à un endroit : une boutique barrée, fermée le soir ou en pénurie ne laisse aucune alternative. Sept pièces en ont deux : la lame importée (Mara, Corvin), le coutelas dentelé (Mara, Corvin), la cotte matelassée (Hilde, Mara), la bague de fer (Hilde, Pip), le bandage de docker (Mara, Pip), le charme de salamandre (Pip, Hilde) et la capuche de voyageur (Hilde, Corvin). Le prix suit le lieu (Hilde ×1,15, Corvin ×1,1, Pip ×0,9).",
+    "rec": "Ces sept : chacune peut se rattraper, et le prix du lieu en fait un vrai choix.",
+    "opts": [
+     "Ces sept pièces",
+     "Aucune (un lieu chacune)"
+    ],
+    "recIdx": 0,
+    "src": "src/simulation/gear.ts (shop) ; audit § 8"
+   }
+  ]
+ },
+ {
+  "id": "vente",
+  "fam": "var(--ronce)",
+  "title": "Vendre et forger",
+  "sub": "GP-19 est décidée (« Déséquiper et vendre une pièce portée »). Ici le détail.",
+  "items": [
+   {
+    "id": "EQ-10",
+    "tag": "GP-19",
+    "title": "Retirer une pièce, la vendre portée",
+    "ctx": "La page d’équipement (G) ne montre aujourd’hui que le sac : une pièce portée ne se retire pas, ne se vend pas. Chaque pièce portée porte « Retirer » (au sac, sans créneau, partout) et « Vendre » (chez Mara, de jour, sans créneau, à la moitié du prix de liste, jamais une pièce volée : la règle d’ECO-6). La lame vendue laisse l’épée d’entraînement en main. Mara reste la seule qui rachète, comme aujourd’hui.",
+    "shots": [
+     [
+      "img/gear-page-1280x720.png",
+      "Aujourd’hui : la page d’équipement, les pièces portées à gauche, rien à en faire."
+     ]
+    ],
+    "rec": "Retirer partout, vendre chez Mara à moitié prix : la règle d’aujourd’hui étendue à la pièce portée.",
+    "opts": [
+     "Retirer partout ; vendre chez Mara, à moitié prix",
+     "Retirer partout ; vendre chez qui vend son genre (Hilde les armures, Corvin les armes, Pip les accessoires, Mara tout), à moitié prix"
+    ],
+    "recIdx": 0,
+    "src": "src/simulation/v2work.ts:73-92 ; journal Passe ECO3 (ECO-6)"
+   },
+   {
+    "id": "EQ-11",
+    "tag": "les paliers",
+    "title": "Les paliers de la forge, quand on change de lame",
+    "ctx": "Les trois paliers de Bram (10, 25 et 40 pièces : +2 Attaque chacun) sont aujourd’hui perdus quand on change d’arme (la page l’avertit). Avec six armes d’états et une lame de fin, changer de lame par rival devient le jeu ; perdre 75 pièces à chaque fois le tue. Aujourd’hui le sabre, la lame importée et les armes d’états sont autant d’achats définitifs une fois la lame forgée.",
+    "rec": "Les paliers suivent la main : ils restent quand on change de lame (l’Attaque du forgeron est celle du joueur), la lame vendue ne les rend pas.",
+    "opts": [
+     "Les paliers suivent la main",
+     "Les paliers partent avec la lame (comme aujourd’hui, avertis sur la page)",
+     "La forge les rachète à moitié quand on change de lame"
+    ],
+    "recIdx": 0,
+    "src": "src/simulation/v2gear.ts wield ; src/simulation/preview.ts tierLost"
+   }
+  ]
+ },
+ {
+  "id": "suite",
+  "fam": "var(--astre)",
+  "title": "La suite",
+  "sub": "",
+  "items": [
+   {
+    "id": "EQ-12",
+    "tag": "le laboratoire",
+    "title": "Le planificateur achète les pièces de fin et revend",
+    "ctx": "Le laboratoire doit voir la revente et les pièces de fin (comme le travail en ECO-8) : le planificateur (et la référence, le curieux) les achète avec son surplus à partir du jour 6, prend l’avance du jour 9 et revend la pièce remplacée. Cela renforce le joueur moyen en finale : la course des rivaux est alors recalée en dernier (PB-3, le planificateur à 50 % en demi-finale et en finale ; les durées de SL1-2 tenues). L’autre voie : seul le curieux les achète, la course ne bouge pas, mais la finale du joueur moyen ignore des pièces que les vrais joueurs prendront.",
+    "rec": "Le planificateur et le curieux ; recaler la course en dernier, comme PB-3 le veut.",
+    "opts": [
+     "Le planificateur, la référence et le curieux ; recaler la course (PB-3 appliquée)",
+     "Le curieux seulement, sans recaler la course (décision A3 : change PB-3)"
+    ],
+    "recIdx": 0,
+    "src": "journal Passe CF3 (PB-3), Passe ECO3 (ECO-8) ; tools/auto-lab.mjs fit"
+   },
+   {
+    "id": "EQ-13",
+    "tag": "l’essai DEV",
+    "title": "Retirer l’essai ?states=",
+    "ctx": "Le chantier 4 a gardé un essai DEV (?scene=arena&states=famille) pour les preuves, en écart à VD-8 (un paramètre seulement pour un essai que tu demandes, retiré après ta décision). Les pièces portent maintenant les familles : l’arène peut porter une arme (weapon=<id>) et son kit (kit=a,b,c,d), déjà là pour les preuves de la jauge.",
+    "rec": "Le retirer, et remplacer ses preuves par weapon=<id> sur les armes d’états.",
+    "opts": [
+     "Le retirer",
+     "Le garder"
+    ],
+    "recIdx": 0,
+    "src": "src/lab/states.ts installStatesTrial ; journal Passe GP4-2 (écart consigné)"
+   },
+   {
+    "id": "EQ-14",
+    "tag": "la fin",
+    "title": "Construire, prouver, fusionner",
+    "ctx": "Je construis (les pièces et leurs textes en anglais et en français, la page d’équipement, la vente, les prix par étape, les pénuries, l’avance, les paliers), je mesure les parties entières (planificateur, référence, curieux ; graines tenues à part 101 à 300), je recale la course et je prouve dans le navigateur (play-day, tutorial-proof, auto-arena-proof, play-flow, prep-proof ; anglais, français, REDUCED=1 et MOTION=reduce). Puis journal, fusion en avance rapide, branche supprimée.",
+    "rec": "Construire, prouver, fusionner : aucune de ces options ne change une décision A3 que tu n’aies déjà prise (PB-3 appliquée, pas changée).",
+    "opts": [
+     "Construire, prouver, fusionner",
+     "Construire et attendre ton essai avant de fusionner"
+    ],
+    "recIdx": 0,
+    "src": "note de coordination des chantiers"
+   }
+  ]
+ }
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  // un tableau de mesures : la première ligne en tête
+  if (it.table) {
+    const t = el('table', { class: 'tbl' }), [head, ...rows] = it.table;
+    t.append(el('thead', {}, el('tr', {}, ...head.map((h) => el('th', { scope: 'col' }, h)))));
+    t.append(el('tbody', {}, ...rows.map((r) => el('tr', {}, ...r.map((v) => el('td', {}, v))))));
+    c.append(el('div', { class: 'tblwrap' }, t));
+  }
+  if (it.shots) {
+    const grid = el('div', { class: 'shots vids' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      // un film : joué sur place, en boucle, sans son (les films de duel-clip n’en ont pas)
+      if (/.mp4$/.test(src)) { grid.append(el('figure', { class: 'shot' }, el('video', { src, controls: '', muted: '', loop: '', playsinline: '', preload: 'metadata', 'aria-label': cap }), el('figcaption', {}, cap))); continue; }
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

@@ -130,3 +130,57 @@ test('the planner of the laboratory: it works and reaches the DB7 curve\'s gear;
   // the others take no job (their choices are theirs: ECO-8)
   for (const p of ['idle', 'diligent', 'curious']) assert.equal(LAB.labReport(S.slice(0, 4), LAB.POLICIES[p], 'v2').v2.money.jobs, 0, p);
 });
+
+// ---------------------------------------------------------------------------------------------------------------- GP-19 (chantier 5): the worn piece
+const GE = await load('/src/simulation/gear.ts');
+const V = await load('/src/simulation/v2gear.ts');
+const worn = () => { const st = at(v2(), 'district', 'morning'); Object.assign(st.v2.gear, { weapon: 'imported-blade', tier: 2, armour: 'mail-shirt', acc: ['iron-ring', null], bag: [] }); return st; };
+
+test('GP-19 « Déséquiper et vendre une pièce portée »: a worn piece is taken off to the bag for no coin and no slot, anywhere', () => {
+  const st = at(worn(), 'forecourt', 'afternoon');
+  let r = act(st, { type: 'unequip', slot: 'armour' });
+  assert.equal(r.state.v2.gear.armour, null); assert.deepEqual(r.state.v2.gear.bag, ['mail-shirt']);
+  assert.equal(r.state.slot, 'afternoon', 'no slot'); assert.equal(r.state.player.coins, st.player.coins, 'no coin');
+  r = act(st, { type: 'unequip', slot: 0 });
+  assert.deepEqual(r.state.v2.gear.acc, [null, null]); assert.deepEqual(r.state.v2.gear.bag, ['iron-ring']);
+  // the weapon: the training sword is back in hand, the blade in the bag, the forge's tiers as the rule of EQ-11 says (they go with the blade until the operator's reading)
+  r = act(st, { type: 'unequip', slot: 'weapon' });
+  assert.equal(r.state.v2.gear.weapon, 'training-sword'); assert.deepEqual(r.state.v2.gear.bag, ['imported-blade']);
+  assert.equal(r.state.v2.gear.tier, GE.TIERS_FOLLOW_THE_HAND ? 2 : 0);
+  // nothing to take off: the empty place, and the training sword (the hand's own)
+  assert.equal(refused(st, { type: 'unequip', slot: 1 }), tx('v2.unequip.nothing'));
+  assert.equal(refused(r.state, { type: 'unequip', slot: 'weapon' }), tx('v2.unequip.nothing'));
+  // a piece taken off is worn again from the bag, as any piece of it
+  const back = act(r.state, { type: 'equip', item: 'imported-blade' }).state;
+  assert.equal(back.v2.gear.weapon, 'imported-blade'); assert.deepEqual(back.v2.gear.bag, ['training-sword']);
+  // the same door for the stats: what is taken off leaves the bout's numbers (the mail's Defence 6)
+  assert.equal(+(V.v2Stats(st).def - V.v2Stats(act(st, { type: 'unequip', slot: 'armour' }).state).def).toFixed(2), 6, 'the mail’s Defence leaves the bout’s numbers');
+  assert.ok(!G.actions(st).some((o) => o.action.type === 'unequip'), 'not among a place\'s actions: the gear page\'s');
+});
+
+test('GP-19: a worn piece sold at Mara\'s, by day and without a slot, at half its list price, never a stolen piece (the rule of ECO-6)', () => {
+  const st = worn();
+  let r = act(st, { type: 'sell', item: 'mail-shirt', from: 'armour' });
+  assert.equal(r.state.player.coins, st.player.coins + 20, 'half of 40'); assert.equal(r.state.v2.gear.armour, null); assert.equal(r.state.slot, 'morning', 'no slot'); assert.deepEqual(r.state.v2.gear.bag, []);
+  r = act(st, { type: 'sell', item: 'iron-ring', from: 0 });
+  assert.equal(r.state.player.coins, st.player.coins + 12, 'half of 24'); assert.deepEqual(r.state.v2.gear.acc, [null, null]);
+  r = act(st, { type: 'sell', item: 'imported-blade', from: 'weapon' });
+  assert.equal(r.state.player.coins, st.player.coins + 15, 'half of 30'); assert.equal(r.state.v2.gear.weapon, 'training-sword');
+  assert.equal(r.state.v2.gear.tier, GE.TIERS_FOLLOW_THE_HAND ? 2 : 0, 'the forge\'s tiers as EQ-11 will say');
+  assert.ok(r.events.some((e) => e.id === 'sell:imported-blade' && e.visible), 'said in the news');
+  // what is worn is not listed among the place\'s actions (the marks and the count are the bag\'s); the gear page asks for it
+  assert.ok(!opt(st, { type: 'sell', item: 'mail-shirt', from: 'armour' }));
+  // Mara\'s own hours and place; a piece that is not worn there; the training sword (worth nothing, not a piece)
+  assert.equal(G.advance(at(st, 'district', 'evening'), { type: 'sell', item: 'mail-shirt', from: 'armour' }).ok, false);
+  assert.equal(G.advance(at(st, 'forecourt', 'morning'), { type: 'sell', item: 'mail-shirt', from: 'armour' }).ok, false);
+  assert.equal(refused(st, { type: 'sell', item: 'mail-shirt', from: 0 }), tx('v2.sell.notWorn'));
+  assert.equal(refused(st, { type: 'sell', item: 'iron-ring', from: 'armour' }), tx('v2.sell.notWorn'));
+  const sword = worn(); sword.v2.gear.weapon = 'training-sword';
+  assert.equal(refused(sword, { type: 'sell', item: 'training-sword', from: 'weapon' }), tx('v2.sell.notWorn'));
+  // a stolen piece worn is refused until settled with Sergeant Hale
+  const t = structuredClone(st); t.v2.thefts = [{ day: 1, from: 'hilde', item: 'mail-shirt', seen: null }];
+  assert.equal(refused(t, { type: 'sell', item: 'mail-shirt', from: 'armour' }), tx('v2.sell.stolen'));
+  // today's game has none of it
+  const old = G.namedState('day1-morning');
+  assert.equal(G.advance(old, { type: 'sell', item: 'mail-shirt', from: 'armour' }).ok, false);
+});

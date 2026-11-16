@@ -93,3 +93,6 @@ export const GEAR: Record<string, GearDef> = {
 export const WEAPON_TIER_ATK = 2;
 export const MAX_WEAPON_TIER = 3;
 export const TIER_PRICE = [10, 25, 40];
+/** do the forge's tiers stay with the player's hand when he changes weapon (the sheet of chantier 5, EQ-11: « Les paliers suivent la main » against « Les paliers partent avec la
+ *  lame » as today, journal Passe GP5-1; false until the operator's reading): a weapon taken in hand, taken off or sold takes its tiers with it when false */
+export const TIERS_FOLLOW_THE_HAND = false;

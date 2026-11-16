@@ -1,7 +1,7 @@
 import { clamp, type GameState, type V2Gear } from './state';
 import type { ActionDef } from './actions';
 import { isV2 } from './v2';
-import { GEAR, MAX_WEAPON_TIER, SHOPS, TIER_PRICE, WEAPON_TIER_ATK, type GearFx, type ShopId } from './gear';
+import { GEAR, MAX_WEAPON_TIER, SHOPS, TIERS_FOLLOW_THE_HAND, TIER_PRICE, WEAPON_TIER_ATK, type GearFx, type ShopId } from './gear';
 import { REN_BASE, TRAINED_STATS, VIGOUR_HP, trainGain, type FighterStats, type TrainedStat } from '../combat/stats';
 import { AUTO_GEAR_FX, AUTO_PIECE_VIV } from '../combat/autoData';
 import { AUTO_RULES, type AutoGearFx } from '../combat/auto';
@@ -127,7 +127,25 @@ export function shopOpen(s: GameState, shop: ShopId): string | null {
 }
 
 /** a weapon taken in hand: the old one to the bag, the forge's tiers with it (they were folded into the old blade) */
-function wield(g: V2Gear, item: string): void { g.bag.push(g.weapon); g.weapon = item; g.tier = 0; }
+function wield(g: V2Gear, item: string): void { g.bag.push(g.weapon); g.weapon = item; if (!TIERS_FOLLOW_THE_HAND) g.tier = 0; }
+
+/** a place of the body (the weapon, the armour, an accessory's first or second place): what the gear page takes off and Mara buys worn (the operator's GP-19 « Déséquiper et vendre une
+ *  pièce portée », journal Passe GP2) */
+export type WornPlace = 'weapon' | 'armour' | 0 | 1;
+/** the piece worn at a place, null when there is none (the training sword is the hand's own: not a piece one takes off) */
+export function wornAt(s: GameState, place: WornPlace): string | null {
+  const g = gearView(s), id = place === 'weapon' ? g.weapon : place === 'armour' ? g.armour : g.acc[place];
+  return id && id !== 'training-sword' ? id : null;
+}
+/** the piece at a place taken off the body and handed back (the caller puts it in the bag or sells it): a weapon leaves the training sword in hand (the one the bag held, else
+ *  a plain one) and the forge's tiers with it unless they follow the hand (EQ-11) */
+export function removeWorn(s: GameState, place: WornPlace): string {
+  const g = gearOf(s), id = wornAt(s, place)!;
+  if (place === 'weapon') { const i = g.bag.indexOf('training-sword'); if (i >= 0) g.bag.splice(i, 1); g.weapon = 'training-sword'; if (!TIERS_FOLLOW_THE_HAND) g.tier = 0; }
+  else if (place === 'armour') g.armour = null;
+  else g.acc[place] = null;
+  return id;
+}
 
 /** a piece received (won by a bargain, the bargain's pair, bought from a passer-by) goes where it is worn, or into the bag: the salve heals at once, the whetstone
  *  waits for the next bout, an armour is worn (the old one to the bag), an accessory on a free place or the bag. A weapon never replaces the one in hand: it goes to
@@ -178,6 +196,7 @@ const heldName = (id: string): string => itemName(id).replace(/^an? /, '');
 export type V2GearAction =
   | { type: 'shopBuy'; shop: ShopId; item: string }
   | { type: 'equip'; item: string; slot?: 0 | 1 }
+  | { type: 'unequip'; slot: WornPlace }
   | { type: 'upgradeWeapon' };
 
 const has = (s: GameState, id: string) => { const g = gearView(s); return g.weapon === id || g.armour === id || g.acc.includes(id) || g.bag.includes(id); };
@@ -222,6 +241,19 @@ export const V2_GEAR_ACTIONS: { [K in V2GearAction['type']]: ActionDef<Extract<V
       else if (d.slot === 'armour') { if (g.armour) g.bag.push(g.armour); g.armour = a.item; }
       else { const i = a.slot ?? (g.acc[0] === null ? 0 : g.acc[1] === null ? 1 : 0); const old = g.acc[i]; if (old) g.bag.push(old); g.acc[i] = a.item; }
       emit({ kind: 'action', id: 'equip', cause: 'action:equip', visible: false, text: tx('v2.equip.log', { item: itemName(a.item) }) });
+    },
+  },
+  unequip: {
+    by: null,
+    // from the gear card (the interface), like equip: not listed among the place's actions; no slot, anywhere (the operator's GP-19)
+    list: () => [],
+    label: (s, a) => tx('v2.unequip.label', { item: itemName(wornAt(s, a.slot) ?? 'training-sword') }),
+    cost: () => 0,
+    check: (s, a) => (!isV2(s) ? tx('v2.only') : !wornAt(s, a.slot) ? tx('v2.unequip.nothing') : null),
+    apply: (s, a, _r, emit) => {
+      const item = removeWorn(s, a.slot);
+      gearOf(s).bag.push(item);
+      emit({ kind: 'action', id: 'unequip', cause: 'action:unequip', visible: false, text: tx('v2.unequip.log', { item: itemName(item) }) });
     },
   },
   upgradeWeapon: {

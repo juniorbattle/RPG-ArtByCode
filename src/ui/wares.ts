@@ -2,7 +2,9 @@ import { actions, type Action, type ActionOption, type GameState } from '../simu
 import { offeredBy } from '../simulation/roles';
 import { GEAR, type GearSlot } from '../simulation/gear';
 import { duelStats, preview, STAT_IDS, type Preview, type StatId } from '../simulation/preview';
-import { itemAbout, itemName, pieceFx, pieceWords, weaponTier } from '../simulation/v2gear';
+import { itemAbout, itemName, pieceFx, pieceWords, weaponTier, wornAt, type WornPlace } from '../simulation/v2gear';
+import { resaleOf } from '../simulation/v2work';
+import { ACTIONS } from '../simulation/actions';
 import { PASSERS } from '../simulation/v2barter';
 import { isV2 } from '../simulation/v2';
 import { AUTO_WEAPONS } from '../combat/autoData';
@@ -45,6 +47,8 @@ interface Line {
   list?: number; price?: number;
   /** a version 2 piece's bargains (lot L2a, EV-6): the arguments one can put to its seller, each its chance */
   args?: Line[];
+  /** sold from this page (the operator's GP-19 « Déséquiper et vendre une pièce portée », journal Passe GP2): at Mara's, by day, half its list price; `ok` false with its reason elsewhere */
+  sell?: { action: Action; ok: boolean; reason?: string; n: number };
 }
 
 const STAT_TEXT: Record<StatId, TextKey> = { hp: 'ui.stat.hp', atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv', blow: 'ui.stat.blow', taken: 'ui.stat.taken', ap: 'ui.stat.ap', charge: 'ui.stat.charge', gauge: 'ui.stat.gauge', effect: 'ui.stat.effect' };
@@ -104,6 +108,27 @@ function goodsLine(s: GameState, o: ActionOption): Line {
   return { ...base, name: a.type === 'upgradeWeapon' && s.v2?.gear ? tx('ui.wares.raise', { item: bare(itemName(s.v2.gear.weapon)), tier: weaponTier(s) + 1 }) : said, sub: tx('ui.wares.forge'), about, verb: tx('ui.wares.order', { n: o.coins ?? 0 }) };
 }
 
+/** what Mara would give for a piece, from the bag or from the body (`from`), and whether she can now (GP-19): the sale's own check, so the page holds no rule of its own */
+function sellOf(s: GameState, item: string, from?: WornPlace): Line['sell'] {
+  if (!isV2(s) || resaleOf(item) <= 0) return undefined;
+  const action: Action = from === undefined ? { type: 'sell', item } : { type: 'sell', item, from };
+  const why = (ACTIONS.sell as unknown as { check(s: GameState, a: Action): string | null }).check(s, action);
+  return { action, ok: !why, ...(why ? { reason: why } : {}), n: resaleOf(item) };
+}
+
+/** what is worn, a line a piece (the training sword is the hand's own): taken off to the bag, or sold (GP-19) */
+function wornLines(s: GameState): Line[] {
+  const g = s.v2?.gear;
+  if (!g) return [];
+  const places: Array<[WornPlace, string]> = [['weapon', tx('v2.gear.weapon')], ['armour', tx('v2.gear.armour')], [0, tx('v2.gear.acc')], [1, tx('v2.gear.acc')]];
+  return places.flatMap(([place, label]) => {
+    const id = wornAt(s, place);
+    if (!id) return [];
+    const action = { type: 'unequip' as const, slot: place };
+    return [{ key: JSON.stringify(action), action, name: bare(itemName(id)), sub: label, tag: '', ok: true, about: pieceAbout(s, id), verb: tx('ui.wares.takeOff'), sell: sellOf(s, id, place) }];
+  });
+}
+
 /** what is in the bag, a line per place it can take: with both accessories on, the player chooses which one it replaces */
 function bagLines(s: GameState): Line[] {
   const g = s.v2?.gear;
@@ -112,7 +137,7 @@ function bagLines(s: GameState): Line[] {
     const acc = GEAR[id]?.slot === 'accessory' && g.acc[0] && g.acc[1], places: Array<0 | 1 | undefined> = acc ? [0, 1] : [undefined];
     return places.map((slot) => {
       const action = { type: 'equip' as const, item: id, ...(slot === undefined ? {} : { slot }) };
-      return { key: JSON.stringify(action), action, name: bare(itemName(id)), sub: slot === undefined ? tx(SLOT_TEXT[GEAR[id].slot]) : insteadOf(s, g.acc[slot]!), tag: '', ok: true, about: pieceAbout(s, id), verb: tx('ui.wares.wear') };
+      return { key: JSON.stringify(action), action, name: bare(itemName(id)), sub: slot === undefined ? tx(SLOT_TEXT[GEAR[id].slot]) : insteadOf(s, g.acc[slot]!), tag: '', ok: true, about: pieceAbout(s, id), verb: tx('ui.wares.wear'), sell: sellOf(s, id) };
     });
   });
 }
@@ -174,7 +199,7 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
     const wares = all.filter((o) => isWare(o) && o.action.type !== 'buySkill').map((o) => { const l = goodsLine(s, o), args = argsOf(o.action); return args.length ? { ...l, args } : l; }), taught = all.filter((o) => o.action.type === 'buySkill').map((o) => goodsLine(s, o));
     // the piece's arguments are drawn again from the state: a bargain refused since shows its reason
     if (mode) mode = wares.find((l) => l.key === mode!.key) ?? null;
-    const bag = bagLines(s), lines = mode ? mode.args! : [...wares, ...taught, ...bag];
+    const bag = bagLines(s), worn = who ? [] : wornLines(s), lines = mode ? mode.args! : [...wares, ...taught, ...bag, ...worn];
     const url = who ? portraitUrl(who) : null;
     card.innerHTML = `<section class="pm-self">${figHtml(s)}<div class="pm-worn">${wornHtml(s)}</div><dl class="pm-stats">${statsHtml(s)}</dl></section>`
       + `<section class="pm-goods"><header class="pm-ghead">${url ? `<img src="${url}" alt="">` : ''}<h2 class="pm-h">${esc(title)}${p ? `<small>${esc(titleOf(p, isV2(s)))}</small>` : ''}</h2><div class="pm-purse"><b>${s.player.coins}</b><small>${tx('ui.coins')}</small></div></header><div class="pm-glist"></div><div class="pm-detail" aria-live="polite"></div><div class="pm-foot"></div></section>`;
@@ -188,6 +213,14 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
       news = (r.events ?? []).filter((e) => e.visible).map((e) => said(e.text, e.$t)); keyNow = mode ? mode.key : l.key; mode = null;
       card.classList.add('still'); draw();
     };
+    // a piece sold from the page (GP-19): Mara's own sale, the list drawn again, the selection back on its first line
+    const sellIt = (l: Line): void => {
+      if (!l.sell?.ok) return;
+      const r = host.act(l.sell.action);
+      if (!r.ok || r.reload) return;
+      news = (r.events ?? []).filter((e) => e.visible).map((e) => said(e.text, e.$t)); keyNow = '';
+      card.classList.add('still'); draw();
+    };
     // the bargain (lot L2a): the piece's arguments in the list, Esc back to the goods
     const haggle = (l: Line): void => { mode = l; keyNow = ''; news = []; draw(); };
     const back = footBtn('Esc', tx('ui.wares.back'), () => { const k = mode!.key; mode = null; keyNow = k; draw(); });
@@ -197,9 +230,9 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
       const v = l.done ? null : l.plain ? { ...preview(s, l.action), rows: [] } : preview(s, l.action);
       card.querySelectorAll('.pm-worn .row.hit').forEach((x) => x.classList.remove('hit'));
       if (v && v.slot !== null) card.querySelector(`.pm-worn [data-slot="${v.slot}"]`)?.classList.add('hit');
-      const what = [...new Set([l.sub, v?.replaces ? insteadOf(s, v.replaces) : '', v?.toBag ? tx('ui.wares.toBag') : ''])].filter(Boolean).join(' · ');
+      const what = [...new Set([l.sub, v?.replaces && l.action.type !== 'unequip' ? insteadOf(s, v.replaces) : '', v?.toBag ? tx('ui.wares.toBag') : ''])].filter(Boolean).join(' · ');
       const same = !!v && !l.plain && !v.rows.length && v.slot === null && !v.toBag && l.ok;
-      const notes = [v?.tierLost ? tx('ui.wares.tierLost', { tier: v.tierLost }) : '', !l.done && l.list && l.price !== l.list ? tx('ui.wares.list', { n: l.list }) : '', same ? tx('ui.wares.same') : ''].filter(Boolean).join(' ');
+      const notes = [v?.tierLost ? tx('ui.wares.tierLost', { tier: v.tierLost }) : '', !l.done && l.list && l.price !== l.list ? tx('ui.wares.list', { n: l.list }) : '', same ? tx('ui.wares.same') : '', l.sell ? tx('ui.wares.sellHalf') : ''].filter(Boolean).join(' ');
       if (mode) {
         // an argument: its chance, what it costs if it works against the piece's price, and what failing costs
         detail.innerHTML = `<p class="nm">${esc(l.name)}</p><p class="what">${esc(tx('ui.wares.chance', { pct: l.sub }))}</p><p class="ab">${esc(tx('ui.wares.ifWon', { n: l.price ?? 0, list: mode.price ?? 0 }))}</p><p class="what">${esc(tx('ui.wares.ifLost'))}</p>${l.ok ? '' : `<p class="no">${esc(l.reason ?? '')}</p>`}`;
@@ -208,8 +241,8 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
         return;
       }
       const argNo = l.args && !l.args.some((x) => x.ok) ? l.args.find((x) => x.reason)?.reason : undefined;
-      detail.innerHTML = `${news.map((n) => `<p class="news">${esc(n)}</p>`).join('')}<p class="nm">${esc(l.name)}</p>${what ? `<p class="what">${esc(what)}</p>` : ''}<p class="ab">${esc(l.about)}</p>${notes ? `<p class="what">${esc(notes)}</p>` : ''}${cmpHtml(l, v)}${l.ok ? '' : `<p class="no">${esc(l.reason ?? '')}</p>`}${l.ok && argNo && argNo !== l.reason ? `<p class="what">${esc(argNo)}</p>` : ''}`;
-      fillFoot(foot, l.ok ? footBtn('Enter', l.verb, () => doIt(l), true) : null, l.ok && l.args?.some((x) => x.ok) ? footBtn('Space', tx('ui.wares.haggle'), () => haggle(l)) : null, close);
+      detail.innerHTML = `${news.map((n) => `<p class="news">${esc(n)}</p>`).join('')}<p class="nm">${esc(l.name)}</p>${what ? `<p class="what">${esc(what)}</p>` : ''}<p class="ab">${esc(l.about)}</p>${notes ? `<p class="what">${esc(notes)}</p>` : ''}${cmpHtml(l, v)}${l.ok ? '' : `<p class="no">${esc(l.reason ?? '')}</p>`}${l.sell && !l.sell.ok ? `<p class="what">${esc(l.sell.reason ?? '')}</p>` : ''}${l.ok && argNo && argNo !== l.reason ? `<p class="what">${esc(argNo)}</p>` : ''}`;
+      fillFoot(foot, l.ok ? footBtn('Enter', l.verb, () => doIt(l), true) : null, l.ok && l.args?.some((x) => x.ok) ? footBtn('Space', tx('ui.wares.haggle'), () => haggle(l)) : l.sell?.ok ? footBtn('Space', tx('ui.wares.sell', { n: l.sell.n }), () => sellIt(l)) : null, close);
       fit();
     };
     const add = (l: Line): void => { list.appendChild(pickRow(`<span>${esc(l.name)}${l.sub ? `<span class="why">${esc(l.sub)}</span>` : ''}</span>${l.tag}`, { off: !l.ok, select: () => select(l), press: () => doIt(l) })); };
@@ -219,6 +252,7 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
       wares.forEach(add);
       if (taught.length) { head(tx('ui.wares.teach')); taught.forEach(add); }
       if (bag.length) { head(tx('v2.gear.bag')); bag.forEach(add); }
+      if (worn.length) { head(tx('v2.gear.worn')); worn.forEach(add); }
     }
     arrowKeys(list); scrollFade(list);
     if (!lines.length) {

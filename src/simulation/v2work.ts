@@ -3,7 +3,7 @@ import type { ActionDef } from './actions';
 import type { SlotId } from './state';
 import { isV2 } from './v2';
 import { GEAR } from './gear';
-import { gearOf, itemName, shopOpen } from './v2gear';
+import { gearOf, itemName, removeWorn, shopOpen, wornAt, type WornPlace } from './v2gear';
 import { takenThefts, wanted } from './v2law';
 import { available } from './roles';
 import { sandRefusal } from './v2rivals';
@@ -44,7 +44,8 @@ const stolen = (s: GameState, item: string): boolean => takenThefts(s).some((t) 
 
 export type V2WorkAction =
   | { type: 'work'; job: JobId }
-  | { type: 'sell'; item: string };
+  /** `from`: a piece worn at that place, sold from the body (the operator's GP-19 « Déséquiper et vendre une pièce portée »; the bag's pieces without it) */
+  | { type: 'sell'; item: string; from?: WornPlace };
 
 export const V2_WORK_ACTIONS: { [K in V2WorkAction['type']]: ActionDef<Extract<V2WorkAction, { type: K }>> & { by: string | ((a: Extract<V2WorkAction, { type: K }>) => string) } } = {
   work: {
@@ -81,14 +82,15 @@ export const V2_WORK_ACTIONS: { [K in V2WorkAction['type']]: ActionDef<Extract<V
     check: (s, a) => {
       if (!isV2(s)) return tx('v2.only');
       const o = shopOpen(s, 'mara'); if (o) return o;
-      if (!(s.v2?.gear?.bag ?? []).includes(a.item)) return tx('v2.sell.notInBag');
+      if (a.from !== undefined ? wornAt(s, a.from) !== a.item : !(s.v2?.gear?.bag ?? []).includes(a.item)) return tx(a.from !== undefined ? 'v2.sell.notWorn' : 'v2.sell.notInBag');
       if (resaleOf(a.item) <= 0) return tx('v2.sell.worthless');
       if (stolen(s, a.item)) return tx('v2.sell.stolen');
       return available(s, 'mara');
     },
     apply: (s, a, _r, emit) => {
       const g = gearOf(s), n = resaleOf(a.item);
-      g.bag.splice(g.bag.indexOf(a.item), 1); s.player.coins += n;
+      if (a.from !== undefined) removeWorn(s, a.from); else g.bag.splice(g.bag.indexOf(a.item), 1);
+      s.player.coins += n;
       emit({ kind: 'action', id: `sell:${a.item}`, cause: 'action:sell', text: tx('v2.sell.log', { item: itemName(a.item), n }), visible: true });
     },
   },
