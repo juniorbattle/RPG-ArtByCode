@@ -203,8 +203,8 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     const meta = `${cap(tx(FAMILY[famOf(id)]))} · ${rankName(id)} · ${tx('v2.skills.level', { level: lvOf(id) })} · ${tx('ui.order.uses', { n: t?.uses ?? 0, gap: num(t?.gapS ?? 0) })}`;
     const cond = m ? tx('ui.sk.byHand') : tx('ui.sk.cond', { cond: tx(COND_TEXT[condOf(host.state(), id, foe)]) });
     return `<div class="sk-slot${S.pick !== null ? ' armed' : ''}"><button class="pm-btn sk-main" type="button" data-fk="slot:${k}" data-skill="${esc(id)}" aria-label="${k + 1}. ${esc(skillName(id))} · ${esc(meta)} · ${esc(cond)}"><span class="n">${n}</span><b>${esc(skillName(id))}</b><small>${esc(meta)}</small></button>`
-      + (m ? `<p class="cd">${esc(cond)}</p>` : `<button type="button" tabindex="-1" class="cd chip" data-cd="${k}">${esc(cond)} ▾</button>`)
-      + `<span class="sk-ctl"><button type="button" tabindex="-1" data-mv="${k}:-1" aria-label="${esc(tx('ui.order.earlier'))}"${k === 0 ? ' disabled' : ''}>←</button><button type="button" tabindex="-1" data-mv="${k}:1" aria-label="${esc(tx('ui.order.later'))}"${k === 3 ? ' disabled' : ''}>→</button><button type="button" tabindex="-1" data-rm="${k}">${esc(tx('ui.sk.remove'))}</button></span></div>`;
+      + (m ? `<p class="cd">${esc(cond)}</p>` : `<button type="button" tabindex="-1" class="cd chip" data-cd="${k}">${esc(cond)}</button>`)
+      + `<span class="sk-ctl"><button type="button" tabindex="-1" data-mv="${k}:-1" aria-label="${esc(tx('ui.order.earlier'))}"${k === 0 ? ' disabled' : ''}>‹</button><button type="button" tabindex="-1" data-mv="${k}:1" aria-label="${esc(tx('ui.order.later'))}"${k === 3 ? ' disabled' : ''}>›</button><button type="button" tabindex="-1" data-rm="${k}">${esc(tx('ui.sk.remove'))}</button></span></div>`;
   };
   const condsHtml = (k: number): string => {
     const id = four()[k], cur = condOf(host.state(), id, foe);

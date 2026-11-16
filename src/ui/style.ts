@@ -113,6 +113,7 @@ const CSS = `
 .sk-slot .cd{margin:0;font-size:var(--ds-fs-small);line-height:1.3;color:var(--ds-ivory)}
 .sk-slot .cd.chip{font:inherit;font-size:var(--ds-fs-small);text-align:left;color:var(--ds-ivory);background:none;border:1px solid var(--ds-line);padding:3px 8px;cursor:pointer}
 .sk-slot .cd.chip:hover{border-color:var(--ds-ivory)}
+.sk-slot .cd.chip::after{content:"";display:inline-block;margin-left:8px;vertical-align:2px;border:4px solid transparent;border-top-color:currentColor;border-bottom:0}
 .sk-ctl{display:flex;flex-wrap:wrap;gap:6px}
 .sk-ctl button{font:inherit;font-size:var(--ds-fs-small);color:var(--ds-muted);background:none;border:1px solid var(--ds-line);padding:2px 9px;cursor:pointer}
 .sk-ctl button:hover{color:var(--ds-ivory);border-color:var(--ds-ivory)}

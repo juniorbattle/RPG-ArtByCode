@@ -1031,7 +1031,7 @@ export const FR_TEXTS: Record<string, string> = {
   "ui.sk.pick": "Quelle place prend {name} ? Choisissez-en une (Échap annule).",
   "ui.sk.placed": "{name} est à la place {n}.",
   "ui.sk.rankTaken": "Une {rank} au plus : {name} est à la place {n}.",
-  "ui.sk.inPlace": "✓ place {n}",
+  "ui.sk.inPlace": "• place {n}",
   "ui.sk.tileFree": "libre",
   "ui.sk.cond": "Part : {cond}",
   "ui.sk.condTitle": "Quand part {name} ?",

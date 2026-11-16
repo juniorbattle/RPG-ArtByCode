@@ -1068,7 +1068,7 @@ export const EN = {
   'ui.sk.pick': 'Which place does {name} take? Choose one (Esc cancels).',
   'ui.sk.placed': '{name} is in place {n}.',
   'ui.sk.rankTaken': 'One {rank} at most: {name} is in place {n}.',
-  'ui.sk.inPlace': '✓ place {n}',
+  'ui.sk.inPlace': '• place {n}',
   'ui.sk.tileFree': 'free',
   'ui.sk.cond': 'Leaves: {cond}',
   'ui.sk.condTitle': 'When does {name} leave?',
