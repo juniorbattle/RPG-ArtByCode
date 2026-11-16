@@ -1,0 +1,480 @@
+<title>Compétences et modes de combat</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root {
+  --bg: #f3f4f6; --surface: #ffffff; --fg: #1d2129; --muted: #5b6270; --line: #d9dde4;
+  --brass: #8a6416; --brass-soft: #f4ead2; --rec: #2f6b3f; --rec-soft: #e3f0e6; --warn: #9a3412; --warn-soft: #fbe9dc;
+  --cendre: #c4511d; --voile: #3b5fb0; --ronce: #2f7d45; --astre: #a7801a; --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21; --warn: #f0a070; --warn-soft: #33221a;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21; --warn: #f0a070; --warn-soft: #33221a;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
+.wrap { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn { font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; flex-wrap: wrap; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.card ul { margin: 0; padding-left: 20px; max-width: 68ch; display: flex; flex-direction: column; gap: 4px; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code, code { font-family: var(--font-mono); font-size: 12.5px; }
+.a3 { background: var(--warn-soft); color: var(--warn); border-radius: 6px; padding: 8px 12px; font-size: 14px; max-width: 68ch; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt { font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+.opt .a3t { font-size: 12px; font-weight: 700; color: var(--warn); }
+textarea { font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; background: var(--bg); color: var(--fg); }
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+table.m { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+table.m th, table.m td { border-bottom: 1px solid var(--line); padding: 5px 8px; text-align: right; }
+table.m th:first-child, table.m td:first-child { text-align: left; }
+table.m tr.me td { background: var(--brass-soft); font-weight: 600; }
+.scroll { overflow-x: auto; }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+/* the mock-ups: the game's own night, ivory and gold, whatever the page's theme */
+.mock { background: #161c2e; color: #e9e4d6; border: 1px solid #2c3550; border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.4; }
+.mock h4 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 22px; color: #f1ecdd; }
+.mock .mh { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; }
+.mock .cap { display: inline-block; min-width: 22px; text-align: center; border: 1px solid #b9b19a; border-radius: 3px; padding: 0 5px; font-family: var(--font-mono); font-size: 11px; color: #e9e4d6; }
+.mock .seg { display: inline-flex; border: 1px solid #5b6483; border-radius: 4px; overflow: hidden; }
+.mock .seg button { font: inherit; font-size: 13px; background: transparent; color: #cfc9b6; border: 0; padding: 4px 12px; cursor: pointer; }
+.mock .seg button[aria-pressed="true"] { background: #d9b45a; color: #1b1608; font-weight: 700; }
+.mock .lab { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #9aa3c0; }
+.mock .slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; }
+.mock .slot { border: 1px solid #5b6483; border-radius: 4px; padding: 8px 10px; display: flex; flex-direction: column; gap: 3px; min-height: 96px; background: #1c2440; position: relative; }
+.mock .slot.empty { border-style: dashed; color: #9aa3c0; align-items: center; justify-content: center; text-align: center; }
+.mock .slot .n { position: absolute; top: 6px; right: 8px; color: #9aa3c0; font-family: var(--font-mono); font-size: 12px; }
+.mock .slot b { font-family: var(--font-display); font-weight: 400; font-size: 17px; color: #f1ecdd; }
+.mock .slot small, .mock .tile small { color: #aeb6d0; font-size: 12px; }
+.mock .slot.pick { outline: 2px solid #d9b45a; animation: pulse 1s infinite alternate; }
+@keyframes pulse { to { outline-color: transparent; } }
+@media (prefers-reduced-motion: reduce) { .mock .slot.pick { animation: none; } }
+.mock .slot .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.mock .slot select { font: inherit; font-size: 12px; background: #11172a; color: #e9e4d6; border: 1px solid #5b6483; border-radius: 3px; padding: 2px 4px; max-width: 100%; }
+.mock .mini { font: inherit; font-size: 12px; background: transparent; color: #cfc9b6; border: 1px solid #5b6483; border-radius: 3px; padding: 1px 7px; cursor: pointer; }
+.mock .mini:hover { border-color: #d9b45a; color: #fff; }
+.mock .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px; }
+.mock .tile { text-align: left; font: inherit; border: 1px solid #39425f; border-radius: 4px; padding: 6px 9px; background: #131a2e; color: #e9e4d6; cursor: pointer; display: flex; flex-direction: column; gap: 1px; }
+.mock .tile:hover { border-color: #d9b45a; }
+.mock .tile[aria-pressed="true"] { border-color: #d9b45a; background: #241f12; }
+.mock .tile.off { opacity: .45; cursor: not-allowed; }
+.mock .tile .st { font-size: 11px; color: #d9b45a; }
+.mock .filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.mock .filters button { font: inherit; font-size: 12px; background: transparent; color: #cfc9b6; border: 1px solid #39425f; border-radius: 12px; padding: 2px 10px; cursor: pointer; }
+.mock .filters button[aria-pressed="true"] { border-color: #d9b45a; color: #f1ecdd; }
+.mock .say { min-height: 20px; color: #f0c98a; font-size: 13px; }
+.mock .foot { display: flex; flex-wrap: wrap; gap: 6px 16px; color: #cfc9b6; font-size: 13px; border-top: 1px solid #2c3550; padding-top: 8px; }
+.mock .hudbar { display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: center; padding: 10px 6px; background: #0e1322; border-radius: 4px; }
+.mock .hudbar span { display: inline-flex; flex-direction: column; gap: 1px; min-width: 120px; }
+.mock .hudbar b { font-weight: 600; color: #f1ecdd; }
+.mock .hudbar small { color: #aeb6d0; }
+.mock .hudbar .lit b { color: #f0c98a; }
+.mock .hudbar .ready { outline: 1px solid #d9b45a; border-radius: 3px; padding: 2px 6px; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions de l’opérateur · 15/11/2026 · atelier CM1</span>
+    <h1>Compétences intuitives et deux modes de combat</h1>
+    <p class="lede">Ta demande du 15/11 : activer et désactiver les compétences doit être intuitif ; deux modes de combat, l’auto (les compétences partent seules par le gambit) et le manuel (tu les lances toi-même ; attaque simple, coup puissant, garde et esquive restent automatiques) ; plus de semi-auto. J’ai joué la page des compétences et la fiche de match, mesuré un joueur manuel au laboratoire, et dessiné une nouvelle page. <b>Rien du jeu par défaut n’a changé.</b> Pour chaque carte : le constat, ma recommandation, les alternatives. Les cartes qui touchent une décision A3 le disent en orange.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l’enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je consigne chacun mot pour mot au journal (les A3 d’abord), puis je construis dans le jeu par défaut, en anglais et en français, avec les preuves du navigateur, et je fusionne en avance rapide. Je ne construis rien avant.</p>
+    <p class="src">Sources : <code>briefs/audit-competences-modes-cm1.md</code> (le rapport, avec les mesures), <code>briefs/combat-auto.md</code> §§ 25 à 26 (SY-07 à SY-10), § 33.4 et § 36 (BL2), le contrat projet § 6.1, <code>tools/auto-manual.mjs</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// ---------- les maquettes (la page proposée, la barre du duel dans les deux modes) ----------
+const MOCK = {
+  conds: {
+    offensive: ['Comme l’automatique', 'Dès qu’elle est prête', 'Quand l’adversaire est rompu', 'Quand il charge un gros coup', 'Quand ses PV passent sous le tiers', 'Quand mes PV passent sous la moitié', 'Jamais (désactivée)'],
+    defensive: ['Comme l’automatique', 'Dès qu’elle est prête', 'Quand il charge un gros coup', 'Quand ma jauge passe les deux tiers', 'Quand mes PV passent sous la moitié', 'Jamais (désactivée)'],
+    support: ['Comme l’automatique', 'Dès qu’elle est prête', 'Quand une offensive peut suivre', 'Quand l’adversaire est rompu', 'Quand mes PV passent sous la moitié', 'Jamais (désactivée)'],
+  },
+  fam: { offensive: 'Attaque', defensive: 'Défense', support: 'Soutien' },
+  owned: [
+    { id: 'rampart', name: 'Rempart', fam: 'defensive', rank: 'technique', lv: 2, uses: 2, gap: 16 },
+    { id: 'fervour', name: 'Ferveur', fam: 'support', rank: 'technique', lv: 2, uses: 2, gap: 28 },
+    { id: 'thrust', name: 'Estoc', fam: 'offensive', rank: 'ultime', lv: 2, uses: 2, gap: 28 },
+    { id: 'flash', name: 'Taille éclair', fam: 'offensive', rank: 'technique', lv: 3, uses: 3, gap: 8 },
+    { id: 'whirl', name: 'Tourbillon', fam: 'offensive', rank: 'super', lv: 1, uses: 2, gap: 16 },
+    { id: 'feint', name: 'Feinte', fam: 'offensive', rank: 'technique', lv: 1, uses: 3, gap: 8 },
+    { id: 'iron', name: 'Peau de fer', fam: 'defensive', rank: 'technique', lv: 1, uses: 2, gap: 16 },
+    { id: 'cry', name: 'Cri de guerre', fam: 'support', rank: 'technique', lv: 1, uses: 2, gap: 28 },
+    { id: 'parry', name: 'Posture de riposte', fam: 'defensive', rank: 'technique', lv: 1, uses: 2, gap: 16 },
+    { id: 'ironfall', name: 'Chute de fer', fam: 'offensive', rank: 'ultime', lv: 1, uses: 2, gap: 28 },
+    { id: 'wind', name: 'Second souffle', fam: 'support', rank: 'technique', lv: 1, uses: 2, gap: 28 },
+  ],
+};
+function mockPage(root) {
+  const S = { slots: ['rampart', 'fervour', 'thrust', 'flash'], cond: {}, mode: 'auto', filter: 'all', sel: 'flash', pick: null, msg: '', last: null };
+  const by = (id) => MOCK.owned.find((o) => o.id === id);
+  const rankFault = (id, ignore) => {
+    const k = by(id).rank; if (k === 'technique') return '';
+    const at = S.slots.findIndex((s, i) => s && i !== ignore && by(s).rank === k);
+    return at < 0 ? '' : `Une ${k} au plus : ${by(S.slots[at]).name} est à la place ${at + 1}.`;
+  };
+  const place = (id, at) => { const f = rankFault(id, at); if (f) { S.msg = f; return; } S.last = { slots: [...S.slots] }; S.slots[at] = id; S.msg = `${by(id).name} est à la place ${at + 1}.`; S.pick = null; };
+  const draw = () => {
+    const h = (t, a = {}, ...k) => { const n = document.createElement(t); for (const [x, v] of Object.entries(a)) { if (x === 'class') n.className = v; else if (x.startsWith('on')) n.addEventListener(x.slice(2), v); else n.setAttribute(x, v); } for (const c of k) if (c != null) n.append(c); return n; };
+    root.replaceChildren();
+    const mode = h('div', { class: 'seg', role: 'group', 'aria-label': 'Mode de combat' },
+      h('button', { type: 'button', 'aria-pressed': S.mode === 'auto', onclick: () => { S.mode = 'auto'; draw(); } }, 'Auto'),
+      h('button', { type: 'button', 'aria-pressed': S.mode === 'manual', onclick: () => { S.mode = 'manual'; draw(); } }, 'Manuel'));
+    root.append(h('div', { class: 'mh' }, h('h4', {}, 'Tes compétences'), h('span', {}, h('span', { class: 'lab' }, 'Au combat : '), mode)));
+    root.append(h('div', { class: 'lab' }, S.mode === 'auto' ? 'Quatre places, dans l’ordre où l’automatique les emploie' : 'Quatre places : tu les lances toi-même, une touche chacune'));
+    const slots = h('div', { class: 'slots' });
+    S.slots.forEach((id, i) => {
+      if (!id) { slots.append(h('button', { type: 'button', class: 'slot empty' + (S.pick === i ? ' pick' : ''), onclick: () => { S.msg = 'Choisis une compétence ci-dessous.'; draw(); } }, h('span', { class: 'n' }, i + 1), 'Place libre', h('small', {}, 'choisis une compétence'))); return; }
+      const o = by(id), list = MOCK.conds[o.fam], cur = S.cond[id] ?? 0;
+      const sl = h('div', { class: 'slot' + (S.pick !== null ? ' pick' : ''), onclick: (e) => { if (S.pick !== null && !e.target.closest('select,.mini')) { place(S.pick, i); S.sel = id; draw(); } } },
+        h('span', { class: 'n' }, S.mode === 'manual' ? h('span', { class: 'cap' }, i + 1) : i + 1), h('b', {}, o.name),
+        h('small', {}, `${MOCK.fam[o.fam]} · ${o.rank} · niveau ${o.lv} · ${o.uses} usages, ${o.gap} s d’écart`));
+      if (S.mode === 'auto') {
+        const sel = h('select', { 'aria-label': 'Quand ' + o.name + ' part' }, ...list.map((t, k) => { const op = h('option', { value: k }, t); if (k === cur) op.selected = true; return op; }));
+        sel.addEventListener('change', () => { S.cond[id] = +sel.value; });
+        sl.append(h('small', {}, 'Part :'), sel);
+      } else sl.append(h('small', {}, 'Tu la lances en combat, quand tu veux.'));
+      sl.append(h('div', { class: 'row' },
+        h('button', { type: 'button', class: 'mini', 'aria-label': 'Plus tôt', onclick: (e) => { e.stopPropagation(); if (i > 0) { [S.slots[i - 1], S.slots[i]] = [S.slots[i], S.slots[i - 1]]; draw(); } } }, '←'),
+        h('button', { type: 'button', class: 'mini', 'aria-label': 'Plus tard', onclick: (e) => { e.stopPropagation(); if (i < 3) { [S.slots[i + 1], S.slots[i]] = [S.slots[i], S.slots[i + 1]]; draw(); } } }, '→'),
+        h('button', { type: 'button', class: 'mini', onclick: (e) => { e.stopPropagation(); S.last = { slots: [...S.slots] }; S.slots[i] = null; S.msg = `${o.name} est retirée. La place est libre.`; draw(); } }, 'Retirer')));
+      slots.append(sl);
+    });
+    root.append(slots);
+    root.append(h('div', { class: 'say', role: 'status' }, S.pick !== null ? `Remplacer laquelle ? Clique une place (Échap annule) — ${by(S.pick).name}` : S.msg));
+    const fl = h('div', { class: 'filters' }, ...[['all', 'Toutes'], ['offensive', 'Attaque'], ['defensive', 'Défense'], ['support', 'Soutien']].map(([k, t]) => h('button', { type: 'button', 'aria-pressed': S.filter === k, onclick: () => { S.filter = k; draw(); } }, t)));
+    root.append(h('div', { class: 'mh' }, h('span', { class: 'lab' }, `Possédées (${MOCK.owned.length}) — un clic les place`), fl));
+    const tiles = h('div', { class: 'tiles' });
+    for (const o of MOCK.owned.filter((x) => S.filter === 'all' || x.fam === S.filter)) {
+      const at = S.slots.indexOf(o.id), fault = at < 0 ? rankFault(o.id, -1) : '';
+      const t = h('button', { type: 'button', class: 'tile' + (fault ? ' off' : ''), 'aria-pressed': S.sel === o.id, title: fault,
+        onclick: () => {
+          S.sel = o.id;
+          if (at >= 0) { S.last = { slots: [...S.slots] }; S.slots[at] = null; S.msg = `${o.name} est retirée. La place est libre.`; }
+          else if (fault) S.msg = fault;
+          else { const free = S.slots.indexOf(null); if (free >= 0) place(o.id, free); else { S.pick = o.id; } }
+          draw();
+        } },
+        h('b', {}, o.name), h('small', {}, `${MOCK.fam[o.fam]} · ${o.rank} · niv. ${o.lv}`),
+        h('span', { class: 'st' }, at >= 0 ? `✓ place ${at + 1}` : fault ? fault : 'libre'));
+      tiles.append(t);
+    }
+    root.append(tiles);
+    root.append(h('div', { class: 'foot' }, h('span', {}, h('span', { class: 'cap' }, 'Entrée'), ' place ou retire'), h('span', {}, h('span', { class: 'cap' }, '← →'), ' avance ou recule'), S.mode === 'auto' ? h('span', {}, h('span', { class: 'cap' }, 'C'), ' la condition') : null,
+      h('button', { type: 'button', class: 'mini', onclick: () => { if (S.last) { S.slots = S.last.slots; S.last = null; S.msg = 'Annulé.'; draw(); } } }, 'Annuler'), h('span', {}, h('span', { class: 'cap' }, 'Échap'), ' ferme : tout est déjà gardé')));
+  };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.pick !== null && root.isConnected) { S.pick = null; S.msg = ''; draw(); } });
+  draw();
+}
+function mockHud(root) {
+  const row = (manual) => {
+    const items = [['Rempart', '■□ 9 s', false], ['Ferveur', '■■', true], ['Estoc', '■■', false], ['Taille éclair', '■□ 4 s', false]];
+    return `<div class="lab">${manual ? 'Mode manuel : une touche par compétence, prête quand elle est cernée' : 'Mode auto : le plan lance les compétences, aucune touche'}</div><div class="hudbar">${items.map(([n, u, ready], i) => `<span class="${manual && ready ? 'ready lit' : ''}">${manual ? `<span class="cap">${i + 1}</span>` : ''}<b>${n}</b><small>${u}${manual ? '' : ' · ' + ['quand il charge', 'dès que prête', 'dans une faille', 'dès que prête'][i]}</small></span>`).join('')}<span><span class="cap">J</span><b>×2</b><small>deux fois plus vite</small></span><span><span class="cap">L</span><b>Passer</b><small>${manual ? 'l’auto finit le combat' : 'jusqu’au résultat'}</small></span></div>`;
+  };
+  root.innerHTML = row(false) + row(true);
+}
+
+// ---------- la fiche ----------
+const GROUPS = [
+  { id: 'config', title: 'La configuration des compétences', sub: 'Ce que j’ai vu en jouant la page (K) et la fiche de match, et ce que je propose.', fam: 'var(--astre)', items: [
+    { id: 'CM-01', tag: 'défauts', title: 'Quatre défauts de la page actuelle : les corriger',
+      ctx: 'Joués dans un vrai navigateur (touches réelles, 1920 × 1080 et 1280 × 720). (1) Sur les trois places (terrain d’entraînement, parvis, halle), la touche Espace, celle du pied de page « Laisser de côté / Emporter », ne fait rien : l’écouteur des places retient l’action « parler » (E et Espace) et coupe l’activation native du bouton, même page ouverte ; sur le quai elle marche, et Entrée marche partout. La manette (X = Espace) subit la même chose sur les places. (2) Laisser une compétence de côté affiche « 3 sur 4 » mais le jeu garde les quatre d’avant tant qu’on n’en reprend pas une quatrième : Échap puis K, la compétence est revenue sans un mot. (3) L’« Attaque puissante », une attaque de base depuis SY-02, figure dans la liste ; la page la compte « emportée » (4 sur 4) alors que le jeu la refuse et que l’ordre à gauche n’en montre que trois. (4) La liste n’est qu’une fenêtre : 44 px à 1280 × 720 sur la page K (moins d’une ligne), 76 px sur la fiche de match, environ trois lignes et demie à 1080p avec seize compétences : on ne voit jamais les quatre portées d’un coup.',
+      shots: [['img/k05-heavy-brought.png', '1080p : « Attaque puissante » emportée (4 sur 4), l’ordre à gauche n’en montre que trois ; la liste montre trois lignes et demie'], ['img/k01-open-1280.png', '1280 × 720 : la liste des compétences fait 44 px, moins d’une ligne'], ['img/k03-reopen-lost.png', 'Échap puis K après avoir laissé de côté la Taille éclair : elle est revenue']],
+      rec: 'Les corriger dans la construction, quelle que soit la forme de la page : c’est un défaut, pas un choix (l’Espace des places d’abord, le reste avec la nouvelle page). Aucune décision A3 n’est touchée.',
+      opts: ['Les corriger dans la construction', 'Autre (en note)'], recIdx: 0, src: 'src/ui/playPlaza.ts:76, src/ui/playForecourt.ts:36, src/ui/skills.ts (toggle, setLoadout), src/simulation/v2skills.ts (setLoadout : exactement quatre, jamais le coup puissant)' },
+    { id: 'CM-02', tag: 'la page', title: 'La forme de la page des compétences',
+      ctx: 'Aujourd’hui un même mot recouvre quatre gestes en quatre endroits : posséder (la liste), emporter (le carré et Espace), ordonner (← → ; l’ordre est à gauche, sous le héros), régler (C fait défiler une condition à la fois, sans montrer les choix). Sur la fiche de match le plan est tout en bas de la colonne de gauche, sous le pli. Proposition A : une seule vue. Les quatre places en haut, des cartes dans l’ordre d’emploi, une place libre bien visible ; en dessous le catalogue de ce qu’on possède, chaque tuile disant « place 2 » ou « libre ». Un clic ou Entrée sur une tuile la place dans la première place libre (ou demande « remplacer laquelle ? ») ou la retire ; un clic sur une place la retire ; tout est gardé à l’instant, Échap ferme sans rien perdre. La maquette ci-dessous est jouable : clique des tuiles, retire une place, bascule Auto / Manuel.',
+      mock: 'page',
+      rec: 'A. Une page, quatre places visibles et un catalogue : on voit d’un coup ce qui est possédé et ce qui est porté, le geste est le même pour placer et retirer, l’ordre et la condition sont sur la place même. Le remplacement est atomique (le jeu exige quatre compétences : la place libre n’existe qu’à l’écran, tant que l’on n’a pas fini de choisir). B garde la page et ne répare que les défauts de CM-01 ; C sépare le catalogue (K) du plan (fiche de match).',
+      opts: ['A · Quatre places et un catalogue', 'B · Garder la page, la corriger seulement', 'C · Deux écrans : le catalogue (K), le plan sur la fiche de match', 'Autre (en note)'], recIdx: 0, src: 'src/ui/skills.ts (une page pour K, la fiche de match et la fiche avant un défi), src/ui/townUi.ts (openMatchSheet), briefs/combat-auto.md § 36' },
+    { id: 'CM-03', tag: 'gestes', title: 'Placer, retirer, remplacer, ordonner : les gestes',
+      ctx: 'Aujourd’hui : Espace emporte ou laisse, C règle, ← → ordonnent (A et D au QWERTY), Entrée entre dans l’arène sur la fiche de match. Les mêmes gestes doivent venir à la souris et à la manette (le D-pad ou le stick pour se déplacer, A pour placer ou retirer, X pour retirer de la place choisie, les gâchettes ou ← → pour ordonner, Y pour la condition).',
+      rec: 'Clavier : Entrée ou clic sur une tuile la place ou la retire ; Suppr ou Retour arrière retire la place choisie ; ← → reculent ou avancent la place choisie ; C ouvre la liste des conditions de la place ; Échap ferme. Souris : les mêmes clics. Manette : A place ou retire, X retire, les gâchettes ordonnent, Y la condition. Une touche pour Espace reste acceptée (le raccourci du pied de page d’aujourd’hui), sur toutes les places.',
+      opts: ['Ces gestes', 'Ces gestes et le glisser-déposer à la souris', 'Autre (en note)'], recIdx: 0, src: 'src/settings/keys.ts (les actions et leurs touches), src/input/pad.ts (la manette), tools/pad-proof.mjs' },
+    { id: 'CM-04', tag: 'gambit', title: 'Où se règle la condition d’une compétence',
+      ctx: 'La touche C fait défiler les conditions du rôle une à une (jusqu’à sept) : on ne voit pas ce qu’il y a, ni ce qui est réglé sur les quatre à la fois ; la liste d’ordre de la page K les dit, celle de la fiche de match est sous le pli. En auto, c’est le cœur du jeu : le gambit.',
+      rec: 'Sur chaque place : la condition en une courte phrase, sous le nom, et un menu qui liste toutes les conditions du rôle, la courante cochée (C l’ouvre, ↑ ↓ choisissent, Entrée garde). Aucune condition nouvelle ; la tactique reste une condition par compétence et un plan par rival (BL2). En manuel la ligne disparaît (voir CM-12).',
+      opts: ['Sur chaque place, avec la liste visible', 'Comme aujourd’hui (C fait défiler)', 'Autre (en note)'], recIdx: 0, src: 'src/ui/skills.ts (cycle), src/combat/autoData.ts (autoCondsFor), journal Passe BL2' },
+    { id: 'CM-05', tag: 'rangs', title: 'L’ultime et la super expliquées là où on choisit',
+      ctx: 'La règle « une ultime et une super au plus » (SK-2) n’est dite que par une ligne en bas de page et par un refus après coup (« Une ultime au plus »). On ne comprend pas pourquoi Tourbillon ou la Chute de fer ne se laissent pas emporter avec l’Estoc.',
+      rec: 'Une légende courte au-dessus des quatre places (« une ultime, une super, le reste techniques ») et, sur la tuile impossible, la raison avant tout clic, en grisé : « Une ultime au plus : l’Estoc est à la place 3 » (la maquette de CM-02 le fait). La règle ne change pas.',
+      opts: ['La légende et la raison sur la tuile', 'Comme aujourd’hui', 'Autre (en note)'], recIdx: 0, src: 'src/combat/autoData.ts (kitRankFault), journal Passe SK2' },
+    { id: 'CM-06', tag: 'équipement', title: 'L’équipement : la lisibilité de la page (présentation seulement)',
+      ctx: 'La page d’équipement (G) est nette : le héros en grand, l’arme, l’armure et les deux accessoires en lignes, les chiffres d’un combat. Sac vide, elle n’est que du texte autour d’un grand vide ; les quatre emplacements ne sont pas des cases à remplir comme les quatre places des compétences. Le catalogue, les prix, la revente et les effets des pièces sont le chantier 5 : je n’y touche pas, et je ne touche pas non plus à src/ui/wares.ts avant qu’il fusionne, pour ne pas nous télescoper.',
+      shots: [['img/g01-gear.png', 'Page d’équipement au terrain d’entraînement, sac vide']],
+      rec: 'Après la fusion du chantier 5 : quatre cases (arme, armure, accessoire, accessoire) du même dessin que les quatre places des compétences, une case vide en pointillé disant ce qui peut y aller ; rien d’autre ne change.',
+      opts: ['Après le chantier 5, les quatre cases', 'Ne rien changer', 'Autre (en note)'], recIdx: 0, src: 'src/ui/wares.ts (heroFigure), AGENTS.md (chantier 5)' },
+  ]},
+  { id: 'modes', title: 'Les deux modes de combat', sub: 'Auto (le gambit) ou manuel (les compétences à ta main), à la place des trois façons d’aujourd’hui.', fam: 'var(--voile)', items: [
+    { id: 'CM-07', tag: 'principe', title: 'Deux modes à la place de trois : auto ou manuel',
+      ctx: 'Aujourd’hui trois façons de décider coexistent (SY-07 « Les trois : l’automatique, la tactique, la main ») : l’automatique, la tactique (une condition par compétence et un plan par rival, BL2) et la main (les touches 1 à 4, la croix de la manette, un clic sur la barre : au prochain choix de Ren une compétence en attente, SY-09 ; un appui reste valable même en pause). La tactique et la main jouent en même temps : les compétences partent seules et tu peux aussi les lancer. Ta demande : auto (le gambit seul), manuel (toi seul), plus de semi-auto. Le contrat projet § 6.1, amendé en SY-13, AC-19 et BL1, écrit : « lancés selon le plan de combat préparé par le joueur, une condition par compétence et un plan par rival, ou à sa main pendant le combat ». Ce qui change : SY-07 et SY-09 (les trois façons ; la main seule dans le manuel), SY-10 (voir CM-13), la clause « ou à sa main pendant le combat ». Ce qui reste : SY-08 (une condition par compétence), AC-09 (l’ordre), BL2 (les plans par rival), les usages et délais, l’attaque simple, le coup puissant, la garde et l’esquive automatiques.',
+      a3: 'Décision A3 : change le § 6.1 du contrat projet (la clause « ou à sa main pendant le combat », amendée en SY-13, AC-19 et BL1). Texte proposé : « …lancés, selon le mode choisi par le joueur, par le plan de combat qu’il a préparé (mode auto : une condition par compétence et un plan par rival) ou à sa main pendant le combat (mode manuel) ; l’attaque simple, le coup puissant, la garde et l’esquive sont automatiques dans les deux modes… ». SY-07, SY-09 et SY-10 ne sont pas des A3.',
+      shots: [['img/a01-arena-hud.png', 'La barre du duel d’aujourd’hui : les quatre compétences avec 1 à 4, et aucun mot ne dit qu’elles partent aussi seules']],
+      rec: 'Adopter les deux modes et amender le § 6.1 avec le texte ci-dessus (mot à mot dans ta note si tu veux le changer). Les compétences ne partent jamais « presque seules » : soit le plan les lance, soit tu les lances.',
+      opts: ['Adopter les deux modes et amender le § 6.1 (décision A3)', 'Garder les trois façons d’aujourd’hui', 'Autre (en note)'], recIdx: 0, a3: [0], src: 'contracts/PROJECT_MASTER_CONTRACT.md § 6.1, briefs/combat-auto.md §§ 25.5, 26 (SY-07 à SY-10), 33.4, 36, journal Passes SY2, SL3, BL1, BL2' },
+    { id: 'CM-08', tag: 'où', title: 'Où l’on choisit le mode',
+      ctx: 'Le mode décide qui lance les compétences, donc le résultat des combats : hors écran, quand un combat est quitté (SY-10) et dans la répétition de maître Corvin, le jeu doit le savoir. Un réglage du navigateur (comme la langue) ne vit pas dans la sauvegarde ; l’ordre, la tactique et les plans, eux, y vivent.',
+      mock: 'hud',
+      rec: 'Un interrupteur Auto / Manuel dans le kit, gardé dans la partie, sur la page des compétences et sur la fiche de match (et rappelé sur la porte de l’arène, « Combattre ») ; auto au départ ; modifiable à tout moment hors d’un combat. Une sauvegarde d’avant est en auto. Pas un réglage du navigateur.',
+      opts: ['Dans le kit, sur la page et la fiche de match', 'Un réglage du navigateur (Réglages)', 'À chaque combat, à la porte de l’arène seulement', 'Autre (en note)'], recIdx: 0, src: 'src/simulation/v2.ts (kit), src/ui/skills.ts, src/ui/townUi.ts' },
+    { id: 'CM-09', tag: 'quels', title: 'Quels combats : le mode vaut-il partout ?',
+      ctx: 'Un combat se joue dans l’arène pour le tournoi, un défi, une représaille, un voleur pris, un passant dont on réclame la pièce, une quête ou un événement qui se règle sur le sable. Les combats hors écran (les autres rivaux), la répétition et ses deux combats à revoir ne se jouent pas à la main.',
+      rec: 'Le mode vaut pour tout duel où Ren est dans l’arène ; la répétition et le hors-écran jouent le plan (voir CM-13). Un seul réglage, pas un par type de combat.',
+      opts: ['Tous les duels de l’arène', 'Les combats du tournoi seulement', 'Autre (en note)'], recIdx: 0, src: 'src/ui/playArena.ts, src/simulation/v2prep.ts, src/combat/autoMatch.ts' },
+    { id: 'CM-10', tag: 'rejeu', title: 'Le manuel, la pause, « Passer » et ×2',
+      ctx: 'Le duel est un script rejoué : un appui relance le duel depuis le début avec tous les appuis (un tirage par coup garde tout ce qui est déjà joué ; vérifié par un test). Aujourd’hui un appui est accepté aussi quand le duel est en pause : j’ai vérifié dans l’arène. « Passer » joue le reste du duel par la tactique avec les appuis faits. En manuel, sans tactique, « Passer » ne lancerait plus aucune compétence (voir la mesure de CM-11 : 0 % de titres) ; ×2 double l’horloge, donc les délais de réflexion.',
+      rec: 'Les appuis restent acceptés en pause (« pause tactique » : on arrête le temps, on choisit, on reprend : c’est un RPG) ; « Passer » rend le reste du combat à l’auto, et le dit ; ×2 reste permis. La pause ne coûte rien dans le jeu : seul le temps réel passe.',
+      opts: ['Pause tactique ; « Passer » rend la main à l’auto', 'Pas d’appui en pause ; « Passer » idem', 'Autre (en note)'], recIdx: 0, src: 'src/arena/ArenaApp.ts (press), src/arena/autoView.ts (replace), tests/auto-hand.test.mjs' },
+    { id: 'CM-11', tag: 'équilibre', title: 'L’équilibre du manuel : neutre ou récompensé',
+      ctx: 'Mesuré au laboratoire (outil tools/auto-manual.mjs, Node seul, 200 parties tenues à part, graines 101 à 300) : le décideur de Ren remplacé par un joueur manuel modélisé, les rivaux inchangés. Le planificateur et la référence sont les joueurs automatiques sur lesquels la course est calée (PB-3, A3). Le joueur manuel qui a le jugement du plan général et appuie à temps fait exactement l’automatique (le contrôle : 24 % et 33 % de titres). Un joueur qui lit l’arène un choix en retard (une à trois secondes) tombe à 10 % et 16 % ; celui qui oublie un appui sur quatre à 14 % et 28 % ; celui qui lance chaque compétence dès qu’elle est prête, 10 % et 12 % ; celui qui n’appuie sur rien, 0 %. Avec ×1,15 sur la puissance des compétences qu’il lance : à temps 39 % et 49 % ; un choix en retard 18 % et 29 % ; ×1,3 : 29 % et 47 %. Le jeu est très sensible aux compétences (elles font l’essentiel des dégâts).',
+      table: true,
+      a3: 'Aucune option n’agit sur l’automatique ni sur la course : PB-3 (la course calée sur le planificateur, A3) n’est donc pas touchée. Seule la dernière option change la récompense de la main.',
+      rec: 'Neutre, sans bonus, avec la pause tactique de CM-10 : avec la pause, un joueur qui lit et décide à temps fait l’automatique, et peut mieux (le plan par rival mesuré au § 32 : 54 % de titres contre 33 %) ; il n’a donc pas besoin d’être payé. Un bonus (×1,15) mettrait le manuel au-dessus de l’auto pour tout joueur attentif : à éviter sauf si tu préfères que le manuel soit une façon plus risquée et mieux payée.',
+      opts: ['Neutre, sans bonus', 'Une récompense : compétences lancées à la main ×1,15', 'Neutre, mais sans pause tactique (le manuel est plus dur)', 'Autre (en note)'], recIdx: 0, src: 'tools/auto-manual.mjs, journal Passe CM1, briefs/combat-auto.md § 32 (plan par rival), § 34' },
+    { id: 'CM-12', tag: 'plans', title: 'La tactique et les plans par rival en mode manuel',
+      ctx: 'Les conditions et les plans (un par rival, BL2) sont des données de la partie ; en manuel rien ne les lit. Une condition « Jamais » s’appelle aujourd’hui « Jamais : seulement à ma main » : avec la main retirée de l’auto, ce mot n’est plus vrai.',
+      rec: 'Les données sont gardées telles quelles (on repasse en auto sans rien perdre) ; en manuel la page cache les conditions et dit « tu les lances toi-même » ; la condition « Jamais » devient « Désactivée : jamais en auto ». La répétition de Corvin et « Passer » continuent de lire le plan.',
+      opts: ['Gardés, cachés en manuel, « Jamais » devient « Désactivée »', 'Retirer la tactique du manuel et des sauvegardes', 'Autre (en note)'], recIdx: 0, src: 'src/combat/autoData.ts (AUTO_CONDS_OF), src/narrative/text/en.ts (auto.cond.never), v2KitOf' },
+    { id: 'CM-13', tag: 'résultat', title: 'Un combat quitté, la répétition de Corvin, le carnet',
+      ctx: 'SY-10 : quand on quitte la page en plein combat, le résultat que la tactique donnait, écrit à l’ouverture, est celui du combat ; la répétition de maître Corvin joue trente duels du kit et du plan contre l’ombre du prochain adversaire ; le carnet lit le duel joué (les appuis compris).',
+      rec: 'Dans les deux modes, le résultat écrit à l’ouverture est celui de l’automatique (le plan), et il est dit sur la fiche : un combat manuel quitté ne devient pas une défaite. La répétition joue le plan et le dit en manuel (« la répétition joue ton plan, pas ta main »). Le carnet lit le duel joué, comme aujourd’hui.',
+      opts: ['Le plan décide dans les deux cas', 'Un combat manuel quitté est perdu', 'Autre (en note)'], recIdx: 0, src: 'src/ui/playArena.ts (SY-10), src/simulation/advance.ts (settlePending), src/simulation/v2prep.ts' },
+    { id: 'CM-14', tag: 'lecture', title: 'Le tutoriel, le guide, la manette et le remappage',
+      ctx: 'Neuf leçons tiennent le premier duel (l’ordre des quatre, la charge, la garde…) ; le guide a « Le duel » et « Préparer un combat » ; la croix de la manette (haut, droite, bas, gauche) lance les compétences 1 à 4 ; les actions « skill1 » à « skill4 » du remappage sont les touches 1 à 4. Quand la main est retirée de l’auto, ces touches ne servent plus qu’en manuel. Le pad-proof de la fiche d’aujourd’hui échoue déjà sur huit contrôles périmés (la page de maître Corvin au menu, la touche C du pied de page) : à remettre à jour avec la construction.',
+      rec: 'Une dixième leçon à la première fois qu’on joue en manuel, l’entrée du guide à jour (« Combat auto / manuel »), la barre du duel en deux versions (la maquette de CM-08 : en auto la condition sous chaque compétence et aucune touche ; en manuel les touches 1 à 4 et la compétence prête cernée), les touches et la croix actives en manuel seulement, les actions du remappage gardées sous un nom clair (« Compétence 1 (manuel) »). Tout en anglais et en français, avec les tests de chaque texte.',
+      opts: ['Ainsi', 'Autre (en note)'], recIdx: 0, src: 'src/ui/duelTutorial.ts, src/ui/tutorial.ts, src/input/pad.ts, src/settings/keys.ts, tests/tutorial.test.mjs, tests/pad.test.mjs, tests/language.test.mjs' },
+  ]},
+  { id: 'build', title: 'Construire', sub: 'Après ta relecture seulement.', fam: 'var(--ronce)', items: [
+    { id: 'CM-15', tag: 'plan', title: 'Construire, prouver, fusionner',
+      ctx: 'Je consignerais chaque décision mot pour mot (les A3 d’abord), puis je construis dans le jeu par défaut (VD-8), sur cette branche : les défauts de CM-01, la page, le mode (le kit, le duel, l’arène, la barre, la fiche de match, SY-10), les textes anglais et français, les tests de chaque règle et chaque texte, puis les preuves du navigateur (arena, jauge, tutoriel, play-flow, manette, remappage, textes, en français aussi, sous mouvement réduit et par défaut) sur un port DEV libre. Les règles du duel ne changent pas : la course n’est recalée que si une mesure l’exige. La page d’équipement (CM-06) attend le chantier 5.',
+      rec: 'Construire tout en une branche, prouver, fusionner en avance rapide dans main ; aucun paramètre d’essai (VD-8) sauf si tu en demandes un pour essayer le manuel avant de le garder.',
+      opts: ['Construire, prouver, fusionner', 'D’abord un essai du manuel derrière un paramètre, que tu demandes', 'Autre (en note)'], recIdx: 0, src: 'AGENTS.md (VD-8, git), briefs/audit-competences-modes-cm1.md' },
+  ]},
+];
+const MEAS = {
+  head: ['Joueur', 'Planificateur', 'Référence', 'Curieux'],
+  rows: [
+    ['Automatique (le jeu)', '24 %', '33 %', '25 %', 1],
+    ['Manuel, jugement du plan général, à temps', '24 %', '33 %', '25 %', 1],
+    ['… un choix en retard', '10 %', '16 %', '5 %'],
+    ['… deux choix en retard', '4 %', '4 %', '3 %'],
+    ['… oublie un appui sur quatre', '14 %', '28 %', '12 %'],
+    ['… oublie un appui sur deux', '7 %', '13 %', '7 %'],
+    ['Manuel, dès que prêtes (le débutant)', '10 %', '12 %', '3 %'],
+    ['Manuel, aucun appui', '0 %', '0 %', '0 %'],
+    ['Un choix en retard, compétences ×1,15', '18 %', '29 %', ''],
+    ['Un choix en retard, compétences ×1,3', '29 %', '47 %', ''],
+    ['À temps, compétences ×1,15', '39 %', '49 %', ''],
+  ],
+};
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function measTable() {
+  const t = el('table', { class: 'm' }, el('thead', {}, el('tr', {}, ...MEAS.head.map((h) => el('th', {}, h)))));
+  const b = el('tbody');
+  for (const r of MEAS.rows) b.append(el('tr', { class: r[4] ? 'me' : '' }, ...r.slice(0, 4).map((c) => el('td', {}, c))));
+  t.append(b);
+  return el('div', { class: 'scroll' }, t, el('p', { class: 'src' }, 'Titres sur 200 parties tenues à part (graines 101 à 300). Un « choix » est une décision de Ren, toutes les une à trois secondes : le joueur « en retard » agit sur ce qu’il a lu au choix d’avant. Un modèle, pas une personne : il dit l’ordre de grandeur, non le ressenti.'));
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.id + ' · ' + it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.a3) c.append(el('p', { class: 'a3' }, it.a3));
+  if (it.mock === 'page') { const m = el('div', { class: 'mock', 'aria-label': 'Maquette jouable de la page des compétences' }); c.append(m); mockPage(m); }
+  if (it.mock === 'hud') { const m = el('div', { class: 'mock', 'aria-label': 'Maquette de la barre du duel dans les deux modes' }); c.append(m); mockHud(m); }
+  if (it.table) c.append(measTable());
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.id });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l’enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d’arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l’enregistrement perdue : recharge la page.'));
+})();
+</script>
