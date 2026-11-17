@@ -16,7 +16,8 @@ import { ENCOUNTERS, encounterOf } from '../simulation/v2encounter';
 import { NPC_FIGHTERS } from '../narrative/npcFighters';
 import { QUEST } from '../simulation/v2questData';
 import { skillsPage } from './skills';
-import { cap, itemText, lang, num, said, shortName, skillName, tx, word, type TextRef } from '../narrative/text';
+import { cap, itemText, lang, num, said, shortName, skillName, tx, word, type TextKey, type TextRef } from '../narrative/text';
+import { groupHere } from './listModel';
 import { isV2 } from '../simulation/v2';
 import { pendingFinal, stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
 import { healthParts, itemName, weaponTier } from '../simulation/v2gear';
@@ -398,7 +399,19 @@ export class TownUi {
       const b = el('button', 'pm-btn primary', `<span>${this.sandLabel(s)}</span><span class="cost">${tx('ui.oneSlot')}</span>`);
       b.addEventListener('click', () => this.openChallengeSheet(() => this.openHere())); list.appendChild(b);
     }
-    for (const o of opts) list.appendChild(this.optionButton(v2 && (o.action.type === 'rest' || o.action.type === 'wait') ? { ...o, label: o.action.type === 'rest' ? tx('v2.self.rest') : tx('v2.self.wait') } : o));
+    const line = (o: ActionOption): HTMLButtonElement => this.optionButton(v2 && (o.action.type === 'rest' || o.action.type === 'wait') ? { ...o, label: o.action.type === 'rest' ? tx('v2.self.rest') : tx('v2.self.wait') } : o);
+    // a version 2 game's list by groups (IA-04, src/ui/listModel.ts): the answer an encounter waits for under its own title, what the place is for, the people, then
+    // the time to pass and the theft each under a title of its own, never the first line; today's game keeps its list as it was
+    const g = groupHere(opts), title = (key: TextKey): void => { list.appendChild(el('p', 'pm-sub', tx(key))); };
+    const tail = (grp: 'time' | 'steal', key: TextKey): void => {
+      if (!g[grp].length) return;
+      title(key);
+      for (const o of g[grp]) { const b = line(o); b.dataset.group = grp; list.appendChild(b); }
+    };
+    if (v2) {
+      if (g.answer.length) { title('v2.encounter.title'); for (const o of g.answer) list.appendChild(line(o)); }
+      for (const o of g.do) list.appendChild(line(o));
+    } else for (const o of opts) list.appendChild(line(o));
     const away = (o: ActionOption) => !o.ok && o.reason === tx('avail.notNow', { name: PEOPLE[(o.action as { who: string }).who].name }), here = people.filter((o) => !away(o)), gone = people.filter(away);
     if (here.length) {
       list.appendChild(el('p', 'pm-sub', tx('ui.peopleHere')));
@@ -411,10 +424,13 @@ export class TownUi {
       }
     }
     if (gone.length) list.appendChild(el('p', 'pm-sub', tx('ui.away', { names: esc(gone.map((o) => PEOPLE[(o.action as { who: string }).who].name).join(', ')) })));
+    if (v2) { tail('time', 'ui.group.time'); tail('steal', 'ui.group.steal'); }
     const close = footBtn('Esc', tx('ui.close'), () => this.closeModal());
     side.append(list, footOf(close)); arrowKeys(side); card.appendChild(side); root.appendChild(card);
     document.body.appendChild(root); this.current = root; scrollFade(list);
-    ((list.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? close).focus();
+    // opens on the first useful line (IA-04): the bout, a challenge, the answer, what the place is for, a person; a version 2 game's list never opens on the time to pass
+    // nor on the theft (today's game keeps its first enabled line)
+    ((list.querySelector(v2 ? '.pm-btn:not(:disabled):not([data-group])' : '.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? close).focus();
     // the first theft the list offers (journal Passe TU3, TU-3)
     if (opts.some((o) => o.ok && o.action.type === 'steal')) this.hint('steal');
   }

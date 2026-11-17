@@ -1,6 +1,8 @@
 import { installDesign } from './design/system';
 import { keyCap } from '../input/caps';
 import { PHONE_QUERY } from './design/tokens';
+import { installPageKeys, moreBelow, readingZone, topModal } from '../input/zone';
+import { tx } from '../narrative/text';
 
 /** The play mode's interface style, built from the design system (journal Passes UI3 / UM1, direction A « Voile »): the tone's colours (`--ds-*`,
  *  src/ui/design/tokens.ts), sheets of ink without a frame, one-pixel rules between the rows, square corners, keys in outline, no drop shadow;
@@ -300,6 +302,10 @@ const CSS = `
 .pm-overlay.pm-band,.pm-talk{animation:ds-rise .2s ease-out}
 .pm-overlay.pm-band .pm-card{animation:none}
 .pm-scroll{overflow:auto;min-height:0;scroll-padding-block:44px}
+#pm-more{z-index:45;display:none;justify-content:flex-end;pointer-events:none}
+#pm-more.on{display:flex}
+#pm-more span{padding:2px 10px;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:color-mix(in srgb,var(--ds-ink) 90%,transparent);border:1px solid var(--ds-line)}
+body.pm-pad #pm-more .k,body:not(.pm-pad) #pm-more .p{display:none}
 .pm-scroll[data-more=b]{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 44px),transparent)}
 .pm-scroll[data-more=t]{-webkit-mask-image:linear-gradient(to top,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to top,#000 calc(100% - 44px),transparent)}
 .pm-scroll[data-more=tb]{-webkit-mask-image:linear-gradient(to bottom,transparent,#000 44px,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to bottom,transparent,#000 44px,#000 calc(100% - 44px),transparent)}
@@ -344,14 +350,45 @@ export function arrowKeys(list: HTMLElement): void {
   });
 }
 
+/** the line « Page ↓ for more » (« Right stick » with a pad) at the foot of the topmost page's reading zone, while there is more below (IA-02): the text a page lets
+ *  the player read (its detail, its body), never a list (its arrows walk it and the focus keeps its line in view) */
+let hintEl: HTMLElement | null = null, hintQueued = false, watching = false;
+function updateHint(): void {
+  const root = topModal(), zone = root ? readingZone<HTMLElement>(root) : null;
+  if (!zone || !zone.matches('.pm-detail, .pm-body') || !moreBelow(zone)) { hintEl?.classList.remove('on'); return; }
+  if (!hintEl) { hintEl = el('div', 'pm'); hintEl.id = 'pm-more'; hintEl.setAttribute('aria-hidden', 'true'); document.body.appendChild(hintEl); }
+  const html = `<span class="k">${esc(tx('ui.more.key'))}</span><span class="p">${esc(tx('ui.more.pad'))}</span>`;
+  if (hintEl.innerHTML !== html) hintEl.innerHTML = html;
+  const r = zone.getBoundingClientRect();
+  hintEl.style.left = `${r.left}px`; hintEl.style.width = `${r.width}px`; hintEl.style.top = `${r.bottom - 34}px`;
+  // a page rises into place in 0.2 s (`ds-rise`): placed again once it has settled
+  if (!hintEl.classList.contains('on')) setTimeout(queueHint, 280);
+  hintEl.classList.add('on');
+}
+function queueHint(): void {
+  if (hintQueued || typeof requestAnimationFrame === 'undefined') return;
+  hintQueued = true;
+  requestAnimationFrame(() => { hintQueued = false; updateHint(); });
+}
+/** a page opening or closing changes which zone is the topmost's: the body's children are watched, the line follows */
+function watchPages(): void {
+  if (watching || typeof MutationObserver === 'undefined') return;
+  watching = true;
+  new MutationObserver(queueHint).observe(document.body, { childList: true });
+  window.addEventListener('resize', queueHint);
+}
+
 /** a list or a text taller than its box (journal Passe UM11): what goes on beyond the edge fades out, above and below, so that a line is never read as cut
  *  in two and one sees that there is more; the keyboard keeps the selected line clear of the fade (`scroll-padding-block`). Returns what a page calls when
  *  it fills the box again. */
 export function scrollFade(box: HTMLElement): () => void {
   box.classList.add('pm-scroll');
+  // one rule for every zone that scrolls (IA-02, src/input/zone.ts): Page ↓ / Page ↑ / Home / End at the keyboard, and a line that says so while there is more
+  installPageKeys(); watchPages();
   const sync = (): void => {
     const v = `${box.scrollTop > 1 ? 't' : ''}${box.scrollHeight - box.clientHeight - box.scrollTop > 1 ? 'b' : ''}`;
     if (v) box.dataset.more = v; else delete box.dataset.more;
+    queueHint();
   };
   box.addEventListener('scroll', sync, { passive: true });
   new ResizeObserver(sync).observe(box);

@@ -129,9 +129,24 @@ export function showTitle(c: TitleChoice): { live(): void } {
     const go = el('button', 'pm-btn primary', tx('ui.title.enter')), back = el('button', 'pm-btn', tx('ui.title.back'));
     // the gamepad's B goes back as this button does (journal Passe MN2: the keyboard's Esc answers in the field only)
     back.dataset.padBack = '';
-    const start = () => leaveTo(`?play=1&new=1&name=${encodeURIComponent(cleanName(input.value))}`);
+    // a save is replaced only after a question (the operator's IA-01, journal Passe IA2; A-09 of journal Passe IA1: Enter in the name's field erased it, the
+    // warning being text only): the first press asks, naming the game, the button then says what it does and keeps the keyboard; the second goes, Esc or « Back » keeps
+    let asked = 0;
+    const start = () => {
+      if (save && !asked) {
+        asked = performance.now();
+        menu.querySelector('.warn')!.textContent = tx('ui.title.replaceAsk', { name: save.player.name, day: save.day });
+        go.textContent = tx('ui.title.replaceYes'); input.readOnly = true; go.focus();
+        return;
+      }
+      // the press that asked never answers (the same Enter would press the button that just took the focus), nor a second one within a breath
+      if (asked && performance.now() - asked < 400) return;
+      leaveTo(`?play=1&new=1&name=${encodeURIComponent(cleanName(input.value))}`);
+    };
     go.addEventListener('click', start); back.addEventListener('click', menuButtons);
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') start(); if (e.key === 'Escape') menuButtons(); });
+    // a key held down repeats Enter: it never answers the question the first one asked; the key is consumed, so the button the focus moves to is not pressed by it
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); if (!e.repeat) start(); } if (e.key === 'Escape') menuButtons(); });
+    (menu as HTMLElement).addEventListener('keydown', (e) => { if (e.key === 'Escape' && asked) { e.stopPropagation(); menuButtons(); } });
     menu.append(go, back);
     input.focus();
   };

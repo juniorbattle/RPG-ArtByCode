@@ -126,7 +126,7 @@ test('what it remembers lives in the browser, never in the save; a driven browse
 
 test('where it shows: the tour of a new game, the line of a game begun before, each hint at its moment (TU-2, TU-3, TU-8, TU-9)', () => {
   const ui = src('src/ui/townUi.ts'), town = src('src/ui/playTown.ts'), plaza = src('src/ui/playPlaza.ts');
-  assert.match(town, /if \(isV2\(st\) && tutorialOn\(b\.params\)\) \{ void ui\.welcome\(b\.params\.has\('new'\)\);/);
+  assert.match(town, /if \(isV2\(st\) && tutorialOn\(b\.params\)\) \{ void ui\.welcome\(b\.opening \?\? b\.params\.has\('new'\)\);/);  // the opening: `new` in the address, or the page reloaded after it (journal Passe IA3, IA-01)
   assert.match(plaza, /if \(tutorialOn\(b\.params\)\) \{ keepPlace\(st\.place, .*\); await ui\.welcome\(false\); ui\.hint\('square'\); \}/);
   assert.match(ui, /if \(fresh\) await this\.tour\(\);\n\s*else if \(!told\(\)\) \{ this\.hint\('guide'\); markTold\(\); \}/);
   assert.match(ui, /if \(next === s\.day \+ 1 && s\.slot === 'afternoon'\) this\.hint\('eve'\);/);

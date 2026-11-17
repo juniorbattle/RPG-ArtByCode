@@ -106,7 +106,8 @@ try {
   const err = await page.evaluate(() => window.__error ?? null);
   check(!err, `the new game's page is ready${err ? `: ${err}` : ''}`);
   const q = await page.evaluate(() => location.search);
-  check(/^\?play=1&new=1&name=Aster$/.test(q), `the address « New game » opens: ${q} (no v2 in it)`);
+  // the address loses `new` once the game is made and saved (journal Passe IA3, IA-01: a reload reads the save); no v2 in it either
+  check(/^\?play=1&name=Aster$/.test(q), `the address « New game » opened, new consumed: ${q} (no v2 in it)`);
   const st = await page.evaluate(() => { const s = window.__game.state(); return { v2: s.flags.v2 ?? null, combat: s.flags.combat ?? null, day: s.day, slot: s.slot, place: s.place, name: s.player.name, kit: !!s.v2?.kit, foe: s.tournament.matches.find((m) => m.a === 'player' || m.b === 'player')?.day ?? null }; });
   check(st.v2 === true && st.combat === 'dynamic' && st.kit, `a version 2 game: ${JSON.stringify(st)}`);
   check(st.day === 1 && st.slot === 'morning' && st.place === 'district' && st.name === 'Aster' && st.foe === 2, `the first morning on the quay, the first bout on day 2 (the pool of the ten days): day ${st.day}, ${st.slot}, ${st.place}, bout on day ${st.foe}`);
@@ -164,13 +165,14 @@ try {
   for (let k = 0; k < gi; k++) await press(13);
   await press(BTN.A);
   const g = await until(() => (document.querySelector('.tu-guide') ? { n: document.querySelectorAll('.tu-guide .pm-glist .pm-btn').length, days: document.querySelectorAll('.tu-days div').length } : null), 5000, 'the guide');
-  check(g?.n === 13 && g?.days === 10, `the guide: ${g?.n} chapters, the tournament's ${g?.days} days drawn from the game`);
+  // 14 chapters since journal Passe QE2 (« Events and sabotage », the quests): the tool still counted 13 and walked one chapter short (journal Passe IA3)
+  check(g?.n === 14 && g?.days === 10, `the guide: ${g?.n} chapters, the tournament's ${g?.days} days drawn from the game`);
   await press(13); await press(13);
   const pic = await until(() => document.querySelector('.tu-guide .tu-fig img')?.getAttribute('src')?.slice(0, 23) ?? null, 5000, 'the scene\'s picture');
   check(pic === 'data:image/webp;base64,', `« Walking and talking » shows the scene here, taken as the guide opened: ${pic}`);
   await page.screenshot({ path: path.join(outDir, '3-guide.png') });
   // « The duel » (lot 3, journal Passe LC5): its order of the four drawn from the game; X there teaches the first duel's lessons again instead of the tour
-  for (let k = 0; k < 9; k++) await press(13);
+  for (let k = 0; k < 10; k++) await press(13);
   const dc = await until(() => (document.querySelector('.tu-guide section:last-child .pm-h')?.textContent ? { t: document.querySelector('.tu-guide section:last-child .pm-h').textContent, order: document.querySelectorAll('.tu-order > div').length } : null), 5000, 'the duel\'s chapter');
   check(dc?.t === t('tut.ch.duel.title') && dc.order === 5, `the pad reaches « ${dc?.t} »: the order of the four and the light attack (${dc?.order} lines)`);
   await sleep(320); await press(2);

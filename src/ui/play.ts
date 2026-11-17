@@ -13,7 +13,23 @@ import { leavePage } from './curtain';
  *  `window.__game` drives it for the proofs: `state()`, `actions()`, `act(action)` (the state saved; `reload` says whether the page would
  *  reload), `hash()`, `subscribe(f)`. */
 
-export interface Boot { canvas: HTMLCanvasElement; params: URLSearchParams; label: HTMLElement; bar: HTMLElement; loading: HTMLElement }
+/** `opening`: the page is a new game's first (its tour, the title's music taken up): the address said `new`, or the page was reloaded after it did (IA-01) */
+export interface Boot { canvas: HTMLCanvasElement; params: URLSearchParams; label: HTMLElement; bar: HTMLElement; loading: HTMLElement; opening?: boolean }
+
+/** A new game is made ONCE (the operator's IA-01 « Corriger les deux (la partie jamais recréée, une confirmation devant une sauvegarde) », journal Passe IA2; A-01 of
+ *  journal Passe IA1: a language change or F5 on a new game's first page reloaded `?new=1` and made the game anew, 37 coins back to 60, the blade bought lost): once the
+ *  game is created and saved, the address loses `new`, and the page's history entry remembers that it was the opening, so a reload reads the save and still plays the
+ *  tour. Another page's address never carried `new` (`playUrl`). */
+export function withoutNew(search: string): string {
+  const q = new URLSearchParams(search); q.delete('new');
+  const s = q.toString();
+  return s ? `?${s}` : '';
+}
+const OPENING = 'cdtOpening';
+const openingKept = (): boolean => { try { return (history.state as Record<string, unknown> | null)?.[OPENING] === true; } catch { return false; } };
+function keepOpening(): void {
+  try { history.replaceState({ ...((history.state as Record<string, unknown> | null) ?? {}), [OPENING]: true }, '', `${location.pathname}${withoutNew(location.search)}${location.hash}`); } catch { /* the address stays: a reload makes the game anew, as before */ }
+}
 
 /** the tools' parameters carried from the address into every play-mode page (measurements, captures, culling checks) */
 const CARRY = ['fps', 'vis', 'viscache', 'painters', 'res', 'msaa', 'refl', 'camera', 'player', 'static', 'occ', 'freeze', 'gpuprof', 'noreload', 'spriteedge', 'npcfacing', 'dyn', 'input', 'cutscene', 'tutorial', 'lang', 'fx'];
@@ -89,7 +105,10 @@ export async function startPlay(b: Boot): Promise<void> {
     if (!isV2(state) && lang() !== 'en') { useLanguage('en'); pageInEnglish(); }
     // the loading screen takes the tone of the page it opens (journal Passe UI4), before its first frame
     toneLoading(b.label, pageTone(b.params, state));
-    writeSave(state);
+    const saved = writeSave(state);
+    // a new game's address is consumed once it is saved (IA-01): never when the save failed (a reload would then have nothing to read)
+    b.opening = b.params.has('new') || openingKept();
+    if (b.params.has('new') && saved) keepOpening();
     if (b.params.get('scene') === 'arena') await (await import('./playArena')).startPlayArena(b, state);
     // the version 2's open places (lot V5): the forecourt, the training ground, the festival square
     else if (isV2(state) && state.place !== 'district') await (await import('./playPlaza')).startPlayPlaza(b, state);

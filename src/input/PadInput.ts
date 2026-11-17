@@ -1,5 +1,6 @@
 import { contextOf, duelCommands, edges, KEYS, navDir, padFamily, Repeater, rumbleOf, scrollOf, stepIndex, TAB, walkOf, type Dir, type PadContext, type PadFamily, type PadSnapshot } from './pad';
 import { capKey, prompts } from './prompts';
+import { MODALS, readingZone } from './zone';
 import { tx } from '../narrative/text';
 
 /** The console gamepad in the page (journal Passes MN1 / MN2; the operator's sheet, eleven of eleven: MN-1 « La version 2 et la navigation de
@@ -32,8 +33,6 @@ export function padSettings(): { vibration: boolean } {
 }
 export function setPadSettings(s: { vibration: boolean }): void { try { localStorage.setItem(SETTINGS, JSON.stringify(s)); } catch { /* a convenience only */ } }
 
-/** what counts as a modal page: the title screen, a sheet on the full-screen veil, a band at the foot of the screen (a dialogue, the list, the news) */
-const MODALS = '#title-screen, .pm-overlay, .pm-talk';
 const FOCUSABLE = 'button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])';
 const shown = (e: Element): boolean => (e as HTMLElement).getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden';
 
@@ -241,10 +240,11 @@ export class PadInput {
     next?.focus(); this.note(`focus ${dir}`);
   }
 
-  /** the right stick: the page's text beside its list (the detail), else whatever scrolls in it */
+  /** the right stick: the page's text beside its list (the detail, then the body), else whatever scrolls in it (the list alone): `readingZone`, the keyboard's
+   *  Page keys' too (IA-02: it used to take the first of them in the page's order, which was the list of the guide) */
   private scroll(dy: number): void {
     const root = this.modal(); if (!root) return;
-    const box = [...root.querySelectorAll<HTMLElement>('.pm-detail, .pm-scroll, .pm-body')].find((b) => b.scrollHeight > b.clientHeight + 1);
+    const box = readingZone<HTMLElement>(root);
     if (box) box.scrollTop += dy;
   }
 

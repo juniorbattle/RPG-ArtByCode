@@ -184,7 +184,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   };
   app.start();
   // the version 2's sound (lot V8): the district's ambience and its piece of the band (journal Passe SN10: a new game's first page opens on the title); today's game makes none
-  if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed, { opening: b.params.has('new') }, parseWeather(q)));
+  if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed, { opening: b.opening ?? b.params.has('new') }, parseWeather(q)));
   frame();
   // a version 2 game: the casting's approved faces (journal Passe CA3)
   const faces: Parameters<typeof preloadPortraits>[0] = isV2(st) ? (await import('../characters/PlazaCast')).plazaFaces() : undefined;
@@ -197,6 +197,6 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   // the place's name on arriving by a way, once the news are read (the operator's MK-13 « Un carton à chaque arrivée par une sortie », journal Passe MK5)
   if (arrive) void ui.newsRead.then(() => showZoneCard(shortName(placeName(st.place, true)), `${cap(word(st.slot))} · ${tx('ui.clockDay', { day: st.day })}`));
   // the tutorial (journal Passe TU3): a new game's tour, a game begun before's line, the moment's hints; the quay's picture kept for the guide (TU-4)
-  if (isV2(st) && tutorialOn(b.params)) { void ui.welcome(b.params.has('new')); setTimeout(() => keepPlace(st.place, () => { app.render(); return b.canvas; }), 1500); }
+  if (isV2(st) && tutorialOn(b.params)) { void ui.welcome(b.opening ?? b.params.has('new')); setTimeout(() => keepPlace(st.place, () => { app.render(); return b.canvas; }), 1500); }
   if (note) void overlay(`<h2 class="pm-h">${tx('ui.newGame')}</h2><p>${esc(note)}</p>`, [{ id: 'ok', label: tx('ui.continue'), primary: true }]).done;
 }
