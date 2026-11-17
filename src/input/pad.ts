@@ -60,7 +60,8 @@ export function contextOf(s: { scene: boolean; modal: boolean; duel: boolean; ex
 export const KEYS: Record<Exclude<PadContext, 'duel'>, Partial<Record<Btn, string>>> = {
   explore: { [BTN.A]: 'e', [BTN.Y]: 'q', [BTN.START]: 'Escape', [BTN.VIEW]: 'm' },
   // Y: C, a skill's condition in the tactic (the skills page and the match sheet, lot 2 of the second redesign, journal Passe SL3)
-  page: { [BTN.A]: 'Enter', [BTN.B]: 'Escape', [BTN.X]: ' ', [BTN.Y]: 'c', [BTN.START]: 'Escape' },
+  // LT, RT: the keys A and D, which move a skill of the skills page earlier or later (IA-06: the D-pad's arrows now walk that page as the gear page's); no other page takes them
+  page: { [BTN.A]: 'Enter', [BTN.B]: 'Escape', [BTN.X]: ' ', [BTN.Y]: 'c', [BTN.START]: 'Escape', [BTN.LT]: 'a', [BTN.RT]: 'd' },
   scene: { [BTN.A]: 'Enter', [BTN.START]: 'Escape' },
 };
 /** a page's shoulders (MN-4): the menu's neighbouring page, before and after */

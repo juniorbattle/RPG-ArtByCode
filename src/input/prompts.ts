@@ -1,4 +1,4 @@
-import { bindButton, capButton, type CapPlace, type PadFamily } from './pad';
+import { BTN, bindButton, capButton, type Btn, type CapPlace, type PadFamily } from './pad';
 import { capOf, PAD_CSS, type GlyphStyle } from './glyphs';
 
 /** The key caps of the interface as pad buttons (journal Passe MN1): while the pad was the last device used, every `<kbd>` the pages show holds
@@ -52,7 +52,9 @@ export class Prompts {
   private apply(k: HTMLElement): void {
     if (k.dataset.txt !== undefined) this.restore(k);
     if (!this.mode) return;
-    const b = k.dataset.bind ? bindButton(k.dataset.bind, placeOf(k)) : capButton(capKey(k), placeOf(k));
+    // a cap may name its own button (`data-pad-btn="LT"`: the skills page's « Earlier » and « Later »), else its action's, else its key's
+    const own = k.dataset.padBtn ? (BTN as Record<string, Btn>)[k.dataset.padBtn] : undefined;
+    const b = own !== undefined ? own : k.dataset.bind ? bindButton(k.dataset.bind, placeOf(k)) : capButton(capKey(k), placeOf(k));
     if (b === null) return;
     k.dataset.txt = k.textContent ?? '';
     if (b === 'hide') { k.style.display = 'none'; return; }

@@ -80,7 +80,10 @@ test('the walk (MN-2): the D-pad at full speed, the stick from 30 % to 1, B held
 test('the keys each button presses (MN-3, MN-4, MN-6), as the sheet\'s tables say', () => {
   assert.deepEqual({ ...P.KEYS.explore }, { [STD.A]: 'e', [STD.Y]: 'q', [STD.START]: 'Escape', [STD.VIEW]: 'm' });
   // Y: C, a skill's condition in the tactic (lot 2 of the second redesign, journal Passe SL3)
-  assert.deepEqual({ ...P.KEYS.page }, { [STD.A]: 'Enter', [STD.B]: 'Escape', [STD.X]: ' ', [STD.Y]: 'c', [STD.START]: 'Escape' });
+  // LT, RT: A and D, a skill of the skills page earlier or later (journal Passe IA4, IA-06: the D-pad's arrows walk that page as the gear page's)
+  assert.deepEqual({ ...P.KEYS.page }, { [STD.A]: 'Enter', [STD.B]: 'Escape', [STD.X]: ' ', [STD.Y]: 'c', [STD.START]: 'Escape', [STD.LT]: 'a', [STD.RT]: 'd' });
+  // read as the left and right actions whatever the keyboard (a key the pad presses is QWERTY's): AZERTY's own left key is Q, the pad's LT still moves the skill earlier
+  for (const t of [K.DEFAULT_KEYS.qwerty, K.DEFAULT_KEYS.azerty]) assert.deepEqual(['a', 'd'].map((k) => K.actsOfId(K.keyId({ key: k, isTrusted: false }), 'walk', t)), [['left'], ['right']], 'LT and RT are the left and right actions on either keyboard');
   assert.deepEqual({ ...P.KEYS.scene }, { [STD.A]: 'Enter', [STD.START]: 'Escape' });
   assert.deepEqual({ ...P.TAB }, { [STD.LB]: -1, [STD.RB]: 1 });
   // the pages answer those keys: a key the pad presses (untrusted) is read as QWERTY's whatever the player's keys (the remapping, journal Passe RM2,

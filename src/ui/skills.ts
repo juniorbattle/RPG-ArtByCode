@@ -13,6 +13,7 @@ import { AUTO_ROLES, autoCondOf, autoCondsFor, autoKitFor, kitRankFault, skillRa
 import { AUTO_RULES, type AutoCond, type AutoRole } from '../combat/auto';
 import { COND_TEXT } from '../simulation/v2skills';
 import { el, esc, fillFoot, footBtn, scrollFade } from './style';
+import { ARROWS, arrowFocus } from './nav';
 
 /** The skills, and the match sheet that chooses them (journal Passe UM11, the audit of Passe UM10; the structure of the gear's page, journal Passe UM9), made again for the
  *  operator's request of 15/11/2026 (« il faut que ce soit intuitif », journal Passes CM1, CM2; the sheet https://claude.ai/artifact/KKxYTXc7z2Tvm1rhwYwC6J) in the look of the
@@ -21,7 +22,7 @@ import { el, esc, fillFoot, footBtn, scrollFade } from './style';
  *  uses and its condition (CM-04: the role's conditions listed, the current one marked), and below them every skill owned as a tile, a filter by family, each tile saying « place
  *  2 », « free » or why it cannot come (CM-05: one ultimate and one super at most, said before any click). A click or Enter on a skill puts it in a place (when the four are taken
  *  it asks which one it replaces) and on a place takes it out (the place stays free on the screen until another skill comes: Esc keeps the one that was there; the game keeps
- *  four skills, so a replacement is one move); Space does the same on a match sheet, where Enter enters the arena; the left and right keys move a place earlier or later (CM-03);
+ *  four skills, so a replacement is one move); Space does the same on a match sheet, where Enter enters the arena; the A and D keys (the pad's LT and RT) move a place earlier or later (CM-03; the four arrows walk the page as the gear page's, IA-06);
  *  C lists the conditions. The mode, auto or manual (CM-07, CM-08), is one switch at the top right: in manual the places show their key and no condition (CM-12: the plan is kept,
  *  not read). The heavy blow is a base attack since SY-02 and is no skill to bring (CM-01). The skills page is the hero's alone (the whole width); the match sheet's plan is kept
  *  for its rival (`foe`: « un plan par rival », taken up when it is met again) beside the rival's sheet, the skills page's the general one. The numbers are the duel's
@@ -203,7 +204,7 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     const meta = `${cap(tx(FAMILY[famOf(id)]))} · ${rankName(id)} · ${tx('v2.skills.level', { level: lvOf(id) })} · ${tx('ui.order.uses', { n: t?.uses ?? 0, gap: num(t?.gapS ?? 0) })}`;
     const cond = m ? tx('ui.sk.byHand') : tx('ui.sk.cond', { cond: tx(COND_TEXT[condOf(host.state(), id, foe)]) });
     return `<div class="sk-slot${S.pick !== null ? ' armed' : ''}"><button class="pm-btn sk-main" type="button" data-fk="slot:${k}" data-skill="${esc(id)}" aria-label="${k + 1}. ${esc(skillName(id))} · ${esc(meta)} · ${esc(cond)}"><span class="n">${n}</span><b>${esc(skillName(id))}</b><small>${esc(meta)}</small></button>`
-      + (m ? `<p class="cd">${esc(cond)}</p>` : `<button type="button" tabindex="-1" class="cd chip" data-cd="${k}">${esc(cond)}</button>`)
+      + (m ? `<p class="cd">${esc(cond)}</p>` : `<button type="button" tabindex="-1" class="cd chip" data-cd="${k}" title="${esc(cond)}"><span class="pre">${esc(tx('ui.sk.cond', { cond: '\u0001' }).split('\u0001')[0])}</span>${esc(tx(COND_TEXT[condOf(host.state(), id, foe)]))}</button>`)
       + `<span class="sk-ctl"><button type="button" tabindex="-1" data-mv="${k}:-1" aria-label="${esc(tx('ui.order.earlier'))}"${k === 0 ? ' disabled' : ''}>‹</button><button type="button" tabindex="-1" data-mv="${k}:1" aria-label="${esc(tx('ui.order.later'))}"${k === 3 ? ' disabled' : ''}>›</button><button type="button" tabindex="-1" data-rm="${k}">${esc(tx('ui.sk.remove'))}</button></span></div>`;
   };
   const condsHtml = (k: number): string => {
@@ -216,7 +217,8 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   };
   const paintNote = (): void => {
     const pend = S.pick !== null ? tx('ui.sk.pick', { name: skillName(S.pick) }) : S.msg;
-    const lines = [`<p class="sk-say" role="status">${esc(pend)}</p>`];
+    // the line under the places: what was just done, else what the mode is (B-18: the switch was explained nowhere)
+    const lines = [pend ? `<p class="sk-say" role="status">${esc(pend)}</p>` : `<p class="sk-say sk-modeline" role="status">${esc(tx(manual() ? 'ui.sk.modeManual' : 'ui.sk.modeAuto'))}</p>`];
     // a match sheet says whose plan it sets; every page says what is always the automatic's and the rank rule (CM-05, CM-07)
     if (!solo && !manual()) lines.push(`<p>${esc(planLine(host.state(), foe, host.foeName))}</p>`);
     lines.push(`<p class="sk-legend">${esc(tx('ui.sk.legend'))} ${esc(tx('ui.sk.alwaysLine', { list: [tx('ui.skill.light'), skillName('heavy'), tx('ui.sk.guard'), tx('ui.sk.dodge')].join(', ') }))}</p>`);
@@ -231,7 +233,7 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     tiles.innerHTML = owned.filter((id) => S.filter === 'all' || famOf(id) === S.filter).map((id) => {
       const at = o.indexOf(id), why = at < 0 ? rankMsg(id, S.free !== null ? o.map((x, i) => (i === S.free ? '' : x)) : o) : '';
       const st = at >= 0 ? tx('ui.sk.inPlace', { n: at + 1 }) : why || tx('ui.sk.tileFree');
-      return `<button class="pm-btn sk-tile${why ? ' warn' : ''}" type="button" data-fk="tile:${esc(id)}" data-skill="${esc(id)}" aria-pressed="${at >= 0}"><b>${esc(skillName(id))}</b><small>${esc(`${cap(tx(FAMILY[famOf(id)]))} · ${rankName(id)} · ${tx('v2.skills.level', { level: lvOf(id) })}`)}</small><span class="st">${esc(st)}</span></button>`;
+      return `<button class="pm-btn sk-tile${why ? ' warn' : ''}" type="button" data-fk="tile:${esc(id)}" data-skill="${esc(id)}" aria-pressed="${at >= 0}"><b>${esc(skillName(id))}</b><small><span class="fam">${esc(cap(tx(FAMILY[famOf(id)])))} · </span>${esc(`${rankName(id)} · ${tx('v2.skills.level', { level: lvOf(id) })}`)}</small><span class="st">${esc(st)}</span></button>`;
     }).join('');
   };
   const paintDetail = (): void => {
@@ -252,14 +254,14 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   };
   const slotOf = (fk: string): number => (/^slot:\d$/.test(fk) ? +fk.slice(5) : -1);
   const moveBtn = (dir: 'left' | 'right'): HTMLButtonElement => {
-    const b = el('button', 'pm-btn', `${bindCap(dir)}<span>${esc(tx(dir === 'left' ? 'ui.order.earlier' : 'ui.order.later'))}</span>`);
+    const b = el('button', 'pm-btn', `${bindCap(dir, `data-pad-btn="${dir === 'left' ? 'LT' : 'RT'}"`)}<span>${esc(tx(dir === 'left' ? 'ui.order.earlier' : 'ui.order.later'))}</span>`);
     b.addEventListener('click', () => { const k = slotOf(focusKey()); if (k >= 0) move(k, dir === 'left' ? -1 : 1); });
     return b;
   };
   const paintFoot = (): void => {
     const fk = focusKey(), onSlot = /^slot:/.test(fk), onCond = /^cond:/.test(fk), onTile = fk.startsWith('tile:');
     // what Space does on the control that has the keyboard: switch the mode, take a place's skill out, place a skill (or take it out again), choose a condition, a family
-    const verb = fk === 'mode' ? 'ui.sk.switch' : onSlot ? 'ui.sk.remove' : onCond || fk.startsWith('filter:') ? 'ui.sk.choose' : onTile && placeOf(fk.slice(5)) >= 0 ? 'ui.sk.remove' : 'ui.sk.place';
+    const verb = fk === 'mode' ? 'ui.sk.switch' : onSlot ? (S.free === slotOf(fk) ? 'ui.sk.keepHere' : 'ui.sk.remove') : onCond || fk.startsWith('filter:') ? 'ui.sk.choose' : onTile && placeOf(fk.slice(5)) >= 0 ? 'ui.sk.remove' : 'ui.sk.place';
     fillFoot(foot, footBtn('Space', tx(verb as TextKey), () => activate(focusKey())), onSlot && !manual() ? footBtn('C', tx('ui.skill.when'), () => openConds()) : null,
       onSlot ? moveBtn('left') : null, onSlot ? moveBtn('right') : null, go, close);
     if (go) go.disabled = S.free !== null;
@@ -280,9 +282,10 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     if (fk.startsWith('slot:')) {
       const k = +fk.slice(5);
       if (S.pick !== null) { place(S.pick, k); paint(`slot:${k}`); return; }
-      if (S.free === k) { S.free = null; paint(`slot:${k}`); return; }
+      if (S.free === k) { S.free = null; said(''); paint(`slot:${k}`); return; }
       // a place taken out: free on the screen, its skill kept by the game until another comes (Esc keeps it)
-      S.free = k; S.pick = null; S.conds = null; said(''); paint(`slot:${k}`);
+      const was = four()[k];
+      S.free = k; S.pick = null; S.conds = null; said(tx('ui.sk.freed', { n: k + 1, name: skillName(was) })); paint(`slot:${k}`);
       return;
     }
     if (fk.startsWith('tile:')) {
@@ -318,11 +321,11 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   const ctrls = (): HTMLElement[] => (S.conds !== null && !manual() ? [...card.querySelectorAll<HTMLElement>('.sk-conds [data-fk]')] : [...card.querySelectorAll<HTMLElement>('[data-fk]')]);
   card.addEventListener('keydown', (e) => {
     const fk = focusKey(), a = actsOf(e, 'walk');
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      const all = ctrls(); if (!all.length) return;
+    // the four arrows go to the control nearest in their direction, as on the gear page (IA-06, src/ui/nav.ts: from a place to the tile under it in one press); a place is
+    // moved earlier or later by its own keys, below
+    if (ARROWS.includes(e.key)) {
       e.preventDefault(); e.stopPropagation();
-      const i = all.findIndex((x) => x.dataset.fk === fk), down = e.key === 'ArrowDown';
-      all[i < 0 ? (down ? 0 : all.length - 1) : (i + (down ? 1 : -1) + all.length) % all.length].focus();
+      arrowFocus(card, e.key, { items: ctrls, rows: '.sk-tiles' });
       return;
     }
     // Space places or removes everywhere (the squares' own handler no longer takes it from a page), and on a sheet Enter enters the arena
@@ -342,7 +345,7 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     }
     if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
     const k = slotOf(fk);
-    if (k >= 0 && S.free === null && (a.includes('left') || a.includes('right'))) { e.preventDefault(); e.stopPropagation(); move(k, a.includes('left') ? -1 : 1); return; }
+    if (k >= 0 && S.free === null && !e.key.startsWith('Arrow') && (a.includes('left') || a.includes('right'))) { e.preventDefault(); e.stopPropagation(); move(k, a.includes('left') ? -1 : 1); return; }
     if (k >= 0 && (e.key === 'Delete' || e.key === 'Backspace')) { e.preventDefault(); e.stopPropagation(); activate(fk); return; }
     if (e.key.toLowerCase() === 'c' && k >= 0) { e.preventDefault(); e.stopPropagation(); openConds(); }
   });

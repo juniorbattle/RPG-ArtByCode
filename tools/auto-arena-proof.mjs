@@ -226,14 +226,14 @@ try {
   // (the four places in a row of cards since journal Passe CM2, the operator's CM-02: each place's name, in the order the duel uses them)
   check(sheet.order.join() === inLang(() => bout.ren.skills.map((x) => T.skillName(x.id)).join()), `the order shown: ${sheet.order.join(', ')}`);
   await page.screenshot({ path: path.join(outDir, 'sheet-1.png') });
-  // the order set at the keyboard: the last skill one place earlier (the player's left key)
+  // the order set at the keyboard: the last skill one place earlier (the A key, since journal Passe IA4, IA-06: the four arrows walk the page as the gear page's; the pad's LT)
   const last = bout.ren.skills[3].id;
   await page.focus('[data-fk="slot:3"]');
-  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('a');
   const st1 = await page.evaluate(() => window.__game.state());
   // the order set on the match sheet is kept for its rival (lot 2 of « La Brute »: « un plan par rival »), the general plan unchanged
   const order = st1.v2.kit.plans?.[bout.foeId]?.order ?? [];
-  check(order[2] === last && order.length === 4 && JSON.stringify(st1.v2.kit.order) === JSON.stringify(st0.v2.kit.order), `ArrowLeft sets the order in the game, kept for ${bout.foeId}: ${order.join(', ')}`);
+  check(order[2] === last && order.length === 4 && JSON.stringify(st1.v2.kit.order) === JSON.stringify(st0.v2.kit.order), `A sets the order in the game, kept for ${bout.foeId}: ${order.join(', ')}`);
   actions.push({ type: 'setOrder', skills: order, foe: bout.foeId });
   await page.screenshot({ path: path.join(outDir, 'sheet-2-order.png') });
   await page.keyboard.press('Enter');

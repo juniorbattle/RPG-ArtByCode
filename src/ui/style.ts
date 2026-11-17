@@ -94,7 +94,9 @@ const CSS = `
 .pm-goods .pm-detail{min-height:236px;padding:14px 0 0}
 /* the skills page (the operator's CM-02 « A · Quatre places et un catalogue » in the look of the sheet's mock-up, journal Passe CM2): the four places in a row of cards, the catalogue of tiles under them */
 .pm-overlay .pm-card.pm-two.pm-skills.pm-solo{grid-template-columns:minmax(0,1fr);width:min(1040px,100%)}
-.pm-skills .pm-goods{grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto}
+/* IA-05 (the operator's « Deux rangées au moins, le détail se replie », journal Passe IA2): the catalogue's row is never under two rows of tiles, whatever the window; on a short one the detail folds to its first lines (the rest by Page ↓, the line says so) and the places tighten */
+.pm-skills{--sk-tile:84px;--sk-two:calc(var(--sk-tile)*2 + 14px)}
+.pm-skills .pm-goods{grid-template-rows:auto auto auto auto auto minmax(var(--sk-two),1fr) auto auto}
 .pm-skills .pm-goods .pm-detail{min-height:0;max-height:min(23vh,220px);padding-top:10px}
 .sk-lab{margin:0;font-size:var(--ds-fs-small);letter-spacing:.1em;text-transform:uppercase;color:var(--ds-muted)}
 .sk-modebox{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
@@ -109,7 +111,9 @@ const CSS = `
 .sk-slot.free{border-style:dashed}
 .sk-slot .sk-main{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:0;text-align:left;width:100%;border-top:0}
 .sk-slot .sk-main.on,.sk-tile.on{box-shadow:none;padding-left:0}
-.sk-slot .sk-main .n{position:absolute;top:8px;right:11px;font:400 var(--ds-fs-small)/1 var(--ds-title);color:var(--ds-muted)}
+.sk-slot .sk-main .n{position:absolute;top:2px;right:11px;font:400 var(--ds-fs-small)/1 var(--ds-title);color:var(--ds-muted)}
+.sk-slot .sk-main b{padding-right:40px}
+.sk-slot .sk-main .n kbd{min-width:22px;height:22px;padding:0 6px;font-size:var(--ds-fs-small);line-height:20px;box-sizing:border-box;vertical-align:top}
 .sk-slot .sk-main b{font:400 var(--ds-fs-label)/1.2 var(--ds-title);color:var(--ds-ivory)}
 .sk-slot .sk-main small,.sk-tile small{display:block;font-size:var(--ds-fs-small);line-height:1.3;color:var(--ds-muted)}
 .sk-slot .cd{margin:0;font-size:var(--ds-fs-small);line-height:1.3;color:var(--ds-ivory)}
@@ -126,6 +130,7 @@ const CSS = `
 .sk-note{padding:8px 0 2px}
 .sk-note p{margin:0 0 2px;font-size:var(--ds-fs-small);line-height:1.3;color:var(--ds-muted)}
 .sk-note .sk-say{min-height:1.3em;color:var(--ds-accent)}
+.sk-note .sk-say.sk-modeline{color:var(--ds-muted)}
 .sk-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0 6px}
 .sk-filters{display:flex;flex-wrap:wrap;gap:6px}
 .sk-chipf{width:auto;padding:2px 12px;border:1px solid var(--ds-line);border-radius:12px;font-size:var(--ds-fs-small)}
@@ -174,6 +179,8 @@ const CSS = `
 @media (max-height:900px){.pm-overlay .pm-card.pm-two.pm-gear{grid-template-columns:minmax(0,480px) minmax(0,1fr)}.pm-gear .gp-lab{display:none}.pm-gear .pm-ghead img{width:48px;height:48px}}
 @media (max-width:1000px){.pm-gear .gp-casebox{grid-column:1}}
 @media (max-height:760px){.sk-legend{display:none}.pm-skills .pm-goods .pm-detail{max-height:18vh}.sk-slot{padding:7px 10px 6px;gap:5px}}
+@media (min-width:701px){.pm-skills:not(.pm-solo) .sk-places{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.pm-skills:not(.pm-solo) .sk-slot .cd.chip .pre{display:none}}
+@media (max-height:800px){.pm-skills .pm-goods .pm-detail{max-height:min(14vh,104px);--fade:22px;scroll-padding-block:22px}.pm-skills:not(.pm-solo) .sk-tile small .fam{display:none}.pm-skills .sk-note{padding:4px 0 0}.pm-skills .sk-bar{padding:4px 0}.pm-skills .sk-places-lab{padding:0 0 4px}.pm-skills .pm-ghead{padding-bottom:6px}.pm-skills:not(.pm-solo) .sk-slot .sk-main small{display:none}}
 .pm-detail .nm{margin:0;font:400 var(--ds-fs-label)/1.2 var(--ds-title)}
 .pm-detail .what{margin:2px 0 0;font-size:var(--ds-fs-small);color:var(--ds-muted)}
 .pm-detail .ab{margin:6px 0 0;font-size:var(--ds-fs-body);line-height:1.3}
@@ -306,9 +313,9 @@ const CSS = `
 #pm-more.on{display:flex}
 #pm-more span{padding:2px 10px;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:color-mix(in srgb,var(--ds-ink) 90%,transparent);border:1px solid var(--ds-line)}
 body.pm-pad #pm-more .k,body:not(.pm-pad) #pm-more .p{display:none}
-.pm-scroll[data-more=b]{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 44px),transparent)}
-.pm-scroll[data-more=t]{-webkit-mask-image:linear-gradient(to top,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to top,#000 calc(100% - 44px),transparent)}
-.pm-scroll[data-more=tb]{-webkit-mask-image:linear-gradient(to bottom,transparent,#000 44px,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to bottom,transparent,#000 44px,#000 calc(100% - 44px),transparent)}
+.pm-scroll[data-more=b]{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - var(--fade,44px)),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - var(--fade,44px)),transparent)}
+.pm-scroll[data-more=t]{-webkit-mask-image:linear-gradient(to top,#000 calc(100% - var(--fade,44px)),transparent);mask-image:linear-gradient(to top,#000 calc(100% - var(--fade,44px)),transparent)}
+.pm-scroll[data-more=tb]{-webkit-mask-image:linear-gradient(to bottom,transparent,#000 var(--fade,44px),#000 calc(100% - var(--fade,44px)),transparent);mask-image:linear-gradient(to bottom,transparent,#000 var(--fade,44px),#000 calc(100% - var(--fade,44px)),transparent)}
 .pm-foot{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:6px 28px;padding-top:12px}
 .pm-foot .pm-btn{width:auto;gap:10px;padding:4px 0;border-top:0;white-space:nowrap}
 .pm-foot .pm-btn::before{display:none}

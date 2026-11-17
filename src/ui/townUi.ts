@@ -37,7 +37,7 @@ import { challengeSkill, levelOf } from '../simulation/v2skills';
 import { AUTO_RULES, type AutoAction, type AutoFighter } from '../combat/auto';
 import { AUTO_STYLES, autoResistsOf, autoStatesOf } from '../combat/autoData';
 import { roleName } from './skills';
-import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
+import { bare, costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
 import { gearPage } from './gearPage';
 import { tabTo } from '../input/pad';
 import { guidePage, hintChapter, hintSeen, markHint, markTold, runTour, showHint, told, TOUR, type HintId } from './tutorial';
@@ -435,11 +435,28 @@ export class TownUi {
     if (opts.some((o) => o.ok && o.action.type === 'steal')) this.hint('steal');
   }
 
-  private optionButton(o: ActionOption, after?: () => void, tag = true): HTMLButtonElement {
+  /** `gate`: asked first (a sale: IA-07); it is given what the click does once it is answered */
+  private optionButton(o: ActionOption, after?: () => void, tag = true, gate?: (go: () => void, line: HTMLButtonElement) => void): HTMLButtonElement {
     const b = el('button', 'pm-btn', `<span>${esc(shortLabel(o))}${o.ok ? '' : `<span class="why">${esc(o.reason ?? '')}</span>`}</span>${tag ? costTag(o) : ''}`);
     b.disabled = !o.ok;
-    b.addEventListener('click', () => { this.run(o.action); after?.(); });
+    b.addEventListener('click', () => { const go = (): void => { this.run(o.action); after?.(); }; if (gate) gate(go, b); else go(); });
     return b;
+  }
+
+  /** a sale in a dialogue asks before it sells (the operator's IA-07 « Toute vente demande, les messages disent le port et la vente », journal Passe IA2; B-08 of journal
+   *  Passe IA1: « Sell X to Mara » sold at one Enter where the gear page and its Sell panel ask): the line is replaced by the question, as the gear page words it; Enter sells,
+   *  Esc or the second line keeps the piece and gives the dialogue back. The press that opened the question never answers it (a breath of 0.4 s) */
+  private askSale(o: ActionOption, list: HTMLElement, root: HTMLElement, go: () => void, line: HTMLButtonElement): void {
+    const item = (o.action as { item: string }).item, n = o.gain ?? 0, saved = [...list.children], at = performance.now();
+    const q = el('p', 'pm-sub', esc(tx('ui.gear.confirm', { item: bare(itemName(item)), n }))), what = el('p', 'pm-sub', esc(tx('ui.gear.confirmWhat')));
+    const yes = el('button', 'pm-btn primary', `<span>${esc(tx('ui.wares.sell', { n }))}</span>`), keep = el('button', 'pm-btn', `<span>${esc(tx('ui.gear.keep'))}</span>`);
+    const back = (): void => { root.removeEventListener('keydown', esc1, true); list.replaceChildren(...saved); line.focus(); };
+    const esc1 = (e: KeyboardEvent): void => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); back(); } };
+    root.addEventListener('keydown', esc1, true);
+    yes.addEventListener('click', () => { if (performance.now() - at < 400) return; root.removeEventListener('keydown', esc1, true); go(); });
+    keep.addEventListener('click', back);
+    list.replaceChildren(q, what, yes, keep);
+    yes.focus();
   }
 
   /** applies an action: a reload for a new slot or place, otherwise the panels and the news */
@@ -543,7 +560,8 @@ export class TownUi {
     // the plan against the next opponent, which his rehearsal plays (GP-12 « La fiche dès que l’adversaire est connu »)
     const nb = who === 'corvin' && isV2(st) ? autoNextBout(st) : null;
     if (nb) { const b = el('button', 'pm-btn', `<span>${esc(tx('prep.sheet.corvin', { name: fighterName(nb.foeId) }))}</span>`); b.addEventListener('click', () => this.openMatchSheet(() => this.openPerson(who))); list.appendChild(b); }
-    for (const o of opts) if ((!goods || !isGoods(o)) && !first.includes(o)) list.appendChild(this.optionButton(o, again));
+    // a sale asks first (IA-07, B-08)
+    for (const o of opts) if ((!goods || !isGoods(o)) && !first.includes(o)) list.appendChild(this.optionButton(o, again, true, o.action.type === 'sell' ? (go, line) => this.askSale(o, list, root, go, line) : undefined));
     const leave = footBtn('Esc', tx('ui.leave'), () => this.closeModal());
     side.append(list, footOf(leave)); arrowKeys(side);
     card.appendChild(side);

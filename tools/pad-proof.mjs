@@ -243,12 +243,15 @@ try {
     const four = () => page.evaluate(() => String(document.querySelectorAll('.pm-skills .sk-slot:not(.free)').length));
     const n0 = await four(); await press(B.X); const n1 = await four(); await press(B.X); const n2 = await four();
     const sheetCaps = await caps(page, '.pm-skills .pm-foot kbd');
-    check(n0 === '4' && n1 === '3' && n2 === '4' && sheetCaps.map((c) => c.label).join() === 'X,Y,D-pad left,D-pad right,A,B', `the match sheet: X leaves a skill out and brings it back (${n0} ${n1} ${n2}), its foot X, the D-pad's left and right (the order, lot 2), A, B (${sheetCaps.map((c) => `${c.key}:${c.label}`).join(' ')})`);
-    // the order of the four (AC-09) at the D-pad: the skill selected one place later, else one earlier (journal Passe LC4)
+    check(n0 === '4' && n1 === '3' && n2 === '4' && sheetCaps.map((c) => c.label).join() === 'X,Y,LT,RT,A,B', `the match sheet: X leaves a skill out and brings it back (${n0} ${n1} ${n2}), its foot X, the triggers LT and RT (the order: journal Passe IA4, IA-06, the D-pad walks the page as the gear page's), A, B (${sheetCaps.map((c) => `${c.key}:${c.label}`).join(' ')})`);
+    // the order of the four (AC-09) at the triggers: the skill selected one place later (RT), else one earlier (LT); the D-pad moves the keyboard, never the order (journal Passe IA4, IA-06)
     const order = () => page.evaluate(() => [...document.querySelectorAll('.sk-slot .sk-main b')].map((x) => x.textContent).join(', '));
-    const o0 = await order(); await press(B.RIGHT); let o1 = await order();
-    if (o1 === o0) { await press(B.LEFT); o1 = await order(); }
-    check(o1 !== o0, `the D-pad moves the selected skill in the order: ${o0} → ${o1}`);
+    const at0 = await focused(page), o0 = await order(); await press(B.RIGHT);
+    check((await order()) === o0 && (await focused(page)) !== at0, `the D-pad's right moves the keyboard to the next control and leaves the order: ${at0} → ${await focused(page)}`);
+    await press(B.LEFT);
+    await press(B.RT); let o1 = await order();
+    if (o1 === o0) { await press(B.LT); o1 = await order(); }
+    check(o1 !== o0, `the triggers move the selected skill in the order: ${o0} → ${o1}`);
     await page.screenshot({ path: path.join(outDir, '2-sheet.png') });
     await press(B.A);
     acts.push(...await page.evaluate(() => window.__acts ?? []));

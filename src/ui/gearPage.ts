@@ -1,6 +1,6 @@
 import { actions, type Action, type GameState } from '../simulation';
 import { offeredBy } from '../simulation/roles';
-import { preview } from '../simulation/preview';
+import { preview, type Preview } from '../simulation/preview';
 import { itemName, weaponTier, wornAt, type WornPlace } from '../simulation/v2gear';
 import { PASSERS } from '../simulation/v2barter';
 import { PEOPLE, titleOf } from '../narrative/people';
@@ -9,6 +9,7 @@ import { portraitUrl } from './portraits';
 import { HAND, KIND_TEXT, PLACES, bagOf, hitPlacesFor, kindOfId, kindOfPlace, ownedOf as owned, pieceOfLine, placeId, placeViews, sellersOf, sellListOf, statusOf, subOf, wearAction, type Kind, type Own, type PlaceView } from './gearModel';
 import { bare, cmpHtml, figHtml, goodsLine, insteadOf, isArg, isGoods, isWare, pieceAbout, sellOf, statsHtml, type Line, type WaresHost } from './wares';
 import { el, esc, fillFoot, footBtn, scrollFade } from './style';
+import { arrowFocus } from './nav';
 
 /** The gear and the keepers' goods, made again for the operator's request of 16/11/2026 (« il faudra faire pareil pour les equipements afin d'avoir un aspect intuitif et
  *  manipulable pour gerer nos armes/armure/accessoires », journal Passes EP1 to EP3; the sheet https://claude.ai/artifact/Q2F5qVfX6u6vL2Sp1aKQa1, PE-1 to PE-10 read back ten of
@@ -61,10 +62,13 @@ export function gearPage(who: string | null, host: WaresHost): { root: HTMLEleme
   };
 
   // ---- the gestures
+  /** what a purchase did to the body, which the game's log does not say (B-11): the piece is worn at once, the one it replaces goes to the bag, or both places were taken */
+  const worn = (pv: Preview | null): string => (!pv ? '' : pv.toBag ? tx('ui.gear.boughtBag') : pv.slot === null ? '' : pv.replaces ? tx('ui.gear.boughtSwap', { old: bare(itemName(pv.replaces)) }) : tx('ui.gear.boughtWorn'));
   const run = (a: Action): boolean => {
+    const pv = a.type === 'shopBuy' ? preview(host.state(), a) : null;
     const r = host.act(a);
     if (!r.ok || r.reload) return false;
-    S.msg = (r.events ?? []).filter((e) => e.visible).map((e) => said(e.text, e.$t)).join(' ');
+    S.msg = [...(r.events ?? []).filter((e) => e.visible).map((e) => said(e.text, e.$t)), worn(pv)].filter(Boolean).join(' ');
     card.classList.add('still');
     return true;
   };
@@ -155,7 +159,7 @@ export function gearPage(who: string | null, host: WaresHost): { root: HTMLEleme
       const o = owned(s).find((x) => x.key === S.ask), sale = o ? sellOf(s, o.id, o.place ?? undefined) : undefined;
       if (o && sale) { detail.innerHTML = `<div class="gp-confirm">${nm(tx('ui.gear.confirm', { item: itemName(o.id), n: sale.n }))}${what(tx('ui.gear.confirmWhat'))}</div>`; fit(); return; }
     }
-    if (!pk) { detail.innerHTML = fk.startsWith('filter:') || fk.startsWith('panel:') ? '' : detail.innerHTML; if (!fk) detail.innerHTML = ''; fit(); return; }
+    if (!pk) { detail.innerHTML = S.msg ? news : fk.startsWith('filter:') || fk.startsWith('panel:') ? '' : detail.innerHTML; if (!fk) detail.innerHTML = S.msg ? news : ''; fit(); return; }
     if (pk.kind === 'arg') {
       const m = goodsOf(s).wares.find((x) => x.key === S.mode);
       detail.innerHTML = `${nm(pk.l.name)}${what(tx('ui.wares.chance', { pct: pk.l.sub }))}<p class="ab">${esc(tx('ui.wares.ifWon', { n: pk.l.price ?? 0, list: m?.price ?? 0 }))}</p>${what(tx('ui.wares.ifLost'))}${pk.l.ok ? '' : `<p class="no">${esc(pk.l.reason ?? '')}</p>`}`;
@@ -184,7 +188,7 @@ export function gearPage(who: string | null, host: WaresHost): { root: HTMLEleme
         fit(); return;
       }
       const a: Action = { type: 'unequip', slot: pk.place }, v = id === HAND ? null : preview(s, a), sale = saleOf(s, pk);
-      detail.innerHTML = `${news}${nm(bare(itemName(id)))}${what(`${tx(KIND_TEXT[kind])} · ${tx('ui.gear.wornTag').replace(/^• /, '')}${pk.place === 'weapon' && weaponTier(s) ? ` · ${tx('v2.gear.tier', { tier: weaponTier(s) })}` : ''}`)}<p class="ab">${esc(pieceAbout(s, id))}</p>${what(sale ? tx('ui.wares.sellHalf') : '')}${cmpHtml({ action: a }, v)}`;
+      detail.innerHTML = `${news}${nm(bare(itemName(id)))}${what(`${tx(KIND_TEXT[kind])} · ${tx('ui.gear.wornTag').replace(/^• /, '')}${pk.place === 'weapon' && weaponTier(s) ? ` · ${tx('v2.gear.tier', { tier: weaponTier(s) })}` : ''}`)}<p class="ab">${esc(pieceAbout(s, id))}</p>${what(sale?.ok ? tx('ui.wares.sellHalf') : sale ? tx('ui.gear.noSale', { why: sale.reason ?? '' }) : '')}${cmpHtml({ action: a }, v)}`;
       fit(); return;
     }
     // a piece of the bag or the body, in the catalogue or on Mara's selling panel
@@ -195,7 +199,7 @@ export function gearPage(who: string | null, host: WaresHost): { root: HTMLEleme
     else { ac = wearAction(s, o.id); v = ac ? preview(s, ac) : null; }
     const wh = pk.kind === 'sell' ? [tx(KIND_TEXT[kindOfId(o.id)]), worn ? tx('ui.gear.wornTag').replace(/^• /, '') : ''].filter(Boolean).join(' · ') : `${tx(KIND_TEXT[kindOfId(o.id)])} · ${worn ? tx('ui.gear.wornTag').replace(/^• /, '') : statusOf(s, o)}`;
     const none = !ac && pk.kind === 'tile' ? tx('ui.gear.chooseFirst') : '';
-    detail.innerHTML = `${news}${nm(bare(itemName(o.id)))}${what(wh)}<p class="ab">${esc(pieceAbout(s, o.id))}</p>${what(none)}${pk.kind === 'tile' && sale ? what(tx('ui.wares.sellHalf')) : ''}${ac ? cmpHtml({ action: ac }, v) : ''}${pk.kind === 'sell' && sale && !sale.ok ? `<p class="no">${esc(sale.reason ?? '')}</p>` : ''}`;
+    detail.innerHTML = `${news}${nm(bare(itemName(o.id)))}${what(wh)}<p class="ab">${esc(pieceAbout(s, o.id))}</p>${what(none)}${pk.kind === 'tile' && sale ? what(sale.ok ? tx('ui.wares.sellHalf') : tx('ui.gear.noSale', { why: sale.reason ?? '' })) : ''}${ac ? cmpHtml({ action: ac }, v) : ''}${pk.kind === 'sell' && sale && !sale.ok ? `<p class="no">${esc(sale.reason ?? '')}</p>` : ''}`;
     fit();
   };
 
@@ -316,34 +320,8 @@ export function gearPage(who: string | null, host: WaresHost): { root: HTMLEleme
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-fk]');
     if (b && document.activeElement !== b) b.focus({ preventScroll: true });
   });
-  /** the arrows go to the control nearest in their direction, over the whole page: from a place to the tiles and back, along the grid of tiles, up to the filters */
-  const go = (key: string): boolean => {
-    const all = [...card.querySelectorAll<HTMLElement>('[data-fk]')].filter((x) => x.offsetParent !== null), cur = all.find((x) => x.dataset.fk === focusKey());
-    if (!cur) { all[0]?.focus(); return !!all.length; }
-    const r = cur.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, vert = key === 'ArrowUp' || key === 'ArrowDown', sign = key === 'ArrowDown' || key === 'ArrowRight' ? 1 : -1;
-    const col = (x: HTMLElement): Element | null => x.closest('.pm-self, .pm-goods');
-    let best: HTMLElement | null = null, bs = Infinity;
-    for (const pass of [0, 1]) {
-      for (const x of all) {
-        if (x === cur) continue;
-        const q = x.getBoundingClientRect(), dx = q.left + q.width / 2 - cx, dy = q.top + q.height / 2 - cy, along = vert ? dy * sign : dx * sign, across = vert ? dx : dy;
-        if (along < (vert ? r.height : r.width) / 3) continue;
-        const overlap = vert ? q.right > r.left - 4 && q.left < r.right + 4 : q.bottom > r.top - 4 && q.top < r.bottom + 4;
-        if (pass === 0 && !overlap) continue;
-        if (pass === 1 && vert && col(x) !== col(cur)) continue;
-        const score = Math.abs(along) + 0.6 * Math.abs(across);
-        if (score < bs) { bs = score; best = x; }
-      }
-      if (best) break;
-    }
-    if (best) { best.focus(); return true; }
-    // at the end of a row of tiles Right goes on to the next row's first tile (reading order)
-    if (!vert && cur.closest('.gp-tiles')) {
-      const ts = all.filter((x) => x.closest('.gp-tiles')), j = ts.indexOf(cur) + sign;
-      if (j >= 0 && j < ts.length) { ts[j].focus(); return true; }
-    }
-    return false;
-  };
+  /** the arrows go to the control nearest in their direction, over the whole page: from a place to the tiles and back, along the grid of tiles, up to the filters (src/ui/nav.ts, one rule for this page and the skills page: IA-06) */
+  const go = (key: string): boolean => arrowFocus(card, key, { col: (x) => x.closest('.pm-self, .pm-goods'), rows: '.gp-tiles' });
   card.addEventListener('keydown', (e) => {
     // a held Enter from the dialogue must not buy the first line
     if (e.key === 'Enter' && e.repeat) { e.preventDefault(); return; }
