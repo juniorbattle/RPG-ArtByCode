@@ -119,7 +119,7 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.skills.title'));
   // the skills page is the hero's alone, the whole width; the match sheet keeps the rival's sheet on its left
   card.innerHTML = (solo ? '' : `<section class="pm-self pm-match"><div class="pm-foe-side">${sheet}</div></section>`)
-    + `<section class="pm-goods"><header class="pm-ghead"><h2 class="pm-h">${tx('v2.skills.title')}<small>${solo ? tx('v2.skills.sub') : host.pickLabel ?? tx(host.enter ? 'v2.skills.pick' : 'prep.sheet.pick')}</small></h2><div class="sk-modebox"><span class="sk-lab">${esc(tx('ui.sk.mode'))}</span><button class="sk-mode" type="button" data-fk="mode"></button></div></header>`
+    + `<section class="pm-goods"><header class="pm-ghead"><h2 class="pm-h">${tx('v2.skills.title')}${solo || !host.foeName ? '' : `<span class="sk-foe">${esc(host.foeName)}</span>`}<small>${solo ? tx('v2.skills.sub') : host.pickLabel ?? tx(host.enter ? 'v2.skills.pick' : 'prep.sheet.pick')}</small></h2><div class="sk-modebox"><span class="sk-lab">${esc(tx('ui.sk.mode'))}</span><button class="sk-mode" type="button" data-fk="mode"></button></div></header>`
     + `<p class="sk-lab sk-places-lab"></p><div class="sk-places"></div><div class="sk-note"></div><div class="sk-bar"></div><div class="pm-glist sk-tiles"></div><div class="pm-detail" aria-live="polite"></div><div class="pm-foot"></div></section>`;
   root.appendChild(card);
   const q = <T extends HTMLElement>(s: string): T => card.querySelector(s) as T;

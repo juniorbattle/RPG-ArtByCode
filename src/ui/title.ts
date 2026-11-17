@@ -59,6 +59,8 @@ const CSS = `
 #title-menu .langs button:hover,#title-menu .langs button:focus{color:var(--ds-ivory);outline:0;text-decoration:underline 1px var(--ds-accent);text-underline-offset:6px}
 @media (max-width:900px){#title-screen .wrap{grid-template-columns:minmax(0,1fr);row-gap:18px;padding:72px 18px 18px}}
 @media (max-height:480px) and (min-width:600px){#title-screen .wrap{grid-template-columns:minmax(0,1fr) minmax(280px,420px);column-gap:28px;padding:44px 18px 10px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 36px),transparent 100%)}#title-menu .langs{padding:0}}
+/* a phone held sideways, narrower than 600 px (568 x 320; A-05, journal Passe IA5): the one column of the narrow rule put the game's name above the top of the screen; the name and the keys stand beside the menu */
+@media (max-height:480px) and (max-width:599px){#title-screen .wrap{grid-template-columns:minmax(0,0.78fr) minmax(0,1.22fr);column-gap:18px;row-gap:0;padding:20px 18px 8px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 28px),transparent 100%)}#title-screen .name{font-size:var(--ds-fs-title-big)}#title-screen .tag{margin-top:4px}#title-menu .pm-btn{padding:6px 0}#title-menu .langs{padding:0}#title-menu .langs button{min-height:36px}#title-menu input{margin:4px 0 6px;padding:5px 8px}}
 `;
 
 /** `live()`: the town stands behind the screen, the ink fades out */

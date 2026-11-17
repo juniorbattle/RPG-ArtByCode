@@ -98,6 +98,7 @@ const CSS = `
 .pm-skills{--sk-tile:84px;--sk-two:calc(var(--sk-tile)*2 + 14px)}
 .pm-skills .pm-goods{grid-template-rows:auto auto auto auto auto minmax(var(--sk-two),1fr) auto auto}
 .pm-skills .pm-goods .pm-detail{min-height:0;max-height:min(23vh,220px);padding-top:10px}
+.sk-foe{display:none}
 .sk-lab{margin:0;font-size:var(--ds-fs-small);letter-spacing:.1em;text-transform:uppercase;color:var(--ds-muted)}
 .sk-modebox{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
 .sk-mode{display:inline-flex;flex:none;border:1px solid var(--ds-line);background:none;color:var(--ds-muted);font:inherit;cursor:pointer;padding:0}
@@ -229,16 +230,12 @@ const CSS = `
    under the card, journal Passe PF1): the skills' and the gear's pages as the short screens above, the list and the detail side by side, the foot below */
 @media (max-height:480px) and (max-width:700px){
   .pm-overlay .pm-card.pm-two.pm-skills,.pm-overlay .pm-card.pm-two.pm-wares{display:block;height:calc(100vh - 26px)}
-  .pm-skills .pm-self,.pm-wares .pm-self{display:none}
-  .pm-skills .pm-goods,.pm-wares .pm-goods{height:100%;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);grid-template-rows:auto minmax(0,1fr) auto;column-gap:18px}
-  .pm-skills .pm-ghead,.pm-wares .pm-ghead{grid-column:1 / 3;padding-bottom:4px}
-  .pm-skills .pm-glist,.pm-wares .pm-glist{grid-column:1;grid-row:2}
-  .pm-skills .pm-detail,.pm-wares .pm-detail{grid-column:2;grid-row:2;min-height:0;padding-top:0}
-  .pm-skills .pm-foot,.pm-wares .pm-foot{grid-column:1 / 3;grid-row:3;padding-top:4px;column-gap:18px}
-  .pm-skills .pm-goods{display:flex;flex-direction:column;overflow:auto;height:100%}
-  .pm-skills .sk-note,.pm-skills .sk-places-lab,.pm-skills .pm-detail,.pm-skills .sk-slot .sk-main small{display:none}
-  .pm-skills .sk-places{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .pm-skills .pm-glist{max-height:none;overflow:visible}
+  .pm-skills .pm-self,.pm-skills .pm-self.pm-match,.pm-wares .pm-self{display:none}
+  .pm-wares .pm-goods{height:100%;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);grid-template-rows:auto minmax(0,1fr) auto;column-gap:18px}
+  .pm-wares .pm-ghead{grid-column:1 / 3;padding-bottom:4px}
+  .pm-wares .pm-glist{grid-column:1;grid-row:2}
+  .pm-wares .pm-detail{grid-column:2;grid-row:2;min-height:0;padding-top:0}
+  .pm-wares .pm-foot{grid-column:1 / 3;grid-row:3;padding-top:4px;column-gap:18px}
 }
 @media (max-height:480px){
   .pm-overlay .pm-card.pm-two.pm-gear{display:flex;flex-direction:column;height:calc(100vh - 26px)}
@@ -326,6 +323,52 @@ body.pm-pad #pm-more .k,body:not(.pm-pad) #pm-more .p{display:none}
 .pm-btn:nth-of-type(2)::before{animation-delay:.03s}.pm-btn:nth-of-type(3)::before{animation-delay:.06s}.pm-btn:nth-of-type(4)::before{animation-delay:.09s}.pm-btn:nth-of-type(n+5)::before{animation-delay:.12s}
 html.cdt-reduced .pm,html.cdt-reduced .pm *,html.cdt-reduced .pm *::before,html.cdt-reduced .pm *::after{transition-property:opacity,color,border-color,background-color!important}
 html.cdt-reduced .pm-hero{animation:none}
+@media (max-height:480px){
+  /* K and the match sheet (IA-03, B-05, C-07, journal Passe IA5): the four places in one row of pastilles, the family chips, the catalogue as one column of lines beside the detail,
+     the line that says what was done, the foot below and whole; the keys do what the chip and the small buttons of a place do (Space, C, A, D: they are on the foot) */
+  .pm-overlay .pm-card.pm-skills .pm-self,.pm-overlay .pm-card.pm-skills .pm-self.pm-match{display:none}
+  .pm-overlay .pm-card.pm-skills .pm-goods{height:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);grid-template-rows:auto auto auto minmax(0,1fr) auto auto;column-gap:14px;overflow:hidden}
+  .pm-overlay .pm-card.pm-skills .pm-ghead{grid-column:1 / 3;grid-row:1;padding:3px 0 4px;gap:10px}
+  .pm-overlay .pm-card.pm-skills .pm-ghead .pm-h{font-size:var(--ds-fs-label)}
+  .pm-overlay .pm-card.pm-skills .pm-ghead .pm-h small{display:inline;margin:0 0 0 10px}
+  .pm-overlay .pm-card.pm-skills.pm-solo .pm-ghead .pm-h small{display:none}
+  .pm-overlay .pm-card.pm-skills .sk-foe{display:inline;margin-left:10px;font:400 var(--ds-fs-body)/1 var(--ds-text);color:var(--ds-muted)}
+  .pm-overlay .pm-card.pm-skills .sk-modebox .sk-lab,.pm-overlay .pm-card.pm-skills .sk-places-lab,.pm-overlay .pm-card.pm-skills .sk-slot .sk-main small,.pm-overlay .pm-card.pm-skills .sk-slot .cd,.pm-overlay .pm-card.pm-skills .sk-ctl,.pm-overlay .pm-card.pm-skills .sk-note p:not(.sk-say),.pm-overlay .pm-card.pm-skills .sk-bar .sk-lab,.pm-overlay .pm-card.pm-skills .sk-tile small,.pm-overlay .pm-card.pm-skills .sk-tile .st{display:none}
+  .pm-overlay .pm-card.pm-skills .sk-mode span{padding:2px 10px}
+  .pm-overlay .pm-card.pm-skills .sk-places{grid-column:1 / 3;grid-row:2;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .pm-overlay .pm-card.pm-skills .sk-slot{padding:3px 8px 4px;gap:0}
+  .pm-overlay .pm-card.pm-skills .sk-slot .sk-main b{padding-right:22px;font-size:var(--ds-fs-body);line-height:1.2}
+  .pm-overlay .pm-card.pm-skills .sk-slot .sk-main .n{top:3px;right:6px}
+  .pm-overlay .pm-card.pm-skills .sk-slot .sk-main .n kbd{min-width:18px;height:18px;padding:0 4px;line-height:16px}
+  .pm-overlay .pm-card.pm-skills .sk-bar{grid-column:1 / 3;grid-row:3;padding:5px 0 3px;flex-wrap:nowrap}
+  .pm-overlay .pm-card.pm-skills .sk-chipf{padding:1px 10px}
+  .pm-overlay .pm-card.pm-skills .pm-glist.sk-tiles{grid-column:1;grid-row:4;grid-template-columns:minmax(0,1fr);gap:3px;padding-bottom:0}
+  .pm-overlay .pm-card.pm-skills .sk-tile{flex-direction:row;flex-wrap:nowrap;align-items:baseline;gap:8px;padding:3px 8px}
+  .pm-overlay .pm-card.pm-skills .sk-tile b{font-size:var(--ds-fs-body);line-height:1.2}
+  .pm-overlay .pm-card.pm-skills .pm-goods .pm-detail{grid-column:2;grid-row:4;display:block;min-height:0;max-height:none;padding:0}
+  .pm-overlay .pm-card.pm-skills .sk-note{grid-column:1 / 3;grid-row:5;padding:3px 0 0}
+  .pm-overlay .pm-card.pm-skills .sk-note .sk-say{min-height:0;margin:0}
+  .pm-overlay .pm-card.pm-skills .pm-goods .pm-foot{grid-column:1 / 3;grid-row:6;padding-top:3px;gap:0 14px}
+  .pm-overlay .pm-card.pm-skills .pm-goods .pm-foot .pm-btn{padding:2px 0;gap:6px}
+  .pm-overlay .pm-card.pm-skills .pm-goods .pm-foot kbd{min-width:26px;padding:0 5px}
+  /* the conditions of a place (C) take the room of the catalogue while they are open */
+  .pm-overlay .pm-card.pm-skills .pm-goods:has(.sk-conds) .sk-bar,.pm-overlay .pm-card.pm-skills .pm-goods:has(.sk-conds) .sk-tiles,.pm-overlay .pm-card.pm-skills .pm-goods:has(.sk-conds) .pm-detail{display:none}
+  .pm-overlay .pm-card.pm-skills .pm-goods:has(.sk-conds) .sk-places{grid-row:2 / 5;align-self:stretch;overflow:auto;align-content:start}
+  .pm-overlay .pm-card.pm-skills .sk-conds .pm-btn{padding:3px 0}
+}
+/* IA-03 (the operator's « Les pages du parcours d’abord », journal Passe IA2; B-21, A-03, C-06, B-05 of journal Passe IA1, journal Passe IA5): a phone held sideways (568 x 320) is
+   narrow AND short, and the rules above knew a narrow screen (everything stacked, the detail left with 15 px) or a short wide one, never both. Here every page of two columns keeps
+   its two columns (the list on the left, the detail and the foot on the right), and a dialogue keeps its answers beside its words, in a box that scrolls and keeps the focused line in view */
+@media (max-height:480px){
+  .pm-overlay .pm-card.pm-two:not(.pm-skills):not(.pm-wares):not(.pm-gear){display:grid;grid-template-columns:minmax(0,0.78fr) minmax(0,1.22fr);grid-template-rows:minmax(0,1fr);column-gap:16px;row-gap:0;height:calc(100vh - 26px)}
+  .pm-overlay .pm-card.pm-two.pm-days:not(.pm-skills){grid-template-columns:minmax(0,0.78fr) minmax(0,1.22fr)}
+  .pm-two:not(.pm-skills):not(.pm-wares):not(.pm-gear) .pm-glist .why,.pm-two:not(.pm-skills):not(.pm-wares):not(.pm-gear) .pm-col .pm-head p:not(.nx){display:none}
+  .pm-two:not(.pm-skills):not(.pm-wares):not(.pm-gear) .pm-col .pm-head{padding-bottom:6px}
+  .pm-two:not(.pm-skills):not(.pm-wares):not(.pm-gear) .pm-col .pm-head p.nx{margin-top:0;font-size:var(--ds-fs-small)}
+  .pm-two:not(.pm-skills):not(.pm-wares):not(.pm-gear) .pm-col .pm-foot{padding-top:6px;column-gap:16px}
+  .pm-two:not(.pm-skills):not(.pm-wares):not(.pm-gear) .pm-col .pm-glist{flex:1 1 auto;max-height:none}
+  .pm-two:not(.pm-skills):not(.pm-wares):not(.pm-gear) .pm-h{font-size:var(--ds-fs-title);margin-bottom:4px}
+}
 `;
 
 export function injectStyle(): void {
@@ -362,7 +405,8 @@ export function arrowKeys(list: HTMLElement): void {
 let hintEl: HTMLElement | null = null, hintQueued = false, watching = false;
 function updateHint(): void {
   const root = topModal(), zone = root ? readingZone<HTMLElement>(root) : null;
-  if (!zone || !zone.matches('.pm-detail, .pm-body') || !moreBelow(zone)) { hintEl?.classList.remove('on'); return; }
+  // a page's body that is a list of buttons (the menu) is a list: the arrows walk it, and its last line is not covered by a pill (IA-03: it was, on a short screen)
+  if (!zone || !zone.matches('.pm-detail, .pm-body') || zone.querySelector(':scope > .pm-btn') || !moreBelow(zone)) { hintEl?.classList.remove('on'); return; }
   if (!hintEl) { hintEl = el('div', 'pm'); hintEl.id = 'pm-more'; hintEl.setAttribute('aria-hidden', 'true'); document.body.appendChild(hintEl); }
   const html = `<span class="k">${esc(tx('ui.more.key'))}</span><span class="p">${esc(tx('ui.more.pad'))}</span>`;
   if (hintEl.innerHTML !== html) hintEl.innerHTML = html;

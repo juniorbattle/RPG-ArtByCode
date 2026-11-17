@@ -422,6 +422,8 @@ body.tu-on #pm-hints{z-index:41}
 .tu-band .pm-foot,.tu-hint .pm-foot{padding-top:14px}
 .tu-band .pm-foot .out{margin-left:0}
 .pm-overlay.pm-band.tu-band{animation:ds-fade .2s ease-out}
+/* a phone held sideways (A-04, journal Passe IA5): the town's two keys (the list, the menu) lie along the foot of the screen, over the band's own buttons; the band clears them */
+@media (max-height:480px) and (max-width:700px){.pm-overlay.pm-band.tu-band:not(.tu-duel){padding:14px 16px 52px}.tu-band:not(.tu-duel) .pm-foot{padding-top:6px}.tu-band:not(.tu-duel) .pm-h{margin:0 0 3px}.tu-band:not(.tu-duel) p{margin:3px 0}}
 .pm-overlay.pm-band.tu-hint{inset:0 0 auto 0;z-index:42;padding:28px var(--ds-gutter) 72px;background:linear-gradient(to bottom,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 72px),transparent 100%);animation:ds-fade .2s ease-out}
 body.pm-full .pm-overlay.pm-band.tu-hint{background:linear-gradient(to bottom,var(--ds-ink) 0,var(--ds-ink) calc(100% - 72px),transparent 100%)}
 .tu-fig{position:relative;margin:0 0 14px;aspect-ratio:16/9;max-height:34vh;overflow:hidden;border-top:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line);background:var(--ds-veil-strong)}

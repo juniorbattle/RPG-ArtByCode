@@ -173,6 +173,25 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
   .pm-dlg .side{grid-column:3;grid-row:1;margin-top:0;max-height:calc(100vh - 60px)}
   .pm-dlg .pm-line{margin-top:4px}
 }
+/* a phone held sideways, narrow and short (568 x 320; IA-03, B-21, C-06, journal Passe IA5): the answers stand beside the words, in a box that scrolls and keeps the focused line in view
+   (they were stacked under them, off the screen: the player saw the question and none of its answers) */
+@media (max-height:480px) and (max-width:700px){
+  .pm-talk{padding:28px 16px 10px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 28px),transparent 100%)}
+  .pm-dlg,.pm-dlg.here{grid-template-columns:52px minmax(0,1fr) minmax(0,1.12fr);grid-template-rows:auto;column-gap:12px;max-height:none;align-items:start}
+  .pm-dlg.here{grid-template-columns:minmax(0,1fr) minmax(0,1.12fr)}
+  .pm-dlg img{width:52px;height:52px}
+  .pm-dlg .who,.pm-dlg.here .who{min-width:0}
+  .pm-dlg .who{grid-column:2}
+  .pm-dlg.here .who{grid-column:1}
+  .pm-dlg .side,.pm-dlg.here .side{grid-column:3;grid-row:1;margin-top:0;max-height:min(214px,calc(100vh - 44px));min-height:0}
+  .pm-dlg.here .side{grid-column:2}
+  .pm-dlg .pm-line{margin-top:2px}
+  .pm-dlg .pm-line q{margin:0 0 4px}
+  .pm-dlg .opts .pm-btn{padding:6px 0}
+  .pm-dlg .pm-h small{display:inline;margin:0 0 0 8px}
+  .pm-dlg .who .news{margin:4px 0 0}
+  .pm-dlg .opts .pm-sub{margin:8px 0 4px}
+}
 `;
 
 export { costTag, shortLabel };

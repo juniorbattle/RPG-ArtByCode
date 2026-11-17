@@ -208,8 +208,8 @@ try {
     return { rows, focus: f?.classList?.contains('pm-btn') ? name(f) : f?.textContent?.trim() ?? null, focusGroup: f?.dataset?.group ?? null, slot: __game.state().slot, day: __game.state().day,
       visible: f ? (() => { const r = f.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight + 1; })() : false };
   });
-  // the focused line on the screen: a check on a computer; on the phone the band itself is cut by the bottom of the screen (B-21 of journal Passe IA1, lot 3's), said and not failed
-const visibleLine = (l) => (H <= 480 ? console.log(`--  the focused line is ${l.visible ? '' : 'NOT '}on the screen at ${W}x${H} (B-21, the phone's band: lot 3)`) : check(l.visible, 'the focused line is on the screen'));
+  // the focused line on the screen, at every size: the phone's answers stand beside the words since lot 3 (B-21 of journal Passe IA1, journal Passe IA5)
+const visibleLine = (l) => check(l.visible, 'the focused line is on the screen');
 const titles = [say('ui.peopleHere'), say('ui.group.time'), say('ui.group.steal')];
   {
     const page = await newPage();

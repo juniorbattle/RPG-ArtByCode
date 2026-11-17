@@ -18,7 +18,7 @@ export interface WayOut { to: PlaceId; anchor: [number, number, number]; shut?: 
 export const NAME_NEAR = 13;
 
 const CSS = `
-.pm-exit{position:fixed;z-index:25;left:0;top:0;pointer-events:none;padding:6px 34px;white-space:nowrap;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:var(--ds-grad-spot);opacity:0;transition:opacity .25s}
+.pm-exit{position:fixed;z-index:29;left:0;top:0;pointer-events:none;padding:6px 34px;white-space:nowrap;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:var(--ds-grad-spot);opacity:0;transition:opacity .25s}
 .pm-exit::after{content:'';position:absolute;left:50%;bottom:-8px;margin-left:-6px;border:6px solid transparent;border-top-color:var(--ds-accent)}
 body.pm-full .pm-exit,body.pm-talking .pm-exit{visibility:hidden}
 .pm-exit.shut::after,.pm-exfar.shut::before{border-top-color:var(--ds-muted)}
