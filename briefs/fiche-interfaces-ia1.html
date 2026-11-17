@@ -1,0 +1,361 @@
+<title>Audit des interfaces</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions de l’opérateur · 16/11/2026</span>
+    <h1>Fiche d’arbitrages — les interfaces, jouées en nouveau joueur</h1>
+    <p class="lede">Tu demandais si toutes nos interfaces sont aussi structurées et intuitives que les compétences et l’équipement. Réponse après avoir joué tout le jeu (74 constats, trois fronts) : la structure est cohérente, mais le joueur se perd à cinq endroits, dont une perte de partie. Quatorze cartes : ce que je recommande et tes options. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure. Aucune option ne change une décision A3. Le rapport : briefs/audit-interfaces-ia1.md.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot au journal (Passe IA2), puis je découpe le travail en lots, un par séance : rien n’est construit avant ta fiche.</p>
+    <p class="src">Sources : briefs/audit-interfaces-ia1.md, JOURNAL.md (Passe IA1), AGENTS.md (section « Interface »).</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+  { id: 'perdre', title: 'Ce qui fait perdre ou bloquer', sub: 'Quatre blocages sur soixante-quatorze constats : deux à 1280 × 720, deux sur un petit écran.', fam: 'var(--astre)', items: [
+    { id: 'IA-01', tag: 'A-01, A-09', title: 'Une partie neuve recréée sans prévenir',
+      ctx: 'Sur la première page d’une partie neuve, changer la langue (Réglages) ou recharger la page recrée la partie : l’adresse garde « new=1 ». Mesuré : 37 pièces redeviennent 60, la lame achetée est perdue, la visite recommence. Dès que le joueur change de lieu ou de créneau l’adresse est nettoyée : le défaut ne vaut que pour la première page (code vérifié). Aussi : « New game » sur une sauvegarde l’efface d’un Entrée, l’avertissement est écrit mais rien ne demande confirmation.',
+      shots: [['img/ia-lang-fr.png', 'Après le changement de langue sur la première page : 60 pièces, la partie est repartie de zéro']],
+      rec: 'Les corriger : l’adresse perd « new » dès que la partie est créée, et « New game » sur une sauvegarde demande une confirmation. C’est la seule perte de progression trouvée.',
+      opts: ['Corriger les deux (la partie jamais recréée, une confirmation devant une sauvegarde)', 'Corriger seulement la langue et le rechargement', 'Garder ainsi'], recIdx: 0,
+      src: 'A-01, A-09 ; briefs/audit-interfaces-ia1.md ; src/ui/play.ts (playUrl, startingState), src/ui/curtain.ts (leavePage)' },
+    { id: 'IA-02', tag: 'A-02, C-04, B-04', title: 'Les zones qui ne défilent pas au clavier ni au pad',
+      ctx: 'Le guide, le résultat d’un combat, le détail de K et les dialogues longs ne défilent pas au clavier (Page↓, Fin, Espace, Tab : rien) ; au faux pad le bâton droit défile la liste à la place du détail. Seule la molette y arrive. Sont invisibles pour qui joue sans souris : la fin du chapitre « The duel » (la jauge de rupture), la ligne du joueur après une défaite, le tableau « Now / Level 2 » de K.',
+      shots: [['img/ia-guide.png', 'Le guide : le chapitre continue sous le fondu, rien ne dit comment l’atteindre'], ['img/ia-result.png', 'Le résultat : la carte défile de 101 px, le clavier ne la défile pas']],
+      rec: 'Une règle pour toute zone qui déborde : Page↓ et Page↑ (et Espace là où il ne fait rien d’autre) la défilent, le bâton droit défile le détail et non la liste, un fondu dit qu’il y a une suite.',
+      opts: ['Une règle commune à toutes les zones qui défilent', 'Seulement le guide et le résultat', 'Garder ainsi (la molette)'], recIdx: 0,
+      src: 'A-02, C-04, B-04, B-15, C-09 ; src/input/PadInput.ts (scroll)' },
+    { id: 'IA-03', tag: '568 × 320', title: 'Le petit écran : choix et pieds hors de l’écran',
+      ctx: 'À 568 × 320 (téléphone couché) les réglages et le guide n’ont plus de détail (15 px), K et la fiche de match perdent leur pied et leur catalogue (6 px), les choix des dialogues, de la liste Q et des bandes de rencontre sont sous le bas de l’écran : le joueur voit la question sans les réponses. G et la boutique tiennent (PF1, EP3) ; K, refaite en CM2 après PF1, ne tient plus (vérifié avec ui-text). Le tactile reste hors de la tranche (E30) ; la décision UM-L3 « Maintenir » garde la mise en page téléphone.',
+      shots: [['img/ia-settings-568.png', 'Réglages à 568 × 320 : deux lignes de parties, un détail vide'], ['img/ia-k-568.png', 'K à 568 × 320'], ['img/ia-encounter-568.png', 'Une rencontre à 568 × 320 : la question sans les réponses']],
+      rec: 'Les pages du parcours (dialogue, liste Q, K, fiche de match, réglages, guide, bandes à choix) à la mise en page des écrans courts déjà décidée en UM11 et PF1 : liste et détail côte à côte, pied en dessous. Les autres pages suivent plus tard.',
+      opts: ['Les pages du parcours d’abord (dialogue, Q, K, fiche, réglages, guide, bandes)', 'Toutes les pages, tout de suite', 'Garder le téléphone hors de la tranche (change UM-L3, décision de l’opérateur, pas une A3)'], recIdx: 0,
+      src: 'A-03, A-04, A-05, B-05, B-21, B-26, C-05 à C-07 ; journal Passes UM11, PF1 ; AGENTS.md (UM-L3, E30)' },
+  ]},
+  { id: 'manier', title: 'Les pages qu’on manie', sub: 'La structure est la même partout ; ce sont les gestes qui diffèrent d’une page à l’autre.', fam: 'var(--voile)', items: [
+    { id: 'IA-04', tag: 'A-06, B-01, B-25, C-08', title: 'La liste Q : ouvrir sur « Wait », les gens tout en bas',
+      ctx: 'La liste Q s’ouvre sur « Wait » : Q puis Entrée, la première chose qu’un nouveau joueur presse, passe la matinée. Les gens (Mara, Corvin, Orla) viennent après neuf à onze lignes de vol : Mara à 10 appuis de ↓, Corvin et Orla à 25. Les réponses d’une rencontre y restent mêlées au vol, sans nom.',
+      shots: [['img/ia-list-q.png', 'La liste Q : « Wait » en couleur, puis les lignes de vol']],
+      rec: 'Ouvrir sur la première ligne utile (le combat du jour, puis les gens), ranger « Voler » et « Forcer » dans un seul groupe après les gens, ne jamais ouvrir sur « Wait ».',
+      opts: ['Grouper et ouvrir sur la première ligne utile (le vol rangé, « Wait » jamais en premier)', 'Seulement ne plus ouvrir sur « Wait »', 'Garder ainsi'], recIdx: 0,
+      src: 'A-06, B-01, B-25, C-08, C-17 ; src/ui/townUi.ts (openHere)' },
+    { id: 'IA-05', tag: 'B-04, B-06, B-20, C-05', title: 'Les catalogues écrasés à 1280 × 720',
+      ctx: 'À 1280 × 720 le catalogue de K mesure 125 px (une rangée et demie), celui de la fiche de match 6 à 56 px, celui de la boutique de Mara deux rangées ; le détail et le pied prennent la moitié de la page. G tient mieux (248 px). Sur un écran de portable, choisir une compétence au clic suppose de défiler.',
+      shots: [['img/ia-k-1280.png', 'K à 1280 × 720 : une rangée de tuiles, la suivante sous le fondu'], ['img/ia-sheet-1280.png', 'La fiche de match : la bande « Owned (4) » n’est plus qu’un filet'], ['img/ia-mara-goods.png', 'La boutique de Mara : deux rangées, le sac sous le pli']],
+      rec: 'Donner aux tuiles une hauteur minimale de deux rangées : le détail se replie en résumé quand l’écran est court, le pied reste.',
+      opts: ['Deux rangées au moins, le détail se replie', 'Le détail dans un tiroir ouvert à la demande', 'Garder ainsi'], recIdx: 0,
+      src: 'B-04, B-06, B-07, B-20, C-05, C-12 ; src/ui/skills.ts, gearPage.ts, style.ts' },
+    { id: 'IA-06', tag: 'B-02, B-03, B-17, B-18', title: 'K se manie comme G',
+      ctx: 'Dans G, ← → ↑ ↓ vont de tuile en tuile (1 appui de la place à la tuile) ; dans K seules ↑ ↓ comptent : 12 appuis, la souris en fait 1 (code vérifié). Au pad, ← → de la croix déplacent la compétence alors qu’au clavier ils déplacent le focus. « Take out » ne retire rien (le jeu garde quatre) ; l’interrupteur Auto / Manual n’est expliqué nulle part sur la page.',
+      shots: [['img/ia-k-1280.png', 'K : « Take out » sur chaque place, l’interrupteur « In the bout » sans explication']],
+      rec: 'K comme G : les quatre flèches vont de tuile en tuile ; réordonner a ses propres touches (A / D, et les gâchettes au pad) ; « Take out » dit ce qu’il fait ; une ligne explique Auto et Manual.',
+      opts: ['K comme G (flèches, réordonner à part, une ligne pour le mode)', 'Seulement les flèches du clavier', 'Garder ainsi'], recIdx: 0,
+      src: 'B-02, B-03, B-17, B-18, B-19, C-26, C-27 ; src/ui/skills.ts:321, gearPage.ts:351' },
+    { id: 'IA-07', tag: 'B-08, B-09, B-11, B-23', title: 'Vendre : tantôt demandé, tantôt non',
+      ctx: 'Une vente demande une confirmation dans G et dans le panneau « Sell » de Mara, mais pas dans son dialogue : « Sell X to Mara » vend d’un seul Entrée (mesuré : 40 → 65 pièces, le sabre part). Hors du quai « C Sell » disparaît du pied sans dire pourquoi ; après une vente rien ne la confirme ; un achat porte la pièce aussitôt sans le dire.',
+      rec: 'Toute vente demande d’abord, partout ; la touche absente dit pourquoi, la vente et le port d’une pièce sont dits.',
+      opts: ['Toute vente demande, les messages disent le port et la vente', 'Seulement la confirmation du dialogue de Mara', 'Garder ainsi'], recIdx: 0,
+      src: 'B-08, B-09, B-10, B-11, B-23 ; src/ui/gearPage.ts, townUi.ts' },
+    { id: 'IA-08', tag: 'B-12, B-22, A-10, A-11', title: 'Des pieds de page qui ne disent que « Esc »',
+      ctx: 'La liste Q, les dialogues, la carte, le journal et le menu n’affichent que « Esc » : l’action d’Entrée n’est pas dite, alors que G, K, T et le carnet la disent. Échap dans une page ouverte depuis le menu ferme tout au lieu de revenir au menu ; la carte n’est qu’une liste de trois lignes sans dire qui se trouve à chaque lieu.',
+      rec: 'Ajouter l’action d’Entrée au pied de ces pages ; Échap revient d’un cran (page, menu, jeu) ; la carte dit qui se trouve à chaque lieu.',
+      opts: ['Entrée dite partout, Échap d’un cran, la carte plus parlante', 'Seulement l’action d’Entrée au pied', 'Garder ainsi'], recIdx: 0,
+      src: 'B-12, B-22, A-10, A-11, A-19 ; src/ui/style.ts (footBtn, fillFoot)' },
+  ]},
+  { id: 'dire', title: 'Ce que le jeu fait sans le dire', sub: 'Des règles justes, mais que le joueur découvre après coup.', fam: 'var(--ronce)', items: [
+    { id: 'IA-09', tag: 'C-02, C-11, C-14, C-19, C-20, C-21, B-13', title: 'Dire là où le joueur décide',
+      ctx: 'Une quête d’Anwen, de Corvin ou de Lio démarre en silence (l’offre n’est que dans le journal) ; échouer une quête n’est dit que par une carte ; être pris en volant coûte −8 de réputation sans que rien ne le dise ; la touche de pause du duel n’est affichée nulle part (Échap ne fait rien) ; « une fois par phase » n’est dit qu’au refus ; le tableau envoie « watch them at practice » alors que Vessa est sur le parvis ; la fin de partie ne vient qu’après « Wait » le soir du jour 10.',
+      shots: [['img/ia-hud.png', 'La HUD en manuel : aucune touche de pause affichée']],
+      rec: 'Le dire là où le joueur décide : un message quand une quête démarre, l’échec sur sa ligne du journal, le coût en réputation sur le choix, la touche de pause au pied de la HUD, le lieu de l’adversaire sur le tableau, « une fois par phase » sur l’offre.',
+      opts: ['Tout dire là où le joueur décide', 'Seulement les quêtes et la pause', 'Garder ainsi'], recIdx: 0,
+      src: 'C-02, C-11, C-14, C-16, C-18, C-19, C-20, C-21, B-13, B-14 ; src/ui/townUi.ts, journal.ts, arena' },
+    { id: 'IA-10', tag: 'A-07, A-08, C-01, C-23, C-24', title: 'Le premier quart d’heure',
+      ctx: 'Avant la première action utile le joueur lit trois bandeaux d’astuce ; la visite ne dit pas par quoi commencer (cinq choses de même poids) ; les leçons du premier duel font neuf pas, la première cinq phrases. Sur six graines, le kit de départ perd le premier combat (jour 2) cinq fois : un indice seulement, la mesure du laboratoire fait foi.',
+      shots: [['img/ia-tour-568.png', 'La visite : le pied de la bande passe derrière « Here 5 to do »']],
+      rec: 'Garder le contenu, resserrer l’ordre : une astuce à la fois au bon moment, la visite finit sur « parle à quelqu’un ou ouvre Q », la leçon 1 en deux phrases. Le premier combat : à juger à ton essai.',
+      opts: ['Resserrer l’ordre et la première leçon, juger le combat à mon essai', 'Seulement les astuces', 'Garder ainsi'], recIdx: 0,
+      src: 'A-04, A-07, A-08, C-01, C-23, C-24 ; src/ui/tutorial.ts, duelTutorial.ts' },
+  ]},
+  { id: 'finitions', title: 'La manette et les finitions', sub: 'Aucune vraie manette n’a été essayée : le faux pad seulement.', fam: 'var(--cendre)', items: [
+    { id: 'IA-11', tag: 'C-26, C-25, A-13', title: 'La manette : les caps de la croix, le nom du héros',
+      ctx: 'Les quatre caps de la croix sont identiques (seule l’étiquette ARIA donne la direction de chaque compétence) ; les caps affichent le clavier jusqu’à la première pression du pad ; le nom du héros ne se tape pas au pad (A démarre « Ren » sans le dire).',
+      shots: [['img/ia-dpad.png', 'La HUD en manuel au pad : quatre croix identiques']],
+      rec: 'Quatre caps de croix distincts ; « Ren » dit sur le bouton ; le reste (caps clavier avant la première pression) à vérifier avec ta vraie manette : un navigateur ne montre souvent la manette qu’après un premier appui.',
+      opts: ['Corriger les caps de la croix et le nom ; vérifier le reste à ma manette', 'Seulement les caps de la croix', 'Garder ainsi'], recIdx: 0,
+      src: 'C-25, C-26, C-27, A-13, A-20 ; src/input/glyphs.ts, prompts.ts' },
+    { id: 'IA-12', tag: '17 finitions', title: 'Les finitions visuelles',
+      ctx: 'Le mot géant « Victory » et le texte de la HUD transparaissent derrière des cartes ; l’astuce « A mark in the ledger » passe sous les chiffres du coin ; le titre est coupé à 568 × 320 ; le pied de « When it leaves » dépasse de 11 px ; le cap « 1 » mord « 2 uses » ; la mise d’un défi est sous un fondu ; le résultat d’un défi montre le classement de la poule ; un fragment de ligne dans le guide ; ‹ › grisés à 2,3:1 (désactivés, exempts par conception).',
+      rec: 'Un lot de finitions, sans changer le dessin.',
+      opts: ['Un lot de finitions', 'Garder ainsi', 'Autre (en note)'], recIdx: 0,
+      src: 'A-04, A-05, A-14, A-16, A-18, A-20, B-07, B-10, B-16, B-19, B-24, B-26, C-03, C-12, C-13, C-15, C-28' },
+  ]},
+  { id: 'suite', title: 'La suite', sub: 'Rien n’est construit avant ta fiche.', fam: 'var(--voile)', items: [
+    { id: 'IA-13', tag: 'les lots', title: 'Cinq lots, un par séance',
+      ctx: 'Si tu suis ces recommandations, le travail se découpe en cinq lots, chacun dans sa séance, avec ses tests et ses preuves navigateur (anglais, français, mouvement réduit) : 1. A-01 et les règles communes de défilement et de liste Q ; 2. K comme G, les tailles des catalogues, la vente ; 3. le petit écran des pages du parcours ; 4. ce que le jeu fait sans le dire, les pieds de page, le premier quart d’heure ; 5. la manette et les finitions.',
+      rec: 'Cinq lots, l’un après l’autre, le premier tout de suite : il corrige la seule perte de progression.',
+      opts: ['Cinq lots, le premier tout de suite', 'Un seul lot pour tout', 'Seulement A-01 et le défilement, le reste après mon essai'], recIdx: 0,
+      src: 'briefs/audit-interfaces-ia1.md § 7' },
+    { id: 'IA-14', tag: 'ton essai', title: 'Ton essai en jeu',
+      ctx: 'Cet audit mesure des impasses ; il ne remplace pas ton essai. Tu as trouvé K difficile alors que les preuves étaient vertes : le jugement d’intuitivité reste le tien. Non couverts : ta vraie manette, le tactile, une partie neuve de bout en bout, le retour du français vers l’anglais, l’enregistrement d’un fichier de sauvegarde.',
+      rec: 'Jouer, noter ici ce qui te gêne, puis ranger tes notes en lot avec le reste.',
+      opts: ['Je joue d’abord et je note ici ce qui me gêne', 'Construire sans attendre mon essai', 'Compléter d’abord l’audit des parcours non joués'], recIdx: 0,
+      src: 'briefs/audit-interfaces-ia1.md § 1' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
