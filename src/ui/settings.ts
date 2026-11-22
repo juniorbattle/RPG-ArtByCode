@@ -7,7 +7,7 @@ import {
 } from '../settings/settings';
 import { DEFAULT_KEYS, labelOf, normCode, rebind, reserved, type Act, type KeyTable, type Slot } from '../settings/keys';
 import { bindCap, fixedName, slotName } from '../input/caps';
-import { el, esc, fillFoot, footBtn, injectStyle, pickRow, scrollFade } from './style';
+import { closeLabel, el, esc, fillFoot, footBtn, injectStyle, pickRow, scrollFade } from './style';
 import { chooseLanguage, pageLang } from '../settings/language';
 
 /** The settings page (the operator's sheet of journal Passe RG2: RG-1 « Une page « Réglages », quatre parties, titre et menu », RG-2 « Depuis la pause du
@@ -95,7 +95,7 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
   root.appendChild(card);
   const list = card.querySelector('.pm-glist') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement;
   const head = card.querySelector('section:last-child .pm-head') as HTMLElement, title = head.querySelector('.pm-h') as HTMLElement, sub = head.querySelector('p') as HTMLElement;
-  const out = footBtn('Esc', tx('ui.close'), () => close());
+  const out = footBtn('Esc', closeLabel(), () => close());
   fillFoot(card.querySelector('.pm-foot') as HTMLElement, out);
   const fit = scrollFade(detail);
   let shown: SettingsSection = o.section ?? 'graphics';

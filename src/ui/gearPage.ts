@@ -8,7 +8,7 @@ import { said, tx, type TextKey } from '../narrative/text';
 import { portraitUrl } from './portraits';
 import { HAND, KIND_TEXT, PLACES, bagOf, hitPlacesFor, kindOfId, kindOfPlace, ownedOf as owned, pieceOfLine, placeId, placeViews, sellersOf, sellListOf, statusOf, subOf, wearAction, type Kind, type Own, type PlaceView } from './gearModel';
 import { bare, cmpHtml, figHtml, goodsLine, insteadOf, isArg, isGoods, isWare, pieceAbout, sellOf, statsHtml, type Line, type WaresHost } from './wares';
-import { el, esc, fillFoot, footBtn, scrollFade } from './style';
+import { closeLabel, el, esc, fillFoot, footBtn, scrollFade } from './style';
 import { arrowFocus } from './nav';
 
 /** The gear and the keepers' goods, made again for the operator's request of 16/11/2026 (« il faudra faire pareil pour les equipements afin d'avoir un aspect intuitif et
@@ -38,7 +38,7 @@ export function gearPage(who: string | null, host: WaresHost): { root: HTMLEleme
   const q = <T extends HTMLElement>(s: string): T => card.querySelector(s) as T;
   const head = q('.pm-ghead'), casesEl = q('.gp-cases'), statsEl = q('.pm-stats'), bar = q('.sk-bar'), tiles = q('.gp-tiles'), detail = q('.pm-detail'), foot = q('.pm-foot');
   const fit = scrollFade(detail); scrollFade(tiles);
-  const close = footBtn('Esc', tx(who ? 'ui.leave' : 'ui.close'), () => host.close());
+  const close = footBtn('Esc', who ? tx('ui.leave') : closeLabel(), () => host.close());
 
   /** what the page holds besides the game: the control selected, an accessory waiting for its place (`armed`: both are taken), a piece waiting for the sale's confirmation
    *  (`ask`, its key), the kind shown in the catalogue, the panel (Mara's), a bargain open on a piece of the goods, the line said under the title */

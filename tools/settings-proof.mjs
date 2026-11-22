@@ -173,6 +173,9 @@ try {
   const holdAz = async (code, k, ms = 500) => { await azerty('keyDown', code, k); await sleep(ms); await azerty('keyUp', code, k); await frames(3); };
   let p0 = await pos(); await holdAz('KeyW', 'z'); let p1 = await pos();
   check(Math.hypot(p1.x - p0.x, p1.z - p0.z) > 0.3, `Z held walks the hero (${Math.hypot(p1.x - p0.x, p1.z - p0.z).toFixed(2)} m)`);
+  // (the diamond's hint falls next to the first person it marks, journal Passe IA6, IA-10: read it before the next walk)
+  await sleep(500);
+  if (await page.evaluate(() => !!document.querySelector('.tu-hint'))) { await sleep(400); await key('Enter'); await sleep(300); }
   p0 = await pos(); await holdAz('KeyA', 'q'); p1 = await pos();
   check(Math.hypot(p1.x - p0.x, p1.z - p0.z) > 0.3 && !(await page.evaluate(() => !!document.querySelector('[data-here]'))), `Q held walks him without opening the list (${Math.hypot(p1.x - p0.x, p1.z - p0.z).toFixed(2)} m)`);
   await azerty('keyDown', 'KeyQ', 'a'); await frames(2); await azerty('keyUp', 'KeyQ', 'a'); await frames(2);

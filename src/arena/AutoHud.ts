@@ -23,6 +23,8 @@ import { firstSlot } from '../settings/keys';
 
 export interface AutoTexts extends DynTexts {
   speed: string; speedSub: string; speedOn: string; skip: string; skipSub: string;
+  /** the pause's control on the foot (the operator's IA-09 « Tout dire là où le joueur décide », journal Passe IA2; C-02 of journal Passe IA1: its key was shown nowhere) */
+  pauseBtn: string; pauseSub: string;
   charging: (name: string) => string; order: string; secs: (n: number) => string; waiting: string; clash: string;
   /** lot 2 of « La Brute »: the opening's tag and float, an interruption, a parry, where a blow landed (the duel's multiplier), a skill's uses */
   openOn: string; opened: string; interrupted: string; parried: string; inBreak: (k: number) => string; inOpen: (k: number) => string; uses: (left: number, all: number) => string;
@@ -34,11 +36,11 @@ export interface AutoTexts extends DynTexts {
   states: Record<string, string>; missed: string; frozen: string;
 }
 export type UltMiss = 'guarded' | 'dodged' | 'parried' | 'cut' | 'lost' | 'missed';
-const EN_EXTRA = { speed: '×2', speedSub: 'twice as fast', speedOn: 'back to ×1', skip: 'Skip', skipSub: 'to the result', charging: (n: string) => `Charging ${n}`, order: 'Your order', secs: (n: number) => `${n} s`, waiting: 'At your next choice', clash: 'Clash',
+const EN_EXTRA = { speed: '×2', speedSub: 'twice as fast', speedOn: 'back to ×1', skip: 'Skip', skipSub: 'to the result', pauseBtn: 'Pause', pauseSub: 'the bout waits', charging: (n: string) => `Charging ${n}`, order: 'Your order', secs: (n: number) => `${n} s`, waiting: 'At your next choice', clash: 'Clash',
   openOn: 'Open', opened: 'Open!', interrupted: 'Interrupted', parried: 'Parried', inBreak: (k: number) => `in the break ×${k}`, inOpen: (k: number) => `in the opening ×${k}`, uses: (l: number, a: number) => `${l} of ${a} uses left`,
   ultMiss: { guarded: 'Ultimate guarded', dodged: 'Ultimate dodged', parried: 'Ultimate parried', cut: 'Ultimate cut', lost: 'Ultimate lost', missed: 'Ultimate missed' }, stripped: 'Disarmed', sapped: 'Sapped', states: { poison: 'Poison', burn: 'Burn', blind: 'Blinded', bleed: 'Bleeding', curse: 'Cursed', paralysis: 'Paralysed' }, missed: 'Missed', frozen: 'Frozen' };
 const comma = (k: number): string => String(k).replace('.', ',');
-const FR_EXTRA = { speed: '×2', speedSub: 'deux fois plus vite', speedOn: 'retour à ×1', skip: 'Passer', skipSub: 'au résultat', charging: (n: string) => `Charge : ${n}`, order: 'Votre ordre', secs: (n: number) => `${n} s`, waiting: 'À votre prochain choix', clash: 'Entrechoc',
+const FR_EXTRA = { speed: '×2', speedSub: 'deux fois plus vite', speedOn: 'retour à ×1', skip: 'Passer', skipSub: 'au résultat', pauseBtn: 'Pause', pauseSub: 'le combat attend', charging: (n: string) => `Charge : ${n}`, order: 'Votre ordre', secs: (n: number) => `${n} s`, waiting: 'À votre prochain choix', clash: 'Entrechoc',
   openOn: 'Faille', opened: 'Faille !', interrupted: 'Interrompu', parried: 'Paré', inBreak: (k: number) => `dans la rupture ×${comma(k)}`, inOpen: (k: number) => `dans la faille ×${comma(k)}`, uses: (l: number, a: number) => `${l} usage${l > 1 ? 's' : ''} sur ${a}`,
   ultMiss: { guarded: 'Ultime gardée', dodged: 'Ultime esquivée', parried: 'Ultime parée', cut: 'Ultime coupée', lost: 'Ultime perdue', missed: 'Ultime manquée' }, stripped: 'Désarmé', sapped: 'Sapé', states: { poison: 'Poison', burn: 'Brûlure', blind: 'Aveuglé', bleed: 'Saignement', curse: 'Maudit', paralysis: 'Paralysé' }, missed: 'Manqué', frozen: 'Figé' };
 export const AUTO_TEXTS_EN: AutoTexts = { ...DYN_TEXTS_EN, ...EN_EXTRA, restart: 'An official bout cannot be restarted' };
@@ -87,6 +89,7 @@ body.pm-pad #ah-pause .kb{display:none}
 #arena-hud .ah-tags b.op{color:var(--ds-accent);border-color:var(--ds-accent)}
 #ah-dmg div small{display:block;margin-top:2px;font:600 var(--ds-fs-small)/1.2 var(--ds-text);-webkit-text-stroke:4px var(--ds-ink);paint-order:stroke fill;color:var(--ds-accent);text-align:center}
 .ah-b.ctl b{color:var(--ds-ivory)}
+#arena-hud .ah-b.ctl kbd{width:max-content;min-width:30px;flex:none}
 .ah-b.ctl.active b,.ah-b.ctl.active em{color:var(--ds-accent)}
 #arena-hud .ah-b.ctl.active kbd{border-color:var(--ds-accent);color:var(--ds-accent)}
 @media (max-width:1240px){.ah-b.slot .ord{grid-row:1;margin-bottom:2px}}
@@ -126,12 +129,12 @@ export class AutoHud {
     this.hand = hand;
     const cond = (i: number): string => tx(`auto.cond.${plan?.[i] ?? 'auto'}` as TextKey);
     const slots = M.slots.map((s, i) => `<button class="ah-b slot wide" type="button" tabindex="-1" data-slot="${s.id}" data-label="${i + 1}. ${this.name(s.id)}" aria-label="${i + 1}. ${this.name(s.id)}${hand ? '' : ` · ${cond(i)}`}"><span class="ord">${hand ? bindCap(`skill${i + 1}` as 'skill1') : i + 1}</span><b>${this.name(s.id)}</b><em><span class="pips" aria-hidden="true">${'<i></i>'.repeat(s.uses)}</span><span class="fam">${t.families[s.family] ?? ''}</span>${hand ? '' : `<span class="cond">${cond(i)}</span>`}<span class="cdn"></span></em><i class="pg"></i><i class="cdv"></i></button>`).join('');
-    const ctl = (id: 'speed' | 'skip', act: 'attack' | 'dodge', label: string, sub: string) => `<button class="ah-b ctl wide" type="button" data-act="${id}" aria-label="${label} (${actName(act)})">${bindCap(act)}<b>${label}</b><em>${sub}</em></button>`;
+    const ctl = (id: 'speed' | 'skip' | 'pause', act: 'attack' | 'dodge' | 'pause', label: string, sub: string) => `<button class="ah-b ctl wide" type="button" data-act="${id}" aria-label="${label} (${actName(act)})">${bindCap(act)}<b>${label}</b><em>${sub}</em></button>`;
     const card = (who: Seat, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}" aria-label="${names[who]}, ${sub}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${names[who]}<em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(names[who])}" aria-valuemin="0" aria-valuemax="${M[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div><div class="ah-ch off" aria-live="off"><span></span><div class="ah-cb"><i></i></div></div><div class="ah-tags"><b class="op"></b><b class="wd"></b><b class="bs"></b><b class="st"></b></div><div class="ah-state"></div></div></div>`;
     this.el.setAttribute('aria-label', t.subtitle);
     this.el.innerHTML = `<div class="top"></div><div class="bot"></div>
       ${card('ren', 'l', t.subRen)}${card('marek', 'r', t.subMarek)}
-      <div id="ah-dmg"></div><div id="ah-bar" aria-label="${t.order}"><span class="ah-mode">${tx(hand ? 'v2.mode.manual' : 'v2.mode.auto')}</span>${slots}<span class="ah-sep"></span>${ctl('speed', 'attack', t.speed, t.speedSub)}${ctl('skip', 'dodge', t.skip, hand ? tx('auto.skip.hand') : t.skipSub)}</div>
+      <div id="ah-dmg"></div><div id="ah-bar" aria-label="${t.order}"><span class="ah-mode">${tx(hand ? 'v2.mode.manual' : 'v2.mode.auto')}</span>${slots}<span class="ah-sep"></span>${ctl('speed', 'attack', t.speed, t.speedSub)}${ctl('skip', 'dodge', t.skip, hand ? tx('auto.skip.hand') : t.skipSub)}${ctl('pause', 'pause', t.pauseBtn, t.pauseSub)}</div>
       <div id="ah-ko" role="status"><div><b></b><span></span></div></div>
       <div id="ah-pause" role="status"><div><b>${t.pause}</b><span class="kb">${this.resumeLine()}</span><span class="pad-only">${bindCap('pause')}${t.resumePad ?? ''}</span><button class="ah-set" type="button">${keyCap('Esc')}${tx('set.title')}</button></div></div>
       <div id="ah-rotate" role="alert"><div><b>${t.title}</b><span>${t.rotate}</span></div></div>`;
@@ -229,7 +232,11 @@ export class AutoHud {
     this.cls('fast', sp, 'active', fast);
     const sub = fast ? t.speedOn : t.speedSub;
     this.set('spsub', sub, () => { sp.querySelector('em')!.textContent = sub; });
-    for (const id of ['speed', 'skip']) this.cls(`on${id}`, this.btn.get(id)!, 'on', !over);
+    for (const id of ['speed', 'skip', 'pause']) this.cls(`on${id}`, this.btn.get(id)!, 'on', !over);
+    // the pause's control: in the accent and saying how to go on while the bout waits
+    const pb = this.btn.get('pause')!, ps = paused ? t.resumePad ?? t.resume : t.pauseSub;
+    this.cls('ispaused', pb, 'active', paused && !over);
+    this.set('pausesub', ps, () => { pb.querySelector('em')!.textContent = ps; });
     this.cls('pause', this.q('#ah-pause'), 'on', paused && !over);
   }
 

@@ -204,7 +204,7 @@ test('the settings page (RG-1, RG-2): four parts; from the title screen, the ver
   assert.match(page, /const SECTIONS: readonly SettingsSection\[\] = \['graphics', 'sound', 'controls', 'language'\];/);
   for (const k of ['set.quality', 'set.res', 'set.msaa', 'set.refl', 'set.fps', 'set.dof', 'set.bloom', 'set.look', 'set.motion', 'set.fullscreen', 'set.volume', 'v2.sound.music', 'set.ambience', 'set.effects', 'v2.sound.mute', 'set.keyboard', 'v2.sound.vibration']) assert.ok(page.includes(`tx('${k}')`), k);
   const town = src('src/ui/townUi.ts');
-  assert.match(town, /add\(tx\('set\.open'\), \(\) => this\.openSettings\(\), 'settings'\);/);
+  assert.match(town, /add\(tx\('set\.open'\), \(\) => this\.openSettings\('sound'\), 'settings'\);/);
   assert.match(town, /else if \(is\('settings'\) && isV2\(this\.st\)\) this\.openSettings\('sound'\);/);
   assert.doesNotMatch(town, /openSound/);
   assert.match(src('src/ui/title.ts'), /add\('settings', tx\('set\.open'\), tx\('set\.openSub'\)/);

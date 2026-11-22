@@ -21,6 +21,7 @@ const CSS = `
 .pm-btn:hover:not(:disabled),.pm-btn:focus{color:var(--ds-accent)}
 .pm-btn:disabled{cursor:default;color:var(--ds-muted)}
 .pm-btn .why{display:block;font-size:var(--ds-fs-small);color:var(--ds-muted)}
+.pm-btn .pm-who{display:block;font-size:var(--ds-fs-small);color:var(--ds-muted)}
 .pm-btn .cost{margin-left:auto;flex:none;font-size:var(--ds-fs-body);white-space:nowrap;color:var(--ds-muted)}
 .pm-btn .cost+.cost{margin-left:0}
 .pm-btn:hover:not(:disabled) .cost,.pm-btn:focus .cost,.pm-btn.primary .cost{color:var(--ds-accent)}
@@ -392,7 +393,7 @@ export const esc = (s: string): string => s.replace(/[&<>"]/g, (c) => ({ '&': '&
 export function arrowKeys(list: HTMLElement): void {
   list.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-    const all = [...list.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')];
+    const all = [...list.querySelectorAll<HTMLButtonElement>('button:not(:disabled):not([data-nostop])')];
     if (!all.length) return;
     e.preventDefault(); e.stopPropagation();
     const i = all.indexOf(document.activeElement as HTMLButtonElement), down = e.key === 'ArrowDown';
@@ -468,6 +469,22 @@ export function footOf(...actions: Array<HTMLElement | null>): HTMLElement {
   const f = el('div', 'pm-foot');
   fillFoot(f, ...actions);
   return f;
+}
+
+/** the label of a page's way out: « Close », or « Back to the menu » for a page opened from the menu, where Esc goes back one step (the operator's IA-08 « Entrée dite
+ *  partout, Échap d’un cran, la carte plus parlante », journal Passe IA2; A-11 of journal Passe IA1); set by the town's interface while it builds such a page */
+let outLabel: string | null = null;
+export const setOutLabel = (label: string | null): void => { outLabel = label; };
+export const closeLabel = (): string => outLabel ?? tx('ui.close');
+
+/** the foot's Enter for a list the arrows walk (a dialogue, the list Q, the map, the menu: B-22 of journal Passe IA1): it says that Enter does the focused line's
+ *  action, and does it when clicked. Not a stop of the arrows: they walk the lines. `list` holds the lines only, not the foot. */
+export function enterFoot(list: HTMLElement, label: string): HTMLButtonElement {
+  let last: HTMLButtonElement | null = null;
+  list.addEventListener('focusin', (e) => { const t = (e.target as HTMLElement).closest<HTMLButtonElement>('.pm-btn'); if (t && list.contains(t)) last = t; });
+  const b = footBtn('Enter', label, () => { const t = last && last.isConnected && !last.disabled ? last : list.querySelector<HTMLButtonElement>('button:not(:disabled)'); t?.click(); }, true);
+  b.tabIndex = -1; b.dataset.nostop = '1';
+  return b;
 }
 
 /** a line of a list with its detail beside it (the gear's page, journal Passe UM9): selected by the keyboard or the mouse, pressed by Enter or a click; a line

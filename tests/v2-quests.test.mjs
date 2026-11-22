@@ -275,6 +275,6 @@ test('the words in both languages: each quest\'s name and offer, the encounter\'
   const names = { cargo: ['The Steel Cargo', 'La cargaison d’acier'], herbs: ['Sister Anwen\'s Herbs', 'Les simples de Sœur Anwen'], treatise: ['Master Corvin\'s Treatise', 'Le traité de maître Corvin'], sharps: ['Lio\'s Card Sharps', 'Les tricheurs de Lio'] };
   for (const [id, [en, fr]] of Object.entries(names)) { assert.equal(T.tx(Q.TITLE[id]), en); assert.equal(inFrench(() => T.tx(Q.TITLE[id])), fr); }
   assert.equal(inFrench(() => T.tx('ui.quests.title')), 'En cours'); assert.equal(T.tx('ui.quests.title'), 'In progress');
-  assert.match(inFrench(() => T.tx('v2.encounter.sharps.refuse', { n: 5 })), /5 pièces reprises/);
+  assert.match(inFrench(() => T.tx('v2.encounter.sharps.refuse', { n: 5, rep: 2 })), /5 pièces reprises.*−2 de réputation/);
   assert.match(inFrench(() => T.tx('v2.encounter.won', { name: 'Marrow Vane', n: 5 })), /Marrow Vane sur le sable/);
 });

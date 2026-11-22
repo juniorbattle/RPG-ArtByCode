@@ -22,7 +22,7 @@ import { LESSON, SAND_LESSON, TRAIN_CAP, lessonPrice } from '../simulation/v2ski
 import { autoOrderView } from '../simulation/preview';
 import { v2KitOf } from '../simulation/v2';
 import { forgetLessons } from './duelTutorial';
-import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
+import { arrowKeys, closeLabel, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
 import { bindCap, keyCap } from '../input/caps';
 import type { Act } from '../settings/keys';
 
@@ -362,7 +362,8 @@ function keysHtml(which: 'explore' | 'duel' | 'all'): string {
   const duel = row(a('attack'), 'tut.key.attack') + row(a('dodge'), 'tut.key.dodge') + row(a('pause'), 'tut.key.pause');
   if (which === 'explore') return `<div class="tu-keys">${explore}</div>`;
   if (which === 'duel') return `<div class="tu-keys">${duel}</div>`;
-  const pages = row(p('Enter'), 'tut.key.confirm') + row(p('Esc'), 'tut.key.back') + row(p('Space'), 'tut.key.space');
+  // Page ↓ / Page ↑ read a long text or list on (journal Passe IA3, IA-02; said here since journal Passe IA6, IA-08: the line « Page ↓ for more » said it only where it is needed)
+  const pages = row(p('Enter'), 'tut.key.confirm') + row(p('Esc'), 'tut.key.back') + row(p('Space'), 'tut.key.space') + row(`${p('PageDown')}${p('PageUp')}`, 'tut.key.page');
   const kb = (x: Act, t: TextKey) => row(bindCap(x), t, ' kb');
   const short = kb('journal', 'tut.key.journal') + kb('board', 'tut.key.board') + kb('skills', 'tut.key.skills') + kb('gear', 'tut.key.gear') + kb('settings', 'tut.key.settings') + kb('guide', 'tut.key.guide') + kb('mute', 'tut.key.mute');
   return `<p class="pm-sub">${tx('tut.keys.explore')}</p><div class="tu-keys">${explore}</div><p class="pm-sub">${tx('tut.keys.pages')}</p><div class="tu-keys">${pages}</div>`
@@ -378,7 +379,7 @@ export function guidePage(host: GuideHost, close: () => void, first?: string): {
     + `<section class="pm-col"><header class="pm-head"><h2 class="pm-h"></h2></header><div class="pm-detail pm-grow"></div><div class="pm-foot"></div></section>`;
   root.appendChild(card);
   const list = card.querySelector('.pm-glist') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement, title = card.querySelector('section:last-child .pm-h') as HTMLElement;
-  const out = footBtn('Esc', tx('ui.close'), close), fit = scrollFade(detail);
+  const out = footBtn('Esc', closeLabel(), close), fit = scrollFade(detail);
   const replay = host.replay ? footBtn('Space', tx('tut.guide.replay'), () => { if (at.id === 'duel') { forgetLessons(); detail.insertAdjacentHTML('beforeend', `<p class="tu-done" role="status">${tx('tut.duel.again.done')}</p>`); fit(); } else host.replay!(); }) : null;
   fillFoot(card.querySelector('.pm-foot') as HTMLElement, replay, out);
   // the live scene, taken once when a chapter first asks for it

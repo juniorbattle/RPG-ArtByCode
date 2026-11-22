@@ -193,11 +193,17 @@ try {
   }
   check(steps.filter((x) => x.endsWith('(lit)')).length === 4, `the clock, figures, list and menu lit: ${steps.join(' | ')}`);
   check(await page.evaluate(() => !document.querySelector('.tu-band') && !document.querySelector('.tu-spot') && !document.body.classList.contains('tu-on')), 'Enter on the last band: the tour ends, nothing left');
-  // the people marked on the quay (Mara, her stall and her crates): the marks' hint once the tour is done (the operator's MK-11, journal Passe MK3), then away
-  const mk = await until(page, () => { const h = document.querySelector('.tu-hint .pm-h')?.textContent; return h ? { h, body: document.querySelector('.tu-hint .pm-body').textContent, marks: (window.__people?.marks.state() ?? []).map((m) => `${m.who}:${m.kind}`) } : null; }, 5000, 'the marks\' hint');
-  check(mk?.h === t('tut.hint.npcMark.title') && mk.body.length > 40, `the marks' hint after the tour: ${mk?.h}`);
-  check(!!mk?.marks.includes('mara:item'), `Mara marked on the first morning: ${mk?.marks.join(', ')}`);
+  // the people marked on the quay (Mara, her stall and her crates): no hint falls as the tour ends (journal Passe IA6, IA-10, A-07); the marks' hint comes next to a person the
+  // diamond marks (the operator's MK-11, journal Passe MK3), then away
+  await sleep(3500);
+  check(!(await hintTitle(page)), 'no hint falls as the tour ends');
+  const marks = await page.evaluate(() => (window.__people?.marks.state() ?? []).map((m) => `${m.who}:${m.kind}`));
+  check(marks.includes('mara:item'), `Mara marked on the first morning: ${marks.join(', ')}`);
+  await page.evaluate(() => { window.__ui.host.nearby = () => 'mara'; window.__ui.update(); });
+  const mk = await until(page, () => { const h = document.querySelector('.tu-hint .pm-h')?.textContent; return h ? { h, body: document.querySelector('.tu-hint .pm-body').textContent } : null; }, 5000, 'the marks\' hint');
+  check(mk?.h === t('tut.hint.npcMark.title') && mk.body.length > 40, `the marks' hint next to Mara: ${mk?.h}`);
   await readOn(page);
+  await page.evaluate(() => { window.__ui.host.nearby = () => null; window.__ui.update(); });
 
   // 2. the guide on H
   await key(page, 'h');
@@ -234,7 +240,11 @@ try {
   check(!(await hintTitle(page)), 'the shop\'s hint is not said twice');
   await key(page, 'Escape'); await key(page, 'Escape');
   await key(page, 'q');
-  check((await until(page, () => document.querySelector('.tu-hint .pm-h')?.textContent, 4000, 'the theft\'s hint')) === t('tut.hint.steal.title'), 'the list offers a theft: the stealing hint');
+  await sleep(800);
+  check(!(await hintTitle(page)), 'the list opens without a hint over it (the theft\'s hint waits for a theft)');
+  let th = null;
+  for (let i = 0; i < 40 && !th; i++) { await key(page, 'ArrowDown'); th = await hintTitle(page); }
+  check(th === t('tut.hint.steal.title'), 'the line reaches a theft: the stealing hint');
   await readOn(page); await key(page, 'Escape');
   // the morning passes: the afternoon of day 1 is the eve of the bout of day 2
   check((await page.evaluate(() => window.__ui.run({ type: 'wait' }))).ok, 'the morning passes (wait)');

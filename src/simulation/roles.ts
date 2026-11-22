@@ -80,6 +80,19 @@ export function available(st: GameState, who: string): string | null {
   return presentAt(p, st.place, st.slot, isV2(st)) ? null : tx('avail.notNow', { name: p.name });
 }
 
+/** who stands at a place at this moment of the day, for the map's line (the operator's IA-08 « la carte plus parlante », journal Passe IA2; B-12 of journal Passe IA1): the
+ *  named people of the Cité, in the people table's order, by their place and hours and the days they are in the Cité; never the passers-by nor the crowd (met on the spot),
+ *  nor Wynn, who follows a stall. Read-only: nothing in the game depends on it */
+export function whoAt(st: GameState, place: GameState['place']): string[] {
+  const v2 = isV2(st);
+  return Object.values(PEOPLE).filter((p) => {
+    if (p.passer || p.id === 'folk' || p.id === 'wynn' || (p.v2 && !v2)) return false;
+    if (p.id === 'bram' && st.services.forge === 'sabotaged') return false;
+    if (p.days && (st.day < p.days[0] || st.day > p.days[1])) return false;
+    return presentAt(p, place, st.slot, v2);
+  }).map((p) => p.id);
+}
+
 const blade = (st: GameState) => st.player.items.includes('tempered-blade') || st.player.items.includes('imported-blade');
 const day = (st: GameState) => st.slot !== 'evening';
 const add = (s: GameState, who: string, n: number) => { s.town[who] = clamp((s.town[who] ?? 0) + n, -100, 100); };

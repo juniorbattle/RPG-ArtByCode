@@ -1,6 +1,6 @@
 import { RIVALS, PLAYER_ID, ROUNDS, POINTS } from '../narrative/roster';
 import type { GameState, MatchRecord } from '../simulation';
-import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
+import { arrowKeys, closeLabel, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
 import { portraitUrl } from './portraits';
 import { tx } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
@@ -106,7 +106,7 @@ export function boardPage(st: GameState, rows: Row[], close: () => void, sheet?:
     + `<section class="pm-col"><div class="pm-who-at"></div><div class="pm-detail pm-grow"></div><div class="pm-foot"></div></section>`;
   root.appendChild(card);
   const list = card.querySelector('.pm-glist') as HTMLElement, who = card.querySelector('.pm-who-at') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement;
-  const out = footBtn('Esc', tx('ui.close'), close), fit = scrollFade(detail), foot = card.querySelector('.pm-foot') as HTMLElement;
+  const out = footBtn('Esc', closeLabel(), close), fit = scrollFade(detail), foot = card.querySelector('.pm-foot') as HTMLElement;
   fillFoot(foot, out);
   const n = nextBout(st), first = n ? (n.a === PLAYER_ID ? n.b : n.a) : (pendingFinal(st)?.foe ?? PLAYER_ID);
   // the next opponent's line opens their match sheet (GP-12)

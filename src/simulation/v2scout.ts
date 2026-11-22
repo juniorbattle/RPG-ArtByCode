@@ -1,4 +1,5 @@
-import type { GameState, MatchRecord } from './state';
+import { placeName, type GameState, type MatchRecord } from './state';
+import { PEOPLE, placeOf } from '../narrative/people';
 import { isV2 } from './v2';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { GENERICS } from '../narrative/generics';
@@ -125,12 +126,21 @@ export function planText(id: string, name: string, plan = 0, day?: number): stri
   return day ? tx('scout.planSeen', { name, list: parts.join(', '), day }) : tx('scout.plan', { name, list: parts.join(', ') });
 }
 
+/** where and when a rival can be watched at practice, as their place and hours say it in a version 2 game: « the Arena Forecourt, by day » (the operator's IA-09 « Tout dire
+ *  là où le joueur décide », journal Passe IA2; B-13 of journal Passe IA1: the board sent the player to practice while Vessa Lark stood on the forecourt) */
+export function watchWhere(id: string): string {
+  const p = PEOPLE[id];
+  if (!p) return '';
+  const hours = p.v2at?.hours ?? p.hours;
+  return tx('scout.where', { place: placeName(placeOf(p, true), true), when: tx(hours.every((h) => h === 'evening') ? 'scout.when.night' : 'scout.when.day') });
+}
+
 /** what the player knows of a rival, as lines (the match sheet, the board, the notebook): the tier's lines, the plan they saw with its day (GP-15: they may have changed
  *  it since; a rumour says so), then how to learn more; a generic fighter (met in portrait only) fights with its rival's kit and is never watched, its style said once
  *  fought, under its own name (GP-16) */
 export function scoutLines(s: GameState, id: string): string[] {
   const name = scoutName(id), tier = scoutTier(s, id), known = isV2(s) ? knownPlan(s, id) : null, out: string[] = [];
-  if (tier === 0) out.push(tx('scout.unseen', { name }));
+  if (tier === 0) out.push(tx('scout.unseen', { name, where: watchWhere(id) }));
   if (tier >= 1) out.push(styleText(id, name));
   if (known !== null) { const d = s.flags[`scoutPlanDay:${id}`]; out.push(planText(id, name, known, typeof d === 'number' ? d : undefined)); }
   else if (tier >= 1 && RIVALS[id]) out.push(tx('scout.more', { name }));

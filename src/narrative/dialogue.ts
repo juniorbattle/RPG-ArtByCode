@@ -214,7 +214,7 @@ function baseLines(s: GameState, who: string): string[] {
     // the version 2's generic fighters (lot L2b); Tobin and Rhosk on the training ground after the cut, in the title's race or out of it
     case 'aldric': return [tx(s.v2?.gear?.armour === 'knight-hauberk' || s.v2?.gear?.bag.includes('knight-hauberk') ? 'v2.line.aldric.hauberk' : 'v2.line.aldric')];
     // lot L4 (L3-11 « Les garder pour L4 »): Corra was offered Rhosk's coin to stand on the sand with him; Brother Ambrose saw Vessa pay Lio's room
-    case 'corra': return [s.v2?.reprisal ? tx('v2.line.corra.reprisal', { name: PEOPLE[s.v2.reprisal.by]?.name ?? s.v2.reprisal.by }) : s.facts.includes('rhosk-offer') && !s.flags['sand-cleared'] ? tx('v2.line.corra.rhosk') : tx('v2.line.corra')];
+    case 'corra': return [s.v2?.reprisal ? tx('v2.line.corra.reprisal', { name: PEOPLE[s.v2.reprisal.by]?.name ?? s.v2.reprisal.by, n: LAW.payOff }) : s.facts.includes('rhosk-offer') && !s.flags['sand-cleared'] ? tx('v2.line.corra.rhosk') : tx('v2.line.corra')];
     case 'ambrose': { const tale = s.v2?.lie && !s.flags['confronted:vessa'] ? s.v2.lie.who : null; return [tale ? tx(taleOf(s) ? 'v2.line.ambrose.tale' : 'v2.line.ambrose.taleOld', { name: RIVALS[tale]?.name ?? tale }) : tx('v2.line.ambrose')]; }
     case 'lucan': return [tx('v2.line.lucan')];
     case 'piers': return [tx('v2.line.piers')];

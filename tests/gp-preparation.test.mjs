@@ -135,7 +135,7 @@ test('GP-12: a plan set on the sheet the day before is kept for that rival and t
 test('GP-12: the town opens it from the menu, the board and Master Corvin; the day\'s bout keeps its way into the arena', () => {
   const U = src('src/ui/townUi.ts'), B = src('src/ui/board.ts'), K = src('src/ui/skills.ts');
   assert.match(U, /if \(nb\) add\(tx\('prep\.sheet\.menu', \{ name: fighterName\(nb\.foeId\), day: nb\.day \}\), \(\) => this\.openMatchSheet\(\)\);/);
-  assert.match(U, /boardPage\(this\.st, standings\(this\.st\), \(\) => this\.closeModal\(\), isV2\(this\.st\) && autoNextBout\(this\.st\) \? \(\) => this\.openMatchSheet\(\(\) => this\.openBoard\(\)\) : undefined\)/);
+  assert.match(U, /boardPage\(this\.st, standings\(this\.st\), \(\) => this\.leave\(\), isV2\(this\.st\) && autoNextBout\(this\.st\) \? \(\) => \{ const via = this\.via; this\.openMatchSheet\(\(\) => \{ this\.nextVia = via; this\.openBoard\(\); \}\); \} : undefined\)/);
   assert.match(U, /tx\('prep\.sheet\.corvin', \{ name: fighterName\(nb\.foeId\) \}\)[\s\S]{0,120}this\.openMatchSheet\(\(\) => this\.openPerson\(who\)\)/);
   assert.match(U, /const enter = nb\.today && s\.slot === 'afternoon';/);
   assert.match(B, /press: \(\) => \{ if \(r\.id === nextFoe\) sheet\?\.\(\); \}/);

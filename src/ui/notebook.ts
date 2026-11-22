@@ -8,7 +8,7 @@ import type { Advice, BoutNote, NoteSum } from '../combat/autoNotes';
 import { STATE_NAME, anySkillName, nextBoutOf, scoutLines, scoutTier, tierWord } from '../simulation/v2scout';
 import { rehearsalFresh, rehearsalOf, type Rehearsal } from '../simulation/v2prep';
 import { notesOf } from '../simulation/v2notes';
-import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
+import { arrowKeys, closeLabel, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
 import { portraitUrl } from './portraits';
 
 /** Master Corvin's notebook (lot 3 of « La Brute », the operator's PB-4 « Toutes », briefs/combat-auto.md § 33.5; the board's structure, src/ui/board.ts): on the left
@@ -99,7 +99,7 @@ export function notebookPage(st: GameState, close: () => void, watch: (which: 'w
     + `<section class="pm-col"><div class="pm-who-at"></div><div class="pm-detail pm-grow"></div><div class="pm-foot"></div></section>`;
   root.appendChild(card);
   const list = card.querySelector('.pm-glist') as HTMLElement, who = card.querySelector('.pm-who-at') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement, foot = card.querySelector('.pm-foot') as HTMLElement;
-  const out = footBtn('Esc', tx('ui.close'), close), fit = scrollFade(detail);
+  const out = footBtn('Esc', closeLabel(), close), fit = scrollFade(detail);
   const win = footBtn('Enter', tx('nb.watchWin'), () => watch('win'), true), loss = footBtn('Space', tx('nb.watchLoss'), () => watch('loss'));
   let can = { win: false, loss: false };
   const show = (id: string): void => {

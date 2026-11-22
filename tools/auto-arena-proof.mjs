@@ -100,7 +100,7 @@ try {
     const sc = AV.sceneAutoDuel(foe);
     check(JSON.stringify(r.res) === JSON.stringify({ hp: sc.result.hp, winner: sc.result.winner, t: sc.result.t }), `${foe}: the page's duel is Node's (${r.res.winner === 0 ? 'Ren' : r.res.winner === 1 ? foe : 'decided on health'} at ${r.res.t} s, ${r.res.hp.join(' / ')})`);
     check(r.end.ren === r.res.hp[0] && r.end.marek === r.res.hp[1] && /Victory|Defeat|Victoire|Défaite/.test(r.end.ko ?? ''), `${foe}: the replay ends on it (${r.end.ko})`);
-    check(r.slots.join() === sc.ren.skills.map((a) => a.id).join() && r.ctl.join() === 'speed:attack,skip:dodge', `${foe}: the foot: ${r.slots.join(', ')} | ${r.ctl.join(', ')}`);
+    check(r.slots.join() === sc.ren.skills.map((a) => a.id).join() && r.ctl.join() === 'speed:attack,skip:dodge,pause:pause' /* the pause since journal Passe IA6, IA-09, C-02 */, `${foe}: the foot: ${r.slots.join(', ')} | ${r.ctl.join(', ')}`);
     // (half the steps at least: under the model a haste shortens the charges, a four-blow enchaînement takes the rest; journal Passe BL1, Vessa 54 %)
     check(r.cards[0] > 0.5 * r.steps && r.cards[1] > 0.5 * r.steps, `${foe}: each card shows its charge on the timeline (Ren ${Math.round(100 * r.cards[0] / r.steps)} %, ${foe} ${Math.round(100 * r.cards[1] / r.steps)} % of the steps)`);
     check(r.sheets?.join(', ') === `hero-x3-combat production, ${foe}-x3-combat production` && r.face[1] === 32, `${foe}: the sheets worn: ${r.sheets?.join(', ')}; faces ${r.face}`);

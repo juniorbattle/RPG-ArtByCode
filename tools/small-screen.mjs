@@ -81,6 +81,8 @@ const PAGES = [
   { name: 'tour-6', query: 'play=1&new=1&name=Ren&tutorial=1&noreload=1', open: '0', root: '.tu-band', pre: ['Enter'], after: '.tu-band', news: true, enters: 5 },
   { name: 'dialogue-mara', state: quay, open: "__ui.openPerson('mara')", root: '.pm-talk' },
   { name: 'dialogue-corvin', state: 'v2-training-morning', open: "__ui.openPerson('corvin')", root: '.pm-talk' },
+  // a quest offered (journal Passe IA6, C-19): the words are nine lines and the note on where it is kept, in a box that scrolls
+  { name: 'dialogue-quest', state: 'v2-forecourt-morning', open: "(() => { __game.state().day = 2; __ui.openPerson('anwen'); })()", root: '.pm-talk' },
   { name: 'list-q', state: quay, open: '__ui.openHere()', root: '.pm-talk' },
   { name: 'list-q-sand', state: 'v2-training-morning', open: '__ui.openHere()', root: '.pm-talk' },
   { name: 'tournament', state: quay, open: '__ui.openBoard()', root: '.pm-overlay' },

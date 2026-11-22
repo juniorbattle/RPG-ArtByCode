@@ -12,7 +12,7 @@ import { SKILL_BOOK } from '../combat/skillbook';
 import { AUTO_ROLES, autoCondOf, autoCondsFor, autoKitFor, kitRankFault, skillRank } from '../combat/autoData';
 import { AUTO_RULES, type AutoCond, type AutoRole } from '../combat/auto';
 import { COND_TEXT } from '../simulation/v2skills';
-import { el, esc, fillFoot, footBtn, scrollFade } from './style';
+import { closeLabel, el, esc, fillFoot, footBtn, scrollFade } from './style';
 import { ARROWS, arrowFocus } from './nav';
 
 /** The skills, and the match sheet that chooses them (journal Passe UM11, the audit of Passe UM10; the structure of the gear's page, journal Passe UM9), made again for the
@@ -128,7 +128,7 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   const fit = scrollFade(detail), side = card.querySelector('.pm-match') as HTMLElement | null;
   if (side) scrollFade(side);
   scrollFade(tiles);
-  const close = footBtn('Esc', tx('ui.close'), () => host.close());
+  const close = footBtn('Esc', closeLabel(), () => host.close());
   // the match sheet ahead of its bout (GP-12) has no way in: the plan set on it is kept for that rival until the day. On a sheet Enter enters the arena; Space places and removes
   const go = solo || !host.enter ? null : footBtn('Enter', host.enterLabel ?? tx('v2.skills.keep'), () => host.enter?.(), true);
 

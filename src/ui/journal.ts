@@ -4,7 +4,7 @@ import { isV2 } from '../simulation/v2';
 import { PEOPLE } from '../narrative/people';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { matchId } from '../tournament/pool';
-import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
+import { arrowKeys, closeLabel, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
 import { QUEST, QUEST_IDS, QUESTS, REWARD, TITLE, questDeadline, questStep, type QuestId } from '../simulation/v2quests';
 import { placeName } from '../simulation/state';
 
@@ -31,6 +31,14 @@ function questsHtml(s: GameState): string {
     + `<p class="pm-entry">${esc(q.state === 'failed' ? tx('ui.quests.lost', { reward: q.reward }) : tx('ui.quests.gives', { reward: q.reward }))}</p>`).join('');
 }
 export const questsOpen = (s: GameState): number => questEntries(s).filter((q) => q.state === 'open').length;
+
+/** what the « In progress » row says under its name: how many quests are open and how many failed (the operator's IA-09 « Tout dire là où le joueur décide », journal Passe IA2;
+ *  C-20 of journal Passe IA1: after a failure the row read « all settled » and the failure was said in a card only) */
+export function questSummary(list: QuestEntry[]): string {
+  if (!list.length) return tx('ui.quests.none');
+  const open = list.filter((q) => q.state === 'open').length, lost = list.filter((q) => q.state === 'failed').length;
+  return [open === 0 ? (lost ? '' : tx('ui.quests.settled')) : open === 1 ? tx('ui.quests.one') : tx('ui.quests.count', { n: open }), lost === 1 ? tx('ui.quests.lostOne') : lost > 1 ? tx('ui.quests.lostN', { n: lost }) : ''].filter(Boolean).join(' · ');
+}
 export { QUESTS };
 
 /** The journal (journal Passe UM11, the audit of Passe UM10; the structure of the gear's page, journal Passe UM9): the days on the left, what happened on the day
@@ -80,7 +88,7 @@ export function journalPage(s: GameState, close: () => void): { root: HTMLElemen
     + `<section class="pm-col"><header class="pm-head"><h2 class="pm-h"></h2></header><div class="pm-detail pm-grow"></div><div class="pm-foot"></div></section>`;
   root.appendChild(card);
   const list = card.querySelector('.pm-glist') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement, title = card.querySelector('section:last-child .pm-h') as HTMLElement;
-  const out = footBtn('Esc', tx('ui.close'), close), fit = scrollFade(detail);
+  const out = footBtn('Esc', closeLabel(), close), fit = scrollFade(detail);
   fillFoot(card.querySelector('.pm-foot') as HTMLElement, out);
   const entry = (e: GameEvent): string => {
     const why = e.kind === 'consequence' || e.kind === 'sign' ? whyOf(s, said(e.cause, e.$c)) : null;
@@ -94,7 +102,9 @@ export function journalPage(s: GameState, close: () => void): { root: HTMLElemen
   // a version 2 game: the quests in progress first (GP-09), opened first while one is open
   const quests = isV2(s) ? questEntries(s) : [], open = quests.filter((q) => q.state === 'open').length;
   const showQuests = (): void => { title.textContent = tx('ui.quests.title'); detail.innerHTML = questsHtml(s); detail.scrollTop = 0; fit(); };
-  const qRow = isV2(s) ? list.appendChild(pickRow(`<span>${tx('ui.quests.title')}<span class="why">${esc(!quests.length ? tx('ui.quests.none') : open === 0 ? tx('ui.quests.settled') : open === 1 ? tx('ui.quests.one') : tx('ui.quests.count', { n: open }))}</span></span>`, { select: showQuests, press: () => {} })) : null;
+  // the row says a failure too (the operator's IA-09 « Tout dire là où le joueur décide », journal Passe IA2; C-20 of journal Passe IA1: after a failure it read « all settled »)
+  const qSub = questSummary(quests);
+  const qRow = isV2(s) ? list.appendChild(pickRow(`<span>${tx('ui.quests.title')}<span class="why">${esc(qSub)}</span></span>`, { select: showQuests, press: () => {} })) : null;
   if (qRow) qRow.dataset.quests = '1';
   for (const d of days) list.appendChild(pickRow(`<span>${tx('ui.dayN', { day: d.day })}<span class="why">${esc(d.bout ? sentence(said(d.bout.text, d.bout.$t)) : tx(d.size === 1 ? 'ui.journal.one' : 'ui.journal.many', { n: d.size }))}</span></span>`, { select: () => show(d), press: () => {} }));
   if (qRow && open) { qRow.classList.add('on'); showQuests(); }

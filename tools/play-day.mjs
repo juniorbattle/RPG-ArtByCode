@@ -139,9 +139,9 @@ try {
     if (V2 && a.type === 'move' && a.to === 'training') {
       await page.evaluate(() => window.__ui.openPerson('orla'));
       done.push({ type: 'talk', who: 'orla' });
-      // (since lot L2b, journal Passe EVL3: two stakes, the coins put on the table at once, then the slot)
+      // (since lot L2b, journal Passe EVL3: two stakes, the coins put on the table at once, then the slot; since journal Passe IA6, IA-09: and « once a phase », said on the offer)
       const tag = await page.evaluate(() => [...document.querySelectorAll('.pm-talk .pm-btn')].filter((x) => /^Challenge /.test(x.textContent)).map((b) => [...b.querySelectorAll('.cost')].map((c) => c.textContent)));
-      check(JSON.stringify(tag) === '[["10 coins","1 slot"],["1 slot"]]', `Orla's challenge, its two stakes: ${JSON.stringify(tag)}`);
+      check(JSON.stringify(tag) === '[["10 coins","1 slot","once a phase"],["1 slot","once a phase"]]', `Orla's challenge, its two stakes: ${JSON.stringify(tag)}`);
       await page.screenshot({ path: path.join(outDir, 'day1-orla-challenge.png') });
       await page.keyboard.press('Escape');
     }

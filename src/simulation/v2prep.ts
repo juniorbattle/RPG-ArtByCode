@@ -12,7 +12,7 @@ import { autoDuel, autoWinner, type AutoCond, type AutoFighter, type AutoResult 
 import { autoFightersFor } from '../combat/autoMatch';
 import { AUTO_FOES, autoPlanOf, autoRound } from '../combat/autoData';
 import { boutNote, sumNotes, type BoutNote, type NoteSum } from '../combat/autoNotes';
-import { knownPlan, nextBoutOf, scoutTier, type ScoutTier } from './v2scout';
+import { knownPlan, nextBoutOf, scoutTier, watchWhere, type ScoutTier } from './v2scout';
 import type { Stage } from '../combat/stats';
 
 /** The preparation of a bout (lot 3 of « La Brute », the operator's PB-4 « Toutes », briefs/combat-auto.md § 33.5):
@@ -117,7 +117,7 @@ export const V2_PREP_ACTIONS: { [K in V2PrepAction['type']]: ActionDef<Extract<V
       const n = nextBoutOf(s);
       if (!n) return tx('prep.rehearse.none');
       if (s.slot === 'afternoon' && n.day === s.day) return tx('refuse.boutFirst');
-      return scoutTier(s, n.foe) < 1 ? tx('prep.rehearse.unseen', { name: RIVALS[n.foe]?.name ?? n.foe }) : null;
+      return scoutTier(s, n.foe) < 1 ? tx('prep.rehearse.unseen', { name: RIVALS[n.foe]?.name ?? n.foe, where: watchWhere(n.foe) }) : null;
     },
     apply: (s, _a, _r, emit: Emit) => {
       const r = runRehearsal(s)!;

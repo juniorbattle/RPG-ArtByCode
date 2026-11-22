@@ -24,7 +24,7 @@ export function slotName(sl: Slot | null): string {
   return sl.k;
 }
 /** the fixed keys' names (their caps' `data-key` stays the English name) */
-const FIXED: Record<string, TextKey> = { Esc: 'key.esc', Enter: 'key.enter', Space: 'key.space', Shift: 'key.shift' };
+const FIXED: Record<string, TextKey> = { Esc: 'key.esc', Enter: 'key.enter', Space: 'key.space', Shift: 'key.shift', PageUp: 'key.pageUp', PageDown: 'key.pageDown' };
 export const fixedName = (k: string): string => (FIXED[k] ? tx(FIXED[k]) : k);
 
 /** the key an action shows: its first slot in the player's keys */

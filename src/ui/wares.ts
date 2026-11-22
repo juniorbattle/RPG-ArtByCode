@@ -13,7 +13,7 @@ import { num, said, skillName, tx, type TextKey, type TextRef } from '../narrati
 import { SKILL_BOOK, skillAction } from '../combat/skillbook';
 import { chargeTime } from '../combat/skills';
 import { heroFigure, portraitUrl } from './portraits';
-import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
+import { arrowKeys, closeLabel, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
 
 /** The gear and the shops, one page (the operator's choice UM7-3 « Lot à part : héros, détail, comparaison », journal Passe UM9; direction A « Voile »): on
  *  the left the hero in large from the baked sheet, the places on the body and the numbers of a bout; on the right the list, and for the line selected
@@ -204,7 +204,7 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
     card.innerHTML = `<section class="pm-self">${figHtml(s)}<div class="pm-worn">${wornHtml(s)}</div><dl class="pm-stats">${statsHtml(s)}</dl></section>`
       + `<section class="pm-goods"><header class="pm-ghead">${url ? `<img src="${url}" alt="">` : ''}<h2 class="pm-h">${esc(title)}${p ? `<small>${esc(titleOf(p, isV2(s)))}</small>` : ''}</h2><div class="pm-purse"><b>${s.player.coins}</b><small>${tx('ui.coins')}</small></div></header><div class="pm-glist"></div><div class="pm-detail" aria-live="polite"></div><div class="pm-foot"></div></section>`;
     const list = card.querySelector('.pm-glist') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement, foot = card.querySelector('.pm-foot') as HTMLElement;
-    const close = footBtn('Esc', tx(who ? 'ui.leave' : 'ui.close'), () => host.close()), fit = scrollFade(detail);
+    const close = footBtn('Esc', who ? tx('ui.leave') : closeLabel(), () => host.close()), fit = scrollFade(detail);
     const doIt = (l: Line): void => {
       if (!l.ok) { if ((l.price ?? 0) > host.state().player.coins) host.poor?.(); return; }
       const r = host.act(l.action);

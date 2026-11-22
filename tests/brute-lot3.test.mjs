@@ -45,7 +45,11 @@ test('the scouting by tiers: nothing seen, the style at a first watch or a bout 
   assert.equal(foe, 'vessa', 'the first bout: Vessa');
   assert.equal(SC.scoutTier(s0, foe), 0);
   let lines = SC.scoutLines(s0, foe);
-  assert.deepEqual(lines, [T.tx('scout.unseen', { name: 'Vessa Lark' })]);
+  assert.deepEqual(lines, [T.tx('scout.unseen', { name: 'Vessa Lark', where: SC.watchWhere('vessa') })]);
+  // the board says where and when to watch them (the operator's IA-09, B-13 of journal Passe IA1: it sent the player to practice while Vessa stood on the forecourt)
+  assert.equal(SC.watchWhere('vessa'), 'the Arena Forecourt, by day');
+  assert.equal(SC.watchWhere('orla'), 'the Training Ground, by day');
+  assert.equal(SC.watchWhere('cassius'), 'the Festival Square, at night');
   // a first watch: the style (her skills and their roles, her leathers), and how to learn more
   const where = G.PEOPLE?.vessa?.place ?? 'forecourt';
   const w1 = act(at(s0, 1, 'morning', 'forecourt'), { type: 'scout', who: 'vessa' }).state;
@@ -120,7 +124,7 @@ test('the rehearsal: Master Corvin on the training ground by day, the next oppon
   const s0 = v2('v2-training-morning');
   // not yet seen: refused, its reason said; the evening, the sand shut
   const unseen = opt(s0, (a) => a.type === 'rehearse');
-  assert.equal(unseen.ok, false); assert.equal(unseen.reason, T.tx('prep.rehearse.unseen', { name: 'Vessa Lark' }));
+  assert.equal(unseen.ok, false); assert.equal(unseen.reason, T.tx('prep.rehearse.unseen', { name: 'Vessa Lark', where: SC.watchWhere('vessa') }));
   const seen = structuredClone(s0); seen.facts.push('scouted:vessa');
   assert.equal(opt(at(seen, 1, 'evening', 'training'), (a) => a.type === 'rehearse').ok, false);
   // the afternoon of the bout: the bout first

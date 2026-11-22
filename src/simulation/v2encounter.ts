@@ -58,7 +58,7 @@ export const V2_ENCOUNTER_ACTIONS: { answer: ActionDef<V2EncounterAction> & { by
   answer: {
     by: null,
     list: (s) => { const e = encounterOf(s); return isV2(s) && e ? ENCOUNTERS[e].answers.map((how) => ({ type: 'answer' as const, how })) : []; },
-    label: (s, a) => { const e = encounterOf(s); return e && LABEL[e][a.how] ? tx(LABEL[e][a.how]!, { n: ENCOUNTERS[e].coins }) : tx('v2.encounter.none'); },
+    label: (s, a) => { const e = encounterOf(s); return e && LABEL[e][a.how] ? tx(LABEL[e][a.how]!, { n: ENCOUNTERS[e].coins, rep: -(ENCOUNTERS[e].refuse?.reputation ?? 0) }) : tx('v2.encounter.none'); },
     cost: () => 0,
     later: (_s, a) => (a.how === 'fight' ? 1 : 0),
     check: (s, a) => { const e = encounterOf(s); return !isV2(s) ? tx('v2.only') : !e || !ENCOUNTERS[e].answers.includes(a.how) ? tx('v2.encounter.none')

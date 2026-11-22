@@ -131,7 +131,7 @@ test('where it shows: the tour of a new game, the line of a game begun before, e
   assert.match(ui, /if \(fresh\) await this\.tour\(\);\n\s*else if \(!told\(\)\) \{ this\.hint\('guide'\); markTold\(\); \}/);
   assert.match(ui, /if \(next === s\.day \+ 1 && s\.slot === 'afternoon'\) this\.hint\('eve'\);/);
   assert.match(ui, /if \(s\.slot === 'evening'\) this\.hint\('evening'\);/);
-  assert.match(ui, /if \(opts\.some\(\(o\) => o\.ok && o\.action\.type === 'steal'\)\) this\.hint\('steal'\);/);
+  assert.match(ui, /if \(grp === 'steal' && o\.ok\) b\.addEventListener\('focus', \(\) => this\.hint\('steal'\), \{ once: true \}\);/);
   assert.match(ui, /if \(opts\.some\(\(o\) => o\.ok && o\.action\.type === 'challenge'\)\) this\.hint\('challenge', who\);/);
   assert.match(ui, /if \(who\) this\.hint\('shop'\);/);
   assert.match(ui, /if \(this\.welcomed && v2 && \(sus > 0 \|\| P\.injury > 0\)\)/);

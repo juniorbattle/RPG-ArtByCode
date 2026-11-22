@@ -152,9 +152,13 @@ try {
   check(lit.join() === 'lit,lit,lit,lit,-', `bands 2 to 5 light the real clock, figures, list and menu: ${lit.join(', ')}`);
   await sleep(320); await press(BTN.A);
   check(!!(await until(() => !document.querySelector('.tu-band') && !document.querySelector('.tu-spot'), 5000, 'the tour to end')), 'the last band plays on: the tour ends');
-  // the people marked on the quay: the marks' hint once the tour is done (the operator's MK-11, journal Passe MK3), A closes it
+  // the people marked on the quay: no hint falls as the tour ends (journal Passe IA6, IA-10, A-07); the marks' hint comes next to a person the diamond marks (the operator's
+  // MK-11, journal Passe MK3), A closes it
+  await sleep(3500);
+  check(!(await page.evaluate(() => document.querySelector('.tu-hint .pm-h')?.textContent ?? null)), 'no hint falls as the tour ends');
+  await page.evaluate(() => { window.__ui.host.nearby = () => 'mara'; window.__ui.update(); });
   const mk = await until(() => document.querySelector('.tu-hint .pm-h')?.textContent ?? null, 5000, 'the marks\' hint');
-  check(mk === t('tut.hint.npcMark.title'), `the marks' hint after the tour: ${mk}`);
+  check(mk === t('tut.hint.npcMark.title'), `the marks' hint next to Mara: ${mk}`);
   await sleep(320); await press(BTN.A);
   check(!!(await until(() => !document.querySelector('.tu-hint'), 5000, 'the hint to close')), 'A closes the marks\' hint');
   await press(9);

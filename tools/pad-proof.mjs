@@ -114,7 +114,8 @@ try {
     const f0 = await focused(page); await press(B.DOWN); const f1 = await focused(page); await press(B.UP); const f2 = await focused(page);
     check(f0 !== f1 && f2 === f0, `the D-pad walks her lines: ${f0} -> ${f1} -> ${f2}`);
     const leave = await caps(page, '.pm-talk .pm-foot kbd');
-    check(leave[0]?.key === 'Esc' && leave[0]?.label === 'B', `her foot shows B: ${JSON.stringify(leave)}`);
+    // (Enter and Esc since journal Passe IA6, IA-08: the foot says what Enter does)
+    check(leave.some((c) => c.key === 'Enter' && c.label === 'A') && leave.some((c) => c.key === 'Esc' && c.label === 'B'), `her foot shows A and B: ${JSON.stringify(leave)}`);
     await press(B.A);
     await page.waitForSelector('.pm-wares .pm-btn.on', { timeout: 20000 }).catch(() => {});
     const on = () => page.evaluate(() => (document.querySelector('.pm-glist .pm-btn.on b') ?? document.querySelector('.pm-glist .pm-btn.on span'))?.firstChild?.textContent ?? null);
@@ -165,10 +166,13 @@ try {
     await page.screenshot({ path: path.join(outDir, '1-gear.png') });
     await press(B.B);
     check(!(await gp()).open, 'B leaves the page');
+    // (back to the menu it was opened from, journal Passe IA6, IA-08, A-11; once more for the game)
+    check(await page.evaluate(() => !!document.querySelector('.pm-menu')), 'B comes back to the menu');
+    await press(B.B);
     // Start: the menu, the journal, the shoulders
     await press(B.START);
     const menu = await caps(page, '.pm-menu kbd');
-    check(menu.filter((c) => !c.hidden).map((c) => c.key).join() === 'map,Esc' && menu.find((c) => c.key === 'map')?.label === 'View', `Start opens the menu, its shortcuts hidden but the map's: ${JSON.stringify(menu.map((c) => `${c.key}:${c.hidden ? 'hidden' : c.label}`))}`);
+    check(menu.filter((c) => !c.hidden).map((c) => c.key).join() === 'map,Enter,Esc' && menu.find((c) => c.key === 'map')?.label === 'View', `Start opens the menu, its shortcuts hidden but the map's: ${JSON.stringify(menu.map((c) => `${c.key}:${c.hidden ? 'hidden' : c.label}`))}`);
     await press(B.DOWN); await press(B.A);
     const title = () => page.evaluate(() => document.querySelector('.pm-overlay .pm-card')?.getAttribute('aria-label') ?? null);
     const pages = [await title()];
@@ -180,6 +184,7 @@ try {
     const sc2 = await page.evaluate(() => document.querySelector('.pm-overlay .pm-detail')?.scrollTop ?? 0);
     check(!sc?.can || sc2 > sc.top, `the right stick scrolls the journal's day (${sc?.can ? `${sc.top} -> ${sc2}` : 'nothing to scroll here'})`);
     await press(B.B);
+    await press(B.B);
     // the settings page (journal Passe RG3, in place of lot V8's sound page): the menu's « Settings », the sound's sliders, the vibration's switch in the controls
     await press(B.START);
     // (seven lines down since Master Corvin's notebook and the next bout's match sheet are lines of the menu, journal Passes BL3, GP3)
@@ -187,8 +192,8 @@ try {
     await press(B.A);
     await page.waitForFunction(() => !!document.querySelector('.pm-settings'), { timeout: 20000 }).catch(() => {});
     const part = () => page.evaluate(() => document.querySelector('.pm-settings section:last-child .pm-h')?.textContent ?? null);
-    check((await part()) === 'Graphics', `A opens the settings on the graphics: ${await part()}`);
-    await press(B.DOWN); await press(B.RIGHT);
+    check((await part()) === 'Sound', `A opens the settings on the sound, as V does: ${await part()}`);
+    await press(B.RIGHT);
     await page.waitForFunction(() => document.activeElement?.type === 'range', { timeout: 20000 }).catch(() => {});
     const music0 = await page.evaluate(() => document.querySelectorAll('.pm-overlay input[type=range]')[1]?.value);
     await press(B.DOWN);
@@ -207,6 +212,7 @@ try {
     await press(B.A);
     const vib3 = await page.evaluate(() => JSON.parse(localStorage.getItem('cite-du-tournoi.pad') ?? '{}').vibration);
     check(vib2 === false && vib3 === true, `A switches the vibration off and on: ${vib2}, ${vib3}`);
+    await press(B.B);
     await press(B.B);
     // View: the map
     await press(B.VIEW);
@@ -263,7 +269,7 @@ try {
     check(!fight.band && !fight.paused, `A « Fight »: ${JSON.stringify(fight)}`);
     // the duel played by the computer (lot 2, journal Passe LC3): its foot shows ×2 under the attack's button and « Skip » under the dodge's
     const bar = await caps(page, '#ah-bar kbd');
-    check(bar.map((c) => `${c.key}:${c.label}`).join() === 'attack:X,dodge:A', `the duel's foot shows X (×2) and A (Skip): ${bar.map((c) => `${c.key}:${c.label}`)}`);
+    check(bar.map((c) => `${c.key}:${c.label}`).join() === 'attack:X,dodge:A,pause:Menu', `the duel's foot shows X (×2) and A (Skip): ${bar.map((c) => `${c.key}:${c.label}`)}`);
     await press(B.X); await frames(4);
     const fast = await page.evaluate(() => window.__arena.speed);
     await press(B.X); await frames(4);

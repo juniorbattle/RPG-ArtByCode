@@ -42,6 +42,8 @@ export const CHALLENGERS: Record<string, true> = { orla: true, vessa: true, ilse
  *  and won back twice, or a share of one's name won or lost at the result (« proposé ») */
 /** the most a theft caught at a stall is fined, by day and at night (read by the guide too, journal Passe TU3) */
 export const STEAL_FINE = { day: 15, night: 25 } as const;
+/** the reputation a theft seen costs (a stall by day, a shutter forced at night, a passer-by's pocket): said on the choice itself (the operator's IA-09 « Tout dire là où le joueur décide », journal Passe IA2; C-14 of journal Passe IA1) */
+export const STEAL_REP = { day: 8, night: 12, pocket: 8 } as const;
 export const STAKE = { coins: 10, name: 5 } as const;
 export type Stake = keyof typeof STAKE;
 /** a fighter is challenged once per phase: before the cut (days 1 to 5), then after it (days 6 to 10) */
@@ -150,7 +152,7 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
       }
       // caught: forcing a shutter is punished harder (lot L2a); the fine waits for the player's answer, paid or fought (GP-03): the keeper by day, Wynn of the watch at night
       const cap = night ? STEAL_FINE.night : STEAL_FINE.day, d = shopDay(s, a.shop), by = night ? CATCH_WATCH : keeper;
-      s.player.reputation = clamp(s.player.reputation - (night ? 12 : 8));
+      s.player.reputation = clamp(s.player.reputation - (night ? STEAL_REP.night : STEAL_REP.day));
       s.town[keeper] = clamp((s.town[keeper] ?? 0) - (night ? 25 : 20), -100, 100); s.town.hale = clamp((s.town.hale ?? 0) - (night ? 15 : 10), -100, 100);
       if (night) { d.closed = s.day + 1; d.markup = s.day + 2; } else { d.closed = s.day; d.markup = s.day + 1; }
       s.flags[`caught:${s.day}`] = true;
@@ -175,7 +177,7 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
         emit({ kind: 'action', id: 'pocket:ok', cause: 'action:steal', visible: true, text: tx('v2.pocket.ok', { name, item: itemName(p.item) }) });
         return;
       }
-      s.player.reputation = clamp(s.player.reputation - 8);
+      s.player.reputation = clamp(s.player.reputation - STEAL_REP.pocket);
       s.town[a.who] = clamp((s.town[a.who] ?? 0) - 30, -100, 100); s.town.hale = clamp((s.town.hale ?? 0) - 10, -100, 100);
       s.flags[`snub:${a.who}`] = true; s.flags[`caught:${s.day}`] = true;
       recordTheft(s, { day: s.day, from: a.who, item: p.item, seen: 'caught' });

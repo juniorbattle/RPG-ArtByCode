@@ -1,5 +1,5 @@
 import { actions, placeName, standings, dusk, type Action, type ActionOption, type GameEvent, type GameState } from '../simulation';
-import { offeredBy, scoutable } from '../simulation/roles';
+import { offeredBy, scoutable, whoAt } from '../simulation/roles';
 import { heardLine, strapCut } from '../simulation/v2intel';
 import { sandRefusal } from '../simulation/v2rivals';
 import { watchPost } from '../simulation/v2watch';
@@ -10,7 +10,7 @@ import { boardPage, standingsHtml as standingsHtmlRows } from './board';
 import { journalPage } from './journal';
 import { portraitUrl, portraitsReady } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
-import { arrowKeys, el, esc, footBtn, footOf, injectStyle, overlay, pageShell, scrollFade } from './style';
+import { arrowKeys, closeLabel, el, enterFoot, esc, fillFoot, footBtn, footOf, injectStyle, overlay, pageShell, scrollFade, setOutLabel } from './style';
 import { newsLines } from './news';
 import { ENCOUNTERS, encounterOf } from '../simulation/v2encounter';
 import { NPC_FIGHTERS } from '../narrative/npcFighters';
@@ -31,7 +31,7 @@ import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { matchSheetFor } from '../combat/match';
 import { autoBoutOf, autoForms, autoNextBout, autoReactions, type NextBout } from '../combat/autoMatch';
 import { GENERICS } from '../narrative/generics';
-import { CAUGHT_LOST, SEIZE, STAKE } from '../simulation/v2town';
+import { CAUGHT_LOST, SEIZE, STAKE, STEAL_REP, forced } from '../simulation/v2town';
 import { PASSERS } from '../simulation/v2barter';
 import { challengeSkill, levelOf } from '../simulation/v2skills';
 import { AUTO_RULES, type AutoAction, type AutoFighter } from '../combat/auto';
@@ -119,6 +119,10 @@ const CSS = `
 .pm-dlg.here .who{grid-column:1}
 .pm-dlg.here .side{grid-column:2}
 .pm-dlg .who .news{margin:10px 0 0;font-size:var(--ds-fs-body);color:var(--ds-accent)}
+.pm-dlg .who .news.quest{display:flex;flex-direction:column;gap:3px}
+.pm-dlg .who .news.quest b{font:400 var(--ds-fs-label)/1.2 var(--ds-title);letter-spacing:.08em;text-transform:uppercase}
+.pm-dlg .who .news.quest small{font-size:var(--ds-fs-small);color:var(--ds-muted)}
+.pm-dlg .who .news.quest span{margin-top:3px}
 body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,body.pm-full #pm-status,body.pm-full #pm-figs,body.pm-full #pm-prompt,body.pm-full #pm-hints,body.pm-full #pm-veil-l,body.pm-full #pm-veil-r{visibility:hidden}
 .pm-port{line-height:0}
 .pm-port img{image-rendering:pixelated}
@@ -171,6 +175,7 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
   .pm-dlg.here .side{grid-column:2}
   .pm-dlg img{width:64px;height:64px}
   .pm-dlg .side{grid-column:3;grid-row:1;margin-top:0;max-height:calc(100vh - 60px)}
+  .pm-dlg .who{max-height:calc(100vh - 60px)}
   .pm-dlg .pm-line{margin-top:4px}
 }
 /* a phone held sideways, narrow and short (568 x 320; IA-03, B-21, C-06, journal Passe IA5): the answers stand beside the words, in a box that scrolls and keeps the focused line in view
@@ -190,6 +195,11 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
   .pm-dlg .opts .pm-btn{padding:6px 0}
   .pm-dlg .pm-h small{display:inline;margin:0 0 0 8px}
   .pm-dlg .who .news{margin:4px 0 0}
+  .pm-dlg .who,.pm-dlg.here .who{max-height:min(214px,calc(100vh - 44px))}
+  /* the foot of a band holds two keys (Enter and Esc, IA-08): in French their words are longer (« Entrée », « Échap »), the foot stays on one line so the list keeps its room */
+  .pm-dlg .pm-foot{gap:0 14px;padding-top:6px}
+  .pm-dlg .pm-foot .pm-btn{gap:6px;padding:2px 0}
+  .pm-dlg .pm-foot kbd{min-width:26px;padding:0 5px}
   .pm-dlg .opts .pm-sub{margin:8px 0 4px}
 }
 `;
@@ -276,10 +286,10 @@ export class TownUi {
     // the answer's words in the bandeau once the band is gone
     for (const o of opts) list.appendChild(this.optionButton(o, () => { const lines = this.said.splice(0); this.closeModal(); if (o.action.type === 'answer' && o.action.how === 'fight' && this.st.v2?.challenge) this.openChallengeSheet(); else if (lines.length) this.flash(lines); }, false));
     const leave = footBtn('Esc', tx('ui.leave'), () => this.closeModal());
-    side.append(list, footOf(leave)); arrowKeys(side);
+    side.append(list, footOf(enterFoot(list, tx('ui.foot.choose')), leave)); arrowKeys(side);
     card.appendChild(side); root.appendChild(card);
     document.body.appendChild(root); document.body.classList.add('pm-talking');
-    this.current = root; scrollFade(list);
+    this.current = root; scrollFade(list); this.fitWho(card);
     ((list.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? leave).focus();
   }
 
@@ -320,6 +330,9 @@ export class TownUi {
       const talk = p ? tx('ui.talkTo', { name: esc(p.name), title: esc(titleOf(p, isV2(this.st))) }) : '';
       this.prompt.innerHTML = p ? `${bindCap('talk')}${mk ? tx('ui.talkToMark', { talk, kind: tx(MARK_WORD[mk]) }) : talk}` : '';
       this.prompt.classList.toggle('on', !!p && !this.modal);
+      // the diamond's hint at the right moment: the first time the player stands next to someone it marks (the operator's IA-10 « Resserrer l’ordre », journal Passe IA2; A-07 of
+      // journal Passe IA1: it fell on the screen as the tour ended, skipped or not)
+      if (mk && this.welcomed && !this.modal) this.hint('npcMark');
     }
   }
 
@@ -343,7 +356,7 @@ export class TownUi {
     // the version 2 (journal Passe VP1): the bout's stage, the ten days' end
     // (a finalist before the final is drawn, lot L5: the other semi-final's winner, src/tournament/v2calendar.ts pendingFinal)
     const fin = v2 && !opp ? pendingFinal(s) : null, fo = fin?.foe ? RIVALS[fin.foe] : null;
-    const next = v2 ? (s.over ? tx('v2.over') : opp ? tx('v2.next.bout', { stage: stageName(m!), name: opp.name, day: m!.day, when }) : fo ? tx('v2.next.bout', { stage: tx('v2.stage.final'), name: fo.name, day: fin!.day, when: '' }) : tx('v2.next.done'))
+    const next = v2 ? (s.over ? tx('v2.over') : opp ? tx('v2.next.bout', { stage: stageName(m!), name: opp.name, day: m!.day, when }) : fo ? tx('v2.next.bout', { stage: tx('v2.stage.final'), name: fo.name, day: fin!.day, when: '' }) : tx(s.day >= 10 ? 'v2.next.doneLast' : 'v2.next.done'))
       : s.over ? tx('ui.next.over') : opp ? tx('ui.next.bout', { name: opp.name, day: m!.day, when }) : tx('ui.next.done');
     const slotName = s.slot === 'evening' ? (dusk(s) ? tx('ui.slot.sunset') : 'evening') : s.slot, days = v2 ? 10 : 3;
     const place = shortName(placeName(s.place, v2));
@@ -384,8 +397,8 @@ export class TownUi {
     const url = portraitUrl(c.by);
     card.innerHTML = `${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(PEOPLE[c.by]?.name ?? c.by)}</h2><div class="pm-line"><q>${esc(tx(c.night ? 'v2.caught.holdNight' : 'v2.caught.hold', { item: itemName(c.item), fine: c.fine }))}</q></div></div>`;
     for (const o of opts) list.appendChild(this.optionButton(o, () => { if (o.action.type === 'fightCatch' && this.st.v2?.challenge) this.openChallengeSheet(); }));
-    side.append(list); arrowKeys(side); card.appendChild(side); root.appendChild(card);
-    document.body.appendChild(root); this.current = root; scrollFade(list);
+    side.append(list, footOf(enterFoot(list, tx('ui.foot.choose')))); arrowKeys(side); card.appendChild(side); root.appendChild(card);
+    document.body.appendChild(root); this.current = root; scrollFade(list); this.fitWho(card);
     (list.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null)?.focus();
     // opened on the page's first frame, before the baked faces are painted (a keeper on a square: found by tools/npc-duel-flow.mjs): drawn again with the face
     if (!url) void portraitsReady().then(() => { if (this.current === root && portraitUrl(c.by)) this.openCaught(); });
@@ -418,14 +431,23 @@ export class TownUi {
       const b = el('button', 'pm-btn primary', `<span>${this.sandLabel(s)}</span><span class="cost">${tx('ui.oneSlot')}</span>`);
       b.addEventListener('click', () => this.openChallengeSheet(() => this.openHere())); list.appendChild(b);
     }
-    const line = (o: ActionOption): HTMLButtonElement => this.optionButton(v2 && (o.action.type === 'rest' || o.action.type === 'wait') ? { ...o, label: o.action.type === 'rest' ? tx('v2.self.rest') : tx('v2.self.wait') } : o);
+    const line = (o: ActionOption): HTMLButtonElement => {
+      const b = this.optionButton(v2 && (o.action.type === 'rest' || o.action.type === 'wait') ? { ...o, label: o.action.type === 'rest' ? tx('v2.self.rest') : tx('v2.self.wait') } : o);
+      // a theft says what being seen costs on the line itself (the operator's IA-09, C-14 of journal Passe IA1: the line said « free »)
+      if (v2 && (o.action.type === 'steal' || o.action.type === 'pickpocket')) {
+        const n = o.action.type === 'pickpocket' ? STEAL_REP.pocket : forced(s, o.action.shop) ? STEAL_REP.night : STEAL_REP.day;
+        b.querySelector('span')?.insertAdjacentHTML('beforeend', `<span class="pm-who">${esc(tx('ui.steal.risk', { n }))}</span>`);
+      }
+      return b;
+    };
     // a version 2 game's list by groups (IA-04, src/ui/listModel.ts): the answer an encounter waits for under its own title, what the place is for, the people, then
     // the time to pass and the theft each under a title of its own, never the first line; today's game keeps its list as it was
     const g = groupHere(opts), title = (key: TextKey): void => { list.appendChild(el('p', 'pm-sub', tx(key))); };
     const tail = (grp: 'time' | 'steal', key: TextKey): void => {
       if (!g[grp].length) return;
       title(key);
-      for (const o of g[grp]) { const b = line(o); b.dataset.group = grp; list.appendChild(b); }
+      // the first theft the list offers: its hint when the player's line reaches it, not on opening the list (the operator's IA-10 « Resserrer l’ordre », journal Passe IA2; A-07 of journal Passe IA1)
+      for (const o of g[grp]) { const b = line(o); b.dataset.group = grp; if (grp === 'steal' && o.ok) b.addEventListener('focus', () => this.hint('steal'), { once: true }); list.appendChild(b); }
     };
     if (v2) {
       if (g.answer.length) { title('v2.encounter.title'); for (const o of g.answer) list.appendChild(line(o)); }
@@ -445,18 +467,17 @@ export class TownUi {
     if (gone.length) list.appendChild(el('p', 'pm-sub', tx('ui.away', { names: esc(gone.map((o) => PEOPLE[(o.action as { who: string }).who].name).join(', ')) })));
     if (v2) { tail('time', 'ui.group.time'); tail('steal', 'ui.group.steal'); }
     const close = footBtn('Esc', tx('ui.close'), () => this.closeModal());
-    side.append(list, footOf(close)); arrowKeys(side); card.appendChild(side); root.appendChild(card);
-    document.body.appendChild(root); this.current = root; scrollFade(list);
+    side.append(list, footOf(enterFoot(list, tx('ui.foot.choose')), close)); arrowKeys(side); card.appendChild(side); root.appendChild(card);
+    document.body.appendChild(root); this.current = root; scrollFade(list); this.fitWho(card);
     // opens on the first useful line (IA-04): the bout, a challenge, the answer, what the place is for, a person; a version 2 game's list never opens on the time to pass
     // nor on the theft (today's game keeps its first enabled line)
     ((list.querySelector(v2 ? '.pm-btn:not(:disabled):not([data-group])' : '.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? close).focus();
-    // the first theft the list offers (journal Passe TU3, TU-3)
-    if (opts.some((o) => o.ok && o.action.type === 'steal')) this.hint('steal');
   }
 
   /** `gate`: asked first (a sale: IA-07); it is given what the click does once it is answered */
   private optionButton(o: ActionOption, after?: () => void, tag = true, gate?: (go: () => void, line: HTMLButtonElement) => void): HTMLButtonElement {
-    const b = el('button', 'pm-btn', `<span>${esc(shortLabel(o))}${o.ok ? '' : `<span class="why">${esc(o.reason ?? '')}</span>`}</span>${tag ? costTag(o) : ''}`);
+    // a challenge is once a phase: said on the offer, not only at the refusal (the operator's IA-09, C-11 of journal Passe IA1)
+    const b = el('button', 'pm-btn', `<span>${esc(shortLabel(o))}${o.ok ? '' : `<span class="why">${esc(o.reason ?? '')}</span>`}</span>${tag ? costTag(o) : ''}${tag && o.ok && o.action.type === 'challenge' ? `<span class="cost">${esc(tx('ui.oncePhase'))}</span>` : ''}`);
     b.disabled = !o.ok;
     b.addEventListener('click', () => { const go = (): void => { this.run(o.action); after?.(); }; if (gate) gate(go, b); else go(); });
     return b;
@@ -484,20 +505,35 @@ export class TownUi {
     if (!r.ok) { void this.card(`<p>${esc(r.reason ? said(r.reason, r.$reason) : tx('ui.cannot'))}</p>`, tx('ui.close'), true); return r; }
     if (r.reload) { this.closeModal(); this.host.reload(); return r; }
     // the dialogue that opens says who it is: « You meet Mara » stays in the journal, not on the screen (journal Passe UM1)
-    const news = quiet ? [] : (r.events ?? []).filter((e) => e.visible && e.id !== 'meet').map((e) => said(e.text, e.$t));
+    const evs = quiet ? [] : (r.events ?? []).filter((e) => e.visible && e.id !== 'meet'), news = evs.map((e) => said(e.text, e.$t));
+    // a quest offered by the person talked to (src/simulation/v2quests.ts offerQuest: the event `quest:<id>`)
+    for (const e of evs) if (/^quest:[a-z]+$/.test(e.id)) this.questLines.add(said(e.text, e.$t));
     // a version 2 game (journal Passe EVL1): with a band open (the list, a dialogue) the news stand in it, under the place or the person's words,
     // where the player is reading (the bandeau at the top is hidden while a band is open); today's game keeps its bandeau
     const inBand = isV2(this.st) && news.length > 0 && (this.opening || document.body.classList.contains('pm-talking'));
     if (inBand) this.said.push(...news);
     this.render();
+    if (!inBand) this.questLines.clear();
     if (!inBand && news.length) this.flash(news);
     return r;
   }
+  /** the words of a dialogue scroll when a short screen cannot hold them (a quest's offer is nine lines, and the note under it): the fade and Page ↓ of every zone that scrolls
+   *  (IA-02), the height set by the short screen's rules below; on a tall screen nothing scrolls */
+  private fitWho(card: HTMLElement): void { const w = card.querySelector<HTMLElement>('.who'); if (w) scrollFade(w); }
   /** a version 2 game: the news of an action taken in a band, shown by the band that opens next (the list again, the person's dialogue) */
   private said: string[] = [];
   /** a dialogue is opening: its first word's news go into it */
   private opening = false;
-  private saidHtml(): string { const h = this.said.map((t) => `<p class="news" role="status">${esc(t)}</p>`).join(''); this.said = []; return h; }
+  /** the lines of the news that are a quest offered (the operator's IA-09 « Tout dire là où le joueur décide », journal Passe IA2; C-19 of journal Passe IA1: talking to the
+   *  giver started the quest as one more line of words): said under the name « New quest », with where it is kept */
+  private questLines = new Set<string>();
+  private saidHtml(): string {
+    const h = this.said.map((t) => this.questLines.has(t)
+      ? `<p class="news quest" role="status"><b>${esc(tx('ui.quest.new'))}</b><small>${esc(tx('ui.quest.noted'))}</small><span>${esc(t.replace(/^[^—]{0,12}— /, ''))}</span></p>`
+      : `<p class="news" role="status">${esc(t)}</p>`).join('');
+    this.said = []; this.questLines.clear();
+    return h;
+  }
 
   private flash(lines: string[]): void {
     this.toast.innerHTML = lines.map((x) => `<p>${esc(x)}</p>`).join('');
@@ -538,19 +574,31 @@ export class TownUi {
     return r;
   }
   private current: HTMLElement | null = null;
-  private closeModal(): void { if (this.current) { this.current.remove(); this.current = null; } document.body.classList.remove('pm-talking'); if (this.modal) this.host.focus?.(null); this.modal = false; this.back = null; this.shownPage = null; }
+  private closeModal(): void { if (this.current) { this.current.remove(); this.current = null; } document.body.classList.remove('pm-talking'); if (this.modal) this.host.focus?.(null); this.modal = false; this.back = null; this.via = null; this.shownPage = null; }
   /** the menu's page shown now (a gamepad's shoulders go to its neighbour: journal Passe MN2, MN-4) */
   private shownPage: MenuPage | null = null;
   /** a version 2 game's gamepad, LB / RB on one of the menu's pages: the page before or after it, in the menu's order (MN-4) */
   tabPage(dir: -1 | 1): void {
     const pages: MenuPage[] = isV2(this.st) ? ['map', 'journal', 'board', 'notebook', 'skills', 'gear', 'settings'] : ['map', 'journal', 'board'];
     const to = tabTo(pages, this.shownPage, dir);
+    // the page next door keeps where Esc leads (the menu, if the one left was opened from it)
+    this.nextVia = this.via;
     if (to === 'map') this.openMap(); else if (to === 'journal') this.openJournal(); else if (to === 'board') this.openBoard(); else if (to === 'notebook') this.openNotebook();
-    else if (to === 'skills') this.openSkills(false); else if (to === 'gear') this.openGear(); else if (to === 'settings') this.openSettings();
+    else if (to === 'skills') this.openSkills(false); else if (to === 'gear') this.openGear(); else if (to === 'settings') this.openSettings('sound');
+    this.nextVia = null;
   }
   /** where Esc leads from a page opened from a dialogue */
   private back: (() => void) | null = null;
-  private leave(): void { const b = this.back; this.closeModal(); b?.(); }
+  /** the menu's line a page was opened from, for Esc to come back to the menu (the operator's IA-08 « Échap d’un cran », journal Passe IA2; A-11 of journal Passe IA1: Esc
+   *  in a page opened from the menu closed everything): `nextVia` is set by the menu's lines and taken by the page that opens (`page()`); a page opened by its key has none */
+  private via: number | null = null;
+  private nextVia: number | null = null;
+  /** Esc, or a page's way out: back to where the page was opened from (a dialogue, the menu), else the game; the menu's line stays the one for the page that comes back */
+  private leave(): void {
+    const b = this.back, via = this.via;
+    this.closeModal();
+    if (b) { this.nextVia = via; b(); this.nextVia = null; } else if (via !== null) this.openMenu(via);
+  }
 
   openPerson(who: string): void {
     const s = this.st, p = PEOPLE[who];
@@ -582,12 +630,12 @@ export class TownUi {
     // a sale asks first (IA-07, B-08)
     for (const o of opts) if ((!goods || !isGoods(o)) && !first.includes(o)) list.appendChild(this.optionButton(o, again, true, o.action.type === 'sell' ? (go, line) => this.askSale(o, list, root, go, line) : undefined));
     const leave = footBtn('Esc', tx('ui.leave'), () => this.closeModal());
-    side.append(list, footOf(leave)); arrowKeys(side);
+    side.append(list, footOf(enterFoot(list, tx('ui.foot.choose')), leave)); arrowKeys(side);
     card.appendChild(side);
     root.appendChild(card);
     document.body.appendChild(root);
     document.body.classList.add('pm-talking');
-    this.current = root; scrollFade(list);
+    this.current = root; scrollFade(list); this.fitWho(card);
     ((list.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? leave).focus();
     // the first challenge a person accepts (journal Passe TU3, TU-3)
     if (opts.some((o) => o.ok && o.action.type === 'challenge')) this.hint('challenge', who);
@@ -597,7 +645,7 @@ export class TownUi {
   openSkills(enter: boolean): void {
     if (enter) { this.openMatchSheet(); return; }
     this.page();
-    this.show(skillsPage({ state: () => this.st, act: (a) => this.host.act(a), close: () => this.closeModal() }, null));
+    this.show(skillsPage({ state: () => this.st, act: (a) => this.host.act(a), close: () => this.leave() }, null));
     this.shownPage = 'skills';
   }
 
@@ -731,7 +779,7 @@ export class TownUi {
   /** the settings (journal Passe RG2, RG-1: the four parts, in place of lot V8's sound page; V opens it on the sound): graphics, sound, controls, language */
   openSettings(section?: SettingsSection): void {
     this.page();
-    this.show(settingsPage({ section, close: () => this.closeModal() }));
+    this.show(settingsPage({ section, close: () => this.leave() }));
     this.shownPage = 'settings';
   }
 
@@ -741,8 +789,15 @@ export class TownUi {
     const { root, card, body, foot } = pageShell(tx('ui.cite'));
     body.innerHTML = `<h2 class="pm-h">${tx('ui.cite')}</h2><p class="pm-sub">${tx('ui.youAreIn', { place: esc(placeName(s.place, isV2(s))) })}</p>`;
     // the sheet says walking is free: no tag on each line (the audit of journal Passe UM1)
-    for (const o of moves) { const b = this.optionButton(o); b.querySelector('.cost.free')?.remove(); body.appendChild(b); }
-    const close = footBtn('Esc', tx('ui.close'), () => this.closeModal()); foot.appendChild(close); close.classList.add('out');
+    for (const o of moves) {
+      const b = this.optionButton(o); b.querySelector('.cost.free')?.remove();
+      // who stands there now (the operator's IA-08 « la carte plus parlante », journal Passe IA2; B-12 of journal Passe IA1: three lines « Go to … » and nobody named)
+      const ids = whoAt(s, (o.action as { to: GameState['place'] }).to), shown = ids.slice(0, 5).map((id) => PEOPLE[id].name), more = ids.length - shown.length;
+      b.querySelector('span')?.insertAdjacentHTML('beforeend', `<span class="pm-who">${esc(ids.length ? tx('ui.map.who', { names: shown.join(', ') + (more > 0 ? ` +${more}` : '') }) : tx('ui.map.nobody'))}</span>`);
+      body.appendChild(b);
+    }
+    const close = footBtn('Esc', closeLabel(), () => this.leave());
+    fillFoot(foot, enterFoot(body, tx('ui.foot.go')), close);
     arrowKeys(card);
     document.body.appendChild(root); this.current = root; this.shownPage = 'map';
     ((card.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement) ?? close).focus();
@@ -751,7 +806,7 @@ export class TownUi {
   /** the guide (journal Passe TU1, src/ui/tutorial.ts): a page of the menu, H */
   openGuide(first?: string): void {
     this.page();
-    this.show(guidePage({ state: () => this.st, snapshot: this.host.snapshot, replay: () => void this.tour() }, () => this.closeModal(), first));
+    this.show(guidePage({ state: () => this.st, snapshot: this.host.snapshot, replay: () => void this.tour() }, () => this.leave(), first));
     markTold();
   }
 
@@ -770,7 +825,7 @@ export class TownUi {
   /** the page's welcome is done: a mark or a wound shows its hint from then on (never over the news or the tour) */
   private welcomed = false;
   /** a person's mark shows on the scene for the first time (the operator's MK-11, journal Passe MK2): its hint, once the page's welcome is done */
-  markShown(): boolean { if (!this.welcomed || this.modal) return false; this.hint('npcMark'); return true; }
+  markShown(): boolean { return this.welcomed && !this.modal; }
   hint(id: HintId, who?: string): void {
     if (!this.host.tutorial || !isV2(this.st) || hintSeen(id)) return;
     markHint(id);
@@ -809,7 +864,7 @@ export class TownUi {
     if (s.v2?.$notes?.length) this.hint('notebook');
   }
 
-  private openJournal(): void { this.page(); this.show(journalPage(this.st, () => this.closeModal())); this.shownPage = 'journal'; }
+  private openJournal(): void { this.page(); this.show(journalPage(this.st, () => this.leave())); this.shownPage = 'journal'; }
 
   /** Master Corvin's notebook (lot 3 of « La Brute », src/ui/notebook.ts): Enter or Space watches a rehearsed bout again in the arena, nothing of the game changed */
   openNotebook(first?: string): void {
@@ -821,29 +876,41 @@ export class TownUi {
   private openBoard(): void {
     this.page();
     // the next opponent's match sheet from their line (GP-12), Esc back to the board
-    this.show(boardPage(this.st, standings(this.st), () => this.closeModal(), isV2(this.st) && autoNextBout(this.st) ? () => this.openMatchSheet(() => this.openBoard()) : undefined));
+    // the sheet opened from the board comes back to the board, which comes back to the menu if it was opened from there
+    this.show(boardPage(this.st, standings(this.st), () => this.leave(), isV2(this.st) && autoNextBout(this.st) ? () => { const via = this.via; this.openMatchSheet(() => { this.nextVia = via; this.openBoard(); }); } : undefined));
     this.shownPage = 'board';
   }
 
   private show(p: { root: HTMLElement; focus(): void }): void { document.body.appendChild(p.root); this.current = p.root; p.focus(); }
 
   /** a page on the full-screen veil takes the place of what was open */
-  private page(): void { this.closeModal(); this.modal = true; this.prompt.classList.remove('on'); document.body.classList.add('pm-full'); }
+  private page(): void {
+    const via = this.nextVia; this.nextVia = null;
+    this.closeModal(); this.modal = true; this.prompt.classList.remove('on'); document.body.classList.add('pm-full');
+    // opened from the menu: Esc comes back to it, and the foot says so
+    this.via = via; setOutLabel(via !== null ? tx('ui.back.menu') : null);
+  }
 
   /** the one menu (UM-R1): every page with its key, then the saves */
-  private openMenu(): void {
+  private openMenu(at = 0): void {
     this.page();
     const s = this.st, { root, card, body, foot } = pageShell(tx('ui.menu'), 'pm-menu');
     body.innerHTML = `<h2 class="pm-h">${tx('ui.menu')}</h2>`;
     // each page's key: the player's (the remapping, journal Passe RM2, RM-6)
-    const add = (label: string, f: () => void, act: Act | '' = '') => { const b = el('button', 'pm-btn', `<span>${esc(label)}</span>${act ? bindCap(act) : ''}`); b.addEventListener('click', f); body.appendChild(b); };
+    // a page opened from a line comes back to this line on Esc (IA-08, A-11: it closed everything)
+    let n = 0;
+    const add = (label: string, f: () => void, act: Act | '' = '') => {
+      const i = n++, b = el('button', 'pm-btn', `<span>${esc(label)}</span>${act ? bindCap(act) : ''}`);
+      b.addEventListener('click', () => { this.nextVia = i; f(); this.nextVia = null; });
+      body.appendChild(b);
+    };
     add(tx('ui.map'), () => this.openMap(), 'map'); add(tx('ui.journal'), () => this.openJournal(), 'journal'); add(tx('ui.tournament'), () => this.openBoard(), 'board');
     // Master Corvin's notebook (lot 3 of « La Brute »): a line of its own, no key
     if (isV2(s)) add(tx('nb.open'), () => this.openNotebook());
     // the match sheet of the next bout (GP-12 « La fiche dès que l’adversaire est connu »)
     const nb = isV2(s) ? autoNextBout(s) : null;
     if (nb) add(tx('prep.sheet.menu', { name: fighterName(nb.foeId), day: nb.day }), () => this.openMatchSheet());
-    if (isV2(s)) { add(tx('v2.skills.view'), () => this.openSkills(false), 'skills'); add(tx('v2.gear.view'), () => this.openGear(), 'gear'); add(tx('set.open'), () => this.openSettings(), 'settings'); }
+    if (isV2(s)) { add(tx('v2.skills.view'), () => this.openSkills(false), 'skills'); add(tx('v2.gear.view'), () => this.openGear(), 'gear'); add(tx('set.open'), () => this.openSettings('sound'), 'settings'); }
     // the guide (journal Passe TU3, TU-7): a line of its own
     if (isV2(s)) add(tx('tut.guide'), () => this.openGuide(), 'guide');
     body.appendChild(el('p', 'pm-sub pm-gap', tx('ui.menu.saves')));
@@ -854,9 +921,10 @@ export class TownUi {
       i.click();
     });
     add(tx('ui.menu.quit'), () => leavePage(location.pathname));
-    const back = footBtn('Esc', tx('ui.menu.back'), () => this.closeModal()); foot.appendChild(back); back.classList.add('out');
+    const back = footBtn('Esc', tx('ui.menu.back'), () => this.closeModal());
+    fillFoot(foot, enterFoot(body, tx('ui.foot.choose')), back);
     arrowKeys(card);
     document.body.appendChild(root); this.current = root;
-    (card.querySelector('.pm-btn') as HTMLButtonElement).focus();
+    (body.querySelectorAll<HTMLButtonElement>('.pm-btn')[at] ?? body.querySelector<HTMLButtonElement>('.pm-btn'))?.focus();
   }
 }
