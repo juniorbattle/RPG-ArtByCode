@@ -128,6 +128,9 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   const fit = scrollFade(detail), side = card.querySelector('.pm-match') as HTMLElement | null;
   if (side) scrollFade(side);
   scrollFade(tiles);
+  // the places' box scrolls only while a place's conditions are open (they take the catalogue's place, a short window holding the four places and the five lines in it): then it fades
+  // like every box that scrolls (the text check of tools/ui-text.mjs: a box that holds more than it shows has its fade); the rest of the time it is the row of four cards it always was
+  const fitPlaces = scrollFade(places); places.classList.remove('pm-scroll');
   const close = footBtn('Esc', closeLabel(), () => host.close());
   // the match sheet ahead of its bout (GP-12) has no way in: the plan set on it is kept for that rival until the day. On a sheet Enter enters the arena; Space places and removes
   const go = solo || !host.enter ? null : footBtn('Enter', host.enterLabel ?? tx('v2.skills.keep'), () => host.enter?.(), true);
@@ -213,7 +216,10 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
   };
   const paintPlaces = (): void => {
     const o = four();
-    places.innerHTML = o.map((id, k) => slotHtml(S.free === k ? null : id, k)).join('') + (S.conds !== null && !manual() && S.free === null ? condsHtml(S.conds) : '');
+    const conds = S.conds !== null && !manual() && S.free === null;
+    places.innerHTML = o.map((id, k) => slotHtml(S.free === k ? null : id, k)).join('') + (conds ? condsHtml(S.conds as number) : '');
+    places.classList.toggle('pm-scroll', conds);
+    if (conds) fitPlaces(); else delete places.dataset.more;
   };
   const paintNote = (): void => {
     const pend = S.pick !== null ? tx('ui.sk.pick', { name: skillName(S.pick) }) : S.msg;

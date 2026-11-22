@@ -136,7 +136,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     const vigour = won && v2 && !challenge ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(st).hp ?? 0, k: num(AUTO_RULES.hpScale) }))}</p>`
       : won && v2 && !reprisal ? `<p class="pm-vigour">${esc(tx('v2.result.noVigour'))}</p>` : '';
     const corvin = note ? `<p class="pm-sub">${tx('note.title')}</p>${noteLines(note).slice(1).map((l) => `<p>${esc(l)}</p>`).join('')}` : '';
-    await overlay(`<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}${vigour}${corvin}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
+    await overlay(`<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}${vigour}${corvin}${challenge ? '' : `<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`}`, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
     go(b.params);
   }
 }

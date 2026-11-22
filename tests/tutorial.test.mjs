@@ -1,5 +1,5 @@
 // The tutorial of the default game (journal Passes TU1 to TU3, the operator's sheet TU-1 to TU-12): its texts in the table with every number read from the
-// game's data (TU-6: no digit written into a chapter or a hint), every key in a cap the gamepad and the keyboard layout follow, the twelve chapters and the
+// game's data (TU-6: no digit written into a chapter or a hint), every key in a cap the gamepad and the keyboard layout follow, the fourteen chapters and the
 // eight hints (and the line of TU-8) each with its words and its chapter, the tour's six bands; what it remembers lives in the browser's storage and never in
 // the save; where it shows (a new game's tour, a game begun before's line, each hint's moment) and that a browser driven by a tool keeps today's flow; the
 // constants it reads are the ones the rules use.

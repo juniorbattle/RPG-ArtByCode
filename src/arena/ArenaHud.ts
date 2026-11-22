@@ -17,6 +17,9 @@ export type Assist = 'subtle' | 'full' | 'off';
 export const CSS = `
 #arena-hud{position:fixed;inset:0;pointer-events:none;color:var(--ds-ivory);font:400 var(--ds-fs-body)/1.3 var(--ds-text);font-variant-numeric:tabular-nums;z-index:20;user-select:none;-webkit-user-select:none}
 #arena-hud>*{transition:opacity .25s}
+/* a page over the duel (the result, the settings opened from the pause: C-03 and C-28 of journal Passe IA1, the K.O. word and the bar's text showed through its veil) takes the whole screen: the HUD fades out under it and back when it closes; a band (the gate, a lesson) lives beside the HUD */
+#arena-hud{transition:opacity .2s ease-out}
+body:has(.pm-overlay:not(.pm-band)) #arena-hud{opacity:0}
 #arena-hud.off>*:not(#ah-ko):not(#ah-pause),#arena-hud.ko>*:not(#ah-ko){opacity:0}
 /* the HUD hidden: the « turn your device » layer (transparent) leaves, so it neither covers the KO and pause screens nor takes the touches */
 #arena-hud.off #ah-rotate{display:none}

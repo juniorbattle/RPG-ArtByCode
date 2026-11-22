@@ -188,7 +188,9 @@ try {
     const stick = (ry) => page.evaluate((ry) => window.__padAxes([0, 0, 0, ry]), ry);
     await page.evaluate(() => window.__padSet(0, true)); await sleep(100); await page.evaluate(() => window.__padSet(0, false)); await sleep(200);
     const s0 = await zoneInfo(page, '.tu-guide .pm-detail');
-    await stick(1); await sleep(700); await stick(0); await sleep(300);
+    // 300 ms of full tilt reads about 280 px of the chapter's 621: the stick has to stop inside the text, since at the end the line leaves by design (700 ms reached that end
+    // when the machine was quiet and fell short under load: a check that sat on the stick's speed, journal Passe IA7)
+    await stick(1); await sleep(300); await stick(0); await sleep(300);
     const s1 = await zoneInfo(page, '.tu-guide .pm-detail');
     check(s1.top > s0.top + 100 && s1.listTop === s0.listTop, `the right stick scrolls the guide's TEXT (${s0.top} → ${s1.top}) and not its list (${s0.listTop} → ${s1.listTop})`);
     check(await page.evaluate(() => document.body.classList.contains('pm-pad')), 'the page shows the pad\'s caps');

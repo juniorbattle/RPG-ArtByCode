@@ -38,7 +38,8 @@ function listTexts() {
       const hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
       if (hit && !(hit === el || el.contains(hit) || hit.contains(el)) && !hit.closest?.('canvas')) continue;
       const m = getComputedStyle(el).color.match(/[\d.]+/g).map(Number);
-      out.push({ text: text.slice(0, 48), where: el.id ? `#${el.id}` : el.className && typeof el.className === 'string' ? `.${el.className.split(' ')[0]}` : el.tagName.toLowerCase(), x: b.left, y: b.top, w: b.width, h: b.height, rgb: m.slice(0, 3), a: (m[3] ?? 1) * op });
+      // a disabled control is an inactive component, which WCAG 1.4.3 exempts (B-24 of journal Passe IA1: the ‹ › at the ends of a list, 2.3:1 by design): counted apart, never failed
+      out.push({ off: !!el.closest('button:disabled,[aria-disabled="true"]'), text: text.slice(0, 48), where: el.id ? `#${el.id}` : el.className && typeof el.className === 'string' ? `.${el.className.split(' ')[0]}` : el.tagName.toLowerCase(), x: b.left, y: b.top, w: b.width, h: b.height, rgb: m.slice(0, 3), a: (m[3] ?? 1) * op });
     }
   }
   return out;
@@ -61,10 +62,11 @@ try {
       if (!/news/.test(js ?? '')) await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());
       if (js) await page.evaluate(js);
       await new Promise((r) => setTimeout(r, 700));
-      const worst = new Map();
+      const worst = new Map(), exempt = new Set();
       for (let s = 0; s < SHOTS; s++) {
         if (s) await new Promise((r) => setTimeout(r, 1000));
-        const texts = await page.evaluate(listTexts);
+        const listed = await page.evaluate(listTexts), texts = listed.filter((t) => !t.off);
+        for (const t of listed) if (t.off) exempt.add(`${t.where} « ${t.text} »`);
         // the background: every text transparent, the transitions cut (the keys' outlines, the rules and the veils stay)
         await page.addStyleTag({ content: '*{transition:none!important;animation:none!important}*,*::before,*::after{color:transparent!important;-webkit-text-stroke-color:transparent!important;caret-color:transparent!important}input::placeholder{color:transparent!important}' });
         await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
@@ -89,6 +91,7 @@ try {
       failed += bad.length;
       console.log(`${bad.length ? 'FAIL' : 'ok  '} ${name} ${size}: ${rows.length} texts, lowest ${rows[0]?.ratio}:1 (${rows[0]?.where} « ${rows[0]?.text} »), ${bad.length} under ${MIN}:1`);
       for (const r of bad.slice(0, 8)) console.log(`     ${r.ratio}:1 ${r.where} « ${r.text} » at ${r.box.join(',')}`);
+      if (exempt.size) console.log(`     (${exempt.size} disabled control text(s) exempt, WCAG 1.4.3: ${[...exempt].slice(0, 4).join(', ')})`);
       all.push({ name, size, rows });
       await page.close();
     }

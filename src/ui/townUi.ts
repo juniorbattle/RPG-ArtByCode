@@ -700,8 +700,10 @@ export class TownUi {
     const win = teach ? tx(levelOf(s, teach) > 0 ? 'prep.challenge.raise' : 'prep.challenge.teach', { skill: skillName(teach) }) : '';
     const vs = b ? this.autoVsHtml(b.ren, b.foe, autoForms(b), name, known.length > 0 && (!r || scoutTier(s, who) >= 1)) : '';
     return `<p class="pm-sub">${esc(tx(ch.kind === 'caught' ? 'v2.caught.title' : ch.kind === 'seize' ? 'v2.seize.title' : ch.kind === 'encounter' ? 'v2.encounter.fightTitle' : ch.reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title'))} · ${esc(tx('ui.dayN', { day: s.day }))}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(name)}</h2><p class="pm-sub">${esc(title)}</p></div></div>`
-      + (like ? `<p class="pm-sub">${esc(like)}</p>` : '') + vs + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('')
-      + `<p class="pm-sub">${esc(stake)}</p>${win ? `<p class="pm-sub">${esc(win)}</p>` : ''}${ch.reprisal || ch.kind ? '' : `<p class="pm-sub">${esc(tx('v2.result.noVigour'))}</p>`}<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p>`;
+      // what is at stake and what a win gives come first, before the table and what is known (C-12 of journal Passe IA1: the stake was the last thing the column held, under its fade)
+      + (like ? `<p class="pm-sub">${esc(like)}</p>` : '')
+      + `<p class="pm-sub">${esc(stake)}</p>${win ? `<p class="pm-sub">${esc(win)}</p>` : ''}${ch.reprisal || ch.kind ? '' : `<p class="pm-sub">${esc(tx('v2.result.noVigour'))}</p>`}`
+      + vs + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('') + `<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p>`;
   }
 
   /** P6 (lot V9): the bout's stage, the opponent (face, name, style), what the player knows of their skills, the gear worn, an ally's advice; since GP-12 the next bout's,

@@ -75,6 +75,8 @@ const CSS = `
 .pm-vs th{font-weight:400;color:var(--ds-muted);text-align:right;padding:2px 0 4px 12px;white-space:nowrap}
 .pm-vs td{text-align:right;padding:4px 0 4px 12px;border-top:1px solid var(--ds-line);white-space:nowrap}
 .pm-vs td:first-child,.pm-vs th:first-child{text-align:left;padding-left:0;color:var(--ds-muted);white-space:normal}
+/* C-12 (journal Passe IA1): on a window of 800 px or less the table's rows tighten, so that the sheet of a challenge, with its stake and what a win gives, holds in its column */
+@media (max-height:800px){.pm-vs{margin-top:6px}.pm-vs td{padding-top:1px;padding-bottom:1px}.pm-skills .pm-self .pm-foe .pm-port img{width:48px;height:48px}.pm-skills .pm-self p.pm-sub{margin:1px 0}.pm-vs{margin:4px 0 2px}.pm-vs th{padding-top:0;padding-bottom:2px}}
 .pm-goods{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;min-height:0;min-width:0}
 .pm-ghead{display:flex;align-items:center;gap:16px;padding-bottom:12px}
 .pm-ghead img{display:block;width:64px;height:64px;image-rendering:pixelated}
@@ -148,7 +150,9 @@ const CSS = `
 .sk-tile.warn{opacity:.65}.sk-tile.warn .st{color:var(--ds-muted)}
 /* the gear page (journal Passes EP1 to EP3): the hero and his four places on the left, a catalogue of tiles on the right, in the skills page's drawing */
 .pm-gear .pm-goods{grid-template-rows:auto auto minmax(0,1fr) auto auto}
+/* B-07 (journal Passe IA1: the tiles' box went from 242 to 448 px as the focus moved, the detail taking what its text needed): the detail has the one height, its text scrolling inside it */
 .pm-gear .pm-goods .pm-detail{min-height:0;max-height:min(30vh,250px);padding-top:10px}
+@media (min-height:481px){.pm-gear .pm-goods .pm-detail{height:min(30vh,250px)}}
 .sk-lab.say{color:var(--ds-accent)}
 .gp-casebox{grid-column:2;grid-row:1;min-width:0;align-self:start;display:flex;flex-direction:column;gap:6px}
 .gp-lab{padding:2px 0}
@@ -183,6 +187,8 @@ const CSS = `
 @media (max-height:760px){.sk-legend{display:none}.pm-skills .pm-goods .pm-detail{max-height:18vh}.sk-slot{padding:7px 10px 6px;gap:5px}}
 @media (min-width:701px){.pm-skills:not(.pm-solo) .sk-places{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.pm-skills:not(.pm-solo) .sk-slot .cd.chip .pre{display:none}}
 @media (max-height:800px){.pm-skills .pm-goods .pm-detail{max-height:min(14vh,104px);--fade:22px;scroll-padding-block:22px}.pm-skills:not(.pm-solo) .sk-tile small .fam{display:none}.pm-skills .sk-note{padding:4px 0 0}.pm-skills .sk-bar{padding:4px 0}.pm-skills .sk-places-lab{padding:0 0 4px}.pm-skills .pm-ghead{padding-bottom:6px}.pm-skills:not(.pm-solo) .sk-slot .sk-main small{display:none}}
+/* B-16 (journal Passe IA1: the foot of « When does X leave? » fell under the card, by 11 px at 1920 x 1080 and 137 px at 1280 x 720): while the conditions are open they take the catalogue's place, at every window, as they do on a phone held sideways; the row of the places gives the room */
+.pm-skills .pm-goods:has(.sk-conds){grid-template-rows:auto auto minmax(0,1fr) auto auto}.pm-skills .pm-goods:has(.sk-conds) .sk-bar,.pm-skills .pm-goods:has(.sk-conds) .sk-tiles,.pm-skills .pm-goods:has(.sk-conds) .pm-detail{display:none}.pm-skills .pm-goods:has(.sk-conds) .sk-places{min-height:0;overflow:auto;align-content:start}
 .pm-detail .nm{margin:0;font:400 var(--ds-fs-label)/1.2 var(--ds-title)}
 .pm-detail .what{margin:2px 0 0;font-size:var(--ds-fs-small);color:var(--ds-muted)}
 .pm-detail .ab{margin:6px 0 0;font-size:var(--ds-fs-body);line-height:1.3}
@@ -444,6 +450,26 @@ export function scrollFade(box: HTMLElement): () => void {
   };
   box.addEventListener('scroll', sync, { passive: true });
   new ResizeObserver(sync).observe(box);
+  // a row is never left as a fragment under the top edge (A-16 of journal Passe IA1: « them », the last words of the guide's row above the first, read under the header): once the
+  // keyboard has brought a line into view, a row cut by the top edge shows whole, unless that would push the line that has the keyboard out of the bottom
+  box.addEventListener('focusin', () => requestAnimationFrame(() => {
+    // the room given to the box's end by an earlier run is taken back first: the focus moved, the box measures itself again
+    if (box.dataset.endPad) { delete box.dataset.endPad; box.style.paddingBottom = ''; }
+    const f = document.activeElement as HTMLElement | null, st = box.scrollTop;
+    // a box too short to hold two rows and the 44 px the fade keeps clear (the list of a dialogue on a window of 375 px, 95 px tall) is left to the browser: there it treats a row
+    // that covers the padded view as seen, and a row placed by this rule can leave the next one out of the box
+    if (!f || !box.contains(f) || st < 2 || box.clientHeight < 200) return;
+    const bt = box.getBoundingClientRect().top, top = (r: Element): number => r.getBoundingClientRect().top - bt + st, bottom = (r: Element): number => r.getBoundingClientRect().bottom - bt + st;
+    const cut = [...box.children].filter((r) => (r as HTMLElement).offsetHeight > 0 && !r.contains(f) && top(r) < st - 1 && bottom(r) > st + 1);
+    if (!cut.length) return;
+    const to = Math.min(...cut.map(top));
+    if (bottom(f) <= to + box.clientHeight) { box.scrollTop = to; return; }
+    // the row cannot be shown whole without pushing the focused line out: it is let go under the edge instead (the focused line, below it, only moves up by what was shown of it);
+    // near the end of the list, where the box cannot scroll that far, the box is given the room it lacks
+    const c = Math.max(...cut.map(bottom)) - st, room = box.scrollHeight - box.clientHeight;
+    if (st + c > room + 0.5) { box.style.paddingBottom = `${parseFloat(getComputedStyle(box).paddingBottom) + (st + c - room)}px`; box.dataset.endPad = '1'; }
+    box.scrollTop = st + c;
+  }));
   sync();
   return sync;
 }

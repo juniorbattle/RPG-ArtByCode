@@ -46,12 +46,40 @@ export function topModal(): HTMLElement | null {
   return all[all.length - 1] ?? null;
 }
 
+/** Space reads on (the operator's IA-02, « et Espace là où il ne fait rien d'autre », which journal Passe IA3 could not place: on a page with a list or a detail the keyboard is on a
+ *  control that Space presses). Where it does nothing else is a card the keyboard has gone through to its foot (the news, a result, the end of the tournament): the focused
+ *  button is the page's one action, which Enter presses as well, so Space reads the next page of the text while there is more below and presses the button once the text is read.
+ *  Never on a page whose foot offers Space, never on a control inside the text or in a list, never typed, never from a pad's synthetic press. */
+export function spaceReads(s: { trusted: boolean; field: boolean; footHasSpace: boolean; onFootButton: boolean; textZone: boolean; more: boolean }): boolean {
+  return s.trusted && !s.field && !s.footHasSpace && s.onFootButton && s.textZone && s.more;
+}
+
 let installed = false;
 /** the keyboard's rule, installed once for the document (by the first page that scrolls): the topmost modal page's reading zone answers Page ↓, Page ↑, Home and
- *  End; a field keeps Home and End as its own, and a key a page already took is left to it */
+ *  End; a field keeps Home and End as its own, and a key a page already took is left to it; Space (Shift + Space back) where it does nothing else (`spaceReads`) */
 export function installPageKeys(): void {
   if (installed || typeof document === 'undefined') return;
   installed = true;
+  let spaceTaken = false;
+  // the press that read a page never presses the button on its release (Firefox clicks a button on the key's release)
+  document.addEventListener('keyup', (e) => { if (e.key === ' ' && spaceTaken) { spaceTaken = false; e.preventDefault(); } }, true);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === ' ' && !e.defaultPrevented && !e.ctrlKey && !e.altKey && !e.metaKey) {
+      const t = e.target as HTMLElement | null, root = topModal();
+      const zone = root ? readingZone<HTMLElement>(root) : null;
+      if (root && zone && t && !e.repeat && spaceReads({
+        trusted: e.isTrusted, field: ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName) || t.isContentEditable,
+        footHasSpace: !!root.querySelector('.pm-foot kbd[data-key="Space"]'),
+        onFootButton: !!t.closest('.pm-foot') && root.contains(t) && t.tagName === 'BUTTON',
+        textZone: zone.matches('.pm-detail, .pm-body') && !zone.querySelector(':scope > .pm-btn'),
+        more: moreBelow(zone) || (e.shiftKey && zone.scrollTop > 1),
+      })) {
+        const to = pageTarget(zone, e.shiftKey ? 'PageUp' : 'PageDown');
+        if (to !== null) { e.preventDefault(); spaceTaken = true; zone.scrollTo({ top: to, behavior: 'auto' }); }
+        return;
+      }
+    }
+  }, true);
   document.addEventListener('keydown', (e) => {
     if (e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey || !(SCROLL_KEYS as readonly string[]).includes(e.key)) return;
     const t = e.target as HTMLElement | null;

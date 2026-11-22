@@ -23,7 +23,7 @@ function padNameEn(f: PadFamily, b: Btn): string {
   return n[f][b] ?? ({ 12: 'D-pad up', 13: 'D-pad down', 14: 'D-pad left', 15: 'D-pad right', 16: 'Home' } as Record<number, string>)[b] ?? `Button ${b}`;
 }
 
-const svg = (w: number, body: string) => `<svg class="pad-s" width="${w}" height="14" viewBox="0 0 ${w} 14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+const svg = (w: number, body: string, h = 14, sw = 1.6) => `<svg class="pad-s" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 /** the PlayStation face symbols, drawn on a 14 px grid */
 const PS: string[] = [
   svg(14, '<path d="M3 3 11 11M11 3 3 11"/>'),
@@ -35,10 +35,12 @@ const MENU = svg(14, '<path d="M3 4.2h8M3 7h8M3 9.8h8"/>');
 const VIEW = svg(14, '<rect x="2.4" y="2.4" width="6.4" height="6.4"/><path d="M5.2 11.6h6.4V5.2"/>');
 const CREATE = svg(14, '<path d="M7 2.6v3M3.4 5l2.2 2M10.6 5 8.4 7M4.4 11h5.2"/>');
 const stick = (letter: string) => `<span class="pad-l">${letter}</span>`;
-/** the D-pad, the direction pressed filled */
+/** the D-pad, the direction pressed filled and the rest of the cross faint (IA-11, C-26 of journal Passe IA1: on a 14 px grid the one filled arm was lost in the cross's
+ *  own outline, and the four caps of the hand's skills looked alike; here the cross is drawn on 20 px, its outline fine and half faded, the arm solid) */
 export function dpad(dir: 'up' | 'down' | 'left' | 'right' | null): string {
-  const arm = { up: 'M5.4 1.6h3.2v3.8H5.4Z', down: 'M5.4 8.6h3.2v3.8H5.4Z', left: 'M1.6 5.4h3.8v3.2H1.6Z', right: 'M8.6 5.4h3.8v3.2H8.6Z' };
-  return svg(14, `<path d="M5.4 1.6h3.2v3.8h3.8v3.2H8.6v3.8H5.4V8.6H1.6V5.4h3.8Z"/>${dir ? `<path d="${arm[dir]}" fill="currentColor" stroke="none"/>` : ''}`);
+  const arm = { up: 'M7 1.5h6V7H7Z', down: 'M7 13h6v5.5H7Z', left: 'M1.5 7H7v6H1.5Z', right: 'M13 7h5.5v6H13Z' };
+  const cross = 'M7 1.5h6V7h5.5v6H13v5.5H7V13H1.5V7H7Z';
+  return svg(20, `<path d="${cross}"${dir ? ' stroke-opacity=".5"' : ''}/>${dir ? `<path d="${arm[dir]}" fill="currentColor" stroke="none"/>` : ''}`, 20, 1.2);
 }
 
 /** the brands' own colours, for the « colour » style only (an alternative on the sheet: outside the palette of UM-S3) */

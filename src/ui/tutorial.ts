@@ -27,7 +27,7 @@ import { bindCap, keyCap } from '../input/caps';
 import type { Act } from '../settings/keys';
 
 /** The tutorial of the default game (the operator's request of 2026-11-09 and his sheet, journal Passes TU1 / TU2 / TU3): a tour of six bands over the live page
- *  at the start of every new game (TU-2, TU-9), each pointing at the real element; a guide of twelve chapters in the menu and on H, from which the tour is replayed
+ *  at the start of every new game (TU-2, TU-9), each pointing at the real element; a guide of fourteen chapters in the menu and on H, from which the tour is replayed
  *  (TU-7); eight hints, each shown once in this browser the first time its thing comes up (TU-3); one line once on a game begun before (TU-8). Its pictures come
  *  from the game as it runs, no image is baked (TU-4): the scene here, each place kept in picture as the player walks there, the real interface, the tournament
  *  drawn from the state; its numbers are read from the game's data as it shows them (TU-6); its texts are neutral, short, in the second person (TU-5), in the
@@ -427,6 +427,9 @@ body.tu-on #pm-hints{z-index:41}
 @media (max-height:480px) and (max-width:700px){.pm-overlay.pm-band.tu-band:not(.tu-duel){padding:14px 16px 52px}.tu-band:not(.tu-duel) .pm-foot{padding-top:6px}.tu-band:not(.tu-duel) .pm-h{margin:0 0 3px}.tu-band:not(.tu-duel) p{margin:3px 0}}
 .pm-overlay.pm-band.tu-hint{inset:0 0 auto 0;z-index:42;padding:28px var(--ds-gutter) 72px;background:linear-gradient(to bottom,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 72px),transparent 100%);animation:ds-fade .2s ease-out}
 body.pm-full .pm-overlay.pm-band.tu-hint{background:linear-gradient(to bottom,var(--ds-ink) 0,var(--ds-ink) calc(100% - 72px),transparent 100%)}
+/* C-15 (journal Passe IA1: the hint's lines ran over the day and the place under its veil, the two texts crossing): while a hint is up the corner's figures fade out and come back with it */
+#pm-status,#pm-figs{transition:opacity .2s ease-out}
+body:has(.tu-hint) #pm-status,body:has(.tu-hint) #pm-figs{opacity:0}
 .tu-fig{position:relative;margin:0 0 14px;aspect-ratio:16/9;max-height:34vh;overflow:hidden;border-top:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line);background:var(--ds-veil-strong)}
 .tu-fig img{display:block;width:100%;height:100%;object-fit:cover}
 .tu-fig figcaption{position:absolute;left:0;right:0;bottom:0;padding:18px 12px 6px;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil-strong) 58%,transparent 100%)}

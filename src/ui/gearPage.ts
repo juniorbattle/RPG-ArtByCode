@@ -215,7 +215,11 @@ export function gearPage(who: string | null, host: WaresHost): { root: HTMLEleme
       return;
     }
     if (pk?.kind === 'sell') { fillFoot(foot, sale?.ok ? footBtn('Enter', tx('ui.wares.sell', { n: sale.n }), () => activate(S.sel, 'enter'), true) : null, close); return; }
-    if (pk && (pk.kind === 'case' || pk.kind === 'tile') && !(pk.kind === 'tile' && !pk.o.place && !wearAction(s, pk.o.id) && !S.armed && false)) { fillFoot(foot, wear(), sellBtn(), close); return; }
+    if (pk && (pk.kind === 'case' || pk.kind === 'tile') && !(pk.kind === 'tile' && !pk.o.place && !wearAction(s, pk.o.id) && !S.armed && false)) {
+      // choosing the place an accessory takes: Esc cancels the choice and the page stays (B-10 of journal Passe IA1: the foot said « Close » and Esc did not close)
+      fillFoot(foot, wear(), sellBtn(), S.armed ? footBtn('Esc', tx('ui.gear.cancelPick'), () => { S.armed = null; S.msg = ''; paint(); }) : close);
+      return;
+    }
     if (fk.startsWith('filter:') || fk.startsWith('panel:')) { fillFoot(foot, footBtn('Space', tx('ui.sk.choose'), () => activate(S.sel, 'space')), close); return; }
     fillFoot(foot, close);
   };

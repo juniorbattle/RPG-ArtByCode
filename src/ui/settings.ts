@@ -235,8 +235,9 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
   const controls = (padIn: typeof import('../input/PadInput') | null): void => {
     const lay = layout(), fam: PadFamily = padIn?.pad()?.family ?? 'xbox', keys = keysOf();
     detail.append(choice(tx('set.keyboard'), ['qwerty', 'azerty'] as const, () => layout(), (v) => { said = null; saveSettings({ keyboard: v }); }, (v) => LAYOUT_LABEL[v ?? 'qwerty'], tx('set.keyboard.sub')));
-    if (padIn) detail.appendChild(toggle(tx('v2.sound.vibration'), () => padIn.padSettings().vibration, (v) => padIn.setPadSettings({ vibration: v })));
-    detail.appendChild(note(tx('set.keys.rebind')));
+    // the vibration's switch only once a pad was seen (MN-9; A-18 of journal Passe IA1: it showed with no pad at all), and the line on how to rebind a key above the keys it speaks
+    // of, not under a switch it seemed to describe
+    if (padIn?.pad()?.seen) detail.appendChild(toggle(tx('v2.sound.vibration'), () => padIn.padSettings().vibration, (v) => padIn.setPadSettings({ vibration: v })));
     const table = (html: string) => { const t = el('table', 'pm-keys'); t.innerHTML = html; return t; };
     const why = (at: string) => (said?.at === at ? `<span class="why" role="status">${esc(said.text)}</span>` : '');
     const slot = (a: Act, i: 0 | 1) => {
@@ -249,7 +250,7 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
     const fixed = (label: TextKey, kb: string, pd: string) => `<tr class="fixed"><td>${esc(tx(label))}</td><td class="k">${kb}</td><td class="p">${pd}</td></tr>`;
     const via = `<span class="via">${esc(tx('set.keys.viaMenu'))}</span>`, walkPad = (b: Btn) => cap(fam, BTN.LS, b);
     detail.append(
-      heading(tx('set.keys.walk')),
+      heading(tx('set.keys.walk')), note(tx('set.keys.rebind')),
       table(own('up', walkPad(BTN.UP)) + own('down', walkPad(BTN.DOWN)) + own('left', walkPad(BTN.LEFT)) + own('right', walkPad(BTN.RIGHT))
         + own('run', cap(fam, BTN.B)) + own('talk', cap(fam, BTN.A)) + own('list', cap(fam, BTN.Y)) + fixed('set.keys.menu', key(fixedName('Esc')), cap(fam, BTN.START))
         + own('map', cap(fam, BTN.VIEW)) + (['journal', 'board', 'skills', 'gear', 'settings', 'guide', 'mute'] as const).map((a) => own(a, via)).join('')),
@@ -290,8 +291,9 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
   };
 
   // ---------------------------------------------------------------- the page
-  let pendingFocus = false;
+  let pendingFocus = false, padWatch = 0;
   const show = (sec: SettingsSection): void => {
+    window.clearInterval(padWatch);
     // a change said on its line belongs to its part (the remapping's messages, journal Passe RM3)
     if (sec !== shown) { said = null; stopWait(); }
     shown = sec;
@@ -304,7 +306,12 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
     else {
       controls(null);
       // the gamepad's own family and vibration, once its layer is loaded (a page without a pad keeps the Xbox's caps)
-      void import('../input/PadInput').then((m) => { if (shown === 'controls' && root.isConnected) { const f = document.activeElement; const at = [...detail.querySelectorAll('button')].indexOf(f as HTMLButtonElement); detail.replaceChildren(); controls(m); if (at >= 0) (detail.querySelectorAll('button')[at] as HTMLElement | undefined)?.focus(); fit(); } });
+      const again = (m: typeof import('../input/PadInput')): void => { if (shown === 'controls' && root.isConnected) { const f = document.activeElement, top = detail.scrollTop; const at = [...detail.querySelectorAll('button')].indexOf(f as HTMLButtonElement); detail.replaceChildren(); controls(m); detail.scrollTop = top; if (at >= 0) (detail.querySelectorAll('button')[at] as HTMLElement | undefined)?.focus(); fit(); } };
+      void import('../input/PadInput').then((m) => {
+        again(m);
+        // a pad first seen while this part is open brings its vibration switch in (A-18: the switch shows only once a pad was seen)
+        if (!m.pad()?.seen) padWatch = window.setInterval(() => { if (shown !== 'controls' || !root.isConnected) { window.clearInterval(padWatch); return; } if (m.pad()?.seen) { window.clearInterval(padWatch); again(m); } }, 400);
+      });
     }
     detail.scrollTop = 0; fit();
   };

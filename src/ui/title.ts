@@ -4,6 +4,7 @@ import { arrowKeys, el, esc, injectStyle } from './style';
 import { tx } from '../narrative/text';
 import type { Look } from '../audio/score';
 import { keysOf, LANGS, onSettings, type Lang } from '../settings/settings';
+import type { KeyTable } from '../settings/keys';
 import { actName, slotName } from '../input/caps';
 import { chooseLanguage, pageLang } from '../settings/language';
 import { leavePage } from './curtain';
@@ -17,12 +18,14 @@ import { leavePage } from './curtain';
  *  and forced by `?title=1`. Keys pressed on it stay on it: the town behind does not walk. */
 
 /** the walking keys and the talk key, the player's (the remapping, journal Passe RM2, RM-6; at the start WASD on QWERTY, ZQSD on AZERTY, and the arrows) */
-function keysLine(): string {
-  const t = keysOf(), dirs = ['up', 'left', 'down', 'right'] as const, ARROW = { up: 'ArrowUp', left: 'ArrowLeft', down: 'ArrowDown', right: 'ArrowRight' };
+export function keysLine(t: KeyTable = keysOf()): string {
+  const dirs = ['up', 'left', 'down', 'right'] as const, ARROW = { up: 'ArrowUp', left: 'ArrowLeft', down: 'ArrowDown', right: 'ArrowRight' };
   const names = (xs: string[]) => xs.join(xs.every((x) => x.length === 1) ? '' : ' ');
-  const first = names(dirs.map((d) => actName(d))), second = dirs.map((d) => t[d][0] && t[d][1]);
-  const move = dirs.every((d) => t[d][1]?.k === ARROW[d]) ? tx('ui.title.move', { a: tx('ui.title.arrows'), b: first })
-    : second.every(Boolean) ? tx('ui.title.move', { a: first, b: names(second.map((x) => slotName(x))) }) : first;
+  // each of the two slots as a name when it holds a key for all four directions (the second one: « arrows » when it is the arrows); a cleared first slot
+  // is not said twice (A-14, journal Passe IA1: « arrows or Up Left Down Right » once the first keys were emptied)
+  const slot = (i: 0 | 1): string | null => dirs.every((d) => t[d][i]) ? (i === 1 && dirs.every((d) => t[d][1]?.k === ARROW[d]) ? tx('ui.title.arrows') : names(dirs.map((d) => slotName(t[d][i])))) : null;
+  const s0 = slot(0), s1 = slot(1);
+  const move = s0 && s1 ? (dirs.every((d) => t[d][1]?.k === ARROW[d]) ? tx('ui.title.move', { a: s1, b: s0 }) : tx('ui.title.move', { a: s0, b: s1 })) : (s0 ?? s1 ?? names(dirs.map((d) => actName(d))));
   return tx('ui.title.keys', { move, talk: actName('talk') });
 }
 
@@ -128,12 +131,15 @@ export function showTitle(c: TitleChoice): { live(): void } {
       <input id="title-name" maxlength="20" autocomplete="off" spellcheck="false" placeholder="Ren">
       ${save ? `<p class="pm-sub warn">${tx('ui.title.replaces')}</p>` : ''}`;
     const input = menu.querySelector('input') as HTMLInputElement;
-    const go = el('button', 'pm-btn primary', tx('ui.title.enter')), back = el('button', 'pm-btn', tx('ui.title.back'));
+    const go = el('button', 'pm-btn primary', ''), back = el('button', 'pm-btn', tx('ui.title.back'));
     // the gamepad's B goes back as this button does (journal Passe MN2: the keyboard's Esc answers in the field only)
     back.dataset.padBack = '';
     // a save is replaced only after a question (the operator's IA-01, journal Passe IA2; A-09 of journal Passe IA1: Enter in the name's field erased it, the
     // warning being text only): the first press asks, naming the game, the button then says what it does and keeps the keyboard; the second goes, Esc or « Back » keeps
     let asked = 0;
+    // the button says whose game it starts (A-13, journal Passe IA1: at the pad nothing can be typed, and an empty field starts « Ren » without a word of it)
+    const sayGo = () => { if (!asked) go.textContent = tx('ui.title.enter', { name: cleanName(input.value) }); };
+    input.addEventListener('input', sayGo); sayGo();
     const start = () => {
       if (save && !asked) {
         asked = performance.now();
