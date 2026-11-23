@@ -22,6 +22,7 @@ const actionNames = (): Record<string, string> => Object.fromEntries(Object.entr
 import { lang, num, said, tx, word, type TextRef } from '../narrative/text';
 import { arenaQuery, lookOf, standings, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
+import { portraitUrl, preloadPortraits } from './portraits';
 import { writeSave } from './save';
 import { esc, overlay } from './style';
 import { standingsHtml } from './board';
@@ -64,6 +65,10 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   // journal Passe CH-PNJ), else their name and what they are
   const fid = sheet.sides[1].fighters[0].id, opp = RIVALS[fid] ?? (GENERICS[fid] ? { id: fid, name: GENERICS[fid].name, epithet: GENERICS[fid].epithet } : masterOf(fid) ? { id: fid, name: championHead(fid), epithet: championTitle(fid) } : { id: fid, name: PEOPLE[fid]?.name ?? NPC_FIGHTERS[fid]?.name ?? fid, epithet: PEOPLE[fid]?.title ?? '' });
   const reprisal = !!challenge && !!st.v2?.challenge?.reprisal, townKind = challenge ? st.v2?.challenge?.kind : undefined;
+  // the champion's master (journal Passe CH-PNJ, the operator's « PNJ en bordure + portraits »): the keeper or the passer-by the fighter stands for, at the edge of the lists in their town sheet,
+  // their face and « Representing … » on the fighter's card and on the gate; the town's approved portraits, no image of ours
+  let master: { who: string; title: string; face: string | null } | undefined;
+  if (challenge && masterOf(fid) && isV2(st)) { await preloadPortraits((await import('../characters/PlazaCast')).plazaFaces()); master = { who: fid, title: championTitle(fid), face: portraitUrl(fid) }; }
   // the slot's day state (the afternoon's bout at midday, journal Passe AD1)
   const q = new URLSearchParams(arenaQuery(st));
   for (const k of ['fps', 'freeze', 'painters', 'hud', 'gpuprof', 'input', 'fx']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
@@ -79,7 +84,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
       // a challenge or a reprisal in town (lot L2b, EV-5 « L’arène aux gradins vides »): the stands empty, no crowd, the lists' piece of the band
       // the duel's seed goes with its script: the manual mode's presses replay the duel with it (journal Passe CM2: until then a game's arena had none, `press` always refused and the hand
       // only worked on the arena's own page)
-      ? { rules: 'auto', auto: { result: ao.duel, ren: ao.bout.ren, foe: ao.bout.foe, names: { ren: st.player.name, marek: opp.name }, seed: ao.bout.seed }, foe: opp.id, assist: 'subtle', texts, piece: challenge ? 'lices' : boutPiece(m?.stage), ...(challenge ? { empty: true } : {}), onOver: (r) => void finish(r) }
+      ? { rules: 'auto', auto: { result: ao.duel, ren: ao.bout.ren, foe: ao.bout.foe, names: { ren: st.player.name, marek: opp.name }, seed: ao.bout.seed }, foe: opp.id, assist: 'subtle', texts, piece: challenge ? 'lices' : boutPiece(m?.stage), ...(challenge ? { empty: true } : {}), ...(master ? { master } : {}), onOver: (r) => void finish(r) }
       : dyn
       ? { data: dynSheetData(sheet, actionNames()), rules: 'dynamic', foe: opp.id, assist: view.assist, texts, onOver: (r) => void finish(r) }
       : { data: sheetData(sheet, actionNames()), foe: opp.id, assist: sheet.assist, texts, onOver: (r) => void finish(r) },
@@ -100,7 +105,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   const mods = sheet.sides[0].fighters[0].mods, prep = [mods.hp !== undefined && mods.hp < 1 ? tx('ui.arena.wounded', { pct: Math.round(mods.hp * 100) }) : '', mods.damage && mods.damage > 1 ? tx('ui.arena.damage', { pct: Math.round((mods.damage - 1) * 100), why: `${st.player.items.length ? tx('ui.arena.blade') : ''}${st.player.items.length && st.player.training ? ', ' : ''}${st.player.training ? tx('ui.arena.training') : ''}` }) : ''].filter(Boolean);
   // one preparation screen (journal Passe UM4): the version 2's is its match sheet in the town, here its stage and the name; today's game keeps its report
   // here, in the band at the foot of the screen, the fighters in view; the command bar says the keys
-  const gate = `<p class="pm-sub">${challenge ? tx(reprisal ? 'v2.challenge.reprisal' : townKind === 'caught' ? 'v2.caught.title' : townKind === 'seize' ? 'v2.seize.title' : townKind === 'encounter' ? 'v2.encounter.fightTitle' : 'v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</p><h2 class="pm-h">${esc(opp.name)}</h2><p class="pm-sub">${esc(opp.epithet)}</p>`;
+  const gate = `<p class="pm-sub">${challenge ? tx(reprisal ? 'v2.challenge.reprisal' : townKind === 'caught' ? 'v2.caught.title' : townKind === 'seize' ? 'v2.seize.title' : townKind === 'encounter' ? 'v2.encounter.fightTitle' : 'v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</p><h2 class="pm-h">${esc(opp.name)}</h2><p class="pm-sub">${master?.face ? `<span class="pm-port pm-rep"><img src="${master.face}" alt="" width="32" height="32"></span>` : ''}${esc(opp.epithet)}</p>`;
   // the version 2's gate says the mode (the operator's CM-08: recalled at « Fight ») and that leaving the bout loses it (CM-13)
   const gateV2 = `${gate}<p class="pm-sub">${esc(tx('ui.sk.mode'))}: ${esc(tx(st.v2?.kit.mode === 'manual' ? 'v2.mode.manual' : 'v2.mode.auto'))}</p><p class="pm-sub">${tx('v2.arena.leaveLoses')}</p>`;
   await overlay(v2 ? gateV2 : `${gate}${report}${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }], true).done;

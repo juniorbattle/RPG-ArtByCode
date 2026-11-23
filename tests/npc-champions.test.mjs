@@ -135,3 +135,38 @@ test('every new text is in both tables with the same slots, and no state key or 
   for (const k of ['v2.caught.fightLogFor', 'v2.caught.wonFor', 'v2.caught.lostFor']) assert.match(EN[k], /\{champion\}/);
   assert.equal(T.STAKE.coins, 10); assert.equal(T.STEAL_FINE.day, 15); assert.equal(T.CAUGHT_LOST, 2); assert.equal(T.SEIZE.coinsLost, 10);
 });
+
+test('the champion\'s master stands at the edge of the lists in their own approved town sheet, no new image (the operator\'s « PNJ en bordure + portraits », journal Passe CH-PNJ)', async () => {
+  const MS = await load('/src/arena/master.ts');
+  // every person who has a champion has a sheet, and every sheet is an approved production one (manifest, provenance pack): the sheets the portraits and the squares already use
+  const masters = Object.keys(NF.NPC_FIGHTERS).filter((id) => CH.masterOf(id) === id).sort();
+  assert.deepEqual(Object.keys(MS.MASTER_SHEET).sort(), masters, 'one sheet for each of the fourteen');
+  assert.equal(masters.length, 14);
+  for (const [who, id] of Object.entries(MS.MASTER_SHEET)) {
+    const mf = JSON.parse(fs.readFileSync(path.join(ROOT, `art-lab/characters/manifests/${id}.manifest.json`), 'utf8'));
+    assert.equal(mf.approved, true, `${who}: ${id} approved`); assert.equal(mf.runtimeUse, 'production', `${who}: ${id} in production`);
+    assert.ok(fs.existsSync(path.join(ROOT, `art-lab/characters/exports/${id}.png`)), `${who}: ${id} exported`);
+  }
+  // the table the operator approved the sheets by: the keepers' own, the passers-by as the squares and the portraits show them
+  assert.deepEqual(MS.MASTER_SHEET, { mara: 'merchant-x2-v2', hilde: 'hilde-x2-v2', corvin: 'corvin-x2-v2', pip: 'pip-x2-v2', edda: 'noble-x2-v1', sela: 'wayfarer-x2-v1', yselle: 'wayfarer-x2-v1', fenwick: 'older-merchant-x2-v1', garrick: 'older-merchant-x2-v1', nell: 'townswoman-x2-v1', hettie: 'townswoman-x2-v1', jory: 'courier-x2-v1', maud: 'artisan-x2-v1', dov: 'traveler-x2-v1' });
+  // at the right edge of the sand, beyond both fighters' places (Ren -2.15, the champion 2.15), turned to the ring, smaller than a fighter
+  assert.ok(MS.MASTER_AT.x > 2.15 + 1.5 && MS.MASTER_AT.x < 6.4 && !MS.MASTER_AT.flip && MS.MASTER_AT.scale < 1);
+  // the pages: the arena builds the master only for a match that names one, in a version 2 duel, beside the stands' own cast; the page names one only for a town fight of a champion
+  const A = fs.readFileSync(path.join(ROOT, 'src/arena/ArenaApp.ts'), 'utf8'), PA = fs.readFileSync(path.join(ROOT, 'src/ui/playArena.ts'), 'utf8'), AH = fs.readFileSync(path.join(ROOT, 'src/arena/AutoHud.ts'), 'utf8');
+  assert.match(A, /if \(this\.opts\.match\?\.master && v2Rules\(this\.rules\) && this\.opts\.params\.get\('cast'\) !== 'generated'\)/);
+  assert.match(A, /this\.master\?\.update\(this\.sim\.t, this\.lights, this\.camera, this\.keyDir\)/); assert.match(A, /this\.stands\?\.group, this\.master\?\.group/);
+  assert.match(PA, /if \(challenge && masterOf\(fid\) && isV2\(st\)\) \{ await preloadPortraits/);
+  // the card says « Representing X » with their face, under the champion's name
+  assert.match(AH, /who === 'marek' && rep \? `<div class="ah-rep">/);
+  assert.match(fs.readFileSync(path.join(ROOT, 'src/arena/ArenaHud.ts'), 'utf8'), /\.ah-rep\{display:flex;[^}]*font:400 var\(--ds-fs-small\)/);
+});
+
+test('the card\'s face is the champion\'s own (the operator\'s « le portrait du combattant ne semble pas etre le bon pour les combattants representant des pnjs »): the head of the fighter on the sand, not another person\'s face', () => {
+  const C = fs.readFileSync(path.join(ROOT, 'src/arena/CombatCast.ts'), 'utf8');
+  // a townsperson's fighter takes their face from their own idle frame on the template, in their look, after the town sheet's face (the person's, or a generated stranger's: white hair for Mara) was drawn
+  assert.match(C, /await bakedFaces\(set, foe\);\n?\r?\s*\/\/[^\n]*\n\s*if \(npc && rival\) \{ const face = await npcFace\(rival\); if \(face\) set\.portraits\.marek = face; \}/);
+  // the head is found on the template's own frame (a weapon over the head does not move it), the window read from the recoloured frame, 24 texels at one pixel in three, mirrored for the HUD's own mirror
+  assert.match(C, /const raw = frames\[n\]\.rgba, shown = src\.recolor \? src\.recolor\('idle\.0', raw\) : raw, S = 72, opaque = /);
+  assert.match(C, /d = \(y \* \(S \/ 3\) \+ \(S \/ 3 - 1 - x\)\) \* 4/);
+  assert.match(C, /\(oy \+ 3 \* y \+ 1\) \* fw \+ ox \+ 3 \* x \+ 1/);
+});

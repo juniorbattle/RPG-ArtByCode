@@ -84,6 +84,9 @@ export interface ArenaMatch {
   piece?: PieceId;
   /** a bout on the empty stands (lot L2b, EV-5 « L’arène aux gradins vides », journal Passe EVL3): a challenge or a reprisal in town, no spectator, no crowd */
   empty?: boolean;
+  /** a champion's master (journal Passe CH-PNJ, src/arena/master.ts): the keeper or the passer-by the fighter stands for, at the right edge of the lists in their own town sheet, and the card's line under the
+   *  fighter's name: « Representing Mara » with their face (a data URL of the town's portraits, null when they have none) */
+  master?: { who: string; title: string; face: string | null };
   onOver?: (r: { winner: FighterId; hp: Record<FighterId, number>; maxHp: Record<FighterId, number>; finisher: string | null; t: number }) => void;
 }
 /** the forecourt's walking mode (journal Passe L6): no bout; the hero walks the sand (arrows or A / D, W / S), Marek drills by the ring; the
@@ -206,6 +209,8 @@ export class ArenaApp {
   private declare densityTrial?: import('../lab/fighterDensity').DensityTrial;
   /** the version 2's spectators (journal Passe PU1, StandsCast.ts): a version 2 duel only; today's arena keeps its generated spectators */
   private stands: import('./StandsCast').Stands | null = null;
+  /** the champion's master at the edge of the lists (journal Passe CH-PNJ) */
+  private master: import('./MasterCast').MasterFigure | null = null;
   /** the version 2's effects (src/arena/fx/, journal Passes FX3 / FX5): loaded on demand by a version 2 duel only; today's arena keeps its frames */
   private combatFx: CombatFx | null = null;
   /** the combat sheets of a duel under the version 2's rules (src/arena/CombatCast.ts, journal Passe CX2): loaded on demand, today's arena never reaches them */
@@ -386,6 +391,11 @@ export class ArenaApp {
       this.stands = await (await import('./StandsCast')).installStands({ charScale: CHAR_SCALE, edgeGain: this.look ? lum(NIGHT_MOON) / lum(this.look.sunCol) : 1, shade: (await import('./CombatSheets')).shadeFor(this.opts.params.get('time')) });
       this.scene.add(this.stands.group);
     }
+    // the champion of a keeper or a passer-by: their master stands at the right edge of the lists, in their approved town sheet (journal Passe CH-PNJ, the operator's « PNJ en bordure + portraits »)
+    if (this.opts.match?.master && v2Rules(this.rules) && this.opts.params.get('cast') !== 'generated') {
+      this.master = await (await import('./MasterCast')).installMaster({ who: this.opts.match.master.who, charScale: CHAR_SCALE, edgeGain: this.look ? lum(NIGHT_MOON) / lum(this.look.sunCol) : 1, shade: (await import('./CombatSheets')).shadeFor(this.opts.params.get('time')) });
+      if (this.master) this.scene.add(this.master.group);
+    }
     // spectators on the tiers: the town's crowd archetypes, front view, idling and cheering in turn
     let k = 0;
     for (const st of this.stands || this.opts.match?.empty ? [] : this.arena.stands) {
@@ -405,7 +415,7 @@ export class ArenaApp {
     else this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 3.5, -6), MOON_DIR, 24, 9);
     if (!this.opts.params.has('clean') && this.auto) {
       const a = this.opts.match?.auto, texts = (this.opts.match?.texts as AutoTexts | undefined) ?? (lang() === 'fr' ? AUTO_TEXTS_FR : AUTO_TEXTS_EN);
-      this.hud = new AutoHud(this.auto, this.set.portraits, a?.names ?? { ren: 'Ren', marek: this.foe[0].toUpperCase() + this.foe.slice(1) }, (id) => autoActionName(id, texts), texts, parseTime(this.opts.params));
+      this.hud = new AutoHud(this.auto, this.set.portraits, a?.names ?? { ren: 'Ren', marek: this.foe[0].toUpperCase() + this.foe.slice(1) }, (id) => autoActionName(id, texts), texts, parseTime(this.opts.params), this.opts.match?.master ? { text: this.opts.match.master.title, face: this.opts.match.master.face } : undefined);
     } else if (!this.opts.params.has('clean')) {
       this.hud = this.dyn ? new DynamicHud(this.dyn, this.set.portraits, this.opts.match?.texts as DynTexts | undefined, parseTime(this.opts.params), this.charge ? { texts: this.opts.match ? (lang() === 'fr' ? CHARGE_TEXTS_FR : CHARGE_TEXTS_EN) : CHARGE_TEXTS_FR, tiers: this.charge.tiers } : null)
         : new ArenaHud(this.classic!, this.set.portraits, this.opts.match?.texts, parseTime(this.opts.params));
@@ -624,7 +634,7 @@ export class ArenaApp {
   }
   /** the arena, its sky, stands, floor and fires shown or hidden (a cinematic's void) */
   private cineWorld(on: boolean): void {
-    for (const o of [this.arena?.group, this.sky, this.stands?.group, this.floor.mesh, this.particles?.group]) if (o) o.visible = on;
+    for (const o of [this.arena?.group, this.sky, this.stands?.group, this.master?.group, this.floor.mesh, this.particles?.group]) if (o) o.visible = on;
     // the void has no air: the lights' in-scatter through the fog read its empty depth as the far sky and gilded it whole (given back after)
     if (!on) { this.cineAir = this.post.params.airlight; this.post.params.airlight = 0; } else if (this.cineAir !== null) { this.post.params.airlight = this.cineAir; this.cineAir = null; }
   }
@@ -906,6 +916,7 @@ export class ArenaApp {
     this.lights.update(this.time, pdt, this.camera);
     this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...(this.cineRun?.ghosts ?? []), ...(voidOn && this.cineRun?.ultra ? [] : this.fans)], this.lights, this.camera, this.keyDir, null, this.fighters.ren);
     this.stands?.update(this.sim.t, this.lights, this.camera, this.keyDir);
+    this.master?.update(this.sim.t, this.lights, this.camera, this.keyDir);
     this.particles.update(pdt, this.time, this.camera, this.post.height, this.lights, null);
     if (this.hud instanceof AutoHud) this.hud.update(this.auto!.hud(), this.hudVisible && !this.cineRun, this.paused && !this.moment, this.speed > 1, this.auto!.over);
     else if (this.hud instanceof DynamicHud) this.hud.update(this.dyn!, this.assist, this.hudVisible, this.paused && !this.moment, this.charge ? chargeHudModel(this.charge.view()) : undefined);
@@ -996,7 +1007,7 @@ export class ArenaApp {
       fps: p.fps, frameMs: p.frameMs, cpuMs: p.cpuMs, triangles: p.triangles, geometries: r.memory.geometries, textures: r.memory.textures, textureMB: bytes / 1048576, generatorMs: this.buildMs,
       gpu, gpuMs: gpu ? p.gpu.total() : undefined,
       t: +this.sim.t.toFixed(3), hash: this.sim.hash(), ren: { hp: this.sim.f.ren.hp, ap: this.sim.f.ren.ap, state: this.sim.f.ren.state, anim: this.fighters.ren.anim }, marek: { hp: this.sim.f.marek.hp, state: this.sim.f.marek.state, anim: this.fighters.marek.anim },
-      lights: this.lights.sources.length, lightsOnScreen: this.lights.active, fans: this.fans.length, ...(this.stands ? { stands: this.stands.info } : {}), instances: this.arena?.stats.instances,
+      lights: this.lights.sources.length, lightsOnScreen: this.lights.active, fans: this.fans.length, ...(this.stands ? { stands: this.stands.info } : {}), ...(this.master ? { master: this.master.info } : {}), instances: this.arena?.stats.instances,
       atlas: this.set ? `${this.set.atlas.width}x${this.set.atlas.height} (${this.set.atlas.frameCount} cells)` : null, drawCalls: p.drawCalls, frameTriangles: p.triangles, arenaTriangles: this.arena?.stats.triangles, resolution: `${this.post.width}x${this.post.height}`,
       pose: this.pose, assist: this.assist,
       ...(this.charge ? { charge: this.charge.view() } : {}),

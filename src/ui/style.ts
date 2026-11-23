@@ -76,6 +76,8 @@ const CSS = `
 .pm-vs td{text-align:right;padding:4px 0 4px 12px;border-top:1px solid var(--ds-line);white-space:nowrap}
 .pm-vs td:first-child,.pm-vs th:first-child{text-align:left;padding-left:0;color:var(--ds-muted);white-space:normal}
 /* C-12 (journal Passe IA1): on a window of 800 px or less the table's rows tighten, so that the sheet of a challenge, with its stake and what a win gives, holds in its column */
+.pm-port.pm-rep{display:inline-block;vertical-align:middle;margin-right:8px;line-height:0}
+.pm-port.pm-rep img{image-rendering:pixelated}
 @media (max-height:800px){.pm-vs{margin-top:6px}.pm-vs td{padding-top:1px;padding-bottom:1px}.pm-skills .pm-self .pm-foe .pm-port img{width:48px;height:48px}.pm-skills .pm-self p.pm-sub{margin:1px 0}.pm-vs{margin:4px 0 2px}.pm-vs th{padding-top:0;padding-bottom:2px}}
 .pm-goods{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;min-height:0;min-width:0}
 .pm-ghead{display:flex;align-items:center;gap:16px;padding-bottom:12px}

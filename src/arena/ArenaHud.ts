@@ -35,6 +35,10 @@ body:has(.pm-overlay:not(.pm-band)) #arena-hud{opacity:0}
 .ah-f.r .ah-nm em{margin-left:0;margin-right:12px}
 .ah-nm.long{font-size:calc(var(--ds-fs-title) * 0.78)}
 .ah-nm.xlong{font-size:calc(var(--ds-fs-title) * 0.62)}
+/* a champion's master: the face and « Representing Mara » under the fighter's card (journal Passe CH-PNJ) */
+.ah-rep{display:flex;align-items:center;gap:8px;margin-top:10px;font:400 var(--ds-fs-small)/1.2 var(--ds-text);color:var(--ds-ivory)}
+.ah-rep img{width:32px;height:32px;flex:none;image-rendering:pixelated}
+.ah-f.r .ah-rep{flex-direction:row-reverse}
 .ah-f.r .ah-nm{flex-direction:row-reverse}
 .ah-hp{position:relative;height:6px;margin-top:10px;background:var(--ds-trough)}
 .ah-hp i,.ah-hp u{position:absolute;top:0;bottom:0;left:0}

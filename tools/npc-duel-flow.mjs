@@ -151,12 +151,19 @@ try {
   const phoneSize = W <= 700 || H <= 480;
   // (on a phone held sideways the longest French name, « Le champion de maître Corvin », wraps onto three lines of 14.9 px, whole and clipped by nothing: a recorded limit)
   check(nm.h <= nm.fs * 1.5 * (phoneSize ? 3 : 1) && nm.fs >= (phoneSize ? 14 : 16) && nm.scroll <= nm.w + 1, `the HUD's name ${phoneSize ? 'in at most three lines' : 'on one line'}, ${nm.fs.toFixed(1)} px, ${nm.h.toFixed(0)} px high`);
+  // the champion's master (the operator's « PNJ en bordure + portraits »): their own approved town sheet drawn at the edge of the lists, their face and « Representing … » on the fighter's card
+  const mst = await page.evaluate(() => ({ stats: window.__stats?.().master ?? null, rep: document.querySelector('#ah-marek .ah-rep span')?.textContent ?? null, img: !!document.querySelector('#ah-marek .ah-rep img') }));
+  const MS = await server.ssrLoadModule('/src/arena/master.ts');
+  if (isChamp) { check(mst.stats?.sheet === MS.MASTER_SHEET[who] && mst.stats.frames > 0, `the master stands at the edge of the lists as ${MS.MASTER_SHEET[who]}: ${JSON.stringify(mst.stats)}`); check(mst.rep === rep && mst.img, `the card says « ${mst.rep} » with their face (${mst.img})`); }
+  else check(!mst.stats && mst.rep === null, 'nobody stands for the fighter: no master, no line');
   const worn = await page.evaluate(() => window.__arena.sheets?.info.sheets.map((s) => `${s.id} ${s.runtimeUse}`).join(', ') ?? 'none');
   check(worn === `hero-x3-combat production, npc-${tmpl}-x3-combat production`, `the sheets worn: ${worn}`);
   await page.screenshot({ path: path.join(outDir, `${kind}-${who}-${mode}-1-gate.png`) });
   const gate = await page.evaluate(() => document.querySelector('.pm-overlay')?.textContent ?? '');
   check(gate.toLowerCase().includes(foe.toLowerCase()) && (!isChamp || gate.includes(rep)), `the gate before the sand says ${foe}${isChamp ? ` and « ${rep} »` : ''}: ${gate.slice(0, 120)}`);
   check(await page.evaluate((t) => document.body.textContent.toLowerCase().includes(t), foe.toLowerCase()), `the HUD names ${foe}`);
+  const gateFace = await page.evaluate(() => { const i = document.querySelector('.pm-overlay .pm-rep img'); return i ? { src: i.getAttribute('src')?.slice(0, 22), px: getComputedStyle(i).imageRendering } : null; });
+  check(isChamp ? gateFace?.src?.startsWith('data:image/png') && gateFace.px === 'pixelated' : gateFace === null, `the gate shows ${isChamp ? `the master's face (${JSON.stringify(gateFace)})` : 'no master'}`);
   await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());
   await page.evaluate(() => { const a = window.__arena; for (let i = 0; i < 60 * 25; i++) a.update(1 / 60); });
   await page.screenshot({ path: path.join(outDir, `${kind}-${who}-${mode}-2-sand.png`) });
@@ -179,7 +186,7 @@ try {
   if (kind === 'caught') check(st.s.player.coins === coins0 - (mode === 'win' ? 0 : Math.min(2 * fine, coins0)), `GP-03: ${mode === 'win' ? 'won, no fine' : 'lost, the fine doubled'}: coins ${coins0} -> ${st.s.player.coins}`);
   else {
     const item = PASSERS[who].item, g = st.s.v2.gear, held = [g.weapon, g.armour, ...g.acc, ...g.bag].includes(item) || st.s.player.items.includes(item);
-    check(mode === 'win' ? held && st.s.v2.passed?.[who] === st.s.day && (st.s.v2.marks ?? 0) === 1 : !held && st.s.player.coins === coins0 - Math.min(10, coins0), `GP-01: ${mode === 'win' ? `won, ${item} the player's and a mark` : 'lost, 10 coins on the sand'}`);
+    check(mode === 'win' ? held && st.s.v2.passed?.[who] === atArena.day && (st.s.v2.marks ?? 0) === 1 : !held && st.s.player.coins === coins0 - Math.min(10, coins0), `GP-01: ${mode === 'win' ? `won, ${item} the player's and a mark` : 'lost, 10 coins on the sand'}`);
   }
   await page.screenshot({ path: path.join(outDir, `${kind}-${who}-${mode}-4-town.png`) });
   // Node replays the page's actions, then the bout's result
