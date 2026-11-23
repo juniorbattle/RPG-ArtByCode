@@ -1833,6 +1833,30 @@ Statut : décidé, **non construit**. Aucune décision A3 ; aucun contrat ne cha
 
 À construire dans une séance à part, après le choix du vainqueur et le panache (§ 43.3) : d'abord une fiche courte (les étapes de l'action, la courbe de difficulté par jour, la rancune du rival), puis la mesure de la force, puis la construction.
 
+## 45. Le choix du vainqueur : les cartes (23/11/2026, journal Passes CL1, CV1)
+
+Statut : **construit** dans le jeu par défaut (anglais et français), le **nombre de cartes** laissé à l'opérateur sur sa fiche courte https://claude.ai/artifact/ENhRjr3hsen9LYAni4wpFd (`briefs/fiche-cartes-vainqueur.html`, CV-1 à CV-5). Aucun contrat ne change ; aucune décision A3 ; aucun talent (CL-1).
+
+### 44.1 Ce que dit l'opérateur
+- **CL-2 « Version légère : deux cartes par victoire (stat, niveau de compétence, bourse) »**, sa note, mot pour mot : « mais a determiner si on se limite que a 2 par victoire ? pk pas + ? ». Deux lectures : *plus de cartes proposées* (le joueur choisit entre davantage) ou *plus de cartes prises* (la partie grandit plus vite).
+
+### 44.2 Les règles construites (`src/simulation/v2cards.ts`, `CARD_RULES`, `CARD`)
+- **Quand** : après un combat du tournoi gagné, sauf la finale ; jamais un défi (la vigueur de GP-14 ne compte que le tournoi non plus), jamais une défaite, jamais dans le jeu d'aujourd'hui (`v2=0`).
+- **Les cartes** : un point de statistique pour de bon (Attaque, Défense, Endurance, Vivacité ; jamais la santé : la vigueur la donne), un niveau de plus à l'une des quatre compétences emportées (jusqu'au niveau 3, le plafond de l'entraînement, `TRAIN_CAP` ; les niveaux 4 et 5 restent les leçons de maître Corvin), la moitié de la bourse du combat (`purse` 0,5 : 10 pièces en poule).
+- **Le tirage** : par la graine de la partie et son pas, un flux à part (`(graine, pas, « cards »)`) ; une carte de chaque famille d'abord, dans un ordre que le flux mélange, puis un second tour : `offered` 3 donne une de chaque, 2 deux familles sur trois, 4 une de chaque et une seconde ; une famille vide (aucune compétence sous le plafond) laisse la place à une seconde carte d'une autre. `picks` 1 : on en prend une.
+- **L'état** : `V2State.cards` `{ offers, taken, stats }`, dans l'empreinte, **absent tant qu'aucun combat n'est gagné** (une partie qui n'en gagne aucun garde son empreinte, une sauvegarde d'avant se lit telle quelle). `takeCard` : aucun créneau ni pièce ; une offre attend autant qu'il faut ; une victoire de plus en empile une autre.
+- **Les pages** : le résultat (une rangée de tuiles, les flèches et la croix, Entrée ou A, les touches 1 à 9, « Decide later » sur Échap ou B), la liste [Q] (l'offre en premier, son compteur, un conseil), le guide (chapitre « Preparing a bout »), la manette.
+
+### 44.3 La mesure (`tools/auto-cards.mjs`, 200 parties tenues à part, graines 101 à 300)
+Titres, 200 parties tenues à part, la course d'avant le recalage : aucune carte 22 / 37 / 16 % (planificateur, référence, curieux) ; 2 cartes, une prise, au hasard 47 / 66 / 24 %, éclairé 59 / 66 / 32 % ; **3 cartes**, au hasard 58 / 63 / 21 %, éclairé 62 / 65 / 35 % ; 4 cartes, au hasard 54 / 60 / 24 %, éclairé 64 / 76 / 37 % ; deux prises 76 à 83 % (planificateur), 84 à 88 % (référence), 32 à 42 % (curieux). Chaque famille seule (quatre cartes, le planificateur, témoin 22 %) : un point de statistique 52 %, un niveau 36 %, la moitié de la bourse 57 %, la bourse entière 66 % (un tiers 46 %, un demi-point de statistique 42 %). La durée d'un combat ne bouge pas (138 / 174 / 165 s au lieu de 142 / 180 / 173).
+
+### 44.4 La course recalée (PB-3)
+Le planificateur prenant ses cartes au hasard, les facteurs du tableau passent de ×1,164 à ×1,232 (demi-finale) et de ×1,464 à ×1,554 (finale) ; deux cartes ×1,232 / ×1,583, quatre ×1,242 / ×1,583 ; la poule et sa pente (SL1-1) ne bougent pas. Tenues à part : trois cartes, une prise, planificateur 27 % de titres (demi-finale 57 %, finale 48 %), référence 30 %, curieux 9 % ; le joueur éclairé 35 / 47 / 17 % ; le joueur qui ne prend aucune carte 5 / 9 / 6 %. L'écart éclairé − hasard : 6, 8 et 17 points (planificateur à 2, 3 et 4 cartes), 9, 17 et 8 (référence), 3, 8 et 6 (curieux).
+
+### 44.5 Ce qui reste
+- **La fiche de l'opérateur** : le nombre proposé (trois, recommandé), le nombre pris (un), les victoires (le tournoi), la taille des cartes, la course ; le jeu joue 3 et 1 en attendant, un seul réglage (`CARD_RULES.offered`, `.picks` et `AUTO_RACE.stage` : les facteurs des deux autres nombres sont gardés au journal).
+- Le laboratoire modélise le choix (au hasard, éclairé, un goût fixe) : le joueur réel n'est aucun des trois ; la fiche dit l'écart que fait le choix.
+
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
 Passe AU3, en réponse au chantier n° 1 de la Passe AU2 :

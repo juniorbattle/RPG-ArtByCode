@@ -15,6 +15,9 @@
 //   a version 2 game plays its bouts, its challenges and its off-screen bouts in the duel played by the computer since lot 2 (briefs/combat-auto.md,
 //       src/combat/auto.ts, journal Passe LC3); --rules=auto, lot 1's name for it, is --rules=v2; --policy=reference the reference player of AC-14 (the
 //       planner, Hilde's look, its kit drilled)
+//   the winner's card (the operator's CL-2, journal Passe CV1, src/simulation/v2cards.ts): the planner, the reference and the curious player take one after each bout won;
+//       --pick=random|rank|best|stat|skill|purse|none how they choose (src/tournament/lab.ts LAB_CARDS, random by default: the player the race is fitted on), --cards=N the cards offered (0: none, today's game as it was),
+//       --picks=K the cards taken from an offer; tools/auto-cards.mjs measures them (titles, durations, purses, the race refitted)
 import fs from 'node:fs';
 import path from 'node:path';
 import { createServer } from 'vite';
@@ -32,6 +35,8 @@ try {
   const pn = arg('policy', 'diligent'), policy = L.POLICIES[pn] ?? L.SCRIPTS[pn]?.();
   if (!policy) throw new Error(`no policy "${pn}" (known: ${[...Object.keys(L.POLICIES), ...Object.keys(L.SCRIPTS)].join(', ')})`);
   const out = arg('json'), named = arg('rules'), rules = named ?? 'v2';
+  // the winner's card (journal Passe CV1): how the laboratory's players take it, and how many are offered and taken
+  { const C = await server.ssrLoadModule('/src/simulation/v2cards.ts'); if (arg('pick')) L.LAB_CARDS.pick = arg('pick'); if (arg('cards')) C.CARD_RULES.offered = +arg('cards'); if (arg('picks')) C.CARD_RULES.picks = +arg('picks'); }
   if (!['classic', 'dynamic', 'v2', 'auto'].includes(rules)) throw new Error(`no rules "${rules}" (known: classic, dynamic, v2, auto)`);
   const table = (st) => T.standings(st).map((r, i) => `  ${String(i + 1).padStart(2)}. ${(r.id === 'player' ? st.player.name : RIVALS[r.id].name).padEnd(14)} ${String(r.points).padStart(2)} pts  rep ${String(r.reputation).padStart(3)}${r.id === 'player' ? '' : `  ${st.competitors[r.id].healthState.padEnd(7)} prep ${st.competitors[r.id].preparation}`}`).join('\n');
 

@@ -5,25 +5,27 @@
  *  drills), the people, then the time to pass (rest, wait, nightfall) and last the theft and the force, in one group each under its own title. The list opens on
  *  the first line of the first groups, never on the time or the theft. Pure: the page draws it. */
 
-export type HereGroup = 'answer' | 'do' | 'time' | 'steal';
+export type HereGroup = 'card' | 'answer' | 'do' | 'time' | 'steal';
 
 /** the groups in the order the list shows them (the people stand between `do` and `time`) */
-export const HERE_GROUPS: readonly HereGroup[] = ['answer', 'do', 'time', 'steal'];
+export const HERE_GROUPS: readonly HereGroup[] = ['card', 'answer', 'do', 'time', 'steal'];
 
 /** the group of a line of the place's list, by its action's type */
 export function hereGroup(type: string): HereGroup {
   if (type === 'steal' || type === 'pickpocket' || type === 'seize') return 'steal';
   if (type === 'rest' || type === 'wait' || type === 'nightfall') return 'time';
   if (type === 'answer') return 'answer';
+  // the winner's card (the operator's CL-2, journal Passe CV1) waits first: it changes the next bout
+  if (type === 'takeCard') return 'card';
   return 'do';
 }
 
 /** the lines of the list, grouped, each group in the order the game gave them */
 export function groupHere<T extends { action: { type: string } }>(opts: readonly T[]): Record<HereGroup, T[]> {
-  const out: Record<HereGroup, T[]> = { answer: [], do: [], time: [], steal: [] };
+  const out: Record<HereGroup, T[]> = { card: [], answer: [], do: [], time: [], steal: [] };
   for (const o of opts) out[hereGroup(o.action.type)].push(o);
   return out;
 }
 
 /** the groups the list opens on: never the time to pass nor the theft */
-export const opensOn = (g: HereGroup): boolean => g === 'answer' || g === 'do';
+export const opensOn = (g: HereGroup): boolean => g === 'card' || g === 'answer' || g === 'do';

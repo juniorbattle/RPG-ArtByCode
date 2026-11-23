@@ -24,6 +24,7 @@ import { V2_WORK_ACTIONS, type V2WorkAction } from './v2work';
 import { V2_PREP_ACTIONS, type V2PrepAction } from './v2prep';
 import { V2_QUEST_ACTIONS, type V2QuestAction } from './v2quests';
 import { V2_ENCOUNTER_ACTIONS, type V2EncounterAction } from './v2encounter';
+import { V2_CARD_ACTIONS, type V2CardAction } from './v2cards';
 import { TRAINED_STATS, trainGain, type TrainedStat } from '../combat/stats';
 import type { TextKey } from '../narrative/text';
 
@@ -40,7 +41,7 @@ export function recordSession(s: GameState, stat: TrainedStat): void { if (s.v2)
  *  talking, consulting, GAMEPLAY § 4.2; 1 = a significant action that takes the slot, § 4.1), when it is refused and why (a readable
  *  reason, the state untouched), and what it changes (`apply` works on the copy `advance` made). */
 
-export type Action = BaseAction | RoleAction | V2SkillAction | V2GearAction | V2TownAction | V2StoryAction | V2LawAction | V2BarterAction | V2IntelAction | V2RivalAction | V2FestivalAction | V2WorkAction | V2PrepAction | V2QuestAction | V2EncounterAction;
+export type Action = BaseAction | RoleAction | V2SkillAction | V2GearAction | V2TownAction | V2StoryAction | V2LawAction | V2BarterAction | V2IntelAction | V2RivalAction | V2FestivalAction | V2WorkAction | V2PrepAction | V2QuestAction | V2EncounterAction | V2CardAction;
 type BaseAction =
   | { type: 'move'; to: PlaceId }
   | { type: 'talk'; who: string }
@@ -167,4 +168,4 @@ const BASE: Table = {
 /** every action: the player's own, and those the town's people offer (roles.ts) */
 /** every action: the player's own, those the town's people offer (roles.ts), and the version 2's (listed only in a version 2 game, after
  *  today's: the default game's options keep their order) */
-export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS, ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS, ...V2_WORK_ACTIONS, ...V2_PREP_ACTIONS, ...V2_QUEST_ACTIONS, ...V2_ENCOUNTER_ACTIONS };
+export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS, ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS, ...V2_WORK_ACTIONS, ...V2_PREP_ACTIONS, ...V2_QUEST_ACTIONS, ...V2_ENCOUNTER_ACTIONS, ...V2_CARD_ACTIONS };

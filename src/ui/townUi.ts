@@ -3,6 +3,7 @@ import { offeredBy, scoutable, whoAt } from '../simulation/roles';
 import { heardLine, strapCut } from '../simulation/v2intel';
 import { sandRefusal } from '../simulation/v2rivals';
 import { watchPost } from '../simulation/v2watch';
+import { cardsWaiting } from '../simulation/v2cards';
 import { PEOPLE, titleOf } from '../narrative/people';
 import { linesOf } from '../narrative/dialogue';
 import { RIVALS } from '../narrative/roster';
@@ -435,7 +436,7 @@ export class TownUi {
       b.addEventListener('click', () => this.openChallengeSheet(() => this.openHere())); list.appendChild(b);
     }
     const line = (o: ActionOption): HTMLButtonElement => {
-      const b = this.optionButton(v2 && (o.action.type === 'rest' || o.action.type === 'wait') ? { ...o, label: o.action.type === 'rest' ? tx('v2.self.rest') : tx('v2.self.wait') } : o);
+      const b = this.optionButton(v2 && (o.action.type === 'rest' || o.action.type === 'wait') ? { ...o, label: o.action.type === 'rest' ? tx('v2.self.rest') : tx('v2.self.wait') } : o, undefined, o.action.type !== 'takeCard');
       // a theft says what being seen costs on the line itself (the operator's IA-09, C-14 of journal Passe IA1: the line said « free »)
       if (v2 && (o.action.type === 'steal' || o.action.type === 'pickpocket')) {
         const n = o.action.type === 'pickpocket' ? STEAL_REP.pocket : forced(s, o.action.shop) ? STEAL_REP.night : STEAL_REP.day;
@@ -453,6 +454,7 @@ export class TownUi {
       for (const o of g[grp]) { const b = line(o); b.dataset.group = grp; if (grp === 'steal' && o.ok) b.addEventListener('focus', () => this.hint('steal'), { once: true }); list.appendChild(b); }
     };
     if (v2) {
+      if (g.card.length) { title('ui.group.card'); for (const o of g.card) list.appendChild(line(o)); }
       if (g.answer.length) { title('v2.encounter.title'); for (const o of g.answer) list.appendChild(line(o)); }
       for (const o of g.do) list.appendChild(line(o));
     } else for (const o of opts) list.appendChild(line(o));
@@ -866,6 +868,8 @@ export class TownUi {
     if (s.player.injury > 0) this.hint('hurt');
     if (marksOf(s) > 0) this.hint('mark');
     if ((s.v2?.wins ?? 0) > 0) this.hint('vigour');
+    // a winner's card left waiting (the operator's CL-2): where to take it
+    if (cardsWaiting(s) > 0) this.hint('card');
     // Master Corvin's first note (lot 3 of « La Brute »): where his notebook is
     if (s.v2?.$notes?.length) this.hint('notebook');
   }

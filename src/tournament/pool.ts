@@ -11,6 +11,7 @@ import { autoOffscreen, autoRound } from '../combat/autoData';
 import { stageOf } from '../combat/stats';
 import type { BoutNote } from '../combat/autoNotes';
 import { keepOutcomeNote } from '../simulation/v2notes';
+import { offerCards } from '../simulation/v2cards';
 
 /** The pool of phase I (choice G3, journal Passe L2): eight competitors, two rounds in the slice, points (a defeat costs points, reputation,
  *  sometimes an injury, never the tournament). The matches the player does not fight are resolved by the damage race of the same combat
@@ -191,6 +192,8 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
       : m.stage ? tx(m.stage === 'semi' ? 'v2.duel.lostSemi' : m.stage === 'gate' ? 'v2.duel.lostGate' : m.stage === 'final' ? 'v2.duel.lostFinal' : 'v2.duel.lostLast', { name, close: close ? tx('v2.duel.lostClose') : '', rep: close ? '+2' : '−5', n: boutPurse(s, m, false) })
         : isV2(s) ? tx('v2.duel.lost', { name, close: close ? tx('v2.duel.lostClose') : '', rep: close ? '+2' : '−5', n: boutPurse(s, m, false) }) : tx('duel.lost', { name, close: close ? tx('duel.lostClose') : '' }),
   });
+  // the winner's card (the operator's CL-2, src/simulation/v2cards.ts): a bout of the tournament won, a few cards drawn by the game's seed wait for the player's pick
+  if (won && s.v2) offerCards(s, opp, m.stage ?? 'pool', boutPurse(s, m, true), emit);
   if (repaid) emit({ kind: 'match', id: 'advance-repaid', cause: `match:${matchId(m)}`, visible: true, text: tx('v2.advance.repaid', { n: repaid }) });
   if (hurt) emit({ kind: 'consequence', id: 'player-injured', cause: `match:${matchId(m)}`, visible: true, text: tx('duel.injured') });
   // a version 2 game (lot L3, the operator's EV-10 « Une réponse par lieu, un effet lisible », journal Passe EV2): a strap cut in the night and fought on is found

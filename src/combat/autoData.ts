@@ -547,11 +547,11 @@ export function autoFoe(id: string, sheet: FighterStats, o: { kitOf?: string; br
  *  held out, seeds 101 to 300); then once more, last, with the gold and the gear of the operator's chantier 5 (the sheet https://claude.ai/artifact/Eg4nNbYLtAaCfngnEKZLGs read
  *  back fourteen of fourteen at the recommendation, EQ-12 « Le planificateur, la référence et le curieux ; recaler la course (PB-3 appliquée) », journal Passes GP5-2 / GP5-3: the
  *  catalogue revised, the shops' prices by stage that make the planner's later purchases dearer, the pieces of the end and Clerk Odo's advance in the laboratory's policies): the
- *  pool's factors rose with the planner's day-2 gear, the bracket's and the final's fell with its dearer day-6 purchases; PB-3 applied, not changed). */
+ *  pool's factors rose with the planner's day-2 gear, the bracket's and the final's fell with its dearer day-6 purchases; PB-3 applied, not changed); then once more with the winner's cards of the operator's CL-2 (journal Passe CV1: three cards offered, one taken, the planner taking it at random; only the bracket's and the final's factors moved, 1.164 to 1.232 and 1.464 to 1.554: the pool's day-2 fit reads the planner's bouts before any card and its slope is SL1-1's; 1.232 / 1.583 for two cards, 1.242 / 1.583 for four, `tools/auto-cards.mjs fit`; PB-3 applied, not changed). */
 export const AUTO_RACE = {
   norm: { vessa: 1.291, tobin: 1.491, cassius: 1.238, orla: 0.975, ilse: 0.988, marek: 0.928, rhosk: 1.361 } as Record<string, number>,
   pool: [1, 1.075, 1.15] as readonly number[],
-  stage: { 1: 1.164, 2: 1.464 } as Record<1 | 2, number>,
+  stage: { 1: 1.232, 2: 1.554 } as Record<1 | 2, number>,
   prepFrom: 20, prepPer: 25,
 };
 /** a bout's round of the pool by its day: day 2 the first, day 4 the second, day 5 the third (a challenge of the pool by its day) */

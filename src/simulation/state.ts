@@ -2,6 +2,7 @@ import type { V2Festival } from './v2festival';
 import type { TextRef } from '../narrative/text';
 import type { BoutNote } from '../combat/autoNotes';
 import type { Rehearsal } from './v2prep';
+import type { V2Cards } from './v2cards';
 /** The game's state (the playable slice, journal Passe L1): plain data only, JSON-serialisable, versioned. Pure module: no three, no DOM,
  *  no Math.random, no clock (tests/game-core.test.mjs scans src/simulation, src/tournament, src/combat, src/events, src/narrative).
  *  The simulation owns the state (PROJECT_MASTER_CONTRACT § 10.2: `advance(state, action, rng)`); the town and the arena only display it. */
@@ -140,6 +141,9 @@ export interface V2State {
   /** the tournament's bouts won (DB7-4 « +12 PV par victoire »: Ren's vigour, src/simulation/v2gear.ts v2Stats); a challenge counted too until the operator's GP-14
    *  « La vigueur pour les combats du tournoi seulement (décision A3 : précise DB7-4) » (journal Passe GP2): an older save is counted again as it loads (advance.ts) */
   wins?: number;
+  /** the winner's cards (the operator's CL-2 « Version légère : deux cartes par victoire (stat, niveau de compétence, bourse) », journal Passes CL1 / CV1; src/simulation/v2cards.ts): the
+   *  offers a bout won left waiting, the cards taken and the lasting points they gave; absent until a bout is won (a game that never wins one keeps its fingerprint) */
+  cards?: V2Cards;
   /** what the player has seen of each person's offers, kept as their dialogue opens (the operator's MK-4 / MK-5, journal Passe MK2; src/simulation/v2offers.ts): a « $ »
    *  key, saved with the game and left out of its fingerprint */
   $seen?: Record<string, string[]>;

@@ -7,6 +7,7 @@ import { offerKey, seenOf, type MarkKind } from './v2offers';
 import { nextBoutOf } from './v2scout';
 import { rehearsalDue } from './v2prep';
 import { hashString } from '../core/rng';
+import { pendingOffer } from './v2cards';
 
 /** What there is to do here and now in a version 2 game (the operator's request of 2026-11-11, journal Passe LA1: « je pense que nous pourrions mettre plus en
  *  evidence cette zone a l'ecran durant nos parcours afin d'inciter le joueur a voir ce qui a a faire durant la periode »; his LA1 sheet, journal Passe LA2:
@@ -19,7 +20,7 @@ import { hashString } from '../core/rng';
  *  still wears no diamond). Never a theft, the rest, the wait or watching any other rival, nor the crowd. What the player has seen of them in the
  *  list is kept in the version 2's state under a « $ » key: saved with the game, outside its fingerprint. Pure. */
 
-export type TodoKind = 'bout' | MarkKind | 'place';
+export type TodoKind = 'bout' | 'card' | MarkKind | 'place';
 
 export interface Todo {
   /** what makes it the same thing again (a person by their new offers, an activity by its place, day and moment) */
@@ -40,7 +41,7 @@ export interface Todo {
 }
 
 /** LA-6: the bout, then what follows, an event, what pays (an item that pays), an item, the place's activities */
-const rank = (t: Todo): number => (t.kind === 'bout' ? 0 : t.kind === 'follow' ? 1 : t.kind === 'event' ? 2 : t.kind === 'item' ? (t.gain ? 3 : 4) : 5);
+const rank = (t: Todo): number => (t.kind === 'bout' ? 0 : t.kind === 'card' ? 0.5 : t.kind === 'follow' ? 1 : t.kind === 'event' ? 2 : t.kind === 'item' ? (t.gain ? 3 : 4) : 5);
 /** the place's own activities that spend the moment, by the action that gives them */
 const PLACE_TODO: Readonly<Record<string, string>> = { train: 'train', drillSkill: 'drill', repair: 'repair', faceSharps: 'sharps' };
 
@@ -51,6 +52,9 @@ export function todoHere(st: GameState): Todo[] {
   const fight = st.slot === 'afternoon' && st.tournament.matches.some((m) => m.day === st.day && !m.winner && (m.a === 'player' || m.b === 'player'));
   if (fight) out.push({ key: `bout:${st.day}`, kind: 'bout', what: 'fight', slot: true });
   if (st.v2?.challenge) out.push({ key: `challenge:${st.day}:${st.slot}`, kind: 'bout', what: 'challenge', slot: true });
+  // a winner's card waiting (the operator's CL-2, src/simulation/v2cards.ts): no slot, it changes the next bout
+  const card = pendingOffer(st);
+  if (card) out.push({ key: `card:${card.day}`, kind: 'card', what: 'card' });
   // the rehearsal still to do (GP-16) has a line of its own: Master Corvin's line leaves it out, and goes when it was all he had new (one line for one thing)
   const due = rehearsalDue(st), rehearse = due ? opts.find((o) => o.ok && o.action.type === 'rehearse') : undefined, rehearseKey = rehearse ? offerKey(st, rehearse.action as never) : '';
   for (const m of offersHere(st)) {

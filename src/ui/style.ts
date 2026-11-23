@@ -150,6 +150,14 @@ const CSS = `
 .sk-tile b{font-weight:600}
 .sk-tile .st{font-size:var(--ds-fs-small);line-height:1.25;color:var(--ds-accent)}
 .sk-tile.warn{opacity:.65}.sk-tile.warn .st{color:var(--ds-muted)}
+/* the winner's card (the operator's CL-2, journal Passe CV1): the cards of the offer in the skills page's tiles, on the result page */
+.pm-cardrow{margin:6px 0 10px}
+/* (a tile is no .pm-btn: the first .pm-btn of the result page stays its foot's, where the tools and the player find the way out) */
+.cd-tile{margin:0;font:inherit;font-size:var(--ds-fs-label);line-height:1.25;color:var(--ds-ivory);background:none;border-radius:0;outline:0;cursor:pointer}
+.cd-tile:hover,.cd-tile:focus{color:var(--ds-accent)}
+.pm-cardrow .sk-tile{min-height:88px}
+.pm-cardrow .sk-tile:focus-visible,.pm-cardrow .sk-tile:focus{border-color:var(--ds-accent)}
+.pm-cards-slot{margin:4px 0 6px}
 /* the gear page (journal Passes EP1 to EP3): the hero and his four places on the left, a catalogue of tiles on the right, in the skills page's drawing */
 .pm-gear .pm-goods{grid-template-rows:auto auto minmax(0,1fr) auto auto}
 /* B-07 (journal Passe IA1: the tiles' box went from 242 to 448 px as the focus moved, the detail taking what its text needed): the detail has the one height, its text scrolling inside it */

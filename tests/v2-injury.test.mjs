@@ -141,10 +141,11 @@ test('the numbers of the decision: seeds 1..50 give Passe V2B1\'s wounds a game,
   // (the race fitted once more on the quests, journal Passe GP4-2: 1.08 and 1.32 with the states alone, 43.1 % of the bouts, the cut 76 %)
   // (the gold and the gear of the operator's chantier 5 and the race fitted last, journal Passe GP5-3: 1.12 and 1.4 before, 43.1 % of the bouts, the cut 76 %; the cheaper blade and
   // wrap put one more of the planner's pieces on its day 2, the pool's factors rose with it (PB-3), and the lab's weaker players, the diligent and the idle, meet stronger rivals)
-  assert.equal(+prepared.rates.playerInjured.toFixed(2), 1.16); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.66);
+  // (the winner's cards of the operator's CL-2 and the race fitted once more, journal Passe CV1: 1.26 and 1.64 before, 27.9 % of the bouts, the cut 44 %; the lab's diligent and idle players take no card and meet the bracket's rivals fitted on a planner who does, stronger by 6 %)
+  assert.equal(+prepared.rates.playerInjured.toFixed(2), 1.26); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.64);
   // (lot L4, journal Passe EVL7: 0.592 since Rhosk takes the training sand on the free day before a bracket bout, which the prepared player does not answer: seed 27
   // loses the major match it won; 0.596 before; 0.604 with the duel of journal Passe DB3)
-  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.304); assert.equal(prepared.v2.champion, 0); assert.equal(prepared.v2.madeCut, 0.44);
+  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.279); assert.equal(prepared.v2.champion, 0); assert.equal(prepared.v2.madeCut, 0.44);
   // less than half as often until journal Passe DB9; at the sheet's strength the lab's prepared player, without his skills' levels, still less often than the idle one;
   // since lot 2 of the duel played by the computer (journal Passe LC3) the player who prepares the duel is the reference of AC-14 (the planner, Hilde's look, his kit
   // drilled): wounded far less often than the idle one (0.56 a game), the lab's diligent player no longer; since lot 1 of the second redesign (journal Passe SL1)
@@ -155,7 +156,8 @@ test('the numbers of the decision: seeds 1..50 give Passe V2B1\'s wounds a game,
   // plans of GP-15, journal Passe GP3; 0.46 against 1.14 since the reference does the town's quests, journal Passe QE2)
   // (0.42 against 1.32 with the harmful states and the race fitted again, on top of the quests, journal Passe GP4-2; 0.4 against 1.4 with the race fitted once more on them)
   // (0.42 against 1.66 with the gold and the gear of the operator's chantier 5 and the race fitted last, journal Passe GP5-3)
-  assert.equal(+reference.rates.playerInjured.toFixed(2), 0.42);
+  // (0.32 against 1.64 with the winner's cards of the operator's CL-2, journal Passe CV1: the reference takes a card after each bout won, at random, and is knocked down less)
+  assert.equal(+reference.rates.playerInjured.toFixed(2), 0.32);
   assert.ok(reference.rates.playerInjured < idle.rates.playerInjured, 'the player who prepares the duel is wounded less often than the idle one');
   assert.ok(prepared.eventCounts['healer-offer'] > 0 && idle.eventCounts['healer-offer'] > 0, 'the healer still writes to the wounded');
 });

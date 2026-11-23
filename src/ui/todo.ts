@@ -79,6 +79,7 @@ export function offerWhat(act: string | undefined, kind: 'item' | 'event' | 'fol
 export function todoLine(s: GameState, t: Todo): string {
   const tag = (txt: string, gain = false) => `<span class="tag${gain ? ' gain' : ''}">${esc(txt)}</span>`;
   if (t.kind === 'bout') return `<p><span>${esc(t.what === 'challenge' ? tx('v2.challenge.enter') : tx('ui.todo.bout', { name: boutFoe(s) }))}</span></p>`;
+  if (t.kind === 'card') return `<p><span class="tick" aria-hidden="true"></span><span>${esc(tx('ui.todo.card'))}</span></p>`;
   if (t.who) {
     const k = t.kind as 'item' | 'event' | 'follow', p = PEOPLE[t.who];
     return `<p><span class="pm-mk" data-kind="${k}" role="img" aria-label="${esc(tx(MARK_WORD[k]))}">${markGlyph(k)}</span><span>${esc(tx('ui.todo.who', { name: p?.name ?? t.who, kind: offerWhat(t.act, k) }))}</span>${t.gain ? tag(tx('ui.gainN', { n: t.gain }), true) : ''}</p>`;

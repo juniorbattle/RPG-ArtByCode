@@ -25,6 +25,9 @@ import { FEST } from '../simulation/v2festival';
 import { jobAt } from '../simulation/v2work';
 import { QUEST, QUESTS, QUEST_IDS, questOffered } from '../simulation/v2quests';
 import { levelOf } from '../simulation/v2skills';
+import { cardId, cardLive, pendingOffer, type CardKind, type V2Card } from '../simulation/v2cards';
+import { runRehearsal } from '../simulation/v2prep';
+import { rngFor } from '../simulation/advance';
 
 /** The TournamentLab's library (TOURNAMENT_MASTER_CONTRACT § 13, journal Passe L2; the CLI is tools/tournament-lab.mjs): play whole games
  *  headless with a player policy, the player's duels fought by the bot in the arena's full simulation; find the forgotten participants;
@@ -62,6 +65,47 @@ export function challengeOutcome(st: GameState, _skill: number): DuelOutcome {
 
 export interface Policy { name: string; skill: number; choose(st: GameState): Action }
 
+/** How the laboratory's players take the winner's card (the operator's CL-2, journal Passe CV1; a measuring switch, never the game's): `best` the card that raises the
+ *  chances of Master Corvin's rehearsal against the next opponent the most (a player who tries each card), the purse when none does; `rank` a fixed taste (a skill, then
+ *  Attack, Defence, Endurance, Speed, then the purse); `random` one drawn by a stream of its own (the default: no taste assumed, the player the race is fitted on, PB-3); `stat`, `skill`, `purse` always that kind when offered (else the rank);
+ *  `none` takes nothing (the card waits, as for a player who never reads it). Only the planner, the reference and the curious player take cards: the idle and the diligent
+ *  players stay what they were. */
+export const LAB_CARDS: { pick: 'best' | 'rank' | 'random' | 'stat' | 'skill' | 'purse' | 'none' } = { pick: 'random' };
+const CARD_KIND_RANK: CardKind[] = ['skill', 'stat', 'purse'], CARD_STAT_RANK = ['atk', 'def', 'end', 'viv'];
+const cardTaste = (c: V2Card): number => (c.k === 'stat' ? 10 + CARD_STAT_RANK.indexOf(c.stat) : c.k === 'skill' ? 0 : 20);
+/** the card a policy takes now, or null (no offer waiting, or the policy takes none) */
+export function labCard(st: GameState): Action | null {
+  if (!isV2(st) || LAB_CARDS.pick === 'none') return null;
+  const o = pendingOffer(st);
+  if (!o) return null;
+  const live = o.cards.filter((c) => cardLive(st, c)), take = (c: V2Card): Action => ({ type: 'takeCard', card: cardId(c) });
+  const byRank = (kinds: CardKind[]): V2Card => [...live].sort((a, b) => kinds.indexOf(a.k) - kinds.indexOf(b.k) || cardTaste(a) - cardTaste(b))[0];
+  let c: V2Card;
+  switch (LAB_CARDS.pick) {
+    case 'random': c = live[rngFor(st, 'labcard').int(0, live.length - 1)]; break;
+    case 'stat': c = byRank(['stat', 'skill', 'purse']); break;
+    case 'skill': c = byRank(['skill', 'stat', 'purse']); break;
+    case 'purse': c = byRank(['purse', 'skill', 'stat']); break;
+    case 'rank': c = byRank(CARD_KIND_RANK); break;
+    default: {
+      // best: each card tried on a copy, the rehearsal's wins against the next opponent compared on the same thirty seeds
+      const base = runRehearsal(st)?.wins ?? 0;
+      let best: V2Card | null = null, gain = 0;
+      for (const x of [...live].sort((a, b) => cardTaste(a) - cardTaste(b))) {
+        if (x.k === 'purse') continue;
+        const r = advance(st, take(x));
+        if (!r.ok) continue;
+        const g = (runRehearsal(r.state)?.wins ?? 0) - base;
+        if (!best || g > gain) { best = x; gain = g; }
+      }
+      const purse = live.find((x) => x.k === 'purse');
+      c = best && (gain > 0 || !purse) ? best : purse ?? best ?? live[0];
+    }
+  }
+  const a = take(c);
+  return has(st, a) ? a : null;
+}
+
 const has = (st: GameState, a: Action) => actions(st).some((o) => o.ok && JSON.stringify(o.action) === JSON.stringify(a));
 /** a policy's fallback for a slot: fight on a match afternoon, else let the time pass */
 const fallback = (st: GameState, skill: number): Action => (st.slot === 'afternoon' && matchSheetFor(st) && !st.tournament.matches.find((m) => m.day === st.day && (m.a === PLAYER_ID || m.b === PLAYER_ID))?.winner ? { type: 'fight', outcome: botOutcome(st, skill) } : { type: 'wait' });
@@ -90,14 +134,14 @@ export const POLICIES: Record<string, Policy> = {
    *  from Lio's room, its next opponent watched wherever they train, Lady Edda asked whose servant cut a strap it fought on, the culprit reported to Hale. Lot L4 (EV-9,
  *  journal Passe EVL7): a friend's warning taken as a sign of its chain, Rhosk's plan told to Hale as soon as it is known. Lot L6 (FE-9, journal Passe EVL11): the
  *  festival's good turns on day 9 */
-  curious: { name: 'curious', skill: 0.6, choose: (st) => (isV2(st) ? curiousV2(st) : POLICIES.diligent.choose(st)) },
+  curious: { name: 'curious', skill: 0.6, choose: (st) => (isV2(st) ? labCard(st) ?? curiousV2(st) : POLICIES.diligent.choose(st)) },
   /** the planner (the operator's ECO-8 « Un joueur « planificateur » de plus, les trois autres inchangés », journal Passe ECO2): the player the DB7 curve
    *  supposes, who works and buys its gear (the blade, the forge, the mail, the wrap, the forge, the ring, the forge, then a whetstone before each bout),
    *  repairs a cold forge, trains twice and drills the Thrust and the heavy attack, and takes the town's jobs (src/simulation/v2work.ts) when nothing else
    *  holds; a version 2 game only (today's game plays the diligent) */
-  planner: { name: 'planner', skill: 0.6, choose: (st) => (isV2(st) ? plannerV2(st) : POLICIES.diligent.choose(st)) },
+  planner: { name: 'planner', skill: 0.6, choose: (st) => (isV2(st) ? labCard(st) ?? plannerV2(st) : POLICIES.diligent.choose(st)) },
   /** the reference player of the duel played by the computer (AC-14): see referenceV2 */
-  reference: { name: 'reference', skill: 0.6, choose: (st) => (isV2(st) ? referenceV2(st) : POLICIES.diligent.choose(st)) },
+  reference: { name: 'reference', skill: 0.6, choose: (st) => (isV2(st) ? labCard(st) ?? referenceV2(st) : POLICIES.diligent.choose(st)) },
 };
 
 /** the reference player of the duel played by the computer (the operator's AC-14 « Le planificateur, avec la vérification de Hilde et l’exercice de son kit »,

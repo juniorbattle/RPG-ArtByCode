@@ -27,6 +27,12 @@ export const REN_BASE: FighterStats = { hp: 300, atk: 10, def: 10, end: 10, viv:
 export const VIGOUR_HP = 24;
 /** a training session (DB7-3): +1 to the stat chosen, for the next bout, two sessions at most (TRAIN_MAX, src/simulation/v2gear.ts) */
 export const TRAIN_POINT = 1;
+/** the stats a winner's card may raise (the operator's CL-2, journal Passe CV1; src/simulation/v2cards.ts): the four points, never health (a win gives it already, the vigour) */
+export const STAT_CARDS = ['atk', 'def', 'end', 'viv'] as const;
+export type CardStat = (typeof STAT_CARDS)[number];
+/** what a winner's card gives to the stat it names, for good (« proposé », measured: briefs/combat-auto.md § 45) */
+export const CARD = { point: 1 };
+export const cardGain = (_k: CardStat): number => CARD.point;
 /** a training session given to health (DB11-5): +20 at the next bout (about what +1 Defence spares) */
 export const TRAIN_HP = 20;
 /** what a session gives to the stat it chose, at the next bout */

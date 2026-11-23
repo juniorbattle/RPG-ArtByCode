@@ -33,6 +33,8 @@ import { AUTO_RULES } from '../combat/auto';
 import { boutNote } from '../combat/autoNotes';
 import { fighterName, noteLines } from './notebook';
 import { REHEARSAL, reviewOf } from '../simulation/v2prep';
+import { pendingOffer } from '../simulation/v2cards';
+import { mountCards } from './cardsPage';
 
 /** The official bout (journal Passe L3; choice G1: the arena as it is, played from a match sheet): the day's opponent in Marek's seat, the
  *  player's name and preparation in Ren's, the English HUD (choice K1). A scouting report before the first blow; once the KO has had its
@@ -137,13 +139,21 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     const res = (window as any).__game.act(challenge ? { type: 'challengeResult', outcome } : { type: 'fight', outcome });
     if (!res.ok) { console.error(res.reason); return; }
     writeSave(st);
-    const won = r.winner === 'ren', lines = (res.events as Array<{ visible: boolean; text: string; kind: string; $t?: TextRef }>).filter((e) => e.visible && (e.kind === 'match' || e.kind === 'consequence' || (!!challenge && e.kind === 'action'))).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('');
+    const won = r.winner === 'ren', lines = (res.events as Array<{ visible: boolean; text: string; kind: string; id: string; $t?: TextRef }>).filter((e) => e.visible && e.id !== 'cards:offered' && (e.kind === 'match' || e.kind === 'consequence' || (!!challenge && e.kind === 'action'))).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('');
     // the operator's DB11-5 « Le dire partout » (journal Passe DB13): a version 2 bout won says the vigour it gives and the health of the next bout; a challenge won
     // says it gives none (GP-14 « La vigueur pour les combats du tournoi seulement (décision A3 : précise DB7-4) », journal Passe GP2), a reprisal nothing
     const vigour = won && v2 && !challenge ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(st).hp ?? 0, k: num(AUTO_RULES.hpScale) }))}</p>`
       : won && v2 && !reprisal ? `<p class="pm-vigour">${esc(tx('v2.result.noVigour'))}</p>` : '';
     const corvin = note ? `<p class="pm-sub">${tx('note.title')}</p>${noteLines(note).slice(1).map((l) => `<p>${esc(l)}</p>`).join('')}` : '';
-    await overlay(`<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}${vigour}${corvin}${challenge ? '' : `<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`}`, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
+    // the winner's card (the operator's CL-2, journal Passe CV1; src/simulation/v2cards.ts): after a bout of the tournament won, the cards the game drew sit in a row on this page, the
+    // player takes one (Enter, a click, its number); « Decide later » leaves them waiting in the list
+    const offer = won && v2 && !challenge ? pendingOffer(st) : null;
+    const html = `<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}${offer ? '<div class="pm-cards-slot"></div>' : ''}${vigour}${corvin}${challenge ? '' : `<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`}`;
+    if (offer) {
+      const o = overlay(html, [{ id: 'later', label: tx('ui.card.later') }]), foot = o.root.querySelector<HTMLElement>('.pm-foot')!;
+      mountCards({ slot: o.root.querySelector<HTMLElement>('.pm-cards-slot')!, foot, later: foot.querySelector<HTMLButtonElement>('button')!, state: () => st, act: (a) => (window as any).__game.act(a), backLabel: tx('ui.arena.back') });
+      await o.done;
+    } else await overlay(html, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
     go(b.params);
   }
 }

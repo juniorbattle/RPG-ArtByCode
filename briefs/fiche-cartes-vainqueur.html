@@ -1,0 +1,282 @@
+<title>Cartes du vainqueur</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top; measures in small tables inside the cards. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --voile: #3b5fb0;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --voile: #86a6ef; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --voile: #86a6ef; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+caption { text-align: left; font-size: 13px; color: var(--muted); padding: 8px 10px 4px; }
+th, td { padding: 5px 10px; text-align: right; border-top: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; min-width: 11em; }
+thead th { border-top: 0; font-weight: 600; color: var(--muted); font-size: 13px; }
+tr.pick td { background: var(--brass-soft); font-weight: 600; }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · le choix du vainqueur (CL-2) · 23/11/2026</span>
+    <h1>Cartes du vainqueur</h1>
+    <p class="lede">Après chaque combat du tournoi gagné, le jeu offre des cartes à prendre : un point de statistique pour de bon, un niveau pour l’une de tes quatre compétences, ou la moitié de la bourse du combat. Ta note demandait pourquoi se limiter à deux. Voici ce que le laboratoire mesure pour deux, trois et quatre cartes, une ou deux prises, avec ma recommandation sur chaque point. Le jeu est construit avec trois cartes et une prise en attendant ta réponse : changer le nombre est un réglage.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne au journal et dans AGENTS.md, puis je règle le nombre de cartes dans le jeu.</p>
+    <p class="src">Sources : <code>briefs/combat-auto.md</code> § 45, <code>JOURNAL.md</code> Passe CV1, <code>src/simulation/v2cards.ts</code>, <code>tools/auto-cards.mjs</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Apostrophes : l’apostrophe typographique ’ ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+const TABLES = {"t1":{"caption":"Titres sur 200 parties tenues à part, la course d’aujourd’hui, avant recalage","head":["Cartes","Planificateur","Référence","Curieux","Planif. demi / finale"],"rows":[["Aucune carte (témoin)","22 %","37 %","16 %","52 / 44 %"],["2 proposées, une prise, choix au hasard","47 %","66 %","24 %","71 / 69 %"],["3 proposées, une prise, choix au hasard","58 %","63 %","21 %","75 / 78 %"],["4 proposées, une prise, choix au hasard","54 %","60 %","24 %","74 / 75 %"],["2 proposées, une prise, choix éclairé","59 %","66 %","32 %","73 / 83 %"],["3 proposées, une prise, choix éclairé","62 %","65 %","35 %","77 / 81 %"],["4 proposées, une prise, choix éclairé","64 %","76 %","37 %","81 / 80 %"],["2 proposées, deux prises, choix au hasard","76 %","85 %","32 %","87 / 88 %"],["3 proposées, deux prises, choix au hasard","78 %","84 %","37 %","91 / 87 %"],["4 proposées, deux prises, choix au hasard","82 %","84 %","36 %","91 / 91 %"],["2 proposées, deux prises, choix éclairé","76 %","85 %","32 %","87 / 88 %"],["3 proposées, deux prises, choix éclairé","83 %","85 %","35 %","92 / 91 %"],["4 proposées, deux prises, choix éclairé","81 %","88 %","42 %","94 / 87 %"]],"hl":2},"t2":{"caption":"Après recalage de la course pour chaque nombre (une prise) : titres du joueur qui ne prend aucune carte, au hasard, éclairé","head":["Cartes","Facteurs demi / finale","Planif. aucune","au hasard","éclairé","Réf. aucune","au hasard","éclairé","Curieux aucune","au hasard","éclairé"],"rows":[["2 proposées","×1,23 / ×1,58","2 %","22 %","28 %","5 %","30 %","39 %","3 %","11 %","14 %"],["3 proposées","×1,23 / ×1,55","5 %","27 %","35 %","9 %","30 %","47 %","6 %","9 %","17 %"],["4 proposées","×1,24 / ×1,58","2 %","21 %","38 %","6 %","28 %","36 %","3 %","10 %","16 %"]],"hl":1}};
+const GROUPS = [{"id":"nombre","title":"Le nombre de cartes","sub":"Ta note : « mais a determiner si on se limite que a 2 par victoire ? pk pas + ? »","fam":"var(--voile)","items":[{"id":"CV-1","tag":"CV-1","title":"Combien de cartes proposer après une victoire ?","ctx":["Ta note se lit de deux façons : plus de cartes proposées (plus de choix) ou plus de cartes prises (une partie qui grandit plus vite). Cette carte tranche la première lecture, la suivante la seconde.","Une carte est un point de statistique pour de bon, un niveau de plus pour l’une de tes quatre compétences, ou la moitié de la bourse du combat. Avec trois cartes il y a toujours une de chaque famille ; avec deux, une famille manque deux fois sur trois ; avec quatre, une seconde carte d’une famille s’ajoute : une tuile de plus, pas une famille de plus.","Mesuré sur 200 parties entières du laboratoire (les mêmes graines pour chaque ligne). Le joueur « au hasard » prend une carte sans la lire ; le joueur « éclairé » essaie chaque carte et garde celle qui lève le plus ses chances à la répétition de maître Corvin. Premier tableau : la course d’aujourd’hui, avant recalage (la force brute des cartes). Second tableau : la course recalée pour chaque nombre, le planificateur étant à 50 % en demi-finale et en finale ; un joueur qui ne prend aucune carte y perd presque tout (2 à 9 % de titres), c’est le prix de ne pas jouer cette voie."],"shots":[["img/cartes.png","La page du résultat après une victoire de la première journée : trois cartes (une statistique, une compétence, la bourse), « Decide later » sur Échap."]],"one":true,"tables":["t1","t2"],"rec":"Trois, une de chaque famille. La partie reste lisible (trois tuiles qui ne se ressemblent pas) et le choix compte : après recalage, le joueur éclairé gagne sur celui qui tire au hasard 8, 17 et 8 points de titres (planificateur, référence, curieux) à trois cartes, contre 6, 9 et 3 à deux cartes. Quatre cartes n’ajoutent rien de net (17, 8 et 6 points) et doublent une famille. Deux cartes laisseraient la bourse de côté une fois sur trois.","opts":["Trois : une de chaque famille","Deux, tirées parmi les trois familles","Quatre : une de chaque et une seconde","Autre nombre (en note)"],"recIdx":0,"src":"JOURNAL.md Passe CV1, briefs/combat-auto.md § 45, tools/auto-cards.mjs number"},{"id":"CV-2","tag":"CV-2","title":"Combien de cartes prendre par victoire ?","ctx":["La seconde lecture de ta note : prendre deux cartes de l’offre au lieu d’une. Les lignes « deux prises » du premier tableau (la course d’aujourd’hui, avant recalage) : les titres du planificateur passent de 58 % à 78 % avec trois cartes (22 % sans carte), ceux de la référence de 63 % à 84 %, ceux du curieux de 21 % à 37 %. La croissance du joueur double (un point de statistique et un niveau et une bourse par victoire, jusqu’à sept ou huit cartes en une partie) : la course serait à recaler de plus de moitié et ce n’est plus une version légère."],"rec":"Une seule. Prendre une carte, c’est laisser les autres ; c’est ce qui en fait un choix. Pour que la partie grandisse plus vite, mieux vaut des cartes plus grosses (carte CV-4) que deux fois plus de cartes.","opts":["Une seule","Deux","Autre (en note)"],"recIdx":0,"src":"JOURNAL.md Passe CV1, tools/auto-cards.mjs number --npicks=1,2"},{"id":"CV-3","tag":"CV-3","title":"Quelles victoires donnent des cartes ?","ctx":["Aujourd’hui : les combats du tournoi gagnés, sauf la finale (aucun combat ne la suit) : la poule, la demi-finale, le tableau de consolation, la petite finale. Un défi gagné en ville donne déjà sa propre récompense (la compétence du combattant, la mise, une leçon du sable) et la vigueur ne compte que les combats du tournoi (décision GP-14). Compter aussi les défis ferait des défis la voie la plus rentable de la partie."],"rec":"Les combats du tournoi seulement, comme la vigueur.","opts":["Les combats du tournoi seulement","Aussi les défis gagnés en ville","Autre (en note)"],"recIdx":0,"src":"src/tournament/pool.ts applyPlayerDuel, GP-14 (journal Passe GP2)"}]},{"id":"taille","title":"Ce que valent les cartes","sub":"Les nombres posés, et la course recalée","fam":"var(--astre)","items":[{"id":"CV-4","tag":"CV-4","title":"La taille des cartes","ctx":["Un point de statistique pour de bon (Attaque, Défense, Endurance ou Vivacité), un niveau de compétence (jusqu’au niveau 3, le plafond de l’entraînement ; les niveaux 4 et 5 restent les leçons de maître Corvin), la moitié de la bourse du combat (10 pièces en poule, 17 à 22 ensuite, 40 en finale de consolation).","Chaque famille prise seule, quatre cartes proposées, le planificateur (22 % de titres sans carte) : un point de statistique 52 %, un niveau de compétence 36 %, la moitié de la bourse 57 %, la bourse entière 66 % (un tiers de la bourse 46 %). La bourse entière dominait : le planificateur, limité par l’or, la change en équipement. Un demi-point de statistique (42 %) aurait fait une carte « +0,5 » que le jeu n’affiche nulle part."],"rec":"Garder ces tailles : aucune famille ne passe l’autre du simple au double. Le niveau est la plus faible pour le planificateur, qui s’entraîne déjà à fond ; pour un joueur qui s’entraîne peu, il compte davantage.","opts":["Garder ces tailles","Cartes plus fortes (la bourse entière)","Cartes plus légères (en note)"],"recIdx":0,"src":"tools/auto-cards.mjs kinds, src/simulation/v2cards.ts CARD_RULES"},{"id":"CV-5","tag":"CV-5","title":"La course recalée","ctx":["Les cartes renforcent le joueur : la course des rivaux a été recalée comme PB-3 le décide (le planificateur à 50 % en demi-finale et en finale), pour trois cartes et une prise, le planificateur prenant ses cartes au hasard. Le facteur de la demi-finale passe de ×1,16 à ×1,23, celui de la finale de ×1,46 à ×1,55 ; la poule (le planificateur gagne 94 % de ses combats du jour 2) et sa pente de 7,5 % par tour (décision A3) ne bougent pas. Le second tableau de la carte CV-1 montre le résultat : avec la course recalée, le joueur qui ne prend aucune carte perd en titres, le joueur éclairé gagne."],"rec":"Reçu. Un joueur qui choisit bien profite des cartes, un joueur qui n’en prend aucune subit des rivaux plus durs : c’est le prix de ne pas jouer cette voie.","opts":["Reçu","À revoir (en note)"],"recIdx":0,"src":"PB-3 (journal Passe CF3), src/combat/autoData.ts AUTO_RACE, tools/auto-cards.mjs fit"}]}];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function tableOf(t) {
+  const tbl = el('table', {}, t.caption ? el('caption', {}, t.caption) : null,
+    el('thead', {}, el('tr', {}, ...t.head.map((h) => el('th', { scope: 'col' }, h)))),
+    el('tbody', {}, ...t.rows.map((r, i) => el('tr', { class: t.hl === i ? 'pick' : '' }, ...r.map((c, j) => (j === 0 ? el('th', { scope: 'row' }, c) : el('td', {}, c)))))));
+  return el('div', { class: 'tablewrap' }, tbl);
+}
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  for (const t of it.ctx) c.append(el('p', { class: 'ctx' }, t));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  for (const k of it.tables || []) c.append(tableOf(TABLES[k]));
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Cartes du vainqueur — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

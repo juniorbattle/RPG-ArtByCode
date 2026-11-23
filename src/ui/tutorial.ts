@@ -12,7 +12,8 @@ import { RUMOUR, STRONGROOM } from '../simulation/v2intel';
 import { argChance, DISCOUNT } from '../simulation/v2barter';
 import { fameTier, type FameTier } from '../simulation/v2react';
 import { INJURY_HP, TRAIN_MAX } from '../simulation/v2gear';
-import { REN_BASE, TRAIN_HP, TRAIN_POINT, VIGOUR_HP } from '../combat/stats';
+import { CARD, REN_BASE, TRAIN_HP, TRAIN_POINT, VIGOUR_HP } from '../combat/stats';
+import { CARD_RULES } from '../simulation/v2cards';
 import { AUTO_RULES } from '../combat/auto';
 import { AUTO_COOLDOWN, AUTO_WEAPONS } from '../combat/autoData';
 import { CINE_RULE } from '../arena/cineRule';
@@ -185,7 +186,7 @@ export function spotlight(sel: string): () => void {
 
 // ------------------------------------------------------------------------------------------------ the hints (TU-3, TU-8)
 
-export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor' | 'vigour' | 'npcMark' | 'notebook';
+export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor' | 'vigour' | 'npcMark' | 'notebook' | 'card';
 const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> = {
   square: { title: 'tut.hint.square.title', body: 'tut.hint.square.body', chapter: 'places' },
   shop: { title: 'tut.hint.shop.title', body: 'tut.hint.shop.body', chapter: 'shops' },
@@ -204,6 +205,8 @@ const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> =
   npcMark: { title: 'tut.hint.npcMark.title', body: 'tut.hint.npcMark.body', chapter: 'moving' },
   // the first note of Master Corvin's notebook (lot 3 of « La Brute »): where his notebook is
   notebook: { title: 'tut.hint.notebook.title', body: 'tut.hint.notebook.body', chapter: 'prepare' },
+  // a winner's card left waiting (the operator's CL-2, journal Passe CV1): the list holds it until it is taken
+  card: { title: 'tut.hint.card.title', body: 'tut.hint.card.body', chapter: 'prepare' },
 };
 function hintText(s: GameState, id: HintId, who?: string): string {
   const k = HINT[id].body;
@@ -291,7 +294,8 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM, corvin: nameOf('corvin') });
     case 'events': return tx(c.body, { mara: nameOf('mara'), hale: nameOf('hale'), odo: nameOf('odo'), room: STRONGROOM, hilde: nameOf('hilde'), tam: nameOf('tam'), anwen: nameOf('anwen'), corvin: nameOf('corvin'), lio: nameOf('lio') });
     // the duel played by the computer (lot 3, journal Passe LC5): the order of the four, the match sheet, the health of a bout (AUTO_RULES.hpScale, DB5)
-    case 'prepare': return tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen'), rehearse: REHEARSAL.n, cap: SAND_LESSON.cap, sday: SIGNATURE_DAY, lday: LESSON.day, pnext: lessonPrice(4), plast: lessonPrice(5) });
+    case 'prepare': return `${tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen'), rehearse: REHEARSAL.n, cap: SAND_LESSON.cap, sday: SIGNATURE_DAY, lday: LESSON.day, pnext: lessonPrice(4), plast: lessonPrice(5) })}
+${tx('tut.ch.prepare.cards', { offered: CARD_RULES.offered, point: CARD.point, cap: CARD_RULES.levelCap, picks: CARD_RULES.picks })}`;
     // its numbers the duel's own (src/combat/auto.ts AUTO_RULES, src/combat/autoData.ts: the cooldown, the weapons' chains of blows)
     case 'duel': {
       const R = AUTO_RULES, hits = Object.values(AUTO_WEAPONS).map((w) => w.hits.length);

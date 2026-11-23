@@ -2,7 +2,8 @@ import { clamp, type GameState, type V2Gear } from './state';
 import type { ActionDef } from './actions';
 import { isV2 } from './v2';
 import { GEAR, MAX_WEAPON_TIER, SHOPS, TIER_PRICE, WEAPON_TIER_ATK, soldAt, stagePrice, type GearFx, type GearSlot, type ShopId } from './gear';
-import { REN_BASE, TRAINED_STATS, VIGOUR_HP, trainGain, type FighterStats, type TrainedStat } from '../combat/stats';
+import { REN_BASE, STAT_CARDS, TRAINED_STATS, VIGOUR_HP, trainGain, type FighterStats, type TrainedStat } from '../combat/stats';
+import { cardStat } from './v2cards';
 import { AUTO_GEAR_FX, AUTO_PIECE_VIV } from '../combat/autoData';
 import { AUTO_RULES, type AutoGearFx, type AutoStateId } from '../combat/auto';
 import { itemText, tx, type TextKey } from '../narrative/text';
@@ -74,6 +75,8 @@ export function v2Stats(s: GameState): FighterStats {
   st.atk += fx.atk + (s.player.items.includes('whetstone') ? GEAR.whetstone.fx.atk ?? 0 : 0);
   st.def += fx.def; st.end += fx.end; st.viv += fx.viv;
   for (const k of trainedStats(s)) st[k] += trainGain(k);
+  // the winner's cards' lasting points (the operator's CL-2, src/simulation/v2cards.ts)
+  for (const k of STAT_CARDS) st[k] += cardStat(s, k);
   for (const k of Object.keys(st) as Array<keyof FighterStats>) st[k] = +st[k].toFixed(2);
   return st;
 }

@@ -123,20 +123,22 @@ test('IA-04: the lines go by group: the answer, what the place is for, the time 
   assert.equal(L.hereGroup('steal'), 'steal'); assert.equal(L.hereGroup('pickpocket'), 'steal'); assert.equal(L.hereGroup('seize'), 'steal');
   assert.equal(L.hereGroup('rest'), 'time'); assert.equal(L.hereGroup('wait'), 'time'); assert.equal(L.hereGroup('nightfall'), 'time');
   assert.equal(L.hereGroup('answer'), 'answer');
+  // the winner's card (the operator's CL-2, journal Passe CV1) waits first, the list opens on it
+  assert.equal(L.hereGroup('takeCard'), 'card');
   for (const t of ['train', 'drillSkill', 'upgradeWeapon', 'register', 'restitute', 'payWatch', 'work']) assert.equal(L.hereGroup(t), 'do', `${t} is what the place is for`);
-  assert.deepEqual([...L.HERE_GROUPS], ['answer', 'do', 'time', 'steal']);
-  assert.equal(L.opensOn('answer'), true); assert.equal(L.opensOn('do'), true); assert.equal(L.opensOn('time'), false); assert.equal(L.opensOn('steal'), false);
+  assert.deepEqual([...L.HERE_GROUPS], ['card', 'answer', 'do', 'time', 'steal']);
+  assert.equal(L.opensOn('card'), true); assert.equal(L.opensOn('answer'), true); assert.equal(L.opensOn('do'), true); assert.equal(L.opensOn('time'), false); assert.equal(L.opensOn('steal'), false);
 });
 
 test('IA-04: in every place of a game, the grouped list never starts on the time to pass or the theft, and holds the same lines as before', () => {
   for (const name of ['v2-day1-morning', 'v2-forecourt-morning', 'v2-training-morning', 'v2-square-afternoon', 'v2-square-night', 'v2-day2-afternoon', 'v2-training-dusk', 'v2-wanted-night']) {
     const { opts } = lines(name), g = L.groupHere(opts);
-    assert.equal(g.answer.length + g.do.length + g.time.length + g.steal.length, opts.length, `${name}: no line lost or doubled`);
+    assert.equal(g.card.length + g.answer.length + g.do.length + g.time.length + g.steal.length, opts.length, `${name}: no line lost or doubled`);
     for (const grp of L.HERE_GROUPS) for (const o of g[grp]) assert.equal(L.hereGroup(o.action.type), grp, `${name}: a ${o.action.type} line stands in ${grp}`);
     // each group keeps the game's own order
     for (const grp of L.HERE_GROUPS) assert.deepEqual(g[grp], opts.filter((o) => L.hereGroup(o.action.type) === grp), `${name}: ${grp} in the game's order`);
     // the page appends answer, do, (people), time, steal: the first line the keyboard can take is an answer or a `do`, else a person, never the time or the theft
-    const front = [...g.answer, ...g.do].find((o) => o.ok);
+    const front = [...g.card, ...g.answer, ...g.do].find((o) => o.ok);
     if (front) assert.ok(L.opensOn(L.hereGroup(front.action.type)), `${name}: opens on ${front.action.type}`);
     assert.equal(g.time.concat(g.steal).some((o) => L.opensOn(L.hereGroup(o.action.type))), false, `${name}: the time and the theft are not groups the list opens on`);
   }
@@ -150,7 +152,7 @@ test('IA-04: in every place of a game, the grouped list never starts on the time
 test('IA-04: the page draws it: the groups under titles, the people between, the first useful line focused, today\'s game untouched', () => {
   const s = src('src/ui/townUi.ts');
   assert.match(s, /const g = groupHere\(opts\)/);
-  assert.match(s, /if \(v2\) \{\s*if \(g\.answer\.length\) \{ title\('v2\.encounter\.title'\);/, 'the encounter\'s answers under their own title, first (C-17)');
+  assert.match(s, /if \(v2\) \{\s*if \(g\.card\.length\) \{ title\('ui\.group\.card'\); for \(const o of g\.card\) list\.appendChild\(line\(o\)\); \}\s*if \(g\.answer\.length\) \{ title\('v2\.encounter\.title'\);/, 'the winner\'s card first, then the encounter\'s answers under their own title (C-17)');
   assert.match(s, /\} else for \(const o of opts\) list\.appendChild\(line\(o\)\);/, 'today\'s game keeps its list as it was');
   assert.match(s, /if \(v2\) \{ tail\('time', 'ui\.group\.time'\); tail\('steal', 'ui\.group\.steal'\); \}/, 'the time, then the theft, after the people');
   assert.match(s, /\.pm-btn:not\(:disabled\):not\(\[data-group\]\)/, 'the list never opens on the time to pass nor the theft');
