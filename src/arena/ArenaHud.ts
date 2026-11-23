@@ -31,7 +31,10 @@ body:has(.pm-overlay:not(.pm-band)) #arena-hud{opacity:0}
 .ah-port{width:var(--ah-s,72px);height:var(--ah-s,72px);flex:none;image-rendering:pixelated}
 .ah-card{position:relative;width:min(29vw,560px)}
 .ah-nm{display:flex;align-items:baseline;justify-content:space-between;font:400 var(--ds-fs-title)/1.1 var(--ds-title);color:var(--ds-ivory)}
-.ah-nm em{font:400 var(--ds-fs-body)/1 var(--ds-text);font-style:normal;color:var(--ds-ivory)}
+.ah-nm em{font:400 var(--ds-fs-body)/1 var(--ds-text);font-style:normal;color:var(--ds-ivory);white-space:nowrap;flex:none;margin-left:12px}
+.ah-f.r .ah-nm em{margin-left:0;margin-right:12px}
+.ah-nm.long{font-size:calc(var(--ds-fs-title) * 0.78)}
+.ah-nm.xlong{font-size:calc(var(--ds-fs-title) * 0.62)}
 .ah-f.r .ah-nm{flex-direction:row-reverse}
 .ah-hp{position:relative;height:6px;margin-top:10px;background:var(--ds-trough)}
 .ah-hp i,.ah-hp u{position:absolute;top:0;bottom:0;left:0}

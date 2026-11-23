@@ -208,7 +208,8 @@ test('GA-W: the template\'s sword never shows behind another weapon (the operato
   }
   // Master Corvin's note after a townsperson's duel names them (it said « 0 for garrick », found by tools/npc-duel-flow.mjs)
   const NB = await load('/src/ui/notebook.ts');
-  for (const id of Object.keys(NF.NPC_FIGHTERS)) assert.equal(NB.fighterName(id), P.PEOPLE[id]?.name ?? NF.NPC_FIGHTERS[id].name, `${id}: named in the notebook`);
+  // (since journal Passe CH-PNJ a keeper or a passer-by who is no fighter is named by their champion; Wynn and the events' fighters by their own names)
+  for (const id of Object.keys(NF.NPC_FIGHTERS)) assert.equal(NB.fighterName(id), id === 'wynn' || NF.NPC_FIGHTERS[id].name ? (P.PEOPLE[id]?.name ?? NF.NPC_FIGHTERS[id].name) : `${P.PEOPLE[id].name}'s champion`, `${id}: named in the notebook`);
   // the weapon drawn at the common length: the man's brace, whose sword runs 91 texels from his left fist past his right hand, holds a hammer no longer than in the other frames
   const m = NL.NPC_LOOK_FILE.sheets[NL.npcSheetId('m')].weapon.frames['skillDef.1'];
   assert.deepEqual(m, [42, 209, 133, 209], 'the brace\'s line from the crossguard by his left fist to the tip');
@@ -252,7 +253,7 @@ test('GP-08: a restitution lifts a passer-by\'s snub (the guide says the muscle,
   // the guide as the game writes it: who the muscle is, from which goodwill she is hired, how many nights she waits; the fight of a thief caught and the piece taken by force
   const law = TU.CHAPTERS.find((c) => c.id === 'law'), guide = TU.chapterText(st, law);
   assert.match(guide, new RegExp(`brings down to -${-L.LAW.grudge} hires ${P.PEOPLE.corra.name}, who waits for you on the quay at night for ${L.LAW.waits} nights`));
-  assert.match(guide, /or fight them on the sand. Won, you walk away without paying/); assert.match(guide, /demanded by force, on the sand/);
+  assert.match(guide, /or fight on the sand: by day the keeper or the passer-by is no fighter and sends their champion, a fighter in their service and in their colours; at night Wynn fights himself\. Won, you walk away without paying/); assert.match(guide, /demanded by force, on the sand, against their champion/);
   assert.match(guide, /a passer-by you robbed speaks to you again/);
 });
 
@@ -264,7 +265,7 @@ test('GP-13 on the townsfolk\'s fights (the rebase on chantier 2, journal Passe 
   // its stake by kind, no skill to learn and no word of a challenge's vigour
   assert.match(U, /const teach = ch\.reprisal \|\| ch\.kind \? null : challengeSkill\(s, who\);/);
   assert.match(U, /ch\.kind === 'caught' && ch\.caught \? tx\('prep\.challenge\.caught', \{ item: itemName\(ch\.caught\.item\), fine: CAUGHT_LOST \* ch\.caught\.fine \}\)/);
-  assert.match(U, /ch\.kind === 'seize' \? tx\('prep\.challenge\.seize', \{ item: itemName\(PASSERS\[who\]\?\.item \?\? ''\), name, n: SEIZE\.coinsLost \}\)/);
+  assert.match(U, /ch\.kind === 'seize' \? tx\('prep\.challenge\.seize', \{ item: itemName\(PASSERS\[who\]\?\.item \?\? ''\), name: masterName\(who\), n: SEIZE\.coinsLost \}\)/);
   for (const k of ['prep.challenge.caught', 'prep.challenge.seize']) { assert.ok(EN[k], k); assert.ok(FR[k], `${k} in French`); }
   // the words: GP-03 (won, no fine and the piece stays; lost, the fine doubled) and GP-01 (won, the piece and a mark; lost, 10 coins)
   assert.equal(TX.tx('prep.challenge.caught', { item: 'a whetstone', fine: 2 * T.STEAL_FINE.day }), `Won: you walk away without the fine, a whetstone where it was. Lost: the fine doubled, ${2 * T.STEAL_FINE.day} coins.`);

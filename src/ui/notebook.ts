@@ -2,6 +2,7 @@ import { RIVALS } from '../narrative/roster';
 import { GENERICS } from '../narrative/generics';
 import { PEOPLE } from '../narrative/people';
 import { NPC_FIGHTERS } from '../narrative/npcFighters';
+import { masterOf, championName } from '../narrative/champions';
 import { num, tx, word } from '../narrative/text';
 import type { GameState } from '../simulation';
 import type { Advice, BoutNote, NoteSum } from '../combat/autoNotes';
@@ -17,7 +18,7 @@ import { portraitUrl } from './portraits';
  *  Master Corvin's notes on the bouts and challenges against them (src/combat/autoNotes.ts), each with his advice. Opened from the menu and from Master Corvin. */
 
 /** a fighter's name, a rival's, a generic fighter's or, since journal Passe PN1, a townsperson's who fights themselves (« Openings: 1 yours, 0 for garrick » said the raw id) */
-export const fighterName = (id: string): string => RIVALS[id]?.name ?? (GENERICS[id] ? word(GENERICS[id].name) : PEOPLE[id] ? word(PEOPLE[id].name) : NPC_FIGHTERS[id]?.name ?? id);
+export const fighterName = (id: string): string => RIVALS[id]?.name ?? (masterOf(id) ? championName(id) : GENERICS[id] ? word(GENERICS[id].name) : PEOPLE[id] ? word(PEOPLE[id].name) : NPC_FIGHTERS[id]?.name ?? id);
 
 /** an advice in words */
 export function adviceText(a: Advice, foe: string): string {

@@ -14,6 +14,7 @@ import { arrowKeys, closeLabel, el, enterFoot, esc, fillFoot, footBtn, footOf, i
 import { newsLines } from './news';
 import { ENCOUNTERS, encounterOf } from '../simulation/v2encounter';
 import { NPC_FIGHTERS } from '../narrative/npcFighters';
+import { masterOf, masterName, championName, championHead, championTitle } from '../narrative/champions';
 import { QUEST } from '../simulation/v2questData';
 import { skillsPage } from './skills';
 import { cap, itemText, lang, num, said, shortName, skillName, tx, word, type TextKey, type TextRef } from '../narrative/text';
@@ -218,6 +219,8 @@ export function foeIntel(s: GameState, id: string): string {
 
 /** a fighter's name: a person of the town, a fighter of the town, a rival */
 const fighterName = (who: string): string => PEOPLE[who]?.name ?? NPC_FIGHTERS[who]?.name ?? GENERICS[who]?.name ?? RIVALS[who]?.name ?? who;
+/** who stands on the sand: the champion of a keeper or a passer-by who is no fighter (« Mara's champion », src/narrative/champions.ts), else the fighter's own name */
+const foeName = (who: string): string => (masterOf(who) ? championName(who) : fighterName(who));
 
 export class TownUi {
   private veils = [el('div', 'pm-veil'), el('div', 'pm-veil')];
@@ -378,7 +381,7 @@ export class TownUi {
 
   /** the sand's door: a challenge, or a reprisal's muscle waiting there (lot L2b) */
   private sandLabel(s: GameState): string {
-    const c = s.v2?.challenge, name = esc(PEOPLE[c?.who ?? '']?.name ?? NPC_FIGHTERS[c?.who ?? '']?.name ?? c?.who ?? '');
+    const c = s.v2?.challenge, name = esc(c?.who && masterOf(c.who) ? championName(c.who) : PEOPLE[c?.who ?? '']?.name ?? NPC_FIGHTERS[c?.who ?? '']?.name ?? c?.who ?? '');
     // a thief's fight, a passer-by's piece demanded (journal Passe PN1)
     return c?.reprisal ? tx('v2.reprisal.enter', { name }) : c?.kind === 'caught' ? tx('v2.caught.enter', { name }) : c?.kind === 'seize' ? tx('v2.seize.enter', { name }) : c?.kind === 'encounter' ? tx('v2.encounter.enter', { name }) : tx('v2.challenge.enter');
   }
@@ -675,7 +678,7 @@ export class TownUi {
     this.page();
     this.show(skillsPage({
       state: () => this.st, act: (a) => this.host.act(a), close: () => this.leave(),
-      foe: ch.who, foeName: fighterName(ch.who), enterLabel: tx('prep.challenge.go'), pickLabel: tx('prep.challenge.pick'),
+      foe: ch.who, foeName: foeName(ch.who), enterLabel: tx('prep.challenge.go'), pickLabel: tx('prep.challenge.pick'),
       vs: () => { const b = autoBoutOf(this.st, 'challenge'); return b ? { ren: b.ren, foe: b.foe } : null; },
       enter: () => { writeSave(this.st); this.closeModal(); this.host.reload({ scene: 'arena', challenge: '1' }); },
     }, this.challengeSheetHtml(s)));
@@ -685,8 +688,9 @@ export class TownUi {
   /** GP-13's sheet: the head, the opponent, their model, the table, what the player knows, the stake and what a win gives */
   private challengeSheetHtml(s: GameState): string {
     const ch = s.v2?.challenge; if (!ch) return '';
-    const who = ch.who, g = GENERICS[who], r = RIVALS[who], name = fighterName(who), url = portraitUrl(who), b = autoBoutOf(s, 'challenge');
-    const title = r?.epithet ?? g?.epithet ?? (PEOPLE[who] ? titleOf(PEOPLE[who], true) : '');
+    const who = ch.who, g = GENERICS[who], r = RIVALS[who], name = masterOf(who) ? championHead(who) : foeName(who), url = portraitUrl(who), b = autoBoutOf(s, 'challenge');
+    // a keeper or a passer-by who is no fighter is stood for by their champion: « Representing Mara » where a title would stand (the operator's « representant de ... »)
+    const title = masterOf(who) ? championTitle(who) : r?.epithet ?? g?.epithet ?? (PEOPLE[who] ? titleOf(PEOPLE[who], true) : '');
     // a fighter of the town fights on a rival's model (src/narrative/generics.ts), now said (GP-13: « que rien ne dit »)
     const model = g && RIVALS[g.profile] ? RIVALS[g.profile] : null, like = model ? tx('prep.challenge.like', { name, rival: model.name }) : '';
     // what the player knows of their way of fighting: a rival's scouting; a fighter of the town's style once fought (its model's kit)
@@ -694,7 +698,7 @@ export class TownUi {
     // a townsperson's fight (journal Passe PN1): what a win and a loss settle, no skill to learn
     const teach = ch.reprisal || ch.kind ? null : challengeSkill(s, who);
     const stake = ch.kind === 'caught' && ch.caught ? tx('prep.challenge.caught', { item: itemName(ch.caught.item), fine: CAUGHT_LOST * ch.caught.fine })
-      : ch.kind === 'seize' ? tx('prep.challenge.seize', { item: itemName(PASSERS[who]?.item ?? ''), name, n: SEIZE.coinsLost })
+      : ch.kind === 'seize' ? tx('prep.challenge.seize', { item: itemName(PASSERS[who]?.item ?? ''), name: masterName(who), n: SEIZE.coinsLost })
       : ch.kind === 'encounter' && ch.encounter ? (ch.encounter.quest ? tx('prep.challenge.sharps', { price: QUEST.sharpsPrice }) : tx('prep.challenge.encounter', { n: ENCOUNTERS[ch.encounter.id].coins }))
       : ch.reprisal ? tx('prep.challenge.reprisal') : ch.stake === 'coins' ? tx('prep.challenge.stakeCoins', { n: STAKE.coins, back: 2 * STAKE.coins }) : tx('prep.challenge.stakeName', { n: STAKE.name });
     const win = teach ? tx(levelOf(s, teach) > 0 ? 'prep.challenge.raise' : 'prep.challenge.teach', { skill: skillName(teach) }) : '';

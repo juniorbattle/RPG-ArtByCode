@@ -12,6 +12,7 @@ import { PASSERS, passerOpen, passersHere } from './v2barter';
 import { applyReprisal } from './v2law';
 import { GENERICS, MUSCLE } from '../narrative/generics';
 import { NPC_FIGHTERS, npcFighterName } from '../narrative/npcFighters';
+import { masterOf, championName } from '../narrative/champions';
 import { applyEncounterFight } from './v2encounter';
 import { adaptPlan, playerMatch } from '../tournament/pool';
 import { PEOPLE, placeOf, presentAt } from '../narrative/people';
@@ -68,6 +69,8 @@ export function challengeable(s: GameState, who: string): string | null {
 // (the muscle waiting for a debt offers no sport: lot L2b)
 const candidates = (s: GameState): string[] => Object.values(PEOPLE).filter((p) => placeOf(p, true) === s.place && (CHALLENGERS[p.id] || GENERICS[p.id] || (s.day >= RIVALS_CHALLENGE_DAY && RIVALS[p.id])) && !(p.id === MUSCLE && s.v2?.reprisal)).map((p) => p.id);
 const fighterName = (who: string): string => PEOPLE[who]?.name ?? npcFighterName(who) ?? GENERICS[who]?.name ?? RIVALS[who]?.name ?? who;
+/** who stands on the sand against the player: the champion of a keeper or a passer-by who is no fighter (src/narrative/champions.ts), else the fighter's own name */
+const foeName = (who: string): string => (masterOf(who) ? championName(who) : fighterName(who));
 
 /** a stall forced at night (lot L2a, EV-2: « La nuit, les étals fermés se forcent : plus facile, puni plus fort »): a day shop shut at dusk */
 export const forced = (s: GameState, shop: ShopId): boolean => s.slot === 'evening' && !SHOPS[shop].open.includes('evening');
@@ -158,7 +161,7 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
       s.flags[`caught:${s.day}`] = true;
       recordTheft(s, { day: s.day, from: keeper, item, seen: 'caught', ...(night ? { night: true } : {}) });
       s.v2!.caught = { by, from: keeper, item, fine: cap, shop: a.shop, ...(night ? { night: true } : {}) };
-      emit({ kind: 'consequence', id: 'steal:caught', cause: 'action:steal', visible: true, text: tx(night ? 'v2.steal.caughtNightBy' : 'v2.steal.caughtBy', { item: itemName(item), name, by: fighterName(by), fine: cap }) });
+      emit({ kind: 'consequence', id: 'steal:caught', cause: 'action:steal', visible: true, text: night ? tx('v2.steal.caughtNightBy', { item: itemName(item), name, by: fighterName(by), fine: cap }) : tx('v2.steal.caughtBy', { item: itemName(item), name, champion: foeName(by), fine: cap }) });
       registrarOnCatch(s, emit);
     },
   },
@@ -183,7 +186,7 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
       recordTheft(s, { day: s.day, from: a.who, item: p.item, seen: 'caught' });
       // the passer-by holds the player: the fine paid or fought (GP-03)
       s.v2!.caught = { by: a.who, from: a.who, item: p.item, fine: POCKET_FINE };
-      emit({ kind: 'consequence', id: 'pocket:caught', cause: 'action:steal', visible: true, text: tx('v2.pocket.caughtBy', { name, item: itemName(p.item), fine: POCKET_FINE }) });
+      emit({ kind: 'consequence', id: 'pocket:caught', cause: 'action:steal', visible: true, text: tx('v2.pocket.caughtBy', { name, item: itemName(p.item), champion: foeName(a.who), fine: POCKET_FINE }) });
       registrarOnCatch(s, emit);
     },
   },
@@ -201,14 +204,14 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
   fightCatch: {
     by: (_a) => '',
     list: (s) => (isV2(s) && s.v2?.caught ? [{ type: 'fightCatch' }] : []),
-    label: (s) => { const c = s.v2?.caught; return c ? tx('v2.caught.fight', { name: fighterName(c.by), fine: 2 * c.fine }) : ''; },
+    label: (s) => { const c = s.v2?.caught; return c ? tx('v2.caught.fight', { name: foeName(c.by), fine: 2 * c.fine }) : ''; },
     cost: () => 0,
     later: () => 1,
     check: (s) => (!isV2(s) ? tx('v2.only') : !s.v2?.caught ? tx('v2.caught.none') : boutToday(s) ? tx('v2.caught.boutFirst') : null),
     apply: (s, _a, _r, emit) => {
       const c = s.v2!.caught!; delete s.v2!.caught;
       s.v2!.challenge = { who: c.by, day: s.day, kind: 'caught', caught: c };
-      emit({ kind: 'action', id: 'caught:fight', cause: 'action:fightCatch', visible: true, text: tx('v2.caught.fightLog', { name: fighterName(c.by) }) });
+      emit({ kind: 'action', id: 'caught:fight', cause: 'action:fightCatch', visible: true, text: masterOf(c.by) ? tx('v2.caught.fightLogFor', { name: fighterName(c.by), champion: foeName(c.by) }) : tx('v2.caught.fightLog', { name: fighterName(c.by) }) });
     },
   },
   // a passer-by's piece demanded by force (GP-01, GP-02 « Les passants seulement »): a duel on the sand (a slot), once a passer-by and a phase, never the afternoon of the
@@ -216,7 +219,7 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
   seize: {
     by: (a) => a.who,
     list: (s) => passersHere(s).map((who) => ({ type: 'seize' as const, who })),
-    label: (s, a) => tx('v2.seize.label', { name: PEOPLE[a.who].name, item: itemName(PASSERS[a.who].item) }),
+    label: (s, a) => tx('v2.seize.label', { name: PEOPLE[a.who].name, champion: foeName(a.who), item: itemName(PASSERS[a.who].item) }),
     cost: () => 0,
     later: () => 1,
     check: (s, a) => {
@@ -225,12 +228,12 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
       if (boutToday(s)) return tx('refuse.boutFirst');
       if (s.v2?.challenge) return tx('v2.challenge.pending');
       const last = s.v2?.seized?.[a.who];
-      return last !== undefined && phaseOf(last) === phaseOf(s.day) ? tx(phaseOf(s.day) === 1 ? 'v2.seize.oncePool' : 'v2.seize.onceCup', { name: PEOPLE[a.who].name }) : null;
+      return last !== undefined && phaseOf(last) === phaseOf(s.day) ? tx(phaseOf(s.day) === 1 ? 'v2.seize.oncePool' : 'v2.seize.onceCup', { name: PEOPLE[a.who].name, champion: foeName(a.who) }) : null;
     },
     apply: (s, a, _r, emit) => {
       (s.v2!.seized ??= {})[a.who] = s.day;
       s.v2!.challenge = { who: a.who, day: s.day, kind: 'seize' };
-      emit({ kind: 'action', id: 'seize', cause: 'action:seize', visible: true, text: tx('v2.seize.log', { name: PEOPLE[a.who].name, item: itemName(PASSERS[a.who].item) }) });
+      emit({ kind: 'action', id: 'seize', cause: 'action:seize', visible: true, text: tx('v2.seize.log', { name: PEOPLE[a.who].name, champion: foeName(a.who), item: itemName(PASSERS[a.who].item) }) });
     },
   },
   challenge: {
@@ -330,7 +333,7 @@ function payFine(s: GameState, c: V2Caught, mult: number, emit: Emit): void {
   s.player.coins -= fine;
   // a purse that cannot pay a stall's whole fine costs more of the name, as before (lot L2a: by day 12 instead of 8, at night 15 instead of 12)
   if (c.shop && fine < c.fine * mult) s.player.reputation = clamp(s.player.reputation - (c.night ? 3 : 4));
-  emit({ kind: 'consequence', id: mult > 1 ? 'caught:lost' : 'caught:paid', cause: 'action:steal', visible: true, text: tx(mult > 1 ? 'v2.caught.lost' : 'v2.caught.paid', { name: fighterName(c.by), fine }) });
+  emit({ kind: 'consequence', id: mult > 1 ? 'caught:lost' : 'caught:paid', cause: 'action:steal', visible: true, text: mult > 1 && masterOf(c.by) ? tx('v2.caught.lostFor', { name: fighterName(c.by), champion: foeName(c.by), fine }) : tx(mult > 1 ? 'v2.caught.lost' : 'v2.caught.paid', { name: fighterName(c.by), fine }) });
 }
 /** a heavy blow's knockdown wounds as in an official bout (V2B1-1, « A. K.O. par un coup puissant »), the town duels of GP-01 like the reprisal */
 function woundOnHeavy(s: GameState, o: DuelOutcome, cause: string, emit: Emit): void {
@@ -341,7 +344,7 @@ function woundOnHeavy(s: GameState, o: DuelOutcome, cause: string, emit: Emit): 
 /** a thief's fight (GP-03): won, away without a fine, the piece left where it was (the mark already written); lost, the fine doubled */
 function applyCaught(s: GameState, c: V2Caught, o: DuelOutcome, emit: Emit): void {
   keepOutcomeNote(s, o, 'challenge');
-  if (o.winner === 'player') { emit({ kind: 'consequence', id: 'caught:won', cause: 'action:fightCatch', visible: true, text: tx('v2.caught.won', { name: fighterName(c.by), item: itemName(c.item) }) }); return; }
+  if (o.winner === 'player') { emit({ kind: 'consequence', id: 'caught:won', cause: 'action:fightCatch', visible: true, text: masterOf(c.by) ? tx('v2.caught.wonFor', { name: fighterName(c.by), champion: foeName(c.by), item: itemName(c.item) }) : tx('v2.caught.won', { name: fighterName(c.by), item: itemName(c.item) }) }); return; }
   payFine(s, c, CAUGHT_LOST, emit);
   woundOnHeavy(s, o, 'action:fightCatch', emit);
 }
@@ -354,12 +357,12 @@ function applySeize(s: GameState, who: string, o: DuelOutcome, emit: Emit): void
     take(s, p.item); (s.v2!.passed ??= {})[who] = s.day;
     s.player.reputation = clamp(s.player.reputation - SEIZE.repWon); s.town[who] = clamp((s.town[who] ?? 0) - SEIZE.goodwillWon, -100, 100);
     recordTheft(s, { day: s.day, from: who, item: p.item, seen: 'found', seized: true }); mark(s);
-    emit({ kind: 'consequence', id: 'seize:won', cause: 'action:seize', visible: true, text: tx('v2.seize.won', { name, item: itemName(p.item) }) });
+    emit({ kind: 'consequence', id: 'seize:won', cause: 'action:seize', visible: true, text: tx('v2.seize.won', { name, champion: foeName(who), item: itemName(p.item) }) });
     return;
   }
   const paid = Math.min(SEIZE.coinsLost, s.player.coins);
   s.player.coins -= paid; s.player.reputation = clamp(s.player.reputation - SEIZE.repLost);
-  emit({ kind: 'consequence', id: 'seize:lost', cause: 'action:seize', visible: true, text: tx('v2.seize.lost', { name, n: paid }) });
+  emit({ kind: 'consequence', id: 'seize:lost', cause: 'action:seize', visible: true, text: tx('v2.seize.lost', { name, champion: foeName(who), n: paid }) });
   woundOnHeavy(s, o, 'action:seize', emit);
 }
 

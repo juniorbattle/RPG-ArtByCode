@@ -12,6 +12,7 @@ import { stageName } from '../tournament/v2calendar';
 import { GENERICS } from '../narrative/generics';
 import { PEOPLE } from '../narrative/people';
 import { NPC_FIGHTERS } from '../narrative/npcFighters';
+import { masterOf, championHead, championTitle } from '../narrative/champions';
 import { boutPiece } from '../audio/plan';
 import { RIVALS } from '../narrative/roster';
 import { ACTION_NAMES_EN } from '../narrative/texts';
@@ -59,8 +60,9 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     return;
   }
   // a generic fighter of the version 2 (lot L2b): its name and epithet from its own table, the arena's generated fighter in its seat until its sheets
-  // a townsperson who fights themselves (journal Passe PN1: a thief caught, a passer-by's piece demanded): their name and what they are
-  const fid = sheet.sides[1].fighters[0].id, opp = RIVALS[fid] ?? (GENERICS[fid] ? { id: fid, name: GENERICS[fid].name, epithet: GENERICS[fid].epithet } : { id: fid, name: PEOPLE[fid]?.name ?? NPC_FIGHTERS[fid]?.name ?? fid, epithet: PEOPLE[fid]?.title ?? '' });
+  // a townsperson's fight (journal Passe PN1: a thief caught, a passer-by's piece demanded): their champion when they are no fighter (« Mara's champion », « Representing Mara »,
+  // journal Passe CH-PNJ), else their name and what they are
+  const fid = sheet.sides[1].fighters[0].id, opp = RIVALS[fid] ?? (GENERICS[fid] ? { id: fid, name: GENERICS[fid].name, epithet: GENERICS[fid].epithet } : masterOf(fid) ? { id: fid, name: championHead(fid), epithet: championTitle(fid) } : { id: fid, name: PEOPLE[fid]?.name ?? NPC_FIGHTERS[fid]?.name ?? fid, epithet: PEOPLE[fid]?.title ?? '' });
   const reprisal = !!challenge && !!st.v2?.challenge?.reprisal, townKind = challenge ? st.v2?.challenge?.kind : undefined;
   // the slot's day state (the afternoon's bout at midday, journal Passe AD1)
   const q = new URLSearchParams(arenaQuery(st));
@@ -98,7 +100,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   const mods = sheet.sides[0].fighters[0].mods, prep = [mods.hp !== undefined && mods.hp < 1 ? tx('ui.arena.wounded', { pct: Math.round(mods.hp * 100) }) : '', mods.damage && mods.damage > 1 ? tx('ui.arena.damage', { pct: Math.round((mods.damage - 1) * 100), why: `${st.player.items.length ? tx('ui.arena.blade') : ''}${st.player.items.length && st.player.training ? ', ' : ''}${st.player.training ? tx('ui.arena.training') : ''}` }) : ''].filter(Boolean);
   // one preparation screen (journal Passe UM4): the version 2's is its match sheet in the town, here its stage and the name; today's game keeps its report
   // here, in the band at the foot of the screen, the fighters in view; the command bar says the keys
-  const gate = `<p class="pm-sub">${challenge ? tx(reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</p><h2 class="pm-h">${esc(opp.name)}</h2><p class="pm-sub">${esc(opp.epithet)}</p>`;
+  const gate = `<p class="pm-sub">${challenge ? tx(reprisal ? 'v2.challenge.reprisal' : townKind === 'caught' ? 'v2.caught.title' : townKind === 'seize' ? 'v2.seize.title' : townKind === 'encounter' ? 'v2.encounter.fightTitle' : 'v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</p><h2 class="pm-h">${esc(opp.name)}</h2><p class="pm-sub">${esc(opp.epithet)}</p>`;
   // the version 2's gate says the mode (the operator's CM-08: recalled at « Fight ») and that leaving the bout loses it (CM-13)
   const gateV2 = `${gate}<p class="pm-sub">${esc(tx('ui.sk.mode'))}: ${esc(tx(st.v2?.kit.mode === 'manual' ? 'v2.mode.manual' : 'v2.mode.auto'))}</p><p class="pm-sub">${tx('v2.arena.leaveLoses')}</p>`;
   await overlay(v2 ? gateV2 : `${gate}${report}${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }], true).done;

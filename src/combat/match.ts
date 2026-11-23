@@ -8,6 +8,7 @@ import { mix32, hashString } from '../core/rng';
 import { v2DuelData, type V2Duel, type V2Kit } from './v2duel';
 import { GENERICS } from '../narrative/generics';
 import { NPC_BASE, NPC_FIGHTERS } from '../narrative/npcFighters';
+import { masterOf, championName } from '../narrative/champions';
 import { PEOPLE } from '../narrative/people';
 import { borrowedSheet, rivalSheet, stageOf, type FighterStats, type Stage } from './stats';
 
@@ -110,7 +111,7 @@ export function challengeSheetFor(s: GameState): MatchSheet | null {
   if (!g && !r && !n) return null;
   // a townsperson who fights themselves (journal Passe PN1): caught at their stall or their pocket, or challenged for their piece; a seed of its own
   const id = `${ch.reprisal ? 'rp' : ch.kind === 'caught' ? 'cg' : ch.kind === 'seize' ? 'sz' : ch.kind === 'encounter' ? 'en' : 'ch'}:${ch.who}:${ch.day}`;
-  const foe = n ? { id: ch.who, name: PEOPLE[ch.who]?.name ?? n.name ?? ch.who, profile: NPC_BASE, mods: { hp: n.hp, damage: n.damage } }
+  const foe = n ? { id: ch.who, name: masterOf(ch.who) ? championName(ch.who) : PEOPLE[ch.who]?.name ?? n.name ?? ch.who, profile: NPC_BASE, mods: { hp: n.hp, damage: n.damage } }
     : g ? { id: ch.who, name: g.name, profile: g.profile, mods: { hp: g.hp, damage: g.damage } } : { id: ch.who, name: r.name, profile: s.competitors[ch.who].combatProfile, mods: rivalMods(s.competitors[ch.who]) };
   return {
     id, round: 0, day: s.day,

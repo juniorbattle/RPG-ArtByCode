@@ -28,6 +28,7 @@ let failed = 0;
 const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (!ok) failed++; };
 const server = await createServer({ root: path.resolve(import.meta.dirname, '..'), configFile: false, logLevel: 'error', appType: 'custom', cacheDir: 'node_modules/.vite-test', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, optimizeDeps: { noDiscovery: true } });
 const G = await server.ssrLoadModule('/src/simulation/index.ts'), { PEOPLE } = await server.ssrLoadModule('/src/narrative/people.ts'), { NPC_FIGHTERS } = await server.ssrLoadModule('/src/narrative/npcFighters.ts');
+const CH = await server.ssrLoadModule('/src/narrative/champions.ts');
 const { PASSERS } = await server.ssrLoadModule('/src/simulation/v2barter.ts'), AM = await server.ssrLoadModule('/src/combat/autoMatch.ts');
 const TXT = await server.ssrLoadModule('/src/narrative/text/index.ts'), FR = (await server.ssrLoadModule('/src/narrative/text/fr-texts.ts')).FR_TEXTS, { itemName } = await server.ssrLoadModule('/src/simulation/v2gear.ts');
 /** a text of the page's language (the table's own words, its slots filled with the page's words) */
@@ -76,7 +77,8 @@ try {
   const open = async (url) => { await page.goto(`${BASE}${url}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); const e = await page.evaluate(() => window.__error ?? null); check(!e, `page ${url} ready${e ? `: ${e}` : ''}`); };
   const run = async (a) => { const r = await page.evaluate((x) => window.__ui.run(x), a); check(r.ok, `run ${JSON.stringify(a).slice(0, 70)}${r.ok ? '' : `: ${r.reason}`}`); if (r.ok) done.push(a); return r; };
   await open(q);
-  const name = PEOPLE[who].name;
+  // journal Passe CH-PNJ: a keeper or a passer-by who is no fighter is stood for on the sand by their champion (« Mara's champion », « Representing Mara »); Wynn of the watch fights himself
+  const name = PEOPLE[who].name, isChamp = !!CH.masterOf(who), shown = inLang(() => TXT.word(name)), foe = isChamp ? inLang(() => CH.championName(who)) : shown, rep = isChamp ? inLang(() => CH.championTitle(who)) : '';
   if (kind === 'caught') {
     // the news band read and closed, the holder's band opens by itself: their words, the fine and the fight on its two buttons, their face
     await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());
@@ -85,23 +87,24 @@ try {
     check(!!band, 'the holder\'s band opens on the town page by itself');
     if (band) {
       // (a button's price is its tag: « (15 coins) » leaves the label for the tag beside it)
-      const pay = say('v2.caught.pay', { name, fine: Math.min(fine, coins0) }), fight = say('v2.caught.fight', { name, fine: 2 * fine }), payWords = pay.replace(/ \([^)]*\)$/, '');
+      const pay = say('v2.caught.pay', { name, fine: Math.min(fine, coins0) }), fight = say('v2.caught.fight', { name: foe, fine: 2 * fine }), payWords = pay.replace(/ \([^)]*\)$/, '');
       const payBtn = band.buttons.find((t) => t.startsWith(payWords));
       check(!!payBtn && payBtn.includes(String(Math.min(fine, coins0))) && band.buttons.some((t) => t.includes(fight)), `pay or fight: « ${payBtn} » / « ${fight} » (${JSON.stringify(band.buttons)})`);
       check(!/ (my|mon) (a|an|un|une) /.test(band.text), `the holder's words read: ${band.text.slice(0, 120)}`);
-      check(band.text.includes(name), `${name} holds you`);
-      check(band.face.startsWith('data:image/png'), `${name}'s face in the band: ${band.face}`);
+      check(band.text.includes(shown), `${shown} holds you`);
+      check(isChamp ? /champion/.test(band.text) : !/champion/.test(band.text), `${shown}'s words ${isChamp ? 'send for their champion' : 'name no champion'}: ${band.text.slice(0, 140)}`);
+      check(band.face.startsWith('data:image/png'), `${shown}'s face in the band: ${band.face}`);
     }
     await new Promise((r) => setTimeout(r, 500)); // (the band's fade in)
     await page.screenshot({ path: path.join(outDir, `${kind}-${who}-${mode}-0-held.png`) });
     // the fight chosen through the band's button (an action of the game, replayed)
-    const clicked = await page.evaluate((t) => { const x = [...document.querySelectorAll('.pm-talk[data-caught="1"] .pm-btn')].find((y) => y.textContent.includes(t)); x?.click(); return !!x; }, say('v2.caught.fight', { name, fine: 2 * fine }));
+    const clicked = await page.evaluate((t) => { const x = [...document.querySelectorAll('.pm-talk[data-caught="1"] .pm-btn')].find((y) => y.textContent.includes(t)); x?.click(); return !!x; }, say('v2.caught.fight', { name: foe, fine: 2 * fine }));
     check(clicked, 'the fight chosen');
     done.push({ type: 'fightCatch' });
   } else {
     await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());
     const talk = await page.evaluate((w) => { window.__ui.openPerson(w); const r = document.querySelector('.pm-talk'); return { buttons: [...(r?.querySelectorAll('.pm-btn') ?? [])].map((x) => x.textContent), face: r?.querySelector('img')?.getAttribute('src')?.slice(0, 22) ?? 'none' }; }, who);
-    const demand = say('v2.seize.label', { item: inLang(() => itemName(PASSERS[who].item)), name });
+    const demand = say('v2.seize.label', { item: inLang(() => itemName(PASSERS[who].item)), name, champion: foe });
     const tag = talk.buttons.find((t) => t.includes(demand));
     check(!!tag && /1 (slot|créneau)/.test(tag), `the piece demanded by force, its slot in its tag: ${tag ?? `(none of ${JSON.stringify(talk.buttons)} says « ${demand} »)`}`);
     check(talk.face.startsWith('data:image/png'), `${name}'s face in the dialogue: ${talk.face}`);
@@ -111,7 +114,7 @@ try {
     await run({ type: 'seize', who });
     // the sand's door on the list's key
     const label = await page.evaluate(() => { window.__ui.openHere(); const x = [...document.querySelectorAll('.pm-talk .pm-btn.primary')][0]; const t = x?.textContent ?? ''; x?.click(); return t; });
-    check(label.includes(say('v2.seize.enter', { name })), `the sand's door: ${label}`);
+    check(label.includes(say('v2.seize.enter', { name: foe })), `the sand's door: ${label}`);
   }
   // the short sheet before the sand (the operator's GP-13 « Une fiche courte avant un défi », journal Passe GP3: every fight waiting there takes it since this chantier's
   // rebase on it): the townsperson, both fighters' table, what a win and a loss settle; Enter goes onto the sand
@@ -121,7 +124,8 @@ try {
   if (sheet) {
     const stake = kind === 'caught' ? say('prep.challenge.caught', { item: inLang(() => itemName(s0.v2.caught.item)), fine: 2 * fine })
       : say('prep.challenge.seize', { item: inLang(() => itemName(PASSERS[who].item)), name, n: 10 });
-    check(sheet.text.includes(name) && sheet.vs, `the sheet: ${name} and both fighters' table`);
+    check(sheet.text.toLowerCase().includes(foe.toLowerCase()) && sheet.vs, `the sheet: ${foe} and both fighters' table`);
+    check(!isChamp || sheet.text.includes(rep), `the sheet says who they stand for: ${rep || '(their own fight)'}`);
     check(sheet.text.includes(say(kind === 'caught' ? 'v2.caught.title' : 'v2.seize.title')), 'the sheet says which fight it is');
     check(sheet.text.includes(stake), `what a win and a loss settle: ${stake}`);
     check(!sheet.text.includes(say('v2.result.noVigour')), 'no word of a challenge\'s vigour');
@@ -135,15 +139,24 @@ try {
   check(/scene=arena/.test(to ?? '') && /challenge=1/.test(to ?? ''), `the town goes to ${to}`);
   await open(to);
   const seen = await page.evaluate(() => { const a = window.__arena, st = a.snapshot(); return { names: [a.sim.D.fighters.ren.name, a.sim.D.fighters.marek.name], hp: [a.sim.f.marek.hp, a.sim.f.marek.maxHp], rules: a.rules, stands: !!st.stands, fans: st.fans, empty: !!a.opts.match?.empty, piece: a.opts.match?.piece, hud: document.querySelector('#arena-hud')?.getAttribute('aria-label') ?? '', sub: document.querySelector('#arena-hud')?.textContent ?? '' }; });
-  check(seen.rules === 'auto' && seen.names[0] === 'Aster' && seen.names[1] === name, `the arena seats ${seen.names.join(' vs ')} (${seen.rules})`);
+  check(seen.rules === 'auto' && seen.names[0] === 'Aster' && seen.names[1].toLowerCase() === foe.toLowerCase(), `the arena seats ${seen.names.join(' vs ')} (${seen.rules})`);
   check(seen.empty && !seen.stands && seen.fans === 0, `the stands empty: no townsfolk (${seen.stands}), no generated spectator (${seen.fans})`);
   check(seen.piece === 'lices', `the lists' piece: ${seen.piece}`);
-  check(seen.hp[0] === seen.hp[1], `${name} at full health: ${seen.hp.join(' / ')}`);
+  check(seen.hp[0] === seen.hp[1], `${foe} at full health: ${seen.hp.join(' / ')}`);
   const title = say(kind === 'caught' ? 'v2.caught.title' : 'v2.seize.title');
   check(seen.hud.includes(title) || seen.sub.includes(title), `the HUD says it: ${title}`);
+  check((await page.evaluate(() => document.querySelector('.pm-overlay')?.textContent ?? '')).includes(title), `the gate says which fight it is: ${title}`);
+  // the HUD's name stays on one line, whole, in the embedded font at 16 px or more (14 on a phone): a long « Lady Edda's champion » wrapped and pushed the health figure under its bar
+  const nm = await page.evaluate(() => { const e = document.querySelector('#ah-marek .ah-nm'), r = e.getBoundingClientRect(), em = e.querySelector('em').getBoundingClientRect(), fs = parseFloat(getComputedStyle(e).fontSize), box = e.parentElement.getBoundingClientRect(); return { h: r.height, fs, emTop: em.top - r.top, right: Math.max(r.right, em.right), cardRight: box.right + 2, w: r.width, scroll: e.scrollWidth }; });
+  const phoneSize = W <= 700 || H <= 480;
+  // (on a phone held sideways the longest French name, « Le champion de maître Corvin », wraps onto three lines of 14.9 px, whole and clipped by nothing: a recorded limit)
+  check(nm.h <= nm.fs * 1.5 * (phoneSize ? 3 : 1) && nm.fs >= (phoneSize ? 14 : 16) && nm.scroll <= nm.w + 1, `the HUD's name ${phoneSize ? 'in at most three lines' : 'on one line'}, ${nm.fs.toFixed(1)} px, ${nm.h.toFixed(0)} px high`);
   const worn = await page.evaluate(() => window.__arena.sheets?.info.sheets.map((s) => `${s.id} ${s.runtimeUse}`).join(', ') ?? 'none');
   check(worn === `hero-x3-combat production, npc-${tmpl}-x3-combat production`, `the sheets worn: ${worn}`);
   await page.screenshot({ path: path.join(outDir, `${kind}-${who}-${mode}-1-gate.png`) });
+  const gate = await page.evaluate(() => document.querySelector('.pm-overlay')?.textContent ?? '');
+  check(gate.toLowerCase().includes(foe.toLowerCase()) && (!isChamp || gate.includes(rep)), `the gate before the sand says ${foe}${isChamp ? ` and « ${rep} »` : ''}: ${gate.slice(0, 120)}`);
+  check(await page.evaluate((t) => document.body.textContent.toLowerCase().includes(t), foe.toLowerCase()), `the HUD names ${foe}`);
   await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());
   await page.evaluate(() => { const a = window.__arena; for (let i = 0; i < 60 * 25; i++) a.update(1 / 60); });
   await page.screenshot({ path: path.join(outDir, `${kind}-${who}-${mode}-2-sand.png`) });
@@ -154,6 +167,8 @@ try {
   await page.waitForSelector('.pm-overlay .pm-btn', { timeout: 20000 });
   await page.screenshot({ path: path.join(outDir, `${kind}-${who}-${mode}-3-result.png`) });
   const outcome = await page.evaluate(() => window.__outcome);
+  const result = await page.evaluate(() => document.querySelector('.pm-overlay')?.textContent ?? '');
+  check(!isChamp || result.toLowerCase().includes(foe.toLowerCase()), `the result screen names ${foe}: ${result.slice(0, 160)}`);
   check(end.over && outcome.winner === want, `the bout ends: ${outcome.winner} wins at ${end.t.toFixed(1)} s`);
   check(outcome.winner === node.winner && outcome.playerHp === node.playerHp && outcome.opponentHp === node.opponentHp, `the arena's duel is the game's (${node.winner} at ${node.duel.t} s)`);
   await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn').click());
