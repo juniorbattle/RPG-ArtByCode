@@ -1823,6 +1823,16 @@ Deux tâches à part, chacune dans sa séance, l'une après l'autre : le choix d
 ### 43.4 Un écart consigné
 Le joueur ne peut pas saboter un rival ; le sabotage du jeu est subi. Écart entre l'énoncé de l'opérateur et le jeu, jamais tranché par un agent : journal Passe CL1.
 
+## 44. Le joueur saboteur : une forme décidée (23/11/2026, journal Passe CL2)
+
+Statut : décidé, **non construit**. Aucune décision A3 ; aucun contrat ne change. Il lève l'écart du § 43.4.
+
+- **SB-1 « Oui, une forme : couper une sangle de l’adversaire la veille d’un combat de tableau »**, sa note : « Il faudrait que cela soit sophistique afin de pas rendre l'action facile et accessible pour tous... plus on avance dans les jours et donc le tournoi, plus le sabotage en devient plus dur ».
+- **SB-2 « Plus dur que le vol : vu, c’est tout de suite l’avertissement du greffier et un point de la poule »**.
+- **SB-3 « Le laboratoire mesure et te montre le chiffre avant de le fixer »**.
+
+À construire dans une séance à part, après le choix du vainqueur et le panache (§ 43.3) : d'abord une fiche courte (les étapes de l'action, la courbe de difficulté par jour, la rancune du rival), puis la mesure de la force, puis la construction.
+
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
 Passe AU3, en réponse au chantier n° 1 de la Passe AU2 :

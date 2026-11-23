@@ -306,6 +306,30 @@ Les voies, ce que chacune coûte, d'après le jeu tel qu'il est : la **préparat
 - **Un dossier qui sert le jeu est une branche** : le dossier principal de l'opérateur n'avait pas reçu neuf commits fusionnés ; « fusionné » ne veut pas dire « à l'écran ». Dire, après une fusion, que le dossier qui sert l'adresse l'a reçue.
 - **Une proposition ancienne n'est pas une dette** : trois idées de la fiche du 13/11 étaient devenues sans objet parce que le jeu avait pris une autre route ; les clore par une décision datée évite qu'une séance les rebâtisse.
 
+## Passe CL2 — Le joueur saboteur : la fiche du sabotage relue, une forme décidée (2026-11-23)
+
+### La demande
+- La lacune de la Passe CL1 (le joueur ne peut pas saboter un rival) a été posée à l'opérateur en une question : « Le joueur doit-il pouvoir saboter un rival ? ». Sa réponse : « Oui, prépare une fiche ». La fiche : https://claude.ai/artifact/RnbB1jRQ75wr8CYkKRB5fM (trois cartes, `briefs/` n'en garde pas de copie : la page est publiée avec la base `decisions`).
+
+### Les choix, mot pour mot (`decisions` relue)
+- **SB-1 « Oui, une forme : couper une sangle de l’adversaire la veille d’un combat de tableau »** (la recommandation), avec sa note, mot pour mot : « Il faudrait que cela soit sophistique afin de pas rendre l'action facile et accessible pour tous... plus on avance dans les jours et donc le tournoi, plus le sabotage en devient plus dur ».
+- **SB-2 « Plus dur que le vol : vu, c’est tout de suite l’avertissement du greffier et un point de la poule »** (pas la recommandation, qui était « Les mêmes règles que le vol : une marque de Hale si tu es vu, la rancune du rival »).
+- **SB-3 « Le laboratoire mesure et te montre le chiffre avant de le fixer »** (la recommandation).
+- Aucune décision A3 : aucun verrou des contrats ne change ; les contrats ne sont pas touchés.
+
+### Ce que cela fixe — [OK]
+- **Le sabotage devient une voie du joueur, sous une seule forme** : la sangle de l'adversaire coupée la veille d'un combat de tableau, le miroir de ce que Cassius fait au joueur (`v2-gear-tamper`, +15 % de dégâts subis ce jour-là aujourd'hui). La lacune de la Passe CL1 est levée : elle devient une tâche.
+- **Une action élaborée, de plus en plus dure** (la note) : pas un bouton ; plusieurs étapes à préparer, et plus les jours avancent, plus c'est difficile. Ni les étapes ni la courbe ne sont décidées : la séance de construction les propose sur une fiche courte, avant de construire.
+- **Plus grave que le vol** (SB-2) : être vu coûte tout de suite l'avertissement du greffier et un point de la poule, sans passer par les marques du registre de Hale. L'option choisie ne parlait pas de la rancune du rival : la séance de construction dit ce qui s'applique de la mémoire des rivaux (`stanceOf`, `src/simulation/v2rivals.ts`) et le propose.
+- **La force mesurée avant d'être fixée** (SB-3) : le laboratoire (`tools/tournament-lab.mjs`, `tools/auto-lab.mjs`) mesure le chiffre sur des parties entières (le planificateur, la référence, le curieux, la durée des combats) et le montre ; l'ancien +15 % n'est pas repris sans mesure.
+
+### Reste à construire — une tâche à part, non commencée
+Le sabotage du joueur, dans sa séance, **après** la séance « Choix du vainqueur, puis renommée du panache » (elle touche l'écran de résultat et la fiche de match ; une seule séance écrit sur ces fichiers à la fois). Sa première étape : la fiche courte des étapes, de la courbe et de la rancune, puis la mesure de la force (SB-3), puis la construction.
+
+### Pensée
+- **Une recommandation non suivie dit quelque chose** : l'opérateur a voulu le sabotage plus grave que le vol (SB-2) ; le jeu a deux gravités, et saboter un adversaire, c'est toucher à l'autre plus qu'à un étal.
+- **Une note qui change la forme** : « sophistiqué, plus dur avec les jours » demande une action en plusieurs temps, pas la copie du vol ; elle se décide avant la construction.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -319,7 +343,7 @@ Les voies, ce que chacune coûte, d'après le jeu tel qu'il est : la **préparat
 
 **00d. Les champions des PNJ (Passe CH-PNJ, 23/11)** : la demande de l'opérateur (« …ce sont des combattants au services des pnjs qui decide de se battre contre toi… representant de ... »), construite et fusionnée : un marchand qui prend un voleur et un passant volé ou pressé sont représentés sur le sable par leur champion (« le champion de Mara », « Représentant de Mara »), dit dans la bande, le journal, la fiche courte, la porte, la HUD, le résultat, le carnet et le guide ; Wynn, les combattants des événements, les six de la ville et les rivaux gardent leur nom ; aucune règle changée ; **et visuellement** (le complément de l'opérateur, « PNJ en bordure + portraits », Passe CH-PNJ2) le mandant se tient au bord droit des lices dans sa feuille de ville, avec son visage et « Representing … » sur la carte du champion et la porte. **Reste** : l'essai en jeu de l'opérateur sur les mots (`champion.*`, `v2.caught.*For`, `v2.seize.*`, changeables sans toucher au code) ; le nom le plus long de la HUD à 568 × 320 en français (trois lignes), la majuscule de `championHead` dans une leçon française du premier duel : voir la passe.
 
-**00e. Le concept du jeu clos (Passe CL1, 23/11)** : l'énoncé de l'opérateur consigné (AGENTS.md, section Status) ; les lots 4 et 5 de « La Brute » clos (`briefs/combat-auto.md` § 43) ; les talents abandonnés (CL-1) ; **à construire, deux tâches à part, chacune dans sa séance, l'une après l'autre : le choix du vainqueur** (CL-2 : une carte après chaque victoire parmi un point de stat, un niveau de compétence, une bourse ; le nombre de cartes à mesurer et à montrer à l'opérateur, sa note « pk pas + ? » ; la bourse et la course recalées) **puis la renommée du panache** (CL-3 : un coup d'éclat dans une faille, une interruption, une parade, comptés sur le script du duel, dits sur l'écran de résultat) ; **écart consigné [?]** : le joueur ne peut pas saboter un rival (le sabotage est subi), alors que l'énoncé de l'opérateur le compte parmi les moyens : à lui de dire s'il doit pouvoir le faire et à quel prix ; **le dossier principal est maintenant sur `main`** (il avait 9 commits de retard).
+**00e. Le concept du jeu clos (Passe CL1, 23/11)** : l'énoncé de l'opérateur consigné (AGENTS.md, section Status) ; les lots 4 et 5 de « La Brute » clos (`briefs/combat-auto.md` § 43) ; les talents abandonnés (CL-1) ; **à construire, deux tâches à part, chacune dans sa séance, l'une après l'autre : le choix du vainqueur** (CL-2 : une carte après chaque victoire parmi un point de stat, un niveau de compétence, une bourse ; le nombre de cartes à mesurer et à montrer à l'opérateur, sa note « pk pas + ? » ; la bourse et la course recalées) **puis la renommée du panache** (CL-3 : un coup d'éclat dans une faille, une interruption, une parade, comptés sur le script du duel, dits sur l'écran de résultat) ; **le sabotage du joueur décidé (Passe CL2, `briefs/combat-auto.md` § 44), une troisième tâche à part, après les deux précédentes** : une forme, la sangle de l'adversaire coupée la veille d'un combat de tableau ; une action élaborée, de plus en plus dure avec les jours (sa note) ; plus grave que le vol (vu : l'avertissement du greffier et un point de la poule, tout de suite) ; la force mesurée avant d'être fixée ; sa séance commence par une fiche courte (les étapes, la courbe de difficulté, la rancune du rival) ; **le dossier principal est maintenant sur `main`** (il avait 9 commits de retard).
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
