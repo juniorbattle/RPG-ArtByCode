@@ -2252,4 +2252,9 @@ export const FR_TEXTS: Record<string, string> = {
   "tut.hint.card.title": "Une carte du vainqueur vous attend",
   "tut.hint.card.body": "Chaque combat du tournoi que vous gagnez vous offre quelques cartes : un point durable d’une statistique, un niveau pour l’une des compétences que vous emportez, ou la bourse du combat une seconde fois. Prenez-en une dans la liste ; l’offre attend que vous le fassiez, et une carte change votre prochain combat.",
   "tut.ch.prepare.cards": "La carte du vainqueur. Après chaque combat du tournoi que vous gagnez, le jeu tire {offered} cartes : un point durable d’une statistique (+{point}), un niveau pour l’une des compétences que vous emportez (jusqu’au niveau {cap} ; les leçons de maître Corvin vont plus loin), ou la bourse du combat une seconde fois. Vous en prenez {picks}. Elle est à vous aussitôt et les autres sont perdues ; si vous quittez la page du résultat, l’offre attend dans la liste.",
+  "v2.flair.earned": "La foule a vu votre panache : {parts}. +{n} de renommée.",
+  "v2.flair.exploit": "coups d’éclat dans une faille ×{n}",
+  "v2.flair.cut": "interruptions ×{n}",
+  "v2.flair.parry": "parades ×{n}",
+  "tut.ch.renown.flair": "Le panache fait monter la renommée aussi. Dans un combat du tournoi, un coup d’éclat qui touche dans une faille ou une rupture, une interruption qui coupe une grosse action et une parade donnent {exploit}, {cut} et {parry} de renommée chacune, au plus {cap} par combat, gagné ou perdu : la foule applaudit un style. La page du résultat dit ce qu’elle a vu. Rien d’autre ne change : ni pièces, ni mécènes.",
 };

@@ -14,6 +14,7 @@ import { fameTier, type FameTier } from '../simulation/v2react';
 import { INJURY_HP, TRAIN_MAX } from '../simulation/v2gear';
 import { CARD, REN_BASE, TRAIN_HP, TRAIN_POINT, VIGOUR_HP } from '../combat/stats';
 import { CARD_RULES } from '../simulation/v2cards';
+import { FLAIR } from '../simulation/v2flair';
 import { AUTO_RULES } from '../combat/auto';
 import { AUTO_COOLDOWN, AUTO_WEAPONS } from '../combat/autoData';
 import { CINE_RULE } from '../arena/cineRule';
@@ -303,7 +304,8 @@ ${tx('tut.ch.prepare.cards', { offered: CARD_RULES.offered, point: CARD.point, c
       return tx(c.body, { cool: AUTO_COOLDOWN, lo: Math.min(...hits), hi: Math.max(...hits), times: R.react.skillGuard, glo: pct(R.guard.lo), ghi: pct(R.guard.hi), stun: R.brk.stun, dmg: R.brk.dmg, form: pct(R.form),
         open: Math.round((R.open.dmg - 1) * 100), opener: R.opener, cut: R.interrupt.open, parry: R.parry.open, whiff: R.whiff, w: R.clash.w, cmax: CINE_RULE.max ?? 0, cgap: CINE_RULE.gap ?? 0 });
     }
-    case 'renown': return tx(c.body, { hale: nameOf('hale'), parade: Math.max(...daysOfKind('free')) });
+    // the panache (the operator's CL-3, journal Passe CV2): what the crowd sees of a bout and what it gives, read from the table
+    case 'renown': return `${tx(c.body, { hale: nameOf('hale'), parade: Math.max(...daysOfKind('free')) })}\n${tx('tut.ch.renown.flair', { exploit: FLAIR.exploit, cut: FLAIR.cut, parry: FLAIR.parry, cap: FLAIR.cap })}`;
     case 'time': return tx(c.body, { slot: tx('ui.oneSlot') });
     // the marks over the heads and the plan in the corner (MK-11), a line after the chapter's text
     case 'moving': return `${tx(c.body)}\n${tx('tut.ch.moving.marks')}\n${tx('tut.ch.moving.todo')}`;

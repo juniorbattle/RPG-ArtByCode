@@ -2036,6 +2036,11 @@ export const EN = {
   'tut.hint.card.title': 'A winner\'s card waits',
   'tut.hint.card.body': 'Each bout of the tournament you win offers you a few cards: a lasting point of a stat, a level for one of the skills you bring, or the bout\'s purse once more. Take one from the list; the offer waits until you do, and a card changes your next bout.',
   'tut.ch.prepare.cards': 'The winner\'s card. After each bout of the tournament you win, the game draws {offered} cards: a lasting point of a stat (+{point}), a level for one of the skills you bring (up to level {cap}; Master Corvin\'s lessons go further), or the bout\'s purse once more. You take {picks} of them. It is yours at once and the others are lost; if you leave the result page, the offer waits in the list.',
+  'v2.flair.earned': 'The crowd saw your style: {parts}. +{n} fame.',
+  'v2.flair.exploit': 'exploits in an opening ×{n}',
+  'v2.flair.cut': 'interruptions ×{n}',
+  'v2.flair.parry': 'parries ×{n}',
+  'tut.ch.renown.flair': 'Style raises fame too. In a bout of the tournament, an exploit that lands in an opening or a break, an interruption that cuts a big action and a parry give {exploit}, {cut} and {parry} fame each, at most {cap} a bout, won or lost: the crowd cheers a style. The result page says what it saw. Nothing else changes: no coins, no patrons.',
 } as const;
 
 export type TextKey = keyof typeof EN;

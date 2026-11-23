@@ -31,6 +31,9 @@ export interface BoutNote {
   /** the opponent's offensive skill that did Ren the most harm */
   foeTop?: { id: string; dmg: number };
   clashes: number;
+  /** Ren's panache (the operator's CL-3 « Renommée seule, comptée sur le script du duel », journal Passe CV2; src/simulation/v2flair.ts): the exploits of his that landed in an opening,
+   *  a break or on an action being charged, the interruptions he made, the parries he made; absent from a note of before */
+  flair?: { exploits: number; cuts: number; parries: number };
   /** the harmful states (the operator's GE-8 « Ainsi », journal Passe GP4-2): the damage the opponent's did to Ren by state, Ren's to the opponent, and the blows each
    *  side's blindness made miss; absent when no state took hold */
   states?: { taken: Partial<Record<AutoStateId, number>>; dealt: Partial<Record<AutoStateId, number>>; missed: [number, number] };
@@ -56,7 +59,7 @@ export function boutNote(r: AutoResult, ren: AutoFighter, foe: AutoFighter, meta
   const sk = (id?: string) => skills.find((x) => x.id === id);
   const dmg: [number, number, number] = [0, 0, 0], taken: [number, number, number] = [0, 0, 0], breaks: [number, number] = [0, 0];
   const foeDmg = new Map<string, number>();
-  let inOpen = 0, clashes = 0, cut = 0, anyState = false;
+  let inOpen = 0, clashes = 0, cut = 0, parried = 0, exploitsClean = 0, anyState = false;
   const st = { taken: {} as Partial<Record<AutoStateId, number>>, dealt: {} as Partial<Record<AutoStateId, number>>, missed: [0, 0] as [number, number] };
   const feint = ren.skills.find((a) => a.role === 'interrupt');
   for (const e of r.log as AutoEvent[]) {
@@ -82,7 +85,7 @@ export function boutNote(r: AutoResult, ren: AutoFighter, foe: AutoFighter, meta
         if (i === 0 && a.kind === 'skill') {
           const x = sk(a.id)!;
           if (first && e.ev === 'dodged') x.void++;
-          if (first && e.ev !== 'dodged') { x.landed++; if (broken || open || exposed) x.clean++; }
+          if (first && e.ev !== 'dodged') { x.landed++; if (broken || open || exposed) { x.clean++; if (a.role === 'exploit') exploitsClean++; } }
           x.dmg += d;
         }
         if (me.combo && me.combo.left <= 0) me.combo = null;
@@ -107,6 +110,7 @@ export function boutNote(r: AutoResult, ren: AutoFighter, foe: AutoFighter, meta
         // `who` parried its opponent's blow (e.act): the striker open, the rest of its enchaînement lost
         const c = e.act ? acts[o].get(e.act) : undefined;
         it.openUntil = Math.max(it.openUntil, e.t + R.parry.open); it.combo = null; it.charging = null;
+        if (i === 0) parried++;
         if (o === 0 && c?.kind === 'skill') { const x = sk(c.id)!; x.void++; }
         break;
       }
@@ -124,7 +128,7 @@ export function boutNote(r: AutoResult, ren: AutoFighter, foe: AutoFighter, meta
   let foeTop: BoutNote['foeTop'];
   for (const [id, d] of foeDmg) if (d > 0 && (!foeTop || d > foeTop.dmg)) foeTop = { id, dmg: d };
   const won = (r.winner ?? (r.hp[0] / r.maxHp[0] >= r.hp[1] / r.maxHp[1] ? 0 : 1)) === 0;
-  const note: BoutNote = { day: meta.day, foe: meta.foe, kind: meta.kind, won, t: r.t, dmg, taken, open: [r.n[0].opened, r.n[1].opened], breaks, inOpen, skills, ...(foeTop ? { foeTop } : {}), clashes, ...(anyState ? { states: st } : {}), advice: { k: 'keep' } };
+  const note: BoutNote = { day: meta.day, foe: meta.foe, kind: meta.kind, won, t: r.t, dmg, taken, open: [r.n[0].opened, r.n[1].opened], breaks, inOpen, skills, ...(foeTop ? { foeTop } : {}), clashes, flair: { exploits: exploitsClean, cuts: cut, parries: parried }, ...(anyState ? { states: st } : {}), advice: { k: 'keep' } };
   note.advice = adviceOf(note, ren, feint?.id, cut, r.n[0].wasted, foe);
   return note;
 }

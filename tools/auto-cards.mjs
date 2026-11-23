@@ -21,9 +21,10 @@ const CARDS = await server.ssrLoadModule('/src/simulation/v2cards.ts');
 const ST = await server.ssrLoadModule('/src/combat/stats.ts');
 const PULSE = await server.ssrLoadModule('/src/tournament/pulse.ts');
 const REACT = await server.ssrLoadModule('/src/simulation/v2react.ts');
+const FL = await server.ssrLoadModule('/src/simulation/v2flair.ts');
 
 /** the numbers a run may change */
-export const TABLES = { CARDS: { offered: [CARDS.CARD_RULES, 'offered'], picks: [CARDS.CARD_RULES, 'picks'], purse: [CARDS.CARD_RULES, 'purse'], levelCap: [CARDS.CARD_RULES, 'levelCap'], point: [ST.CARD, 'point'] } };
+export const TABLES = { FLAIR: { exploit: [FL.FLAIR, 'exploit'], cut: [FL.FLAIR, 'cut'], parry: [FL.FLAIR, 'parry'], cap: [FL.FLAIR, 'cap'] }, CARDS: { offered: [CARDS.CARD_RULES, 'offered'], picks: [CARDS.CARD_RULES, 'picks'], purse: [CARDS.CARD_RULES, 'purse'], levelCap: [CARDS.CARD_RULES, 'levelCap'], point: [ST.CARD, 'point'] } };
 export function setNumbers(spec) {
   const keep = [];
   for (const kv of spec.split(',').filter(Boolean)) {
@@ -39,7 +40,7 @@ export function gamesRun(pn, seeds, pick) {
   const P = LAB.POLICIES[pn], keepPick = LAB.LAB_CARDS.pick;
   if (!P) throw new Error(`no policy ${pn}`);
   LAB.LAB_CARDS.pick = pick;
-  const R = { pn, n: 0, skipped: 0, crowns: 0, finals: 0, cut: 0, stageWins: {}, dur: { 0: [], 1: [], 2: [] }, coins: [], taken: { stat: 0, skill: 0, purse: 0 }, offers: 0, waiting: 0, points: 0, levels: 0, stats: { atk: 0, def: 0, end: 0, viv: 0 }, fame: [], fameDay: Array.from({ length: 11 }, () => []), purseSum: 0 };
+  const R = { pn, n: 0, skipped: 0, crowns: 0, finals: 0, cut: 0, stageWins: {}, dur: { 0: [], 1: [], 2: [] }, coins: [], taken: { stat: 0, skill: 0, purse: 0 }, offers: 0, waiting: 0, points: 0, levels: 0, stats: { atk: 0, def: 0, end: 0, viv: 0 }, fame: [], fameDay: Array.from({ length: 11 }, () => []), purseSum: 0, bouts: 0, flairBouts: 0, flairPts: 0, leader: 0 };
   try {
     for (const seed of seeds) {
       const fameSeen = [];
@@ -61,6 +62,10 @@ export function gamesRun(pn, seeds, pick) {
         for (const k of Object.keys(R.stats)) R.stats[k] += c.stats[k] ?? 0;
       }
       R.fame.push(st.pulse.playerFame);
+      // the panache (journal Passe CV2): the bouts the player played, those that gave fame and the fame they gave; who opened the Lanterns' parade
+      R.bouts += mine.filter((m) => m.winner).length;
+      for (const e of st.log) if (e.id === 'flair') { R.flairBouts++; R.flairPts += +(/\+(\d+) fame/.exec(e.text)?.[1] ?? 0); }
+      if (st.v2?.festival?.leader === 'player') R.leader++;
       fameSeen.forEach((f, d) => { if (f !== undefined) R.fameDay[d].push(f); });
     }
   } finally { LAB.LAB_CARDS.pick = keepPick; }
@@ -126,15 +131,18 @@ if (command === 'number') {
   }
   out.race = race; LAB.LAB_CARDS.pick = keepPick; undo();
 } else if (command === 'fame') {
-  // the fame the games reach (journal Passe CL3): the pulse's playerFame by the morning of each day and at the end, and the tiers' shares
+  // the fame the games reach (journal Passe CV2): the pulse's playerFame by the morning of each day and at the end, and the tiers' shares
   const F = ST; void F;
+  const undoFame = setNumbers(arg('sets', ''));
   for (const pn of POLICIES) {
-    const R = gamesRun(pn, seeds, arg('pick', 'rank'));
+    const R = gamesRun(pn, seeds, arg('pick', 'random'));
     const tiers = (xs) => { const t = { unknown: 0, noticed: 0, known: 0, celebrated: 0 }; for (const f of xs) t[REACT.fameTier({ pulse: { playerFame: f } })]++; return Object.entries(t).map(([k, v]) => `${k} ${pct(v, xs.length)} %`).join(' · '); };
+    console.log(`${pn} : ${R.bouts} combats joués, ${R.flairBouts} avec du panache (${pct(R.flairBouts, R.bouts)} %), ${(R.flairPts / Math.max(1, R.n)).toFixed(1)} de renommée par partie ; ouvre le défilé ${pct(R.leader, R.n)} % des parties`);
     console.log(`${pn} (${R.n} parties) : fame finale méd. ${med(R.fame)} [${Math.min(...R.fame)}-${Math.max(...R.fame)}] ; ${tiers(R.fame)}`);
     for (let d = 1; d <= 10; d++) if (R.fameDay[d].length) console.log(`   matin du jour ${String(d).padStart(2)} : méd. ${med(R.fameDay[d])} ; ${tiers(R.fameDay[d])}`);
     out[pn] = R;
   }
+  undoFame();
 } else console.log('commands: number | kinds | sets "<CARDS.x=v,...>" | fame (see the header)');
 void PULSE;
 if (arg('json')) fs.writeFileSync(arg('json'), JSON.stringify(out, null, 1));

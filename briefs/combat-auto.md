@@ -1857,6 +1857,15 @@ Le planificateur prenant ses cartes au hasard, les facteurs du tableau passent d
 - **La fiche de l'opérateur** : le nombre proposé (trois, recommandé), le nombre pris (un), les victoires (le tournoi), la taille des cartes, la course ; le jeu joue 3 et 1 en attendant, un seul réglage (`CARD_RULES.offered`, `.picks` et `AUTO_RACE.stage` : les facteurs des deux autres nombres sont gardés au journal).
 - Le laboratoire modélise le choix (au hasard, éclairé, un goût fixe) : le joueur réel n'est aucun des trois ; la fiche dit l'écart que fait le choix.
 
+## 46. La renommée du panache (23/11/2026, journal Passes CL1, CV2)
+
+Statut : **construit** dans le jeu par défaut (anglais et français). Aucun contrat ne change ; aucune décision A3 ; renommée seule (CL-3 « Renommée seule, comptée sur le script du duel » : pas de mécènes, pas de pièces).
+
+- **Ce qui compte** (`BoutNote.flair`, `src/combat/autoNotes.ts`, lu dans le script comme le carnet) : les coups d'éclat de Ren (rôle « exploit ») qui touchent dans une faille, une rupture ou sur une action en charge, ses interruptions, ses parades.
+- **Ce que ça donne** (`FLAIR`, `src/simulation/v2flair.ts`) : 1 de renommée par coup d'éclat, 2 par interruption, 2 par parade, 4 au plus par combat, gagné ou perdu ; au décalage `pulse:playerFame` du pouls (celui des événements et du défilé), que lisent les saluts et le défilé. Seul le combat du tournoi en version 2 en donne (`applyPlayerDuel`). Dit sur l'écran de résultat (une ligne du journal) et dans le guide.
+- **La mesure** (`tools/auto-cards.mjs fame`, 200 parties tenues à part) : sans panache le planificateur est « connu » (55) au jour 6 et « célébré » (80) au jour 7 pour 52 % des parties ; avec 1 / 2 / 2 et le plafond 4, 6,7 de renommée par partie, « connu » au jour 5 pour 78 %, « célébré » au jour 7 pour 87 % ; 2 / 2 / 2 et le plafond 6 (13,5 par partie) faisait tomber les paliers un jour plus tôt pour presque tous : écarté. Le panache seul ne donne aucun palier (4 par combat, contre 25, 55, 80) ; la course est inchangée (planificateur 27 %, référence 30 %, curieux 9 % de titres).
+- **Reste** : le panache des victoires seulement ou aussi des défaites ; un panache plus rare (à partir du second geste) ; l'essai de l'opérateur.
+
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
 Passe AU3, en réponse au chantier n° 1 de la Passe AU2 :

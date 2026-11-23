@@ -55,7 +55,8 @@ try {
   };
   const act = async (a) => { const r = await page.evaluate((x) => window.__game.act(x), a); check(r.ok, `act ${JSON.stringify(a).slice(0, 70)}${r.ok ? '' : `: ${r.reason}`}`); if (r.ok) actionsDone.push(a); return r; };
   const state = () => page.evaluate(() => window.__game.state());
-  const T = async (k, v) => page.evaluate(async (k, v) => (await import('/src/narrative/text/index.ts')).tx(k, v), k, v);
+  // the page's own text module (the very URL it loaded, with the dev server's timestamp query when a file changed since it started: another URL would be another instance, in English)
+  const T = async (k, v) => page.evaluate(async (k, v) => { const u = performance.getEntriesByType('resource').map((r) => r.name).find((n) => /\/src\/narrative\/text\/index\.ts/.test(n)) ?? '/src/narrative/text/index.ts'; return (await import(u)).tx(k, v); }, k, v);
 
   // 1. a new game, the clock to day 2's afternoon (the first bout)
   await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1`);
@@ -86,6 +87,10 @@ try {
   check(tiles.length === 3 && !!offer && tiles.length === offer.cards.length, `${tiles.length} tiles for the ${offer?.cards.length} cards of the offer`);
   check(tiles.map((t) => t.kind).join() === offer?.cards.map((c) => c.k).join(), `the tiles in the offer's order: ${tiles.map((t) => t.kind).join(', ')}`);
   check(tiles.every((t) => t.text.length > 20 && t.inside), 'every tile says its kind, its card and what it does, inside the window');
+  // the panache (journal Passe CV2): the bout's style said on the page, its fame in the state
+  const flairEv = (await state()).log.find((e) => e.id === 'flair'), pageText = await page.evaluate(() => document.querySelector('.pm-overlay .pm-body')?.textContent ?? '');
+  check(!!flairEv, 'the bout earned panache (an exploit landed in an opening)');
+  if (flairEv) { const n = /\+(\d+)/.exec(flairEv.text)[1]; check(pageText.includes(`+${n} `) && /(fame|renommée)/.test(pageText), `the result page says the panache: +${n}`); }
   const foot = await page.evaluate(() => [...document.querySelectorAll('.pm-overlay .pm-foot button')].map((x) => x.textContent.trim()));
   const later = await T('ui.card.later');
   check(foot.length === 1 && foot[0].includes(later), `the foot offers one way out: ${foot.join(' | ')}`);

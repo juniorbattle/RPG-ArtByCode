@@ -276,7 +276,10 @@ test('the note travels with the result: kept in the notebook outside the fingerp
   const withNote = act(s, { type: 'fight', outcome: { ...outcome, note: o.note } }).state, without = act(s, { type: 'fight', outcome }).state;
   assert.equal(withNote.v2.$notes.length, 1); assert.equal(without.v2.$notes, undefined);
   assert.equal(withNote.v2.$notes[0].day, 2); assert.equal(withNote.v2.$notes[0].kind, 'bout');
-  assert.equal(G.hash(withNote), G.hash(without), 'outside the fingerprint');
+  // (the note's panache is the fame's, the one part of it the state keeps: the operator's CL-3, journal Passe CV1 / CV2; the rest of the note stays outside the fingerprint)
+  const bare = { ...o.note }; delete bare.flair;
+  assert.equal(G.hash(act(s, { type: 'fight', outcome: { ...outcome, note: bare } }).state), G.hash(without), 'outside the fingerprint');
+  assert.equal(G.hash(withNote) === G.hash(without), !(o.note.flair.exploits + o.note.flair.cuts + o.note.flair.parries), 'but its panache, when it earned fame, is part of it');
   assert.deepEqual(NO.notesOf(withNote, 'vessa')[0], withNote.v2.$notes[0]);
   // bounded
   const many = structuredClone(withNote); for (let i = 0; i < 40; i++) NO.keepNote(many, { ...o.note, day: i });
