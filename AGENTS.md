@@ -3,6 +3,8 @@
 Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting) is generated from code at boot.
 
 ## Status
+**The game's concept** (the operator's statement of 2026-11-23, word for word, journal Passe CL1, his sheet https://claude.ai/artifact/3j8cNwctXgmVRB5BHK39td, CL-5 « Journal et AGENTS.md »): « tous les moyens sont bons pour gagner le tournoi que ce soit grosse preparation et analyse, sabotage, vol, marchange, et etc... on est libre de choisir la voie qui nous permettra de ce tournoi mais cela peut aussi nous penaliser ». The ways today, and what each costs: preparation and analysis (the scouting by tiers, the rehearsal, the notebook, a plan per rival, training: slots and coins), money and trade (the four jobs, the resale, the shops, bargaining), theft (the marks of Sergeant Hale's ledger, the registrar's warning, a point of the pool), challenges (the stake, a slot, a wound; passers-by through their champions), and sabotage, which is **suffered, not committed**: the player cannot sabotage a rival, a recorded gap (journal Passe CL1). It adds no rule. Lots 4 and 5 of « La Brute » are closed (`briefs/combat-auto.md` § 43): the talents are abandoned (CL-1), a card to choose after each victory (CL-2, the number of cards to measure) and the renown of style (CL-3, renown alone) are two tasks of their own, not begun.
+
 The Merchant District (night) is **complete** since 2026-10-19 (operator decision RJ1 « Clore après le gel », journal Passe Z4): milestone
 M1 applied and reviewed, then frozen (journal Passes Z1-Z3). Its content, framings, cast and look stay as they are; any change to them is a
 new task decided by the operator. It is **not** Gold Master (RJ3 « Pas encore »: that status is the operator's). Next (RJ2): the day states,

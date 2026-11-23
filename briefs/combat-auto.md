@@ -1356,8 +1356,8 @@ Si l'opérateur l'approuve, l'amendement se fait sur la branche du lot 1, avec s
 1. **Lot 1, le duel** (PB-6) : les usages, les rôles, la faille, la garde par les stats, les styles des rivaux, l'automatique du plan général, les effets d'équipement ; la course recalée ; les durées et le rythme ; l'équilibre au test de AC-12 ; le portage prouvé identique au laboratoire (`tools/auto-final/`, `BK5`) ; les tests et les preuves dans le navigateur. Rien de nouveau à l'écran : l'arène et ses pages continuent de marcher.
 2. **Lot 2, ce qui se voit** : la page du plan de combat (une condition par compétence, un plan par rival), la fiche de match (les styles, les usages), le HUD (les usages en pastilles, la faille), la relecture de l'arène (interruptions, parades, failles), le tutoriel et le guide.
 3. **Lot 3, la préparation** (PB-4 « Toutes ») : la répétition, le carnet du maître d'armes, le repérage par paliers. L'essai en jeu de l'opérateur après ce lot.
-4. **Lot 4, le build** (PB-5) : le choix du vainqueur, les talents, les armes à propriété.
-5. **Lot 5, l'arène et la foule** (PB-5) : les défis de l'arène, le panache ; les paris quand l'opérateur le décidera (ECO-5).
+4. **Lot 4, le build** (PB-5) : le choix du vainqueur, les talents, les armes à propriété. **Clos au § 43** (CL-4).
+5. **Lot 5, l'arène et la foule** (PB-5) : les défis de l'arène, le panache ; les paris quand l'opérateur le décidera (ECO-5). **Clos au § 43** (CL-4).
 
 Chaque lot dans sa séance, fusionné après ses preuves. Le son et les effets suivent les nouveaux moments (la faille, l'interruption, la parade) avec les recettes déjà approuvées. Les lots 3 et 4 de la seconde refonte sont fondus dans ceux-ci.
 
@@ -1798,6 +1798,30 @@ La demande de l'opérateur du 15/11/2026, mot pour mot : « Je veux aussi consol
 ### 42.4 Les mesures
 - `tools/auto-manual.mjs` (laboratoire seul) : un joueur manuel modélisé, 200 parties tenues à part : à temps, le jugement du plan général fait l'automatique (24 / 33 % de titres) ; un choix en retard 10 / 16 % ; un appui oublié sur quatre 14 / 28 % ; aucun appui 0 %. CM-11 « Neutre, sans bonus », avec la pause tactique. Le détail : le rapport, § 5.
 - Preuves : `tests/combat-modes.test.mjs` (neuf règles, deux langues), `tests/auto-hand.test.mjs` refait pour le manuel, `tools/modes-proof.mjs` (un navigateur : la page sur une place, le commutateur, les deux modes à la fiche, à la porte, à la barre, les touches, la pause, « Passer », le combat quitté), `tools/pad-proof.mjs` remis à jour.
+
+## 43. Les lots 4 et 5 clos : ce qui est fait, ce qui est décidé (23/11/2026, journal Passe CL1)
+
+Statut : **les lots 4 et 5 du § 33.5 sont clos** (CL-4 « Clore : lots 4 et 5 remplacés par ce qui est fait et décidé ici »). Aucun contrat ne change ; aucune décision A3.
+
+### 43.1 Ce qui est fait, sous d'autres noms
+| Prévu au § 33.5 | Ce qui existe |
+|---|---|
+| Lot 4, les armes à propriété | les 32 pièces de la Passe GP5-3 (six armes aux états néfastes, quatre charmes, les protections des armures, les retouches) et les états néfastes de la Passe GP4-1, § 41 |
+| Lot 4, le build | les compétences à rangs Technique / Super / Ultime et leurs cinématiques (§§ 38, 39), les cinq compétences des combattants de la ville (§ 40), la page des compétences et les deux modes de combat, auto avec le plan et manuel (§ 42) |
+| Lot 5, les défis de l'arène | les défis et les vols contre les passants, représentés par leurs champions (Passes PN1, CH-PNJ, CH-PNJ2) |
+| Lot 5, les paris | gardés pour plus tard (ECO-5), inchangés |
+
+### 43.2 Ce que l'opérateur a décidé (fiche https://claude.ai/artifact/3j8cNwctXgmVRB5BHK39td, mot pour mot)
+- **CL-1 « Les abandonner : les pièces d’équipement suffisent »** : pas de talents (change PB-5).
+- **CL-2 « Version légère : deux cartes par victoire (stat, niveau de compétence, bourse) »**, sa note : « mais a determiner si on se limite que a 2 par victoire ? pk pas + ? » : le nombre de cartes proposées et de choix par victoire est à mesurer à la construction, puis à montrer à l'opérateur.
+- **CL-3 « Renommée seule, comptée sur le script du duel »** : pas de mécènes.
+- **CL-4**, **CL-5 « Journal et AGENTS.md »** : voir le journal.
+
+### 43.3 Ce qui reste à construire
+Deux tâches à part, chacune dans sa séance, l'une après l'autre : le choix du vainqueur (CL-2) et la renommée du panache (CL-3). Le build des talents n'aura pas lieu.
+
+### 43.4 Un écart consigné
+Le joueur ne peut pas saboter un rival ; le sabotage du jeu est subi. Écart entre l'énoncé de l'opérateur et le jeu, jamais tranché par un agent : journal Passe CL1.
 
 ## Annexe A — Les mots de l'opérateur, mot pour mot (11/11/2026)
 
