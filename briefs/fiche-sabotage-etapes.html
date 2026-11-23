@@ -1,0 +1,366 @@
+<title>Le joueur saboteur</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards in two families (the action, the risk); a table of the three eves above; sticky progress bar. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 68ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.eves { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.eves h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.eves p { margin: 0; max-width: 68ch; }
+.tblwrap { overflow-x: auto; }
+table.tbl { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.tbl th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.foot { font-size: 13px; color: var(--muted); }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; min-width: 0; }
+.card p { margin: 0; max-width: 68ch; }
+dl.facts { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+dl.facts > div { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); gap: 2px 14px; }
+dl.facts dt { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding-top: 3px; }
+dl.facts dd { margin: 0; max-width: 66ch; }
+@media (max-width: 560px) { dl.facts > div { grid-template-columns: minmax(0, 1fr); } }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 10px 12px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; width: 100%;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; margin-top: 4px; }
+.opt .ob { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.opt .ot { font-weight: 600; }
+.opt .od { font-size: 14px; color: var(--muted); font-weight: 400; max-width: 64ch; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; margin-left: 8px; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · le joueur saboteur · 23/11/2026 · première des trois étapes</span>
+    <h1>Saboter un rival : les étapes, la courbe, la peine</h1>
+    <p class="lede">Tu as décidé : une seule forme de sabotage, la sangle d’un adversaire coupée la veille d’un combat de tableau ; une action sophistiquée, de plus en plus dure à mesure que les jours passent ; plus grave que le vol ; sa force mesurée avant d’être fixée. Cette fiche tranche ce qui reste pour la construire. Elle ne fixe aucun chiffre de force : le laboratoire les mesurera ensuite et te les montrera sur une fiche courte. Rien n’est construit avant tes réponses. Pour chaque carte : ce que fait le jeu aujourd’hui, ce que ça change, ce que ça coûte, ma recommandation, tes options.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l’enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="eves" aria-labelledby="h-eves">
+    <h2 id="h-eves">Les veilles où l’on peut saboter</h2>
+    <p>« La veille d’un combat de tableau » ne laisse que deux ou trois soirs dans une partie : le soir du jour 5, puis le soir du 7 (si la demi-finale est perdue) ou du 9 (si elle est gagnée). Les quatre derniers de la poule ont aussi un combat de tableau le jour 6, à la Porte : même veille.</p>
+    <div class="tblwrap">
+      <table class="tbl">
+        <thead><tr><th>Veille</th><th>Combat du lendemain</th><th>Bourse (gagné / perdu)</th><th>Cible connue</th><th>Créneaux libres</th><th>Pièces en poche*</th></tr></thead>
+        <tbody>
+          <tr><td>Soir du jour 5</td><td>Jour 6, demi-finale</td><td>35 / 10</td><td>seulement à la fin de l’après-midi du 5 (le tableau est tiré après la dernière ronde)</td><td>matin et soir (l’après-midi est le combat de poule)</td><td>23 à 39</td></tr>
+          <tr><td>Soir du jour 7</td><td>Jour 8, match pour la 3e place</td><td>45 / 15</td><td>depuis le jour 6</td><td>trois</td><td>28 à 59</td></tr>
+          <tr><td>Soir du jour 9</td><td>Jour 10, la finale</td><td>80 / 30</td><td>depuis le jour 8</td><td>trois</td><td>26 à 43</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot">* Pièces du matin, médiane de 24 parties du laboratoire par joueur type (le planificateur, la référence, le curieux), jours 5, 7 et 9 : de la plus basse à la plus haute des trois médianes. Le planificateur et la référence sont en demi-finale 24 fois sur 24.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne (journal, <code>briefs/combat-auto.md</code> § 44, <code>AGENTS.md</code>), puis je passe à la mesure de la force : ce que la sangle coupée change à un combat et à une partie entière, sur des parties tenues à part, pour le planificateur, la référence et le curieux. Je te montre le chiffre sur une fiche courte avant de le fixer. La construction vient après, dans le jeu par défaut, en anglais et en français ; un joueur qui ne sabote jamais garde son jeu à l’identique.</p>
+    <p class="src">Sources : JOURNAL.md (Passes CL1, CL2), <code>briefs/combat-auto.md</code> §§ 43-44, <code>src/simulation/v2law.ts</code>, <code>v2intel.ts</code>, <code>v2rivals.ts</code>, <code>src/events/v2catalog.ts</code>, <code>src/tournament/v2calendar.ts</code>, <code>pool.ts</code>.</p>
+  </section>
+</div>
+
+<script>
+// Une entrée par décision ; fam : une variable de couleur. Chaque option : l (le texte enregistré), d (ce qu’elle fait).
+const GROUPS = [
+  { id: 'action', title: 'L’action', sub: 'Ce que le joueur fait, et quand.', fam: 'var(--voile)', items: [
+    { id: 'SA-1', tag: 'étapes', title: `L’action : en combien de temps, avec quoi ?`,
+      facts: [
+        ['Aujourd’hui', `Le joueur ne peut toucher à rien chez un rival. Son seul geste de ce genre, le vol, tient en une action : un créneau, une chance d’être vu. Cassius procède en plusieurs temps contre toi : deux signes (une question à Hilde, les casiers trouvés ouverts), la nuit de la veille, puis les réponses que tu as (le guet payé, la salle forte d’Odo à 5 pièces, Hilde qui vérifie, Lady Edda qui nomme les couleurs).`],
+        ['Ce que ça change', `Saboter devient une petite préparation à ranger parmi l’entraînement, les travaux à 10 pièces et le repérage des rivaux, qui prennent les mêmes créneaux (trois par jour).`],
+        ['Ce que ça coûte', `Un créneau par temps pris sur la journée, des pièces (voir le tableau : 23 à 59 en poche). La rumeur de Lio et celle de l’inconnu ne prennent aucun créneau, seulement des pièces.`],
+      ],
+      rec: `Trois temps. Chacun reprend un geste que tu connais : repérer, aller voir l’inconnu à capuche au quai le soir, passer la nuit de la veille. En tout trois créneaux sur trente et de 8 à une trentaine de pièces : assez pour rivaliser avec l’entraînement sans l’interdire. À deux temps c’est un vol rebaptisé, ce que ta note refuse ; à quatre la liste s’allonge sans nouveau choix.`,
+      opts: [
+        { l: `A · Trois temps : repérer, s’équiper, la nuit`, d: `1. Repérer les casiers : un créneau de jour au parvis (comme observer un rival à l’entraînement) ; on y apprend la ronde des gardes et où le rival range son matériel. 2. S’équiper : l’inconnu à capuche, le soir sur le quai, 8 pièces (le prix de sa rumeur) pour un outil fin qui ne sert qu’une fois. 3. La nuit de la veille : le soir, au parvis, seul ou avec un complice payé (Corra Dunmere, que les marchands volés paient déjà) qui fait le guet et réduit la chance d’être vu. Total : 3 créneaux ; 8 pièces seul, une trentaine avec un complice (la somme sera fixée à la mesure).` },
+        { l: `B · Deux temps : repérer, la nuit`, d: `Repérer les casiers, puis la nuit de la veille avec ce que l’on a déjà. 2 créneaux, 0 pièce. Plus simple, mais proche du vol : il manque ce que tu demandes (« sophistiqué, pas facile et accessible pour tous »).` },
+        { l: `C · Quatre temps : les trois, plus la rumeur`, d: `Aux trois temps s’ajoute la rumeur du rival de demain (Lio, 3 pièces, ou l’inconnu, 8 pièces) : sans elle on ne sait pas quelle sangle couper et l’acte échoue d’avance. 3 créneaux ; 11 à 16 pièces seul.` },
+      ], recIdx: 0,
+      src: `<code>src/simulation/v2law.ts</code> (le vol), <code>v2intel.ts</code> (rumeur 3 / 8 pièces, salle forte 5 pièces), <code>roles.ts</code> (le repérage, 1 créneau), <code>src/events/v2catalog.ts</code> (<code>v2-gear-tamper</code>, ses signes et ses réponses)` },
+
+    { id: 'SA-2', tag: 'jour 5', title: `La première veille : le soir du jour 5, avant de connaître sa cible`,
+      facts: [
+        ['Aujourd’hui', `Le tableau se tire à la fin de l’après-midi du jour 5, après la dernière ronde de la poule : la demi-finale se joue 1er contre 4e et 2e contre 3e du classement final, qui dépend du combat que tu viens de livrer. Avant ce moment tu ne sais pas qui tu rencontres le jour 6. La sangle que Cassius coupe l’est justement ce soir-là.`],
+        ['Ce que ça change', `Le soir du 5 est la première veille de tableau, et la seule où la cible se connaît trop tard pour être repérée elle-même : le repérage et l’outil se font d’avance, sans nom, et le soir tu nommes le rival de demain.`],
+        ['Ce que ça coûte', `Préparer pour le soir du 5, c’est deux créneaux et 8 pièces dépensés avant de savoir quel rival le tirage te donne. Sans le jour 5, il ne reste qu’une veille par partie (le 7 ou le 9).`],
+      ],
+      rec: `Garder le jour 5, avec une préparation sans nom. Sans lui, la courbe n’a qu’un point par partie et ta note « plus on avance, plus c’est dur » ne se voit pas ; avec lui elle en a deux (5, puis 7 ou 9), et préparer à l’aveugle devient une vraie décision.`,
+      opts: [
+        { l: `A · Aussi le soir du 5 : on prépare sans nom, on nomme la cible ce soir-là`, d: `Le repérage et l’outil valent pour n’importe quel rival ; le soir du 5 le joueur choisit son adversaire du lendemain. Deux veilles par partie.` },
+        { l: `B · Seulement les soirs des jours 7 et 9 : la cible est connue depuis la veille`, d: `Une seule veille par partie (le 7 si la demi-finale est perdue, le 9 si elle est gagnée). Tout se repère sans deviner, mais la demi-finale n’est jamais en jeu et la courbe n’a plus qu’un point.` },
+      ], recIdx: 0,
+      src: `<code>src/tournament/v2calendar.ts</code> (<code>cut</code>, <code>major</code>, <code>final</code>), <code>src/simulation/v2intel.ts</code> (<code>boutTomorrow</code>, <code>nextOpponent</code>)` },
+  ]},
+  { id: 'risque', title: 'Le risque', sub: 'Ce qui rend l’action dure, et ce qu’elle coûte quand elle échoue.', fam: 'var(--cendre)', items: [
+    { id: 'SA-3', tag: 'courbe', title: `Plus on avance dans les jours, plus c’est dur : qu’est-ce qui monte ?`,
+      facts: [
+        ['Aujourd’hui', `Rien n’est calculé jour par jour pour le joueur. Ce qui existe : le guet (le pouls de sécurité : 62 le jour, 50 le soir, +5 à la veillée du Temple le soir du 5, +6 après un voleur pris, +15 si tu paies le guet du quai), les prix des boutiques (×1,15 dès le jour 6, ×1,3 dès le jour 9), la salle forte d’Odo (5 pièces, seulement pour ton matériel).`],
+        ['Ce que ça change', `La même action devient plus risquée et plus chère de veille en veille, et chaque levier se lit à part : un guet, un coffre, un prix.`],
+        ['Ce que ça coûte', `Le premier choix demande de bâtir et de mesurer trois leviers, le deuxième un seul, le troisième un nouvel état par rival, dit sur la page du tournoi.`],
+      ],
+      rec: `Trois leviers qui montent ensemble. Ils sont le miroir de ce que le jeu te donne contre Cassius (le guet, la salle forte, les prix), chacun a sa réponse (payer plus, viser un rival moins prudent, préparer plus tôt), et rien ne dépend d’un seul dé. Les nombres (les trois paliers du guet, quels rivaux se protègent) viennent de la mesure.`,
+      opts: [
+        { l: `A · Trois leviers : le guet, les rivaux qui se gardent, les prix`, d: `1. Le guet : la chance d’être vu suit le pouls de sécurité du soir (déjà dans le jeu : il monte aussi quand tu voles) et un palier de plus à chaque veille (soir du 5, du 7, du 9). 2. Les rivaux qui se gardent : dès le jour 7 les plus prudents rangent leur matériel à la salle forte d’Odo ; au jour 9, les deux finalistes. On ne peut plus rien leur couper, et le repérage le dit d’avance. 3. Les prix : l’outil et le complice coûtent ×1,15 puis ×1,3, comme les boutiques.` },
+        { l: `B · Le guet seul : une chance d’être vu qui monte à chaque veille`, d: `Un seul levier : trois nombres (soir du 5, du 7, du 9) ajoutés au pouls de sécurité. Toujours possible, toujours plus risqué ; simple à lire et à mesurer, moins riche.` },
+        { l: `C · Les rivaux qui se gardent seulement : plus de dé, des cibles qui se ferment`, d: `La chance d’être vu ne change pas, mais la moitié des rivaux sont hors d’atteinte au jour 7 et tous au jour 9. Le sabotage serait presque fermé à la finale : à choisir si tu veux qu’il devienne rare.` },
+      ], recIdx: 0,
+      src: `<code>src/tournament/pulse.ts</code> (la sécurité), <code>src/events/v2catalog.ts</code> (<code>v2-gate-vigil</code>, <code>v2-quay-alert</code>), <code>src/simulation/v2gear.ts</code> (<code>STAGE_PRICE</code>), <code>v2intel.ts</code> (<code>STRONGROOM</code>)` },
+
+    { id: 'SA-4', tag: 'peine · SB-2', title: `Vu en pleine action : le greffier, et à la place du point de la poule ?`,
+      facts: [
+        ['Aujourd’hui', `Un vol pris sur le fait : le greffier avertit la première fois ; ensuite un point de la poule en moins tant que la poule se joue (jours 1 à 5) et, le tableau tiré, une amende de 15 pièces (le jeu a posé ce remplacement parce que les points ne comptent plus). Trois marques au registre de Hale ferment les étals ; tu as écarté cette voie pour le sabotage.`],
+        ['Ce que ça change', `Ton choix dit : vu, c’est tout de suite l’avertissement du greffier et un point de la poule. Mais le sabotage n’a lieu qu’une veille de combat de tableau, la poule est finie et le classement figé : un point retiré ne changerait rien. C’est un écart entre ta décision et le jeu, que je consigne sans le trancher. Dis ce qui remplace le point.`],
+        ['Ce que je suppose', `Pris sur le fait, rien n’est coupé (comme un vol pris sur le fait ne prend rien). Dis-le en note si tu veux que la sangle soit coupée quand même.`],
+      ],
+      rec: `B, la moitié de la bourse du combat de demain. Elle monte avec les jours sans nombre neuf (35, 45, 80 pièces à gagner, déjà dans le jeu), elle ne dépend pas de ce que le joueur a en poche (une amende de 15 pièces prendrait les deux tiers des 23 pièces du matin du jour 5) et elle reste un risque de pièces, pas la fin de la partie. L’amende de 15 pièces est le choix le plus léger ; le forfait, le plus dur.`,
+      opts: [
+        { l: `A · L’avertissement, puis l’amende du greffier : 15 pièces, tout de suite`, d: `La règle de l’après-poule, déjà dans le jeu. 15 pièces valent les deux tiers de ce qu’un joueur type a le matin du jour 5 (23), un quart le jour 7 (59), un tiers le jour 9 (43) : elle mord plus fort au début qu’à la fin, à l’inverse de ta note.` },
+        { l: `B · L’avertissement, et la moitié de la bourse du combat de demain`, d: `Gagné : 17 au lieu de 35 le jour 6, 22 au lieu de 45 le jour 8, 40 au lieu de 80 le jour 10 ; perdu : la moitié de 10, 15 ou 30. Elle monte avec les jours. La course n’est pas à recaler : seul le joueur qui sabote et qui est vu la paie.` },
+        { l: `C · L’avertissement, et le forfait : le combat de demain est perdu`, d: `Le plus dur : la défaite sans combat, le tournoi fini à la demi-finale ou à la finale. Le sabotage devient quitte ou double ; à prendre seulement si tu veux cela.` },
+      ], recIdx: 1,
+      src: `<code>src/simulation/v2law.ts</code> (<code>registrarOnCatch</code>, <code>LAW.registrarFine</code>), <code>src/tournament/pool.ts</code> (<code>PURSES</code>, <code>boutPurse</code>), journal Passe CL2 (SB-2)` },
+
+    { id: 'SA-5', tag: 'rancune', title: `La rancune du rival dont on a voulu couper la sangle`,
+      facts: [
+        ['Aujourd’hui', `Les rivaux se souviennent déjà : la page du tournoi dit leur attitude (rancune à −15, amitié à +25) et ses causes ; un rival à −25 peut comploter hors écran, mais seul Cassius le fait ; un ami (Orla, Ilse, Tobin, Marek) t’avertit d’un sabotage. Rien n’existe pour « tu as saboté ce rival ». Et il se bat contre toi le lendemain même : tu ne le reverras peut-être jamais (la 3e place et la finale ont d’autres adversaires).`],
+        ['Ce que ça change', `La rancune se sent surtout dans le combat de demain, ensuite dans la mémoire de la ville et de la page du tournoi.`],
+        ['Ce que ça coûte', `A : un état de plus (la relation et la préparation du rival) et des textes. B : une chaîne de riposte entière à écrire pour chaque rival (seule celle de Cassius existe). C : rien.`],
+      ],
+      rec: `A. Le rival ne perd pas sa sangle mais te la garde : il se bat plus dur demain, la page du tournoi garde la cause, et s’il était ton ami il ne l’est plus. C’est le « cela peut aussi nous pénaliser » de ton concept, sans qu’il faille écrire une chaîne par rival.`,
+      opts: [
+        { l: `A · Il garde rancune : plus dur demain, la page du tournoi s’en souvient`, d: `Sa relation avec toi tombe de 30 (rancune, hostile sous −25), la cause est écrite sur la page du tournoi (« a vu ta main près de ses casiers, jour N ») ; il se bat plus dur le lendemain (sa préparation +15 : ses coups environ 4 % plus lourds, chiffre à mesurer) ; s’il était ton ami, il ne l’est plus.` },
+        { l: `B · Il riposte : sa maison coupe ta sangle à ta veille suivante`, d: `Le miroir complet de Cassius : à la veille suivante (le 7 ou le 9) ta propre sangle est visée, avec des signes et des réponses (guet, salle forte, Hilde). Seulement si une autre veille suit. Une chaîne entière à écrire pour chaque rival.` },
+        { l: `C · Aucune rancune : seulement la peine du greffier`, d: `Le rival n’en sait pas plus que le greffier. Le plus simple, mais saboter ne coûte alors que la peine de la carte précédente.` },
+      ], recIdx: 0,
+      src: `<code>src/simulation/v2rivals.ts</code> (<code>stanceOf</code>, <code>memoryOf</code>), <code>src/tournament/offscreen.ts</code>, <code>pool.ts</code> (<code>rivalMods</code>), <code>src/events/v2catalog.ts</code> (<code>v2-friend-gear</code>)` },
+
+    { id: 'SA-6', tag: 'secret', title: `Un coup réussi reste-t-il secret ?`,
+      facts: [
+        ['Aujourd’hui', `Un vol que personne n’a vu peut être trouvé au lever du jour suivant par son propriétaire : 60 % de chances de jour, 85 % de nuit, 50 % pour une poche. La sangle que Cassius coupe est trouvée après le combat, quand l’armure se retire.`],
+        ['Ce que ça change', `Si oui, un coup réussi n’est jamais sûr de rester caché : la rancune et la peine du greffier peuvent arriver le lendemain.`],
+        ['Ce que ça coûte', `Un tirage de plus après le combat (même mécanique que le vol) et trois lignes de texte.`],
+      ],
+      rec: `Secret. Trois temps, une courbe qui monte et une peine immédiate sont déjà lourds ; un coup réussi qui reste caché est la récompense. Si tu veux que le sabotage reste dangereux même réussi, choisis l’autre option.`,
+      opts: [
+        { l: `A · Un coup réussi reste secret`, d: `Seul l’échec (être vu) a des suites.` },
+        { l: `B · Il peut être découvert après le combat, comme un vol non vu`, d: `Une chance (à fixer par la mesure, autour de la moitié) que le rival ou le greffier trouvent la sangle coupée après le combat et reconnaissent ta main : la peine de la carte SA-4 et la rancune de la carte SA-5 arrivent alors le soir.` },
+      ], recIdx: 0,
+      src: `<code>src/simulation/v2law.ts</code> (<code>v2Dawn</code>, <code>LAW.foundChance</code>), <code>src/tournament/pool.ts</code> (<code>tamper:suffered</code>)` },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  root.style.cssText = 'display:flex;flex-direction:column;gap:28px';
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  const dl = el('dl', { class: 'facts' });
+  for (const [k, v] of it.facts) dl.append(el('div', {}, el('dt', {}, k), el('dd', {}, v)));
+  c.append(dl);
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((o, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': o.l, onclick: () => choose(it.id, o.l) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }),
+      el('span', { class: 'ob' }, el('span', { class: 'ot' }, o.l, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null), el('span', { class: 'od' }, o.d)));
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  const src = el('p', { class: 'src' }); src.innerHTML = 'Source : ' + it.src; c.append(src);
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d’un document
+// en cours d’écriture : repris dans l’état, la boucle d’écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l’enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d’arbitrages — le joueur saboteur — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d’écriture, ou modifié ici il y a moins de 5 s, garde son état local : l’écho du serveur l’écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l’enregistrement perdue : recharge la page.'));
+})();
+</script>
