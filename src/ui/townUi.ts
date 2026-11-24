@@ -20,7 +20,8 @@ import { QUEST } from '../simulation/v2questData';
 import { skillsPage } from './skills';
 import { cap, itemText, lang, num, said, shortName, skillName, tx, word, type TextKey, type TextRef } from '../narrative/text';
 import { groupHere, isSabotage } from './listModel';
-import { foeGrudge, forcePct, grudgeAttack } from '../simulation/v2sabotage';
+import { bladePct, foeBlunted, foeGrudge, forcePct, grudgeAttack, weaponState } from '../simulation/v2sabotage';
+import { STATE_NAME } from '../simulation/v2scout';
 import { isV2 } from '../simulation/v2';
 import { pendingFinal, stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
 import { healthParts, itemName, weaponTier } from '../simulation/v2gear';
@@ -737,7 +738,7 @@ export class TownUi {
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)} · ${esc(tx('ui.dayN', { day: nb.day }))}</p>${ahead ? `<p class="pm-sub">${esc(ahead)}</p>` : ''}<div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
       + vs + (prep ? `<p class="pm-sub pm-fstats">${esc(prep)}</p>` : '') + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('') + (rehLine ? `<p class="pm-sub">${esc(rehLine)}</p>${s.v2?.kit.mode === 'manual' ? `<p class="pm-sub">${esc(tx('prep.sheet.rehearsalHand'))}</p>` : ''}` : '') + (noteLine ? `<p class="pm-sub">${esc(noteLine)}</p>` : '') + `<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p><p class="pm-sub">${esc(tx('auto.sheet.hpWhy'))}</p><p class="pm-sub">${esc(from)}</p>`
-      + `${heard ? `<p class="pm-sub">${esc(heard)}</p>` : ''}<p class="pm-sub">${esc(gear)}</p>${strap ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.strap'))}</p>` : ''}${(b.foe.taken ?? 1) > 1 ? `<p class="pm-sub">${esc(tx('v2.sheet.foeStrap', { name: r.name, n: forcePct() }))}</p>` : ''}${foeGrudge(s, nb.day, id) > 0 ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.foeGrudge', { name: r.name, n: num(grudgeAttack()) }))}</p>` : ''}${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
+      + `${heard ? `<p class="pm-sub">${esc(heard)}</p>` : ''}<p class="pm-sub">${esc(gear)}</p>${strap ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.strap'))}</p>` : ''}${(b.foe.taken ?? 1) > 1 ? `<p class="pm-sub">${esc(tx('v2.sheet.foeStrap', { name: r.name, n: forcePct() }))}</p>` : ''}${foeBlunted(s, nb.day, id) ? `<p class="pm-sub">${esc(tx('v2.sheet.foeBlade', { name: r.name, n: bladePct() }))}</p>${weaponState(id) ? `<p class="pm-sub">${esc(tx('v2.sheet.foeBladeState', { state: tx(STATE_NAME[weaponState(id)!]!) }))}</p>` : ''}` : ''}${foeGrudge(s, nb.day, id) > 0 ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.foeGrudge', { name: r.name, n: num(grudgeAttack()) }))}</p>` : ''}${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }
 
   /** the two fighters side by side as the duel played by the computer reads them: the health of the bout (each one's doubled, DB5), the four stats, the form of the

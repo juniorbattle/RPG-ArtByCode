@@ -206,7 +206,7 @@ export interface V2State {
 /** the player's sabotage: the day the arena's lockers were cased (good that day only), the fine tool held, and each eve's end by its day (5, 7 or 9) */
 export interface V2Sabotage { cased?: number; tool?: boolean; eves?: Record<number, V2SabEve> }
 /** how an eve ended: the strap of the next bout's rival cut (kept secret, SA-6) or the player seen (nothing cut, the rival's grudge, a warning, half the next purse) */
-export interface V2SabEve { foe: string; result: 'cut' | 'seen'; accomplice?: boolean }
+export interface V2SabEve { foe: string; result: 'cut' | 'seen'; accomplice?: boolean; /** the gesture of the night: the rival's weapon blunted (absent: the strap cut, as every eve before the blade) */ gesture?: 'blade' }
 /** a rumour as it was told: the day, the source (Lio's room, often right; the hooded stranger, never wrong), the rival's form as said, whether they changed their plan
  *  and since what (the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », journal Passe GP2: `plan`, `since` the cut or their defeat against the player, absent
  *  when the source says it without knowing why), and a secret only the stranger tells (they watched you train, they meet a hood at night); `hp` the health a rumour told

@@ -1876,6 +1876,9 @@ Statut : décidé (SB-1 à SB-3, puis la fiche des étapes SA-1 à SA-6, § 44.2
 - **La note de SG-2** : « pouvoir faire les 2 serait tres sophistiques mais permettrait d'assurer un avantage consequent et peut nosu eviter de devoir nous preparer avec des equipes optimales pour ce match et donc faire des economies pour la suite par exemple. donc c'est un cas a prendre en compte ». Le choix reste A ; la note est lue comme une demande de chiffrer « les deux » à un prix à sa mesure (à confirmer), non construite.
 - Aucune décision A3 : aucun verrou des contrats ne change. Statut : décidé, **à construire** (journal Passe SB7).
 
+### 44.8 Construit : la lame émoussée (journal Passe SB8, `src/simulation/v2sabotage.ts`, `tests/v2-sabotage.test.mjs`, `tools/sabotage-flow.mjs blade`)
+- La nuit de la veille : quatre lignes (sangle ou lame, seul ou avec Corra Dunmere), une main par nuit, même lame fine, mêmes prix et même chance d'être vu ; `V2SabEve.gesture: 'blade'` seulement pour la lame. Le rival d'une lame émoussée : Attaque −20 % (`SAB.blade`) et l'état de son arme retiré (`gfx.inflict`), lu par `autoFightersFor` (le combat, la fiche de match, l'ombre de la répétition). La fiche de match le dit ; le repérage des casiers dit ce que porte l'arme. « Les deux gestes la même nuit » : non construit (la note de l'opérateur, § 44.7).
+
 ## 45. Le choix du vainqueur : les cartes (23-24/11/2026, journal Passes CL1, CV1, CV3)
 
 Statut : **construit** dans le jeu par défaut (anglais et français), **le nombre décidé** : l'opérateur a relu sa fiche courte https://claude.ai/artifact/ENhRjr3hsen9LYAni4wpFd (`briefs/fiche-cartes-vainqueur.html`, CV-1 à CV-5 ; journal Passe CV3) : trois cartes proposées, une prise, ces tailles, la course recalée, et **les défis gagnés en ville offrent trois cartes de statistique** (§ 45.6). Aucun contrat ne change ; aucune décision A3 ; aucun talent (CL-1).

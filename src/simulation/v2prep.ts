@@ -14,6 +14,7 @@ import { AUTO_FOES, autoPlanOf, autoRound } from '../combat/autoData';
 import { boutNote, sumNotes, type BoutNote, type NoteSum } from '../combat/autoNotes';
 import { knownPlan, nextBoutOf, scoutTier, watchWhere, type ScoutTier } from './v2scout';
 import type { Stage } from '../combat/stats';
+import { foeBlunted } from './v2sabotage';
 
 /** The preparation of a bout (lot 3 of « La Brute », the operator's PB-4 « Toutes », briefs/combat-auto.md § 33.5):
  *  - the rehearsal (the proposition's « Au terrain d'entraînement, un créneau : trente combats contre l'ombre du rival repéré, avec ton kit et ton plan. Tu lis tes
@@ -41,16 +42,16 @@ export interface Rehearsal {
 /** the shadow bout of the player's next bout: Ren as he would fight it now (the plan kept for that rival, set on its match sheet: GP-12), the rival at its stage, its plan
  *  by what the player knows of it (tier 1: each skill by its role's automatic; a plan seen: its conditions, `tier` 2, the plan the player saw even when the rival has
  *  changed it since, GP-15: Master Corvin plays what the player knows); null without a next bout */
-export function shadowBout(s: GameState): { ren: AutoFighter; foe: AutoFighter; foeId: string; stage: Stage; round: number; tier: ScoutTier } | null {
+export function shadowBout(s: GameState): { ren: AutoFighter; foe: AutoFighter; foeId: string; stage: Stage; round: number; tier: ScoutTier; blunted?: boolean } | null {
   const n = nextBoutOf(s);
   if (!n) return null;
   const seen = knownPlan(s, n.foe), tier: ScoutTier = seen !== null ? 2 : scoutTier(s, n.foe), round = n.stage === 0 ? autoRound(n.day) : 0, f = autoFightersFor(s, n.foe, n.stage, round, { day: n.day });
   const plan = seen !== null ? autoPlanOf(AUTO_FOES[n.foe] ? n.foe : 'marek', seen) : null;
   const foe: AutoFighter = { ...f.foe, tactic: f.foe.skills.map((k): AutoCond => (plan ? plan[k.id] ?? 'auto' : 'auto')) };
-  return { ren: f.ren, foe, foeId: n.foe, stage: n.stage, round, tier };
+  return { ren: f.ren, foe, foeId: n.foe, stage: n.stage, round, tier, ...(foeBlunted(s, n.day, n.foe) ? { blunted: true } : {}) };
 }
 /** the player's side of a set-up (Ren, and the shadow's plan), canonical */
-export const shadowKey = (b: { ren: AutoFighter; foe: AutoFighter }): string => fnv64(canonical({ ren: b.ren, plan: b.foe.tactic ?? null, ...(b.foe.taken && b.foe.taken !== 1 ? { cut: b.foe.taken } : {}) }));
+export const shadowKey = (b: { ren: AutoFighter; foe: AutoFighter; blunted?: boolean }): string => fnv64(canonical({ ren: b.ren, plan: b.foe.tactic ?? null, ...(b.foe.taken && b.foe.taken !== 1 ? { cut: b.foe.taken } : {}), ...(b.blunted ? { blunt: true } : {}) }));
 
 /** the rehearsal's seeds: its own, by the game, the rival, the day and the slot (never the real bout's: src/combat/match.ts mixes the match's id) */
 export function rehearsalSeeds(s: GameState, foe: string): number[] {

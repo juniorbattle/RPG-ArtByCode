@@ -8,7 +8,7 @@ import { v2KitOf } from '../simulation/v2';
 import { GENERICS } from '../narrative/generics';
 import { NPC_BASE, NPC_FIGHTERS } from '../narrative/npcFighters';
 import { allyCd } from '../narrative/v2story';
-import { SAB, foeCut, foeGrudge } from '../simulation/v2sabotage';
+import { SAB, foeBlunted, foeCut, foeGrudge } from '../simulation/v2sabotage';
 import { AUTO_RULES, autoDuel, autoFormsOf, autoWinner, type AutoFighter, type AutoResult } from './auto';
 import { autoFoe, autoGenericSheet, autoKitFor, autoPrepPoints, autoRaceSheet, autoRen, autoRound } from './autoData';
 import { challengeSheetFor, matchSheetFor, type MatchSheet } from './match';
@@ -61,6 +61,8 @@ export function autoFightersFor(st: GameState, foeId: string, stage: Stage, roun
       : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c ? c.preparation + grudge : undefined, hp: c ? rivalMods(c).hp : 1 }), { stage, plan: c?.plan });
     // the strap cut on the eve (the operator's SF-1 « A · ×1,15, comme la sangle de Cassius »): the rival takes more damage, as the player does when Cassius cuts his
     if (o2.day !== undefined && foeCut(st, o2.day, o.id)) foe.taken = (foe.taken ?? 1) * SAB.force;
+    // the blunted blade (the operator's SG-1 « A · L’Attaque du rival −20 %, l’état de son arme retiré »): the rival hits less hard and their weapon poses no state
+    if (o2.day !== undefined && foeBlunted(st, o2.day, o.id)) { foe.atk *= 1 - SAB.blade; if (foe.gfx?.inflict) foe.gfx = { ...foe.gfx, inflict: undefined }; }
     return { ren, foe, prep: npc || g || !c ? 0 : autoPrepPoints(c.preparation + grudge) };
 }
 

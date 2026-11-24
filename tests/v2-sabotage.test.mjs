@@ -3,7 +3,8 @@
 // cut at the forecourt), the eves (the evenings of days 5, 7 and 9), the strap cut (the rival takes ×1.15), the chance of being seen (15 / 35 / 55 % at the evening's security of 50, a point more for
 // each point above it, Corra Dunmere's watch 15 points less), the rich rivals who keep their gear in Clerk Odo's strongroom from day 7 in one game in two, a sabotage seen (nothing cut, the registrar's
 // warning, tomorrow's purse halved, the rival's grudge: their relation −30, their preparation +50 for that bout, the cause on the board), a cut kept secret, and a game that never sabotages keeping
-// its state. The oracles are the decisions written out here, not the code's constants.
+// its state; the blunted blade (the operator's idea of 24/11/2026, his sheet SG-1 to SG-3, journal Passes SB6 / SB7): one gesture a night, the strap or the blade, the rival's Attack −20 % and the
+// state their weapon carries taken off, the casing saying what their weapon carries. The oracles are the decisions written out here, not the code's constants.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -16,6 +17,7 @@ const S = await load('/src/simulation/v2sabotage.ts');
 const AM = await load('/src/combat/autoMatch.ts');
 const P = await load('/src/tournament/pool.ts');
 const PU = await load('/src/tournament/pulse.ts');
+const PR = await load('/src/simulation/v2prep.ts');
 const R = await load('/src/simulation/v2rivals.ts');
 const TU = await load('/src/ui/tutorial.ts');
 const LM = await load('/src/ui/listModel.ts');
@@ -35,10 +37,16 @@ const game = (seed) => G.makeV2(G.newGame(seed, 'Ren'));
 const POOL4 = [W, W, W, W, WON, W, W, W, W, W, WON];   // the pool's first four days: the evening of day 4 ahead, at the quay
 
 /** the eve of day 5 played through the three steps: the stranger's blade the evening before, the lockers cased in the morning, the pool's bout, then the night's cut */
-function eve5(seed, accomplice = false, cut = true) {
+function eve5(seed, accomplice = false, cut = true, blade = false) {
   let st = run(game(seed), POOL4); st.player.coins = 60;
   st = run(st, [{ type: 'buyTool' }, mv('forecourt'), { type: 'caseLockers' }, WON]);
-  return cut ? run(st, [{ type: 'cutStrap', ...(accomplice ? { accomplice: true } : {}) }]) : st;
+  return cut ? run(st, [{ type: 'cutStrap', ...(accomplice ? { accomplice: true } : {}), ...(blade ? { blade: true } : {}) }]) : st;
+}
+/** the night of day 5 before the cut, against this rival (the other fighter of the player's semi-final or Gate bout set on the board) */
+function eve5Against(seed, rival) {
+  const st = eve5(seed, false, false), m = st.tournament.matches.find((x) => x.day === 6 && !x.winner && (x.a === 'player' || x.b === 'player'));
+  if (m.a === 'player') m.b = rival; else m.a = rival;
+  return st;
 }
 const result = (st) => st.v2.sabotage.eves[5];
 /** the first seed whose cut on the eve of day 5 had this result */
@@ -52,6 +60,7 @@ test('the decisions written out: the numbers of the strap, of being seen, of the
   assert.equal(S.SAB.grudgePrep, 50, 'SF-4 « B · +50 »'); assert.equal(S.SAB.grudgeRel, -30, 'SA-5: relation −30');
   assert.deepEqual([S.SAB.lockFrom, S.SAB.lockWealth, S.SAB.lockChance], [7, 60, 0.5], 'SF-3 « C »: from day 7, a fortune of 60 or more, one game in two');
   assert.deepEqual([...S.EVES], [5, 7, 9]);
+  assert.equal(S.SAB.blade, 0.2, 'SG-1 « A · L’Attaque du rival −20 %, l’état de son arme retiré »'); assert.equal(S.bladePct(), 20);
   assert.equal(S.forcePct(), 15); assert.equal(S.grudgeAttack(), 2, 'a preparation of +50 is two points of Attack (one per 25)');
   // the rich are Cassius 160, Marek 80, Rhosk 60; the others stay under
   assert.deepEqual(Object.values(RIVALS).filter((r) => r.wealth >= 60).map((r) => r.id).sort(), ['cassius', 'marek', 'rhosk']);
@@ -285,14 +294,14 @@ test('a game that never sabotages keeps its state: nothing in `v2.sabotage`, the
 
 test('the words: every line in both languages with the same slots; the guide and the hint speak the game\'s own numbers; the list and the sheet wire it', () => {
   const keys = Object.keys(EN).filter((k) => /^(v2\.sab\.|v2\.memory\.sabotaged|v2\.sheet\.foe(Strap|Grudge)|tut\.hint\.sabotage|tut\.ch\.events\.sabotage)/.test(k));
-  assert.equal(keys.length, 35, 'the sabotage\'s texts: ' + keys.length);
+  assert.equal(keys.length, 42, 'the sabotage\'s texts: ' + keys.length);
   const slots = (t) => [...t.matchAll(/\{(\w+)(?:\|\w+)?\}/g)].map((m) => m[1]).sort().join(',');
   for (const k of keys) { assert.ok(FR_TEXTS[k], `${k} in French`); assert.equal(slots(FR_TEXTS[k]), slots(EN[k]), `${k}: the same slots`); }
   for (const k of ['tut.hint.sabotage.title', 'tut.hint.sabotage.body', 'tut.ch.events.sabotage']) { assert.doesNotMatch(EN[k], /\d/, k); assert.doesNotMatch(FR_TEXTS[k], /\d/, k); }
   // the guide's chapter says the eves, the chances, the prices and the grudge from the data
   const events = TU.CHAPTERS.find((c) => c.id === 'events'), text = TU.chapterText(game(2), events);
   assert.match(text, /days 5, 7 and 9/); assert.match(text, /seen 15 % of the time the eve of day 5, 35 % that of day 7, 55 % that of day 9/);
-  assert.match(text, /the rival takes 15 % more damage/); assert.match(text, /8 coins/); assert.match(text, /20 coins, 15 points less chance/);
+  assert.match(text, /the rival takes 15 % more damage/); assert.match(text, /their Attack falls by 20 % and their weapon no longer carries its state/); assert.match(text, /8 coins/); assert.match(text, /20 coins, 15 points less chance/);
   assert.match(text, /falls by 30/); assert.match(text, /trained 2 sessions more/); assert.match(text, /15 % more from day 6, 30 % from day 9/);
   assert.match(TU.hintChapter('sabotage'), /events/); assert.ok(TU.CHAPTERS.some((c) => c.id === TU.hintChapter('sabotage')));
   // the list's group and hint, the match sheet's lines, in the source of the pages
@@ -301,4 +310,73 @@ test('the words: every line in both languages with the same slots; the guide and
   assert.match(town, /tx\('v2\.sheet\.foeStrap', \{ name: r\.name, n: forcePct\(\) \}\)/); assert.match(town, /tx\('v2\.sheet\.foeGrudge', \{ name: r\.name, n: num\(grudgeAttack\(\)\) \}\)/);
   assert.match(src('src/combat/autoMatch.ts'), /foe\.taken = \(foe\.taken \?\? 1\) \* SAB\.force/);
   assert.match(src('src/simulation/v2rivals.ts'), /v2\.memory\.sabotaged/);
+  assert.match(town, /tx\('v2\.sheet\.foeBlade', \{ name: r\.name, n: bladePct\(\) \}\)/); assert.match(town, /tx\('v2\.sheet\.foeBladeState'/);
+  assert.match(src('src/combat/autoMatch.ts'), /foe\.atk \*= 1 - SAB\.blade/);
+});
+
+test('the blunted blade: one gesture a night, the rival\'s Attack −20 % and their weapon\'s state off, kept secret like the strap (SG-1, SG-2)', () => {
+  // the night offers four lines: the strap or the blade, alone or with Corra Dunmere; the blade's are named for it
+  const st = eve5(3, false, false), lines = G.actions(st).filter((o) => o.action.type === 'cutStrap');
+  assert.equal(lines.length, 4); assert.deepEqual(lines.map((o) => [!!o.action.blade, !!o.action.accomplice]), [[false, false], [false, true], [true, false], [true, true]]);
+  assert.ok(lines.every((o) => o.ok && o.cost === 1), 'each a slot'); assert.deepEqual(lines.map((o) => o.coins), [0, 20, 0, 20]);
+  assert.match(lines[2].label, /blunt .*'s blade, alone/); assert.match(lines[3].label, /blunt .*'s blade, with Corra Dunmere keeping watch \(20 coins\)/);
+  // the same night, the same draw: the gesture does not change whether the night is seen
+  for (const seed of [1, 2, 3, 5, 8, 13, 21, 34]) assert.equal(result(eve5(seed)).result, result(eve5(seed, false, true, true)).result, `seed ${seed}`);
+  // against Marek (his weapon burns): his Attack is a fifth lower tomorrow and his weapon poses no burn; the strap is not cut, nothing else moves
+  const seed = seedWith('cut'), plain = AM.autoNextBout(eve5Against(seed, 'marek')).foe;
+  const n = eve5Against(seed, 'marek'); const after = run(n, [{ type: 'cutStrap', blade: true }]);
+  assert.equal(result(after).result, 'cut'); assert.equal(result(after).gesture, 'blade'); assert.equal(result(after).foe, 'marek');
+  assert.equal(S.foeBlunted(after, 6, 'marek'), true); assert.equal(S.foeCut(after, 6, 'marek'), false, 'the blade is not the strap');
+  const foe = AM.autoNextBout(after).foe;
+  assert.ok(plain.gfx?.inflict, 'Marek\'s weapon carries a state (the burn)'); assert.equal(foe.gfx?.inflict, undefined, 'and it is gone');
+  assert.ok(Math.abs(foe.atk - plain.atk * 0.8) < 1e-9, `Attack ${foe.atk} vs ${plain.atk} × 0.8`);
+  assert.equal(foe.taken ?? 1, 1, 'the damage he takes is the ordinary one');
+  assert.equal(AM.autoFightersFor(after, 'marek', 1, 0).foe.atk, plain.atk, 'a challenge or a rehearsal outside that bout reads none');
+  // against Orla (no state in her weapon): the Attack falls, nothing else
+  const o0 = AM.autoNextBout(eve5Against(seed, 'orla')).foe, o1 = AM.autoNextBout(run(eve5Against(seed, 'orla'), [{ type: 'cutStrap', blade: true }])).foe;
+  assert.equal(o0.gfx?.inflict, undefined); assert.ok(Math.abs(o1.atk - o0.atk * 0.8) < 1e-9);
+  // the weapons' states, as the roster's styles have them: four rivals carry one, three none
+  assert.deepEqual(Object.fromEntries(['vessa', 'tobin', 'cassius', 'marek', 'orla', 'ilse', 'rhosk'].map((id) => [id, S.weaponState(id)])), { vessa: 'bleed', tobin: 'blind', cassius: 'poison', marek: 'burn', orla: null, ilse: null, rhosk: null });
+  // secret, as the strap is: no fact on the rival, a line in the player's own journal, the board silent; the purse whole
+  const c = after.competitors.marek; assert.ok(!c.knownFacts.some((f) => f.startsWith('sabotaged-by')));
+  const line = after.log.find((e) => e.id === 'sabotage:cut'); assert.ok(line?.visible);
+  assert.match(line.text, /take the edge off the blade/); assert.match(line.text, /hit 20 % less hard/); assert.match(line.text, /no longer carry its state: Burn/);
+  const orla = run(eve5Against(seed, 'orla'), [{ type: 'cutStrap', blade: true }]).log.find((e) => e.id === 'sabotage:cut').text;
+  assert.doesNotMatch(orla, /no longer carry/, 'nothing to say of a weapon with no state');
+  const m = after.tournament.matches.find((x) => x.day === 6 && (x.a === 'player' || x.b === 'player')); assert.equal(P.boutPurse(run(after, [W]), m, true), 35);
+  // with Corra: her name, her price
+  const withCorra = run(eve5Against(seed, 'marek'), [{ type: 'cutStrap', blade: true, accomplice: true }]); assert.equal(withCorra.v2.sabotage.eves[5].accomplice, true);
+  assert.match(withCorra.log.find((e) => e.id === 'sabotage:cut').text, /Corra Dunmere keeps the passage/);
+  // a strap cut keeps its record as before the blade (no field of the gesture): the fingerprint of an eve of the strap is unchanged
+  assert.equal('gesture' in result(eve5(seedWith('cut'))), false);
+});
+
+test('a blade blunted and seen: nothing is blunted, and the penalty is the strap\'s (SA-4, SA-5, SF-4); the rehearsal\'s shadow reads the blunted blade', () => {
+  const seed = seedWith('seen'), st = eve5(seed, false, true, true), foe = result(st).foe;
+  assert.equal(result(st).result, 'seen'); assert.equal(S.foeBlunted(st, 6, foe), false); assert.equal(S.foeCut(st, 6, foe), false);
+  assert.equal(AM.autoNextBout(st).foe.atk - AM.autoNextBout(eve5(seed, false, false)).foe.atk, 2, 'the grudge: two points of Attack, as for the strap');
+  assert.equal(S.purseHalved(st, 6), true); assert.ok(st.competitors[foe].knownFacts.includes('sabotaged-by:player:5'));
+  // the shadow of the rehearsal: a blunted blade changes its key; a night seen or a plain game does not add the field
+  const cutSeed = seedWith('cut'), a = eve5Against(cutSeed, 'marek'), b = run(a, [{ type: 'cutStrap', blade: true }]);
+  const ka = PR.shadowKey(PR.shadowBout(a)), kb = PR.shadowKey(PR.shadowBout(b));
+  assert.notEqual(ka, kb, 'the rehearsal of before the blade no longer holds'); assert.equal(PR.shadowBout(b).blunted, true); assert.equal(PR.shadowBout(a).blunted, undefined);
+});
+
+test('the lockers cased say what the rival\'s weapon carries (SG-3), and nothing of one whose gear is locked away', () => {
+  // the eve of day 7 (the third place's rival set to Marek, then to Orla), the lockers open
+  const semi = G.namedState('v2-semi-lost'), at7 = run(semi, [W]); at7.place = 'forecourt'; at7.player.coins = 80;
+  const setFoe = (st, id) => { const s = structuredClone(st), t = s.tournament.matches.find((m) => m.stage && !m.winner && (m.a === 'player' || m.b === 'player')); if (t.a === 'player') t.b = id; else t.a = id; return s; };
+  const openSeed = (id) => { for (let seed = 1; seed < 400; seed++) if (!S.rivalLocks({ seed, day: 7, flags: { v2: true } }, id)) return seed; };
+  for (const [id, want] of [['marek', /Marek Varn's blade carries a state: Burn\./], ['vessa', /Vessa Lark's blade carries a state: Bleeding\./], ['tobin', /Tobin Fenn's blade carries a state: Blindness\./], ['orla', /Orla Brask's blade carries no state\./]]) {
+    const s = setFoe(at7, id); s.seed = openSeed(id);
+    const log = run(s, [{ type: 'caseLockers' }]).log.find((e) => e.id === 'sabotage:case').text;
+    assert.match(log, want, id); assert.match(log, /open locker/);
+  }
+  // a rival who keeps their gear in the strongroom: nothing said of the weapon
+  const s = setFoe(at7, 'marek'); s.seed = (() => { for (let seed = 1; seed < 400; seed++) if (S.rivalLocks({ seed, day: 7, flags: { v2: true } }, 'marek')) return seed; })();
+  const locked = run(s, [{ type: 'caseLockers' }]).log.find((e) => e.id === 'sabotage:case').text;
+  assert.match(locked, /strongroom/); assert.doesNotMatch(locked, /carries/);
+  // before the bracket is drawn (day 5's morning) the casing names nobody, so says nothing of a weapon
+  let d5 = run(game(5), POOL4); d5.player.coins = 40; d5 = run(d5, [{ type: 'buyTool' }, mv('forecourt'), { type: 'caseLockers' }]);
+  assert.doesNotMatch(d5.log.find((e) => e.id === 'sabotage:case').text, /carries/);
 });
