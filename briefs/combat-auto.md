@@ -1884,7 +1884,13 @@ Statut : décidé (SB-1 à SB-3, puis la fiche des étapes SA-1 à SA-6, § 44.2
 - Proposé : SH-1 A quinze points d'être vu en plus. Aucune décision A3, aucun contrat touché.
 
 ### 44.10 La fiche des deux gestes, relue (journal Passe SB10, https://claude.ai/artifact/9An4GqtYdbdsQUEzKz5Jii, un choix, mot pour mot)
-- **SH-1 « A · Les deux gestes, avec quinze points d’être vu en plus »** (la réponse de l'opérateur dans la conversation, la base de la fiche étant vide) : la nuit de la veille gagne « les deux » (la sangle et la lame), seul ou avec Corra Dunmere ; deux lames fines en main (la seconde achetée comme la première) ; quinze points d'être vu en plus. Aucune décision A3 : aucun verrou des contrats ne change. Statut : décidé, **à construire** (journal Passe SB10).
+- **SH-1 « A · Les deux gestes, avec quinze points d’être vu en plus »** (la réponse de l'opérateur dans la conversation, la base de la fiche étant vide) : la nuit de la veille gagne « les deux » (la sangle et la lame), seul ou avec Corra Dunmere ; deux lames fines en main (la seconde achetée comme la première) ; quinze points d'être vu en plus. Aucune décision A3 : aucun verrou des contrats ne change. Statut : décidé, **construit** (journal Passe SB11, § 44.11).
+
+### 44.11 Les deux gestes la même nuit, construits (journal Passe SB11)
+- **Deux lames fines** : `V2Sabotage.tool` est `true` (une) ou 2 (deux) ; la seconde s'achète comme la première chez l'inconnu à capuche (un créneau, le prix du jour), jamais une troisième ; un geste seul avec deux lames en laisse une.
+- **La nuit** : avec deux lames six lignes (la sangle, la lame, les deux ; seul ou avec Corra Dunmere), avec une seule les quatre d'avant ; « les deux » (`cutStrap` `both`) demande deux lames. Le tirage est celui des gestes seuls, la chance d'être vu **15 points de plus** (`SAB.both`, bornée de 5 à 95 %, Corra Dunmere −15 points) ; les deux lames sont usées, vue ou non.
+- **Le lendemain** : `V2SabEve.gesture` = `'both'` ; `foeCut` (×1,15 de dégâts reçus) et `foeBlunted` (Attaque −20 %, l'état de l'arme retiré) le lisent tous deux, la fiche de match, l'ombre de la répétition et le combat joué avec eux ; vu : rien n'est fait, la peine, la rancune et la bourse de la moitié sont celles des gestes seuls. Aucune décision A3, aucun contrat touché.
+- Vérifié : `tests/v2-sabotage.test.mjs` (22), `tools/sabotage-flow.mjs both` (anglais et français, un rival dont l'arme porte un état : Marek, Vessa ; `cut`, `seen`, `blade` repassent).
 
 ## 45. Le choix du vainqueur : les cartes (23-24/11/2026, journal Passes CL1, CV1, CV3)
 

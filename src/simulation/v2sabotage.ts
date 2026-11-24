@@ -44,6 +44,8 @@ export const SAB = {
   seen: { 5: 0.15, 7: 0.35, 9: 0.55 } as Readonly<Record<number, number>>,
   /** the evening's security the chances are given at (the pulse's own: 62 by day less 12 at night, src/tournament/pulse.ts) */
   pulse: 50,
+  /** the points both gestures in one night add to the chance of being seen (SH-1 « A · Les deux gestes, avec quinze points d’être vu en plus ») */
+  both: 0.15,
   /** what Corra Dunmere's watch takes off the chance (SF-2) */
   accomplice: 0.15,
   /** the tool's price and the accomplice's, before the stage's factor */
@@ -82,9 +84,9 @@ export function rivalLocks(s: Pick<GameState, 'seed' | 'day' | 'flags'>, id: str
 }
 
 /** the chance of being seen at this eve: the stage's, plus a point for each point of the evening's security above its usual, less the accomplice's watch (SF-2); never under 5 % nor over 95 % */
-export function seenChance(s: GameState, eve: number, accomplice: boolean): number {
+export function seenChance(s: GameState, eve: number, accomplice: boolean, both = false): number {
   const base = SAB.seen[eve] ?? SAB.seen[9], pulse = computePulse(s).security;
-  return clamp(base + (pulse - SAB.pulse) / 100 - (accomplice ? SAB.accomplice : 0), 0.05, 0.95);
+  return clamp(base + (pulse - SAB.pulse) / 100 - (accomplice ? SAB.accomplice : 0) + (both ? SAB.both : 0), 0.05, 0.95);
 }
 
 /** the tool's and the accomplice's price now: the shops' stage factor on their base price */
@@ -94,9 +96,9 @@ export const accomplicePrice = (s: Pick<GameState, 'day'>): number => Math.round
 /** what the eve before this bout's day came to, if the player sabotaged it */
 export const eveBefore = (s: Pick<GameState, 'v2'>, boutDay: number): SabEve | undefined => s.v2?.sabotage?.eves?.[boutDay - 1];
 /** the strap of this rival is cut for the bout of this day: they take ×1.15 */
-export const foeCut = (s: Pick<GameState, 'v2'>, boutDay: number, foe: string): boolean => { const e = eveBefore(s, boutDay); return !!e && e.result === 'cut' && e.foe === foe && e.gesture !== 'blade'; };
+export const foeCut = (s: Pick<GameState, 'v2'>, boutDay: number, foe: string): boolean => { const e = eveBefore(s, boutDay); return !!e && e.result === 'cut' && e.foe === foe && e.gesture !== 'blade'; };   // (the strap alone, or with the blade: « les deux »)
 /** the weapon of this rival is blunted for the bout of this day: their Attack −20 % and the state their weapon carries gone (SG-1) */
-export const foeBlunted = (s: Pick<GameState, 'v2'>, boutDay: number, foe: string): boolean => { const e = eveBefore(s, boutDay); return !!e && e.result === 'cut' && e.foe === foe && e.gesture === 'blade'; };
+export const foeBlunted = (s: Pick<GameState, 'v2'>, boutDay: number, foe: string): boolean => { const e = eveBefore(s, boutDay); return !!e && e.result === 'cut' && e.foe === foe && (e.gesture === 'blade' || e.gesture === 'both'); };
 /** the state a rival's weapon carries (a bleeding, a blindness, a poison, a burn), or null: Orla, Ilse and Rhosk carry none in the weapon (theirs are in their skills) */
 export const weaponState = (id: string): AutoStateId | null => autoKitStates(kitOf(id)).poses.find((p) => p.from === 'weapon')?.state ?? null;
 /** the preparation a sabotage seen adds to this rival's bout of this day (SF-4) */
@@ -108,17 +110,21 @@ export const purseHalved = (s: Pick<GameState, 'v2'>, boutDay: number): boolean 
 export const forcePct = (): number => Math.round((SAB.force - 1) * 100);
 /** the share of Attack a blunted blade takes off, in percent */
 export const bladePct = (): number => Math.round(SAB.blade * 100);
+/** the points both gestures in one night add to the chance of being seen, as a number of points (SH-1) */
+export const bothPct = (): number => Math.round(SAB.both * 100);
 /** the Attack points a sabotage seen adds to the rival's next bout (their preparation, one point of Attack for each `prepPer`: AC-17) */
 export const grudgeAttack = (): number => +(SAB.grudgePrep / AUTO_RACE.prepPer).toFixed(2);
 
 const nameOf = (id: string): string => RIVALS[id]?.name ?? id;
 const PURSE_STAGE = (stage: string) => PURSES[stage as keyof typeof PURSES] ?? PURSES.semi;
 
-/** the night's gesture: `blade` blunts the rival's weapon instead of cutting their strap (SG-2 « A · Le choix la nuit : la sangle ou la lame, une seule par nuit ») */
-export type V2SabotageAction = { type: 'caseLockers' } | { type: 'buyTool' } | { type: 'cutStrap'; accomplice?: boolean; blade?: boolean };
+/** `both`: the strap cut and the blade blunted the same night, with two fine blades in hand and fifteen points more of being seen (SH-1 « A »); the night's gesture: `blade` blunts the rival's weapon instead of cutting their strap (SG-2 « A · Le choix la nuit : la sangle ou la lame, une seule par nuit ») */
+export type V2SabotageAction = { type: 'caseLockers' } | { type: 'buyTool' } | { type: 'cutStrap'; accomplice?: boolean; blade?: boolean; both?: boolean };
 
 const casedToday = (s: GameState): boolean => s.v2?.sabotage?.cased === s.day;
-const holdsTool = (s: GameState): boolean => !!s.v2?.sabotage?.tool;
+/** the fine blades in hand: none, one (`true`) or two (the second is bought like the first, SH-1) */
+export const toolsHeld = (s: Pick<GameState, 'v2'>): number => { const t = s.v2?.sabotage?.tool; return t === true ? 1 : typeof t === 'number' ? t : 0; };
+const holdsTool = (s: GameState): boolean => toolsHeld(s) >= 1;
 
 export const V2_SABOTAGE_ACTIONS: { [K in V2SabotageAction['type']]: ActionDef<Extract<V2SabotageAction, { type: K }>> & { by: string | null } } = {
   // step 1: the lockers cased by day at the forecourt, on the eve itself
@@ -147,7 +153,7 @@ export const V2_SABOTAGE_ACTIONS: { [K in V2SabotageAction['type']]: ActionDef<E
   buyTool: {
     by: 'stranger',
     list: (s) => { const e = eveOf(s); return isV2(s) && s.place === 'district' && s.slot === 'evening' && e !== null && s.day < e && s.day >= SAB.toolFrom ? [{ type: 'buyTool' }] : []; },
-    label: (s) => tx('v2.sab.tool.label', { n: toolPrice(s) }),
+    label: (s) => tx(toolsHeld(s) >= 1 ? 'v2.sab.tool.labelSecond' : 'v2.sab.tool.label', { n: toolPrice(s) }),
     cost: () => 1,
     coins: (s) => toolPrice(s),
     check: (s) => {
@@ -157,21 +163,23 @@ export const V2_SABOTAGE_ACTIONS: { [K in V2SabotageAction['type']]: ActionDef<E
       if (e === null) return tx('v2.sab.noEve');
       if (s.day >= e) return tx('v2.sab.tool.eve');
       if (s.day < SAB.toolFrom) return tx('v2.sab.tool.soon');
-      if (holdsTool(s)) return tx('v2.sab.tool.have');
+      if (toolsHeld(s) >= 2) return tx('v2.sab.tool.two');
       return s.player.coins < toolPrice(s) ? tx('v2.sab.tool.poor', { n: toolPrice(s) }) : null;
     },
     apply: (s, _a, _r, emit) => {
       const n = toolPrice(s);
-      s.player.coins -= n; (s.v2!.sabotage ??= {}).tool = true;
-      emit({ kind: 'action', id: 'sabotage:tool', cause: 'action:buyTool', visible: true, text: tx('v2.sab.tool.log', { n }) });
+      const second = toolsHeld(s) >= 1;
+      s.player.coins -= n; (s.v2!.sabotage ??= {}).tool = second ? 2 : true;
+      emit({ kind: 'action', id: 'sabotage:tool', cause: 'action:buyTool', visible: true, text: tx(second ? 'v2.sab.tool.logSecond' : 'v2.sab.tool.log', { n }) });
     },
   },
   // step 3: the night of the eve, at the forecourt, alone or with Corra Dunmere keeping watch
   cutStrap: {
     by: null,
-    list: (s) => (isV2(s) && s.place === 'forecourt' && s.slot === 'evening' && eveOf(s) === s.day ? [{ type: 'cutStrap' }, { type: 'cutStrap', accomplice: true }, { type: 'cutStrap', blade: true }, { type: 'cutStrap', blade: true, accomplice: true }] : []),
+    list: (s) => (isV2(s) && s.place === 'forecourt' && s.slot === 'evening' && eveOf(s) === s.day ? [{ type: 'cutStrap' }, { type: 'cutStrap', accomplice: true }, { type: 'cutStrap', blade: true }, { type: 'cutStrap', blade: true, accomplice: true }, ...(toolsHeld(s) >= 2 ? [{ type: 'cutStrap' as const, both: true }, { type: 'cutStrap' as const, both: true, accomplice: true }] : [])] : []),
     label: (s, a) => {
       const foe = bracketAhead(s)?.foe, name = foe ? nameOf(foe) : tx('v2.sab.cut.anyone');
+      if (a.both) return a.accomplice ? tx('v2.sab.both.labelWith', { name, n: accomplicePrice(s), p: bothPct() }) : tx('v2.sab.both.label', { name, p: bothPct() });
       if (a.blade) return a.accomplice ? tx('v2.sab.blade.labelWith', { name, n: accomplicePrice(s) }) : tx('v2.sab.blade.label', { name });
       return a.accomplice ? tx('v2.sab.cut.labelWith', { name, n: accomplicePrice(s) }) : tx('v2.sab.cut.label', { name });
     },
@@ -184,6 +192,7 @@ export const V2_SABOTAGE_ACTIONS: { [K in V2SabotageAction['type']]: ActionDef<E
       if (!ahead || ahead.day - 1 !== s.day) return tx('v2.sab.noEve');
       if (s.slot !== 'evening') return tx('v2.sab.cut.night');
       if (s.v2?.sabotage?.eves?.[s.day]) return tx('v2.sab.cut.done');
+      if (a.both && toolsHeld(s) < 2) return tx('v2.sab.both.noSecond');
       if (!holdsTool(s)) return tx('v2.sab.cut.noTool');
       if (!casedToday(s)) return tx('v2.sab.cut.noCase');
       if (!ahead.foe) return tx('v2.sab.cut.noFoe');
@@ -192,10 +201,17 @@ export const V2_SABOTAGE_ACTIONS: { [K in V2SabotageAction['type']]: ActionDef<E
     },
     apply: (s, a, rng, emit) => {
       const ahead = bracketAhead(s)!, foe = ahead.foe!, name = nameOf(foe), acc = !!a.accomplice, sab = (s.v2!.sabotage ??= {});
-      delete sab.tool;
+      // the blades are used up: one for a gesture, both for « les deux » (a second left after a single gesture stays in hand)
+      if (toolsHeld(s) - (a.both ? 2 : 1) >= 1) sab.tool = true; else delete sab.tool;
       if (acc) s.player.coins -= accomplicePrice(s);
-      const seen = rng.next() < seenChance(s, s.day, acc);
-      (sab.eves ??= {})[s.day] = { foe, result: seen ? 'seen' : 'cut', ...(acc ? { accomplice: true } : {}), ...(a.blade ? { gesture: 'blade' as const } : {}) };
+      const seen = rng.next() < seenChance(s, s.day, acc, !!a.both);
+      (sab.eves ??= {})[s.day] = { foe, result: seen ? 'seen' : 'cut', ...(acc ? { accomplice: true } : {}), ...(a.both ? { gesture: 'both' as const } : a.blade ? { gesture: 'blade' as const } : {}) };
+      if (!seen && a.both) {
+        const st = weaponState(foe);
+        emit({ kind: 'action', id: 'sabotage:cut', cause: 'action:cutStrap', visible: true,
+          text: tx(acc ? 'v2.sab.both.logWith' : 'v2.sab.both.log', { name, n: forcePct(), m: bladePct(), extra: st ? ` ${tx('v2.sab.blade.extra', { name, state: tx(STATE_NAME[st]!) })}` : '' }) });
+        return;
+      }
       if (!seen && a.blade) {
         const st = weaponState(foe);
         emit({ kind: 'action', id: 'sabotage:cut', cause: 'action:cutStrap', visible: true,

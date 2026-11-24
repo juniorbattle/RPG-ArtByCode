@@ -1,12 +1,15 @@
-// The player's sabotage in a browser (the operator's SB-1, SA-1 to SA-6, SF-1 to SF-4, SG-1 to SG-3, journal Passes SB4 / SB5 / SB8; src/simulation/v2sabotage.ts): a new game to the eve of day 5, each of the
+// The player's sabotage in a browser (the operator's SB-1, SA-1 to SA-6, SF-1 to SF-4, SG-1 to SG-3, SH-1, journal Passes SB4 / SB5 / SB8 / SB11; src/simulation/v2sabotage.ts): a new game to the eve of day 5, each of the
 // three steps taken through the pages (the hooded stranger's dialogue at the quay at night, the list at the forecourt by day and by night), the night's result (the strap cut, or seen),
 // then what the next day reads of it: the match sheet's lines, the tournament's board (the cause of a grudge, nothing for a clean cut), the purse the bout pays; Node replays the actions
 // the pages applied and finds the same fingerprint.
-//   node tools/sabotage-flow.mjs <outDir> <cut|seen|blade> [seed]   (DEV server: BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/cards-flow.mjs; PAGE_LANG=fr: every page in French,
-//   the texts read from the game's own French table; without a seed, the first seed of 1 to 400 whose night ends as asked)
+//   node tools/sabotage-flow.mjs <outDir> <cut|seen|blade|both> [seed]   (DEV server: BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/cards-flow.mjs; PAGE_LANG=fr: every page in French,
+//   the texts read from the game's own French table; without a seed, the first seed of 1 to 400 whose night ends as asked, against the rival FOE=<id> when it is set)
 //   cut:  the night is not seen: the strap is cut and kept secret, the rival takes ×1.15 the damage on the match sheet, nothing on the board, the purse whole (35)
 //   blade: the night is not seen and the gesture is the blunted blade (journal Passe SB8): the night's four lines, the line « blunt … alone » taken, the rival's Attack a fifth lower and their weapon's
 //         state gone on the match sheet (the lines of the sheet), nothing on the board, the purse whole (35)
+//   both: the night is not seen and the gesture is both (journal Passe SB11, the operator's SH-1 « A · Les deux gestes, avec quinze points d’être vu en plus »): two blades bought from the hooded stranger
+//         (the evenings of days 3 and 4, the second saying it is for both), the night's six lines, the line « cut … and blunt … alone » taken, the strap cut AND the blade blunted on the match
+//         sheet (the lines of both and the weapon's state gone), nothing on the board, the purse whole (35)
 //   seen: the night is seen: nothing cut, the registrar's warning in the news, the rival's grudge on the match sheet and on the board, the purse halved (17)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -16,8 +19,9 @@ import { createServer } from 'vite';
 const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
 const [outDir, mode, seedArg] = process.argv.slice(2);
-if (!outDir || !['cut', 'seen', 'blade'].includes(mode)) throw new Error('usage: node tools/sabotage-flow.mjs <outDir> <cut|seen|blade> [seed]');
-const WANT = mode === 'seen' ? 'seen' : 'cut';   // the night's result asked for (the blade is cut in the dark like the strap)
+if (!outDir || !['cut', 'seen', 'blade', 'both'].includes(mode)) throw new Error('usage: node tools/sabotage-flow.mjs <outDir> <cut|seen|blade|both> [seed]');
+const WANT = mode === 'seen' ? 'seen' : 'cut';   // the night's result asked for (the blade and both are cut in the dark like the strap)
+const BOTH = mode === 'both';
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720), READY = +(process.env.READY_MS || 600000);
 const LANG = process.env.PAGE_LANG === 'fr' ? 'fr' : 'en';
 fs.mkdirSync(outDir, { recursive: true });
@@ -38,13 +42,18 @@ const { RIVALS } = await server.ssrLoadModule('/src/narrative/roster.ts');
 const { EN } = await server.ssrLoadModule('/src/narrative/text/en.ts');
 const play = (seed, acts) => { let s = G.makeV2(G.newGame(seed, 'Aster')); for (const a of acts) { const r = G.advance(s, a); if (!r.ok) return null; s = r.state; } return s; };
 // (opening the stranger's dialogue applies a `talk`, an action like the others: it moves the game's random streams, so the seed is searched with it)
-const steps = [...POOL4, { type: 'talk', who: 'stranger' }, { type: 'buyTool' }, { type: 'move', to: 'forecourt' }, { type: 'caseLockers' }, WON, { type: 'cutStrap', ...(mode === 'blade' ? { blade: true } : {}) }];
+const TALK = { type: 'talk', who: 'stranger' }, BUY = { type: 'buyTool' };
+const TO3 = POOL4.slice(0, 8);   // the pool to the evening of day 3, at the quay: the first blade of « both » is bought then, the second the evening of day 4
+const steps = BOTH
+  ? [...TO3, TALK, BUY, WAIT, WON, TALK, BUY, { type: 'move', to: 'forecourt' }, { type: 'caseLockers' }, WON, { type: 'cutStrap', both: true }]
+  : [...POOL4, TALK, BUY, { type: 'move', to: 'forecourt' }, { type: 'caseLockers' }, WON, { type: 'cutStrap', ...(mode === 'blade' ? { blade: true } : {}) }];
 let seed = seedArg ? +seedArg : 0;
-if (!seed) for (let s = 1; s <= 400 && !seed; s++) { const st = play(s, steps); if (st?.v2?.sabotage?.eves?.[5]?.result === WANT) seed = s; }
+// (FOE=<rival id> asks for a night against that rival: one whose weapon carries a state shows the match sheet's line of the state gone)
+if (!seed) for (let s = 1; s <= 400 && !seed; s++) { const st = play(s, steps), e = st?.v2?.sabotage?.eves?.[5]; if (e?.result === WANT && (!process.env.FOE || e.foe === process.env.FOE)) seed = s; }
 const expect = play(seed, steps);
 check(!!expect, `seed ${seed}: the eve plays through in Node`);
 const foe = expect.v2.sabotage.eves[5].foe, foeName = RIVALS[foe].name;
-check(expect.v2.sabotage.eves[5].result === WANT, `the night ends ${mode === 'seen' ? 'seen' : mode === 'blade' ? 'unseen, the blade blunted' : 'unseen, the strap cut'} against ${foeName}`);
+check(expect.v2.sabotage.eves[5].result === WANT, `the night ends ${mode === 'seen' ? 'seen' : mode === 'blade' ? 'unseen, the blade blunted' : BOTH ? 'unseen, the strap cut and the blade blunted' : 'unseen, the strap cut'} against ${foeName}`);
 const weapon = SAB.weaponState(foe);
 
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars', '--disable-background-timer-throttling', '--disable-renderer-backgrounding'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 } });
@@ -70,23 +79,34 @@ try {
 
   // 1. a new game, the pool played to the evening of day 4 (the arena's results given as the named states do)
   await open(`?play=1&new=1&name=Aster&seed=${seed}&vis=0&noreload=1`);
-  for (const a of POOL4) await act(a);
+  for (const a of BOTH ? TO3 : POOL4) await act(a);
   let st = await state();
+  /** step two, by the hooded stranger at the quay at night: a fine blade (the second, for « both », says so), bought through his dialogue */
+  const buyBlade = async (key, held, day, shot) => {
+    await page.evaluate(() => window.__ui.openPerson('stranger')); await sleep(400);
+    const toolPart = (await T(key, { n: '@' })).split(' (')[0];
+    const stranger = await lines();
+    const toolLine = stranger.find((l) => l.text.includes(toolPart));
+    check(!!toolLine && !toolLine.off, `the stranger's dialogue offers the blade: ${toolLine?.text.slice(0, 110)}`);
+    check(/8/.test(toolLine?.text ?? '') && /1/.test(toolLine?.text ?? ''), 'its tag says the coins and the slot');
+    if (shot) await page.screenshot({ path: path.join(outDir, `${mode}-1-stranger.png`) });
+    const coinsBefore = (await state()).player.coins;
+    check(await clickLine(toolPart), 'a click buys the blade'); await sleep(500); await dismiss();
+    const s2 = await state();
+    check(s2.v2.sabotage?.tool === held && s2.day === day && s2.slot === 'morning', `the blade is held (${JSON.stringify(held)}), the evening spent: day ${s2.day} ${s2.slot}`);
+    check(coinsBefore - s2.player.coins === 8, `the stranger took 8 coins (the price of the day): ${coinsBefore - s2.player.coins}`);
+    return s2;
+  };
+  if (BOTH) {
+    check(st.day === 3 && st.slot === 'evening' && st.place === 'district', `day ${st.day} ${st.slot} at ${st.place}: two evenings before the eve`);
+    check(!st.v2.sabotage, 'a game that has not begun the sabotage carries no field of it');
+    await buyBlade('v2.sab.tool.label', true, 4, false);
+    await act(WAIT); await act(WON); st = await state();
+  }
   check(st.day === 4 && st.slot === 'evening' && st.place === 'district', `day ${st.day} ${st.slot} at ${st.place}: the evening before the eve`);
-  check(!st.v2.sabotage, 'a game that has not begun the sabotage carries no field of it');
-  // 2. step two first, by the hooded stranger at the quay at night: the blade
-  await page.evaluate(() => window.__ui.openPerson('stranger')); await sleep(400);
-  const toolPart = (await T('v2.sab.tool.label', { n: '@' })).split(' (')[0];
-  const stranger = await lines();
-  const toolLine = stranger.find((l) => l.text.includes(toolPart));
-  check(!!toolLine && !toolLine.off, `the stranger's dialogue offers the blade: ${toolLine?.text.slice(0, 110)}`);
-  check(/8/.test(toolLine?.text ?? '') && /1/.test(toolLine?.text ?? ''), 'its tag says the coins and the slot');
-  await page.screenshot({ path: path.join(outDir, `${mode}-1-stranger.png`) });
-  const coins4 = (await state()).player.coins;
-  check(await clickLine(toolPart), 'a click buys the blade'); await sleep(500); await dismiss();
-  st = await state();
-  check(st.v2.sabotage?.tool === true && st.day === 5 && st.slot === 'morning', `the blade is held, the evening spent: day ${st.day} ${st.slot}`);
-  check(coins4 - st.player.coins === 8, `the stranger took 8 coins (day 4's price): ${coins4 - st.player.coins}`);
+  if (!BOTH) check(!st.v2.sabotage, 'a game that has not begun the sabotage carries no field of it');
+  // 2. step two first: the blade (with « both », a second one, the stranger saying it is for both gestures)
+  st = await buyBlade(BOTH ? 'v2.sab.tool.labelSecond' : 'v2.sab.tool.label', BOTH ? 2 : true, 5, true);
   // 3. step one by day at the forecourt, in the list (Q): under the group of the foul play
   await act({ type: 'move', to: 'forecourt' });
   await page.evaluate(() => window.__ui.openHere()); await sleep(400);
@@ -108,13 +128,16 @@ try {
   check(st.day === 5 && st.slot === 'evening', `the pool's last bout fought: day ${st.day} ${st.slot}`);
   await page.evaluate(() => window.__ui.openHere()); await sleep(400);
   const list2 = await lines();
-  const cutPart = (await T('v2.sab.cut.label', { name: foeName })).slice(0, 30);
+  const cutPart = (await T('v2.sab.cut.label', { name: foeName })).slice(0, 25);   // (the start every line of the night shares: the strap, the blade and both)
   const cutLines = list2.filter((l) => l.text.includes(cutPart));
   if (!cutLines.length) console.log('[debug] the list:', list2.map((l) => l.text).join(' | '), '| the game says:', JSON.stringify(await page.evaluate(() => window.__game.actions().filter((o) => ['cutStrap', 'caseLockers', 'buyTool'].includes(o.action.type)).map((o) => ({ t: o.action.type, ok: o.ok, why: o.reason })))));
-  check(cutLines.length === 4 && cutLines.every((l) => !l.off), `the night's four lines, the strap or the blade, alone or with Corra Dunmere: ${cutLines.map((l) => l.text.slice(0, 60)).join(' | ')}`);
-  check(cutLines.filter((l) => /20/.test(l.text)).length === 2, 'her two lines say her price');
+  check(cutLines.length === (BOTH ? 6 : 4) && cutLines.every((l) => !l.off), `the night's ${BOTH ? 'six' : 'four'} lines, the strap or the blade${BOTH ? ' or both' : ''}, alone or with Corra Dunmere: ${cutLines.map((l) => l.text.slice(0, 60)).join(' | ')}`);
+  check(cutLines.filter((l) => /20/.test(l.text)).length === (BOTH ? 3 : 2), BOTH ? 'her three lines say her price' : 'her two lines say her price');
+  if (BOTH) check(cutLines.filter((l) => /15/.test(l.text)).length === 2, 'the two lines of both say the fifteen points more of being seen');
+  // (the list opens on what is new, the cards and the people: the night's lines are under their group, scrolled into view for the capture)
+  await page.evaluate((t) => { const b = [...document.querySelectorAll('.pm-talk .opts .pm-btn')].filter((x) => x.textContent.includes(t)).at(-1); b?.scrollIntoView({ block: 'end' }); }, cutPart); await sleep(300);
   await page.screenshot({ path: path.join(outDir, `${mode}-3-list-night.png`) });
-  const aloneLabel = await T(mode === 'blade' ? 'v2.sab.blade.label' : 'v2.sab.cut.label', { name: foeName });
+  const aloneLabel = await T(mode === 'blade' ? 'v2.sab.blade.label' : BOTH ? 'v2.sab.both.label' : 'v2.sab.cut.label', mode === 'both' ? { name: foeName, p: 15 } : { name: foeName });
   check(await page.evaluate((t) => { const b = [...document.querySelectorAll('.pm-talk .opts .pm-btn')].find((x) => x.textContent.includes(t) && !/Corra/.test(x.textContent)); if (!b || b.disabled) return false; b.click(); return true; }, aloneLabel), 'a click on the line alone');
   await sleep(600);
   const news = await page.evaluate(() => document.querySelector('.pm-overlay, .pm-talk')?.textContent?.replace(/\s+/g, ' ').slice(0, 700) ?? '');
@@ -123,7 +146,8 @@ try {
   st = await state();
   const res = st.v2.sabotage.eves[5];
   check(res.result === WANT && res.foe === foe, `the night's result is the one Node found: ${res.result} against ${res.foe}`);
-  check(mode === 'blade' ? res.gesture === 'blade' : res.gesture === undefined, `the gesture kept: ${res.gesture ?? 'the strap'}`);
+  check(mode === 'blade' ? res.gesture === 'blade' : BOTH ? res.gesture === 'both' : res.gesture === undefined, `the gesture kept: ${res.gesture ?? 'the strap'}`);
+  check(BOTH ? st.v2.sabotage.tool === undefined : true, 'the blades are used up');
   check(st.day === 6 && st.slot === 'morning', `the night spent: day ${st.day} ${st.slot}`);
   const events = st.log.filter((e) => e.day === 5 && e.slot === 'evening' && /^sabotage:/.test(e.id)).map((e) => e.id);
   check(mode !== 'seen' ? events.join() === 'sabotage:cut' : events.join() === 'sabotage:seen,sabotage:warned', `the journal's lines: ${events.join(', ')}`);
@@ -133,11 +157,13 @@ try {
   const sheet = await page.evaluate(() => document.querySelector('.pm-overlay')?.textContent?.replace(/\s+/g, ' ') ?? '');
   const strapWords = (await T('v2.sheet.foeStrap', { name: foeName, n: 15 })).replace(/\s+/g, ' '), grudgeWords = (await T('v2.sheet.foeGrudge', { name: foeName, n: 2 })).replace(/\s+/g, ' ');
   const bladeWords = (await T('v2.sheet.foeBlade', { name: foeName, n: 20 })).replace(/\s+/g, ' ');
-  if (mode === 'blade') {
-    check(sheet.includes(bladeWords), `the match sheet says it: « ${bladeWords.slice(0, 80)} »`);
+  if (mode === 'blade' || BOTH) {
+    if (BOTH) check(sheet.includes(strapWords), `the match sheet says the strap: « ${strapWords.slice(0, 80)} »`);
+    check(sheet.includes(bladeWords), `the match sheet says ${BOTH ? 'the blade too' : 'it'}: « ${bladeWords.slice(0, 80)} »`);
     if (weapon) check(sheet.includes((await T('v2.sheet.foeBladeState', { state: await T(`state.name.${weapon}`) })).replace(/\s+/g, ' ')), `and says the weapon's state is gone (${weapon})`);
     else check(!sheet.includes((await T('v2.sheet.foeBladeState', { state: '@' })).split('@')[0]), 'and nothing of a state: their weapon carries none');
-    check(!sheet.includes(strapWords.slice(0, 30)) && !sheet.includes(grudgeWords.slice(0, 30)), 'no strap cut, no grudge');
+    if (BOTH) check(!sheet.includes(grudgeWords.slice(0, 30)), 'no grudge');
+    else check(!sheet.includes(strapWords.slice(0, 30)) && !sheet.includes(grudgeWords.slice(0, 30)), 'no strap cut, no grudge');
   } else if (mode === 'cut') {
     check(sheet.includes(strapWords), `the match sheet says it: « ${strapWords.slice(0, 80)} »`);
     check(!sheet.includes(grudgeWords.slice(0, 30)), 'and no grudge');
@@ -167,6 +193,7 @@ try {
   for (const a of pageActs) { const r = G.advance(s, a); if (!r.ok) check(false, `replay refused ${JSON.stringify(a).slice(0, 60)}: ${r.reason}`); else s = r.state; }
   check(G.hash(s) === final.h, `Node replay ${G.hash(s)} = browser ${final.h}`);
   check(['buyTool', 'caseLockers', 'cutStrap'].every((t) => pageActs.some((a) => a.type === t)), `the pages applied the three steps: ${pageActs.filter((a) => ['buyTool', 'caseLockers', 'cutStrap'].includes(a.type)).map((a) => a.type).join(', ')}`);
+  if (BOTH) check(pageActs.filter((a) => a.type === 'buyTool').length === 2 && pageActs.some((a) => a.type === 'cutStrap' && a.both === true), 'two blades bought and the night of both applied');
   check(errors.length === 0, `no page error (${errors.length})`);
 } finally { await b.close(); await server.close(); }
 console.log(failed ? `${failed} check(s) failed` : 'all checks passed');

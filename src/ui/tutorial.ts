@@ -222,7 +222,7 @@ function hintText(s: GameState, id: HintId, who?: string): string {
   if (id === 'evening') return tx(k, { lio: RUMOUR.lio.coins, stranger: RUMOUR.stranger.coins });
   if (id === 'poor') return tx(k, { pay: WORK.pay, jobs: jobsLine(), mara: nameOf('mara') });
   if (id === 'vigour') return tx(k, { n: VIGOUR_HP, train: TRAIN_HP });
-  if (id === 'sabotage') return tx(k, { tool: SAB.toolCoins, acc: SAB.accompliceCoins, pct: forcePct(), blade: bladePct() });
+  if (id === 'sabotage') return tx(k, { tool: SAB.toolCoins, acc: SAB.accompliceCoins, pct: forcePct(), blade: bladePct(), both: pct(SAB.both) });
   return tx(k);
 }
 export const hintChapter = (id: HintId): string => HINT[id].chapter;
@@ -299,7 +299,7 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM, corvin: nameOf('corvin') });
     // the player's own sabotage (the operator's SB-1, journal Passes CL2 / SB4): the three steps, the chance of being seen by eve, what being seen costs, a paragraph after the chapter's text
     case 'events': return `${tx(c.body, { mara: nameOf('mara'), hale: nameOf('hale'), odo: nameOf('odo'), room: STRONGROOM, hilde: nameOf('hilde'), tam: nameOf('tam'), anwen: nameOf('anwen'), corvin: nameOf('corvin'), lio: nameOf('lio') })}
-${tx('tut.ch.events.sabotage', { eves: list([...EVES]), odo: nameOf('odo'), lock: SAB.lockFrom, tool: SAB.toolCoins, acc: SAB.accompliceCoins, watch: pct(SAB.accomplice), sa: pct(SAB.seen[EVES[0]]), sb: pct(SAB.seen[EVES[1]]), sc: pct(SAB.seen[EVES[2]]), da: EVES[0], db: EVES[1], dc: EVES[2], pulse: SAB.pulse, pct: forcePct(), blade: bladePct(), rel: -SAB.grudgeRel, atk: num(grudgeAttack()), stepA: Math.round((STAGE_PRICE[0].k - 1) * 100), dayA: STAGE_PRICE[0].from, stepB: Math.round((STAGE_PRICE[1].k - 1) * 100), dayB: STAGE_PRICE[1].from })}`;
+${tx('tut.ch.events.sabotage', { eves: list([...EVES]), odo: nameOf('odo'), lock: SAB.lockFrom, tool: SAB.toolCoins, acc: SAB.accompliceCoins, watch: pct(SAB.accomplice), sa: pct(SAB.seen[EVES[0]]), sb: pct(SAB.seen[EVES[1]]), sc: pct(SAB.seen[EVES[2]]), da: EVES[0], db: EVES[1], dc: EVES[2], pulse: SAB.pulse, pct: forcePct(), blade: bladePct(), both: pct(SAB.both), rel: -SAB.grudgeRel, atk: num(grudgeAttack()), stepA: Math.round((STAGE_PRICE[0].k - 1) * 100), dayA: STAGE_PRICE[0].from, stepB: Math.round((STAGE_PRICE[1].k - 1) * 100), dayB: STAGE_PRICE[1].from })}`;
     // the duel played by the computer (lot 3, journal Passe LC5): the order of the four, the match sheet, the health of a bout (AUTO_RULES.hpScale, DB5)
     case 'prepare': return `${tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen'), rehearse: REHEARSAL.n, cap: SAND_LESSON.cap, sday: SIGNATURE_DAY, lday: LESSON.day, pnext: lessonPrice(4), plast: lessonPrice(5) })}
 ${tx('tut.ch.prepare.cards', { offered: CARD_RULES.offered, point: CARD.point, cap: CARD_RULES.levelCap, picks: CARD_RULES.picks, chal: CARD_RULES.challengeOffered })}`;
