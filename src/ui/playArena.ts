@@ -145,9 +145,9 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     const vigour = won && v2 && !challenge ? `<p class="pm-vigour">${esc(tx('v2.result.vigour', { n: VIGOUR_HP, hp: duelStats(st).hp ?? 0, k: num(AUTO_RULES.hpScale) }))}</p>`
       : won && v2 && !reprisal ? `<p class="pm-vigour">${esc(tx('v2.result.noVigour'))}</p>` : '';
     const corvin = note ? `<p class="pm-sub">${tx('note.title')}</p>${noteLines(note).slice(1).map((l) => `<p>${esc(l)}</p>`).join('')}` : '';
-    // the winner's card (the operator's CL-2, journal Passe CV1; src/simulation/v2cards.ts): after a bout of the tournament won, the cards the game drew sit in a row on this page, the
+    // the winner's card (the operator's CL-2, journal Passe CV1; src/simulation/v2cards.ts): after a bout of the tournament won (and a challenge won in town, CV-3), the cards the game drew sit in a row on this page, the
     // player takes one (Enter, a click, its number); « Decide later » leaves them waiting in the list
-    const offer = won && v2 && !challenge ? pendingOffer(st) : null;
+    const offered = (res.events as Array<{ id: string }>).some((e) => e.id === 'cards:offered'), offer = won && v2 && offered ? pendingOffer(st) : null;
     const html = `<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}${offer ? '<div class="pm-cards-slot"></div>' : ''}${vigour}${corvin}${challenge ? '' : `<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`}`;
     if (offer) {
       const o = overlay(html, [{ id: 'later', label: tx('ui.card.later') }]), foot = o.root.querySelector<HTMLElement>('.pm-foot')!;

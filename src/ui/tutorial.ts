@@ -296,7 +296,7 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'events': return tx(c.body, { mara: nameOf('mara'), hale: nameOf('hale'), odo: nameOf('odo'), room: STRONGROOM, hilde: nameOf('hilde'), tam: nameOf('tam'), anwen: nameOf('anwen'), corvin: nameOf('corvin'), lio: nameOf('lio') });
     // the duel played by the computer (lot 3, journal Passe LC5): the order of the four, the match sheet, the health of a bout (AUTO_RULES.hpScale, DB5)
     case 'prepare': return `${tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen'), rehearse: REHEARSAL.n, cap: SAND_LESSON.cap, sday: SIGNATURE_DAY, lday: LESSON.day, pnext: lessonPrice(4), plast: lessonPrice(5) })}
-${tx('tut.ch.prepare.cards', { offered: CARD_RULES.offered, point: CARD.point, cap: CARD_RULES.levelCap, picks: CARD_RULES.picks })}`;
+${tx('tut.ch.prepare.cards', { offered: CARD_RULES.offered, point: CARD.point, cap: CARD_RULES.levelCap, picks: CARD_RULES.picks, chal: CARD_RULES.challengeOffered })}`;
     // its numbers the duel's own (src/combat/auto.ts AUTO_RULES, src/combat/autoData.ts: the cooldown, the weapons' chains of blows)
     case 'duel': {
       const R = AUTO_RULES, hits = Object.values(AUTO_WEAPONS).map((w) => w.hits.length);

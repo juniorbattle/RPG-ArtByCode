@@ -328,7 +328,9 @@ test('the curious player tells Hale of Rhosk\'s plan before the sand day, and ta
   // (the sign on seeds 11, 41, 47, 50, 55, 59 and 69 among the first 90 with the gold and the gear of the operator's chantier 5 and the race fitted again, journal Passe GP5-3: the
   // curious player buys dearer in the bracket and wins fewer bouts, so fewer games reach the Gate; 1, 3, 4, 6, 11 and 12 before)
   // (the sign on seeds 9, 29, 30, 35, 55, 58, 59 and 73 among the first 90 with the winner's cards of the operator's CL-2 and the race fitted once more, journal Passe CV1; 11, 41, 47, 50, 55, 59 and 69 before)
-  for (const seed of [9, 29, 30, 35]) {
+  // (the sign on seeds 3, 9, 47, 58, 59, 74, 77, 83 and 86 among the first 90 with the three cards of stats a challenge won in town offers, the operator's CV-3, journal Passe CV3: the curious player,
+  // the one who challenges, wins more bouts; 9, 29, 30, 35, 55, 58, 59 and 73 before)
+  for (const seed of [3, 9, 47, 58]) {
     const st = LAB.autoplay(seed, LAB.POLICIES.curious, 'Ren', 400, 'v2').state;
     const sign = st.log.find((e) => e.id === 'v2-rhosk-offer');
     if (!sign) continue;

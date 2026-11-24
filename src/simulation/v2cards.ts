@@ -9,7 +9,7 @@ import { skillName, tx, type TextKey } from '../narrative/text';
 /** The winner's card (the operator's CL-2 « Version légère : deux cartes par victoire (stat, niveau de compétence, bourse) », the sheet
  *  https://claude.ai/artifact/3j8cNwctXgmVRB5BHK39td, journal Passe CL1; his note, word for word: « mais a determiner si on se limite que a 2 par victoire ? pk pas + ? »):
  *  after each bout of the tournament the player wins, the game offers a few cards, drawn by the game's seed, and the player takes one (or `picks` of them): a lasting
- *  point of a stat, a level of one of the skills he brings, or the bout's purse again. Nothing here is a talent (CL-1 « Les abandonner : les pièces d’équipement
+ *  point of a stat, a level of one of the skills he brings, or the bout's purse again; after a challenge won in town, three cards of stats alone (the operator's CV-3). Nothing here is a talent (CL-1 « Les abandonner : les pièces d’équipement
  *  suffisent »). The numbers of the offer are « proposés », measured in the laboratory (journal Passe CV1: `tools/auto-cards.mjs`).
  *  The state: `V2State.cards` (absent until a bout is won, so a game that never wins one keeps its fingerprint): the offers waiting, oldest first, the cards taken
  *  and the lasting points. An offer waits as long as it must (it blocks nothing; the list Q says it), and the same seed draws the same cards. Pure. */
@@ -26,6 +26,9 @@ export interface V2Cards { offers: V2CardOffer[]; taken: string[]; stats: Partia
  *  are Master Corvin's lessons), `stages` the bouts that offer (not the final, which no bout follows) */
 export const CARD_RULES = {
   offered: 3, picks: 1, purse: 0.5, levelCap: 3,
+  /** a challenge won in town offers this many cards of stats alone (the operator's CV-3 « Aussi les défis gagnés en ville », his note « mais uniquement 3 cartes de la famille des
+   *  stats », journal Passe CV3): a challenge already gives its own skill and stake */
+  challengeOffered: 3,
   stages: ['pool', 'semi', 'gate', 'third', 'gateFinal'] as string[],
 };
 
@@ -82,6 +85,25 @@ export function drawCards(s: GameState, n: number, coins: number): V2Card[] {
     }
   }
   return sortCards(out);
+}
+
+/** the cards a challenge won in town draws: stat cards alone, `n` of the four stats, by the same stream (a challenge is another step, so another draw) */
+export function drawStatCards(s: GameState, n: number): V2Card[] {
+  const rng = new Rng(mix32(mix32(s.seed, s.step), hashString('cards')));
+  const stats = [...STAT_CARDS];
+  rng.shuffle(stats);
+  return stats.slice(0, n).sort((a, b) => STAT_CARDS.indexOf(a) - STAT_CARDS.indexOf(b)).map((stat) => ({ k: 'stat' as const, stat }));
+}
+
+/** a challenge won in town (the voluntary challenge to a fighter, src/simulation/v2town.ts applyChallenge; not a thief caught, a piece taken by force, a reprisal or an event's
+ *  fight): the offer of its stat cards (the operator's CV-3 answer, journal Passe CV3: « Trois cartes de stat, on en prend une »; « Les défis lancés à un combattant »), said in the log */
+export function offerChallengeCards(s: GameState, foe: string, emit: Emit): void {
+  if (!isV2(s) || !s.v2 || CARD_RULES.challengeOffered <= 0) return;
+  const cards = drawStatCards(s, CARD_RULES.challengeOffered);
+  if (!cards.length) return;
+  const c = (s.v2.cards ??= { offers: [], taken: [], stats: {} });
+  c.offers.push({ day: s.day, foe, stage: 'challenge', cards, picks: Math.min(CARD_RULES.picks, cards.length) });
+  emit({ kind: 'consequence', id: 'cards:offered', cause: `challenge:${foe}`, visible: true, text: tx(CARD_RULES.picks > 1 ? 'v2.card.offeredN' : 'v2.card.offered', { n: cards.length, picks: Math.min(CARD_RULES.picks, cards.length) }) });
 }
 
 /** a bout of the tournament won: the offer waiting for the player's pick (src/tournament/pool.ts applyPlayerDuel); `stage` the bout's (`pool` for a round of the pool) and

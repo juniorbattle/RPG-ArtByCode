@@ -3,7 +3,7 @@ import { offeredBy, scoutable, whoAt } from '../simulation/roles';
 import { heardLine, strapCut } from '../simulation/v2intel';
 import { sandRefusal } from '../simulation/v2rivals';
 import { watchPost } from '../simulation/v2watch';
-import { cardsWaiting } from '../simulation/v2cards';
+import { CARD_RULES, cardsWaiting } from '../simulation/v2cards';
 import { PEOPLE, titleOf } from '../narrative/people';
 import { linesOf } from '../narrative/dialogue';
 import { RIVALS } from '../narrative/roster';
@@ -708,7 +708,7 @@ export class TownUi {
     return `<p class="pm-sub">${esc(tx(ch.kind === 'caught' ? 'v2.caught.title' : ch.kind === 'seize' ? 'v2.seize.title' : ch.kind === 'encounter' ? 'v2.encounter.fightTitle' : ch.reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title'))} · ${esc(tx('ui.dayN', { day: s.day }))}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(name)}</h2><p class="pm-sub">${esc(title)}</p></div></div>`
       // what is at stake and what a win gives come first, before the table and what is known (C-12 of journal Passe IA1: the stake was the last thing the column held, under its fade)
       + (like ? `<p class="pm-sub">${esc(like)}</p>` : '')
-      + `<p class="pm-sub">${esc(stake)}</p>${win ? `<p class="pm-sub">${esc(win)}</p>` : ''}${ch.reprisal || ch.kind ? '' : `<p class="pm-sub">${esc(tx('v2.result.noVigour'))}</p>`}`
+      + `<p class="pm-sub">${esc(stake)}</p>${win ? `<p class="pm-sub">${esc(win)}</p>` : ''}${ch.reprisal || ch.kind ? '' : `<p class="pm-sub">${esc(tx('prep.challenge.cards', { n: CARD_RULES.challengeOffered }))}</p><p class="pm-sub">${esc(tx('v2.result.noVigour'))}</p>`}`
       + vs + known.map((l) => `<p class="pm-sub">${esc(l)}</p>`).join('') + `<p class="pm-sub">${esc(tx('auto.sheet.note', { k: num(AUTO_RULES.hpScale) }))}</p>`;
   }
 
