@@ -1825,13 +1825,27 @@ Le joueur ne peut pas saboter un rival ; le sabotage du jeu est subi. Écart ent
 
 ## 44. Le joueur saboteur : une forme décidée (23/11/2026, journal Passe CL2)
 
-Statut : décidé, **non construit**. Aucune décision A3 ; aucun contrat ne change. Il lève l'écart du § 43.4.
+Statut : décidé (SB-1 à SB-3, puis la fiche des étapes SA-1 à SA-6, § 44.2), **non construit**. Aucune décision A3 ; aucun contrat ne change. Il lève l'écart du § 43.4.
 
 - **SB-1 « Oui, une forme : couper une sangle de l’adversaire la veille d’un combat de tableau »**, sa note : « Il faudrait que cela soit sophistique afin de pas rendre l'action facile et accessible pour tous... plus on avance dans les jours et donc le tournoi, plus le sabotage en devient plus dur ».
 - **SB-2 « Plus dur que le vol : vu, c’est tout de suite l’avertissement du greffier et un point de la poule »**.
 - **SB-3 « Le laboratoire mesure et te montre le chiffre avant de le fixer »**.
 
 À construire dans une séance à part, après le choix du vainqueur et le panache (§ 43.3) : d'abord une fiche courte (les étapes de l'action, la courbe de difficulté par jour, la rancune du rival), puis la mesure de la force, puis la construction.
+
+### 44.1 Ce que le code dit (journal Passe SB1)
+- Une sangle coupée est déjà un effet du duel : `AutoFighter.taken` (les dégâts reçus ×), que `v2Mods` met à ×1,15 pour le joueur le jour d'une sangle coupée (`v2-gear-tamper`) et que `autoFoe` met à 1 pour un rival ; le +15 % n'a jamais été mesuré.
+- **Les veilles** : le soir du jour 5 (combat du jour 6, demi-finale ou Porte), puis le 7 (3e place, jour 8) ou le 9 (finale, jour 10) ; deux ou trois par partie. Le tableau est tiré à la fin de l'après-midi du jour 5 : la cible n'est connue que ce soir-là.
+- **« Un point de la poule » ne peut pas mordre** : une veille de tableau vient après la fin de la poule ; le jeu a déjà posé pour le vol la règle d'après la coupe (une amende de 15 pièces).
+
+### 44.2 La fiche des étapes, relue (journal Passe SB2, https://claude.ai/artifact/W845NbXSg4bwzAaFVc87Tv, `briefs/fiche-sabotage-etapes.html`, six cartes, six à la recommandation, aucune note, mot pour mot)
+- **SA-1 « A · Trois temps : repérer, s’équiper, la nuit »** : (1) repérer les casiers, un créneau de jour au parvis (la ronde des gardes, où le rival range son matériel) ; (2) s'équiper chez l'inconnu à capuche, le soir sur le quai, 8 pièces, un outil fin qui sert une fois ; (3) la nuit de la veille, le soir, au parvis, seul ou avec un complice payé (Corra Dunmere) qui fait le guet. Trois créneaux ; 8 pièces seul, une trentaine avec un complice (la somme sera fixée à la mesure).
+- **SA-2 « A · Aussi le soir du 5 : on prépare sans nom, on nomme la cible ce soir-là »** : le repérage des casiers et l'outil valent pour n'importe quel rival ; la cible se nomme le soir de la veille.
+- **SA-3 « A · Trois leviers : le guet, les rivaux qui se gardent, les prix »** : (1) la chance d'être vu suit le pouls de sécurité du soir et un palier de plus à chaque veille (soirs 5, 7, 9) ; (2) dès le jour 7 les plus prudents des rivaux rangent leur matériel à la salle forte d'Odo, au jour 9 les deux finalistes : on ne peut plus rien leur couper, et le repérage le dit d'avance ; (3) l'outil et le complice coûtent ×1,15 puis ×1,3 comme les boutiques.
+- **SA-4 « B · L’avertissement, et la moitié de la bourse du combat de demain »** : elle remplace « un point de la poule » de SB-2 (qui ne peut pas mordre après la coupe) ; gagné 17 au lieu de 35 le jour 6, 22 au lieu de 45 le jour 8, 40 au lieu de 80 le jour 10 ; perdu la moitié de 10, 15 ou 30. Supposé et non contredit (aucune note) : pris sur le fait, rien n'est coupé, comme un vol pris sur le fait ne prend rien. Seul le joueur qui sabote et qui est vu la paie : la course n'est pas à recaler.
+- **SA-5 « A · Il garde rancune : plus dur demain, la page du tournoi s’en souvient »** : la relation du rival avec le joueur tombe de 30 (hostile sous −25), la cause est écrite sur la page du tournoi, il se bat plus dur le lendemain (sa préparation +15, ses coups environ 4 % plus lourds : chiffre à mesurer) ; s'il était un ami, il ne l'est plus.
+- **SA-6 « A · Un coup réussi reste secret »** : seul l'échec (être vu) a des suites.
+- Aucune décision A3 : aucun verrou des contrats ne change. **Restent à mesurer, avant de les fixer (SB-3)** : la force de la sangle coupée (la part de dégâts reçus en plus, ou une autre forme), les trois paliers du guet, quels rivaux rangent leur matériel et à quel jour, le prix du complice, la préparation de la rancune.
 
 ## 45. Le choix du vainqueur : les cartes (23/11/2026, journal Passes CL1, CV1)
 
