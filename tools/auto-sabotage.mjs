@@ -11,6 +11,9 @@
 //       `--grudge`, on by default) and half the bout's purse (SA-4, `--seen`, on by default). Control row: k = 0. The titles, the stages won, the length
 //       `--costs=1` also spends what the sabotage costs (SA-1): on each eve the slot-costing action the policy chose at the morning of the eve, the evening before and the evening of the
 //       eve is replaced by a wait, `--tool=8` coins at the evening before (× the stage's price), `--acc=0` coins for an accomplice at the evening of the eve
+//   a second gesture, the blunted blade (the operator's idea of 24/11/2026: « le sabotage peut aussi passer par l'arme afin de la rendre emousse et donc infliger moins de degats »): in `games`
+//       `--bladepct=15,20,25` the rival's Attack lowered by that share, `--blades=1,2,3` by that many points (their blows weigh 2·Att/(Att+Def)) instead of the strap, `--dull=1` also taking the state their weapon carries off (a rival's
+//       `gfx.inflict`: Vessa's bleeding, Tobin's blinding, Cassius's poison, Marek's burn); in `duel` the rows « lame émoussée » and the two gestures together; the same chance, costs, grudge and half purse
 //   every command: --seeds=a..b or a,b,c (default 101..300, the held-out seeds of the race's fit)
 process.argv.splice(2, 0, 'lib');
 const AL = await import('./auto-lab.mjs');
@@ -42,7 +45,9 @@ function duels(day, v) {
       const A = AD.autoRen(me, { loadout, levels: lv }, { weapon: R.weapon, gear: [R.weapon], pieceViv: GE.GEAR[R.weapon]?.fx?.viv ?? 0 });
       const B = AD.autoFoe(id, AD.autoRaceSheet(id, stage, round, { preparation: R.prep + (v.prep ?? 0) }), { stage });
       if (v.taken) B.taken = (B.taken ?? 1) * v.taken;
-      if (v.foeAtk) B.atk += v.foeAtk;
+      if (v.foeAtk) B.atk = Math.max(1, B.atk + v.foeAtk);
+      if (v.foeAtkMul) B.atk = Math.max(1, B.atk * v.foeAtkMul);
+      if (v.dull && B.gfx?.inflict) B.gfx = { ...B.gfx, inflict: undefined };
       const r = AU.autoDuel(A, B, 7000 + s * 131 + stage * 7 + round);
       o.n++; if (AU.autoWinner(r) === 0) o.w++; o.t.push(r.t);
     }
@@ -72,6 +77,11 @@ if (command === 'duel') {
     for (const n of [20, 40, 80]) row(`Ren +${n} PV`, { ren: { hp: n } });
     for (const n of [15, 30]) row(`rancune : préparation du rival +${n}`, { prep: n });
     for (const n of [1, 2, 3, 4]) row(`rancune : le rival +${n} Attaque`, { foeAtk: n });
+    for (const n of [1, 2, 3, 4]) row(`lame émoussée : le rival −${n} Attaque`, { foeAtk: -n });
+    for (const n of [1, 2, 3, 4]) row(`lame émoussée −${n} et son état retiré`, { foeAtk: -n, dull: true });
+    for (const p of [10, 15, 20, 25]) row(`lame émoussée : l'Attaque du rival −${p} %`, { foeAtkMul: 1 - p / 100 });
+    for (const p of [10, 15, 20]) row(`lame −${p} % et son état retiré`, { foeAtkMul: 1 - p / 100, dull: true });
+    row('sangle ×1,15 et lame −2 (les deux)', { taken: 1.15, foeAtk: -2 });
   }
 }
 
@@ -85,14 +95,14 @@ const GS = command === 'games' ? await createServer({
     transform(code, id) {
       const f = id.split('?')[0].replace(/\\/g, '/');
       if (f.endsWith('/src/combat/autoMatch.ts')) {
-        const a = '    return { ren, foe, prep: npc || g || !c ? 0 : autoPrepPoints(c.preparation) };';
+        const a = '    return { ren, foe, prep: npc || g || !c ? 0 : autoPrepPoints(c.preparation + grudge) };';
         if (!code.includes(a)) throw new Error('sabotage-lab: autoMatch.ts moved');
         return code.replace(a, `    globalThis.__sab?.(st, o.id, stage, round, foe, o2);\n${a}`);
       }
       if (f.endsWith('/src/tournament/pool.ts')) {
-        const a = '  return won ? p[0] : p[1];';
+        const a = '  return halved ? Math.floor((won ? p[0] : p[1]) / 2) : won ? p[0] : p[1];';
         if (!code.includes(a)) throw new Error('sabotage-lab: pool.ts moved');
-        return code.replace(a, '  { const v = won ? p[0] : p[1]; return globalThis.__sabHalf?.(s, m) ? Math.floor(v / 2) : v; }');
+        return code.replace(a, '  { const v = halved ? Math.floor((won ? p[0] : p[1]) / 2) : won ? p[0] : p[1]; return globalThis.__sabHalf?.(s, m) ? Math.floor(v / 2) : v; }');
       }
       return null;
     },
@@ -107,6 +117,7 @@ if (command === 'games') {
   const lockSpec = arg('locked', ''), lockBy = {};
   for (const part of lockSpec.split(',').filter(Boolean)) { const [e, who] = part.split(':'); lockBy[+e] = who === '*' ? '*' : who.split('+'); }
   const lockedAt = (eve, opp) => !!lockBy[eve] && (lockBy[eve] === '*' || lockBy[eve].includes(opp));
+  const blades = arg('blades', '').split(',').filter(Boolean).map(Number), bladePct = arg('bladepct', '').split(',').filter(Boolean).map(Number), dull = flag('dull', false);
   const useSeen = flag('seen', true), grudge = flag('grudge', true), GRUDGE_PREP = +arg('prep', '15'), costs = flag('costs', false), TOOL = +arg('tool', '8'), ACC = +arg('acc', '0');
   const hash01 = (seed, day) => { let h = (seed ^ 0x9e3779b9) >>> 0; h = Math.imul(h ^ (day * 0x85ebca6b), 0xc2b2ae35) >>> 0; h ^= h >>> 15; h = Math.imul(h, 0x2c1b3c6d) >>> 0; h ^= h >>> 12; return (h >>> 0) / 4294967296; };
   const eveOf = (day) => day - 1;
@@ -139,11 +150,16 @@ if (command === 'games') {
   } });
   const run = (pn, cfg) => {
     const P = withCosts(LAB.POLICIES[pn], cfg), R = { pn, n: 0, skipped: 0, crowns: 0, finals: 0, cut: 0, stageWins: {}, dur: { 1: [], 2: [] }, coins: [], tried: 0, cutOk: 0, seenN: 0 };
-    globalThis.__sabCfg = cfg.k > 0 ? cfg : undefined;
+    globalThis.__sabCfg = cfg.k > 0 || cfg.blade > 0 || cfg.bladeMul < 1 ? cfg : undefined;
     globalThis.__sab = (st, foeId, stage, round, foe, o2) => {
       if (!globalThis.__sabCfg || !o2?.hand) return;
       const m = bracketMatch(st); if (!m || (m.a === 'player' ? m.b : m.a) !== foeId) return;
-      if (cuts(st, cfg)) foe.taken = (foe.taken ?? 1) * (1 + cfg.k);
+      if (cuts(st, cfg)) {
+        if (cfg.k > 0) foe.taken = (foe.taken ?? 1) * (1 + cfg.k);
+        if (cfg.blade > 0) foe.atk = Math.max(1, foe.atk - cfg.blade);
+        if (cfg.bladeMul < 1) foe.atk = Math.max(1, foe.atk * cfg.bladeMul);
+        if (cfg.dull && foe.gfx?.inflict) foe.gfx = { ...foe.gfx, inflict: undefined };
+      }
       else if (seen(st, cfg) && cfg.grudge) {
         const c = st.competitors[foeId];
         Object.assign(foe, AD2.autoFoe(foeId, AD2.autoRaceSheet(foeId, stage, round, { preparation: (c?.preparation ?? 0) + cfg.prep, hp: POOL.rivalMods(c).hp }), { stage, plan: c?.plan }));
@@ -177,7 +193,17 @@ if (command === 'games') {
       const t0 = performance.now(), C = run(pn, { k: 0, eves, pBy, half: false, grudge: false, prep: 0, costs: false, tool: 0, acc: 0 });
       console.log(`  ${line('témoin (aucune sangle)', C)}  (${((performance.now() - t0) / 1000).toFixed(0)} s)`); out[pn].control = C;
     }
-    for (const k of ks) {
+    for (const n of blades) {
+      const R = run(pn, { k: 0, blade: n, dull, eves, pBy, half: useSeen, grudge, prep: GRUDGE_PREP, costs, tool: TOOL, acc: ACC });
+      const lab = `lame émoussée −${n} Attaque${dull ? ' + état retiré' : ''}, veilles ${eves.join('+')}, réussite ${pSpec}${lockSpec ? `, gardés ${lockSpec}` : ''}${costs ? `, 3 créneaux + ${TOOL}${ACC ? ` + ${ACC}` : ''} p.` : ''}`;
+      console.log(`  ${line(lab, R)}`); out[pn][lab] = R;
+    }
+    for (const p of bladePct) {
+      const R = run(pn, { k: 0, blade: 0, bladeMul: 1 - p / 100, dull, eves, pBy, half: useSeen, grudge, prep: GRUDGE_PREP, costs, tool: TOOL, acc: ACC });
+      const lab = `lame émoussée : Attaque du rival −${p} %${dull ? ' + état retiré' : ''}, veilles ${eves.join('+')}, réussite ${pSpec}${costs ? `, 3 créneaux + ${TOOL}${ACC ? ` + ${ACC}` : ''} p.` : ''}`;
+      console.log(`  ${line(lab, R)}`); out[pn][lab] = R;
+    }
+    for (const k of blades.length || bladePct.length ? [] : ks) {
       const R = run(pn, { k, eves, pBy, half: useSeen, grudge, prep: GRUDGE_PREP, costs, tool: TOOL, acc: ACC });
       const lab = `sangle ×${(1 + k).toFixed(2)}, veilles ${eves.join('+')}, réussite ${pSpec}${lockSpec ? `, gardés ${lockSpec}` : ''}${costs ? `, 3 créneaux + ${TOOL}${ACC ? ` + ${ACC}` : ''} p.` : ''}`;
       console.log(`  ${line(lab, R)}`); out[pn][lab] = R;

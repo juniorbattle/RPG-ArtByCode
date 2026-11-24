@@ -1,0 +1,360 @@
+<title>La lame émoussée</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards in two families (the action, the risk); a table of the three eves above; sticky progress bar. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 68ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.eves { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.eves h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.eves p { margin: 0; max-width: 68ch; }
+.tblwrap { overflow-x: auto; }
+table.tbl { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.tbl th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.foot { font-size: 13px; color: var(--muted); }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; min-width: 0; }
+.card p { margin: 0; max-width: 68ch; }
+dl.facts { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+dl.facts > div { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); gap: 2px 14px; }
+dl.facts dt { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding-top: 3px; }
+dl.facts dd { margin: 0; max-width: 66ch; }
+@media (max-width: 560px) { dl.facts > div { grid-template-columns: minmax(0, 1fr); } }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 10px 12px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; width: 100%;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; margin-top: 4px; }
+.opt .ob { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.opt .ot { font-weight: 600; }
+.opt .od { font-size: 14px; color: var(--muted); font-weight: 400; max-width: 64ch; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; margin-left: 8px; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+.tbl.rv th, .tbl.rv td { text-align: right; }
+.tbl.rv th:first-child, .tbl.rv td:first-child { text-align: left; }
+.tbl.rv tr.sep th, .tbl.rv tr.sep td { border-top: 2px solid var(--line); }
+.tbl.rv { margin-bottom: 4px; }
+.pos { color: var(--rec); font-weight: 700; }
+.neg { color: var(--cendre); font-weight: 700; }
+ul.finds { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; max-width: 70ch; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · le joueur saboteur · 24/11/2026 · une seconde forme</span>
+    <h1>La lame émoussée</h1>
+    <p class="lede">Tu as proposé que le sabotage puisse aussi passer par l’arme : la rendre émoussée, pour qu’elle inflige moins de dégâts. Le laboratoire l’a mesurée à côté de la sangle (SB-3 : le chiffre avant qu’il soit fixé), sur des duels isolés rival par rival et sur 200 parties entières tenues à part. Trois cartes tranchent ce qui reste, une recommandation chacune. Rien n’est construit avant tes réponses.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l’enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="eves" aria-labelledby="h-eves">
+    <h2 id="h-eves">Ce que la mesure dit</h2>
+    <p>La lame émoussée retire une part de l’Attaque du rival (ses coups pèsent selon son Attaque contre ta Défense) ; l’arme émoussée ne pose plus non plus l’état qu’elle porte. Quatre rivaux en ont un dans l’arme : Vessa saigne, Tobin aveugle, Cassius empoisonne, Marek brûle ; Orla, Ilse et Rhosk n’en ont pas (ceux d’Ilse et de Rhosk sont dans leurs compétences). Le reste est celui de la sangle : les trois temps, le guet, la peine, la rancune.</p>
+    <p><b>Points de victoire gagnés contre chaque rival</b> (duels isolés, la Ren de la référence, 150 duels par case, ± 4 points) :</p>
+    <div class="tblwrap">
+      <table class="tbl rv">
+        <thead><tr><th>Combat du tableau (jour 6)</th><th>Vessa</th><th>Tobin</th><th>Cassius</th><th>Orla</th><th>Ilse</th><th>Marek</th><th>Rhosk</th><th>Moyenne</th></tr></thead>
+        <tbody>
+          <tr><td>Sangle ×1,15</td><td class="pos">+28</td><td class="pos">+24</td><td class="pos">+25</td><td class="pos">+28</td><td class="pos">+31</td><td class="pos">+39</td><td class="pos">+35</td><td class="pos">+30</td></tr>
+          <tr><td>Lame −20 %, son état retiré</td><td class="pos">+36</td><td class="pos">+29</td><td class="pos">+34</td><td class="pos">+32</td><td class="pos">+28</td><td class="pos">+40</td><td class="pos">+27</td><td class="pos">+32</td></tr>
+          <tr><td>Lame −20 %, son état gardé</td><td class="pos">+21</td><td class="pos">+26</td><td class="pos">+24</td><td class="pos">+32</td><td class="pos">+28</td><td class="pos">+17</td><td class="pos">+27</td><td class="pos">+25</td></tr>
+        </tbody>
+        <thead><tr class="sep"><th>La finale (jour 10)</th><th>Vessa</th><th>Tobin</th><th>Cassius</th><th>Orla</th><th>Ilse</th><th>Marek</th><th>Rhosk</th><th>Moyenne</th></tr></thead>
+        <tbody>
+          <tr><td>Sangle ×1,15</td><td class="pos">+15</td><td class="pos">+29</td><td class="pos">+33</td><td class="pos">+31</td><td class="pos">+30</td><td class="pos">+37</td><td class="pos">+17</td><td class="pos">+27</td></tr>
+          <tr><td>Lame −20 %, son état retiré</td><td class="pos">+28</td><td class="pos">+34</td><td class="pos">+37</td><td class="pos">+27</td><td class="pos">+23</td><td class="pos">+25</td><td class="pos">+8</td><td class="pos">+26</td></tr>
+          <tr><td>Lame −20 %, son état gardé</td><td class="pos">+15</td><td class="pos">+27</td><td class="pos">+25</td><td class="pos">+27</td><td class="pos">+23</td><td class="pos">+10</td><td class="pos">+8</td><td class="pos">+19</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><b>Points de titres de plus que sans sabotage</b> (200 parties entières tenues à part par joueur type, une tentative qui réussit à coup sûr, les trois temps payés ; ± 3 points) :</p>
+    <div class="tblwrap">
+      <table class="tbl rv">
+        <thead><tr><th>Veille de la finale (jour 9)</th><th>Planificateur (27 %)</th><th>Référence (30 %)</th><th>Curieux (32 %)</th></tr></thead>
+        <tbody>
+          <tr><td>Sangle ×1,15</td><td class="pos">+8</td><td class="pos">+16</td><td class="pos">+5</td></tr>
+          <tr><td>Lame −15 %, son état retiré</td><td class="pos">+6</td><td class="pos">+14</td><td class="pos">+5</td></tr>
+          <tr><td>Lame −20 %, son état retiré</td><td class="pos">+10</td><td class="pos">+15</td><td class="pos">+4</td></tr>
+          <tr><td>Lame −25 %, son état retiré</td><td class="pos">+9</td><td class="pos">+17</td><td class="pos">+5</td></tr>
+          <tr><td>Lame −20 %, son état gardé</td><td class="pos">+6</td><td class="pos">+7</td><td class="pos">+3</td></tr>
+          <tr><td>Lame −25 %, son état gardé</td><td class="pos">+6</td><td class="pos">+10</td><td class="pos">+4</td></tr>
+          <tr class="sep"><td>Veille de la demi-finale (jour 5) : sangle ×1,15</td><td class="neg">−7</td><td class="neg">−1</td><td class="neg">−8</td></tr>
+          <tr><td>Veille de la demi-finale (jour 5) : lame −20 %, état retiré</td><td class="neg">−9</td><td class="neg">−2</td><td class="neg">−9</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="finds">
+      <li><b>À −20 % avec son état retiré, la lame vaut la sangle en moyenne.</b> Au tableau +32 points de victoire contre +30, à la finale +26 contre +27 ; en parties entières +10 / +15 / +4 contre +8 / +16 / +5, dans la marge de mesure. Même chance d’être vu, mêmes trois temps payés : la même veille seule rapporte (le jour 9), celle du 5 perd autant.</li>
+      <li><b>Les deux gestes ne valent pas la même chose contre tous.</b> La lame vaut plus contre Vessa, Tobin et Cassius dont l’arme porte un état ; la sangle vaut plus contre Marek à la finale (+37 contre +25 : il est ton adversaire dans deux finales sur trois), contre Rhosk (+17 contre +8) et contre Ilse. Choisir selon le rival est ce qui fait la variante.</li>
+      <li><b>La moitié de la valeur de la lame, contre quatre rivaux, est l’état de leur arme.</b> Sans lui, −20 % ne rapporte que +25 / +19 points de victoire (+6 / +7 / +3 points de titres) : plus rien contre Orla, Ilse, Rhosk, dont l’arme n’en porte pas.</li>
+      <li><b>Les deux gestes ensemble seraient trop forts pour un prix.</b> La sangle ×1,15 et une lame à −2 d’Attaque, état gardé : +42 points de victoire au tableau et +35 à la finale, contre +30 et +27 pour la sangle seule.</li>
+    </ul>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je consigne tes choix mot pour mot (journal, <code>briefs/combat-auto.md</code> § 44, <code>AGENTS.md</code>), puis je construis dans le jeu par défaut, en anglais et en français : le geste de la nuit, ce que le lendemain en lit (la fiche de match, la page du tournoi), les textes, le guide, les tests et les preuves en navigateur. Un joueur qui ne sabote jamais garde son jeu à l’identique.</p>
+    <p class="src">Sources : JOURNAL.md (Passes SB3 à SB5), <code>briefs/combat-auto.md</code> § 44, <code>tools/auto-sabotage.mjs</code> (<code>duel</code> ; <code>games --bladepct=… --dull=1 --costs=1</code>), <code>src/combat/autoData.ts</code> (<code>AUTO_STYLES</code>, les états des armes), <code>src/simulation/v2sabotage.ts</code>.</p>
+  </section>
+</div>
+
+<script>
+// Une entrée par décision ; fam : une variable de couleur. Chaque option : l (le texte enregistré), d (ce qu’elle fait).
+const GROUPS = [
+  { id: 'force', title: 'La force', sub: 'Combien la lame retire au rival.', fam: 'var(--voile)', items: [
+    { id: 'SG-1', tag: 'force', title: `Combien d’Attaque la lame émoussée retire-t-elle au rival ?`,
+      facts: [
+        ['Aujourd’hui', `Un rival frappe selon son Attaque contre ta Défense : une arme émoussée se dit en part de cette Attaque. Dans le jeu, l’arme de quatre rivaux ajoute un état à leurs coups (Vessa saigne 4 % du temps, Tobin aveugle 5 %, Cassius empoisonne 6 %, Marek brûle 8 %). Une arme émoussée ne le poserait plus.`],
+        ['Mesuré', `À −20 % avec l’état retiré, la lame vaut la sangle ×1,15 en moyenne : +32 / +26 points de victoire au tableau et à la finale contre +30 / +27, et en parties entières, la veille de la finale, +10 / +15 / +4 points de titres (planificateur / référence / curieux) contre +8 / +16 / +5. À −25 % l’état gardé : +6 / +10 / +4. À −15 % l’état retiré : +6 / +14 / +5.`],
+        ['Ce que ça coûte', `Un nombre et un état retiré, dans le duel que le jeu joue déjà : presque rien à bâtir.`],
+      ],
+      rec: `A, −20 % avec l’état de l’arme retiré : c’est la valeur de la sangle, ni plus ni moins. Ainsi le choix entre les deux gestes porte sur le rival (voir la carte suivante), non sur une arme qui serait toujours meilleure ou toujours plus faible.`,
+      opts: [
+        { l: `A · L’Attaque du rival −20 %, l’état de son arme retiré`, d: `Autant que la sangle en moyenne ; plus contre Vessa, Tobin, Cassius ; moins contre Marek à la finale, Rhosk, Ilse.` },
+        { l: `B · L’Attaque du rival −25 %, l’état de son arme gardé`, d: `Un nombre seul, le même contre tous. Moins fort que la sangle en parties entières (+6 / +10 / +4 contre +8 / +16 / +5).` },
+        { l: `C · L’Attaque du rival −15 %, l’état de son arme retiré`, d: `Un geste plus léger : un peu en dessous de la sangle (+6 / +14 / +5), et moins encore à la finale contre Marek et Rhosk.` },
+      ], recIdx: 0,
+      src: `<code>tools/auto-sabotage.mjs</code> (<code>duel</code> ; <code>games --bladepct --dull --costs</code>), <code>src/combat/autoData.ts</code> (<code>AUTO_STYLES</code>, <code>autoRaceSheet</code>), <code>src/combat/auto.ts</code> (<code>AutoFighter.atk</code>)` },
+  ]},
+  { id: 'geste', title: 'Le geste', sub: 'Comment le joueur choisit, et ce que le repérage dit.', fam: 'var(--cendre)', items: [
+    { id: 'SG-2', tag: 'choix', title: `Comment le joueur choisit entre la sangle et la lame ?`,
+      facts: [
+        ['Aujourd’hui', `La nuit de la veille offre une action en deux lignes : seul, ou avec Corra Dunmere (20 pièces). Les trois temps, le guet, la peine et la rancune sont ceux de la sangle ; la lame fine de l’inconnu à capuche (8 pièces) sert à couper une sangle une fois.`],
+        ['Mesuré', `Les deux gestes ne valent pas la même chose contre tous (tableau). Contre Marek à la finale, adversaire dans deux finales sur trois, la sangle vaut +37 et la lame +25 ; contre Vessa, la lame +28 et la sangle +15. Les deux ensemble (la sangle et une lame à −2 d’Attaque, l’état gardé) valent +42 et +35 points de victoire au tableau et à la finale, contre +30 et +27 pour la sangle seule.`],
+        ['Ce que ça coûte', `A : deux lignes de plus à la nuit (quatre en tout). B : un second outil chez l’inconnu et le choix fait au moment d’acheter. C : rien de plus à bâtir, mais une force doublée pour un seul prix.`],
+      ],
+      rec: `A, le choix la nuit, une main seulement. L’adversaire est connu à ce moment (le soir du 5, le tirage vient d’être fait), le joueur a pu le repérer et lire la page du tournoi, et rien d’autre ne change : même lame, même repérage, même guet, même peine. Les deux gestes la même nuit (C) doublent l’effet pour le prix d’un.`,
+      opts: [
+        { l: `A · Le choix la nuit : la sangle ou la lame, une seule par nuit`, d: `Quatre lignes la nuit de la veille : couper la sangle ou émousser la lame, seul ou avec Corra Dunmere. Même lame fine, mêmes prix, même chance d’être vu.` },
+        { l: `B · Deux outils chez l’inconnu : le choix se fait en achetant`, d: `L’inconnu vend une lame fine pour la sangle et une pierre à aiguiser acide pour l’arme, 8 pièces chacun, le soir d’avant. L’autre geste n’est plus possible à la nuit.` },
+        { l: `C · Les deux gestes la même nuit`, d: `Sangle coupée et lame émoussée à la fois : environ +42 points de victoire contre +30 ; à prendre seulement avec un prix doublé (deux outils, un second créneau).` },
+      ], recIdx: 0,
+      src: `<code>tools/auto-sabotage.mjs</code> (<code>duel</code>, par rival), <code>src/simulation/v2sabotage.ts</code> (<code>cutStrap</code>, <code>buyTool</code>)` },
+
+    { id: 'SG-3', tag: 'repérage', title: `Le repérage des casiers dit-il ce que porte l’arme du rival ?`,
+      facts: [
+        ['Aujourd’hui', `Le repérage des casiers (un créneau, de jour, au parvis) dit si le rival range son matériel chez Odo. L’état que porte l’arme d’un rival s’apprend autrement : en l’observant à l’entraînement (un autre créneau) ou en l’ayant déjà affronté ; la fiche de match écrit « ? » tant qu’on ne l’a pas vu.`],
+        ['Ce que ça change', `Sans cette ligne, un joueur qui n’a pas observé son adversaire choisit la lame ou la sangle à l’aveugle ; avec elle, le repérage des casiers rend le choix lisible, et vaut son créneau.`],
+        ['Ce que ça coûte', `Cinq textes de plus (un par état d’arme, et « sans état »), lus dans les mêmes tables que l’observation du style.`],
+      ],
+      rec: `A, il le dit. Le repérage est déjà la décision d’un créneau avant la nuit ; lui faire dire ce que porte l’arme (« sa lame saigne », « sa lame ne porte rien ») donne au joueur de quoi choisir sans lui offrir plus : la fiche de match garde son « ? » pour le reste du style.`,
+      opts: [
+        { l: `A · Le repérage des casiers dit ce que porte l’arme du rival`, d: `Une ligne de plus dans le journal : la lame saigne, aveugle, empoisonne, brûle ou ne porte aucun état. La fiche de match ne change pas.` },
+        { l: `B · Il ne le dit pas : l’observation du style le dit déjà`, d: `Le joueur qui veut choisir en connaissance observe son adversaire à l’entraînement, un créneau de plus. Rien à ajouter.` },
+      ], recIdx: 0,
+      src: `<code>src/simulation/v2sabotage.ts</code> (<code>caseLockers</code>), <code>src/simulation/v2scout.ts</code> (<code>styleText</code>, <code>statesText</code>), <code>src/combat/autoData.ts</code> (<code>autoKitStates</code>)` },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  root.style.cssText = 'display:flex;flex-direction:column;gap:28px';
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  const dl = el('dl', { class: 'facts' });
+  for (const [k, v] of it.facts) dl.append(el('div', {}, el('dt', {}, k), el('dd', {}, v)));
+  c.append(dl);
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((o, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': o.l, onclick: () => choose(it.id, o.l) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }),
+      el('span', { class: 'ob' }, el('span', { class: 'ot' }, o.l, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null), el('span', { class: 'od' }, o.d)));
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  const src = el('p', { class: 'src' }); src.innerHTML = 'Source : ' + it.src; c.append(src);
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d’un document
+// en cours d’écriture : repris dans l’état, la boucle d’écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l’enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d’arbitrages — la lame émoussée — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d’écriture, ou modifié ici il y a moins de 5 s, garde son état local : l’écho du serveur l’écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l’enregistrement perdue : recharge la page.'));
+})();
+</script>
