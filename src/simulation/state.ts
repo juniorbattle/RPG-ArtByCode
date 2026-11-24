@@ -199,7 +199,14 @@ export interface V2State {
   /** the festival of day 9 (lot L6, the operator's EV-14 and the festival's sheet, journal Passe EVL11): the good turns done, the rival walked behind, the parade's
    *  order once set (src/simulation/v2festival.ts) */
   festival?: V2Festival;
+  /** the player's sabotage (the operator's SB-1 « couper une sangle de l’adversaire la veille d’un combat de tableau », journal Passes CL2 / SB4; src/simulation/v2sabotage.ts): the lockers cased
+   *  the day of the eve, the stranger's tool held, and how each eve ended (the strap cut, or seen); absent until the player first sets about it (a game that never does keeps its fingerprint) */
+  sabotage?: V2Sabotage;
 }
+/** the player's sabotage: the day the arena's lockers were cased (good that day only), the fine tool held, and each eve's end by its day (5, 7 or 9) */
+export interface V2Sabotage { cased?: number; tool?: boolean; eves?: Record<number, V2SabEve> }
+/** how an eve ended: the strap of the next bout's rival cut (kept secret, SA-6) or the player seen (nothing cut, the rival's grudge, a warning, half the next purse) */
+export interface V2SabEve { foe: string; result: 'cut' | 'seen'; accomplice?: boolean }
 /** a rumour as it was told: the day, the source (Lio's room, often right; the hooded stranger, never wrong), the rival's form as said, whether they changed their plan
  *  and since what (the operator's GP-15 « Les rivaux s’adaptent, la rumeur le dit », journal Passe GP2: `plan`, `since` the cut or their defeat against the player, absent
  *  when the source says it without knowing why), and a secret only the stranger tells (they watched you train, they meet a hood at night); `hp` the health a rumour told

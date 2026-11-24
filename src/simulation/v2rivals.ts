@@ -57,6 +57,8 @@ export function memoryOf(s: GameState, who: string): string[] {
     if (e.id === 'challenge:won') out.push(tx('v2.memory.challengeWon', { day: e.day }));
     else if (e.id === 'challenge:lost') out.push(tx('v2.memory.challengeLost', { day: e.day }));
   }
+  // a sabotage seen at their locker (the operator's SA-5 « Il garde rancune : plus dur demain, la page du tournoi s’en souvient », src/simulation/v2sabotage.ts)
+  for (const f of c.knownFacts) { const m = /^sabotaged-by:player:(\d+)$/.exec(f); if (m) out.push(tx('v2.memory.sabotaged', { day: +m[1] })); }
   if (proud && s.facts.includes(`scouted:${who}`)) out.push(tx('v2.memory.watched'));
   if (who === 'cassius' && s.facts.includes('cassius-resents')) out.push(tx('v2.memory.rising'));
   if (who === 'cassius' && s.flags.taunted) out.push(tx('v2.memory.taunted'));

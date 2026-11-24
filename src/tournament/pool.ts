@@ -138,9 +138,11 @@ export interface DuelOutcome {
 /** a bout's purse, won or lost: 20 / 5 in today's game and the version 2's pool; in a version 2 game's bracket the purses rise with the tournament (the
  *  operator's ECO-4 « Bourses qui montent : jour 6 35 / 10, jour 8 45 / 15, finale 80 / 30 », journal Passe ECO2); the champion's 100 apart (v2calendar.ts) */
 export const PURSES: Record<'pool' | 'semi' | 'gate' | 'third' | 'gateFinal' | 'final', readonly [number, number]> = { pool: [20, 5], semi: [35, 10], gate: [35, 10], third: [45, 15], gateFinal: [45, 15], final: [80, 30] };
-export function boutPurse(s: Pick<GameState, 'flags'>, m: Pick<MatchRecord, 'stage'>, won: boolean): number {
+export function boutPurse(s: Pick<GameState, 'flags'> & Partial<Pick<GameState, 'v2'>>, m: Pick<MatchRecord, 'stage'> & Partial<Pick<MatchRecord, 'day'>>, won: boolean): number {
   const p = isV2(s) ? PURSES[(m.stage ?? 'pool') as keyof typeof PURSES] ?? PURSES.pool : PURSES.pool;
-  return won ? p[0] : p[1];
+  // the sabotage of the eve seen (the operator's SA-4 « B · L’avertissement, et la moitié de la bourse du combat de demain », src/simulation/v2sabotage.ts): the bout's purse is halved
+  const halved = isV2(s) && m.day !== undefined && s.v2?.sabotage?.eves?.[m.day - 1]?.result === 'seen';
+  return halved ? Math.floor((won ? p[0] : p[1]) / 2) : won ? p[0] : p[1];
 }
 
 export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void {

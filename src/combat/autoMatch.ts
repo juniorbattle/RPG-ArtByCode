@@ -8,6 +8,7 @@ import { v2KitOf } from '../simulation/v2';
 import { GENERICS } from '../narrative/generics';
 import { NPC_BASE, NPC_FIGHTERS } from '../narrative/npcFighters';
 import { allyCd } from '../narrative/v2story';
+import { SAB, foeCut, foeGrudge } from '../simulation/v2sabotage';
 import { AUTO_RULES, autoDuel, autoFormsOf, autoWinner, type AutoFighter, type AutoResult } from './auto';
 import { autoFoe, autoGenericSheet, autoKitFor, autoPrepPoints, autoRaceSheet, autoRen, autoRound } from './autoData';
 import { challengeSheetFor, matchSheetFor, type MatchSheet } from './match';
@@ -36,12 +37,14 @@ export function autoBoutOf(st: GameState, kind: 'bout' | 'challenge' = 'bout'): 
   const sh = autoSheetOf(st, kind);
   if (!sh) return null;
   const o = sh.sides[1].fighters[0], stage = sh.stage ?? 0, round = stage === 0 ? autoRound(st.day) : 0;
-  return { ...autoFightersFor(st, o.id, stage, round, { hand: true }), foeId: o.id, seed: (sh.seed ^ 0x5bd1e995) >>> 0, stage, round };
+  return { ...autoFightersFor(st, o.id, stage, round, { hand: true, ...(kind === 'bout' ? { day: st.day } : {}) }), foeId: o.id, seed: (sh.seed ^ 0x5bd1e995) >>> 0, stage, round };
 }
 
 /** Ren and an opponent as the duel builds them for a bout against `foeId` at this stage and round, from the state now: the day's bout and challenge (autoBoutOf), and the
  *  rehearsal's shadow of a coming bout (lot 3 of « La Brute », src/simulation/v2prep.ts) */
-export function autoFightersFor(st: GameState, foeId: string, stage: Stage, round: number, o2: { hand?: boolean } = {}): Pick<AutoBout, 'ren' | 'foe' | 'prep'> {
+/** `day`: the day of the tournament's bout these fighters are for (the player's bout of the day, the next one, the rehearsal's shadow of it): a sabotage of the eve before it is read there
+ *  (src/simulation/v2sabotage.ts: the rival's strap cut, ×1.15 the damage it takes; a sabotage seen, its grudge, +50 preparation); a challenge and the other callers set none */
+export function autoFightersFor(st: GameState, foeId: string, stage: Stage, round: number, o2: { hand?: boolean; day?: number } = {}): Pick<AutoBout, 'ren' | 'foe' | 'prep'> {
   const o = { id: foeId }, mods = v2Mods(st), g = GENERICS[o.id];
   // the plan kept for this rival, else the general one (lot 2 of « La Brute »: « un plan par rival », set on its match sheet)
   const ren = autoRen(autoRenStats(st), autoKitFor(v2KitOf(st), o.id), { weapon: st.v2?.gear?.weapon, hpShare: mods.hp, taken: mods.taken, effect: mods.effect, gear: wornPieces(st), pieceViv: piecesViv(st) });
@@ -50,13 +53,15 @@ export function autoFightersFor(st: GameState, foeId: string, stage: Stage, roun
   if (o2.hand && st.v2?.kit.mode === 'manual') ren.hand = true;
   const ally = allyCd(st);
   if (ally !== 1) ren.gfx = { ...ren.gfx, cd: (ren.gfx?.cd ?? 1) * ally };
-  const c = st.competitors[o.id];
+  const c = st.competitors[o.id], grudge = o2.day !== undefined ? foeGrudge(st, o2.day, o.id) : 0;
     // a townsperson who fights themselves (journal Passe PN1, src/narrative/npcFighters.ts): NPC_BASE's sheet at the stage, their shares, their weapon's kit
     const npc = NPC_FIGHTERS[o.id];
     const foe = npc ? autoFoe(o.id, autoGenericSheet(NPC_BASE, npc, stage, round), { kitOf: npc.look.weapon, stage })
       : g ? autoFoe(o.id, autoGenericSheet(g.profile, g, stage, round), { kitOf: g.profile, stage })
-      : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c?.preparation, hp: c ? rivalMods(c).hp : 1 }), { stage, plan: c?.plan });
-    return { ren, foe, prep: npc || g || !c ? 0 : autoPrepPoints(c.preparation) };
+      : autoFoe(o.id, autoRaceSheet(o.id, stage, round, { preparation: c ? c.preparation + grudge : undefined, hp: c ? rivalMods(c).hp : 1 }), { stage, plan: c?.plan });
+    // the strap cut on the eve (the operator's SF-1 « A · ×1,15, comme la sangle de Cassius »): the rival takes more damage, as the player does when Cassius cuts his
+    if (o2.day !== undefined && foeCut(st, o2.day, o.id)) foe.taken = (foe.taken ?? 1) * SAB.force;
+    return { ren, foe, prep: npc || g || !c ? 0 : autoPrepPoints(c.preparation + grudge) };
 }
 
 /** the player's bout or challenge fought in this duel, as the game takes its result (DuelOutcome), and the duel itself (`log`: its script, with each
@@ -88,7 +93,7 @@ export function autoNextBout(st: GameState): NextBout | null {
   const m = st.tournament.matches.find((x) => x.day === n.day && !x.winner && (x.a === PLAYER_ID || x.b === PLAYER_ID)) ?? null;
   if (n.day === st.day && m) { const b = autoBoutOf(st); if (b) return { ...b, day: n.day, today: true, match: m }; }
   const round = n.stage === 0 ? autoRound(n.day) : 0;
-  return { ...autoFightersFor(st, n.foe, n.stage, round), foeId: n.foe, stage: n.stage, round, day: n.day, today: false, seed: null, match: m };
+  return { ...autoFightersFor(st, n.foe, n.stage, round, { day: n.day }), foeId: n.foe, stage: n.stage, round, day: n.day, today: false, seed: null, match: m };
 }
 
 /** the form of the day of a bout's two fighters (AC-08 « Une forme du jour ±15 %, dite sur la fiche de match »): drawn from the bout's seed before it, as the

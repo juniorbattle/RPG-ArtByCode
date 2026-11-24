@@ -93,6 +93,9 @@ function rule(st, a) {
     case 'buyHerbs': return 5;
     case 'buyTreatise': return 15;
     case 'faceSharps': return a.how === 'pay' ? 15 : 0;
+    // the player's sabotage (the operator's SA-1, SF-2; journal Passe SB4): the stranger's blade 8 and Corra Dunmere's watch 20, each times the stage's price (×1.15 from day 6, ×1.3 from day 9)
+    case 'buyTool': return Math.round(8 * (st.day >= 9 ? 1.3 : st.day >= 6 ? 1.15 : 1));
+    case 'cutStrap': return a.accomplice ? Math.round(20 * (st.day >= 9 ? 1.3 : st.day >= 6 ? 1.15 : 1)) : 0;
     default: return 0;
   }
 }

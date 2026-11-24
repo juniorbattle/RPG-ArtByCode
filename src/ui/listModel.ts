@@ -7,12 +7,16 @@
 
 export type HereGroup = 'card' | 'answer' | 'do' | 'time' | 'steal';
 
+/** the sabotage's three steps (src/simulation/v2sabotage.ts) */
+export const isSabotage = (type: string): boolean => type === 'caseLockers' || type === 'buyTool' || type === 'cutStrap';
+
 /** the groups in the order the list shows them (the people stand between `do` and `time`) */
 export const HERE_GROUPS: readonly HereGroup[] = ['card', 'answer', 'do', 'time', 'steal'];
 
 /** the group of a line of the place's list, by its action's type */
 export function hereGroup(type: string): HereGroup {
-  if (type === 'steal' || type === 'pickpocket' || type === 'seize') return 'steal';
+  // the sabotage's three steps (the operator's SB-1, src/simulation/v2sabotage.ts) go with the theft and the force: the foul play, never the list's first line
+  if (type === 'steal' || type === 'pickpocket' || type === 'seize' || isSabotage(type)) return 'steal';
   if (type === 'rest' || type === 'wait' || type === 'nightfall') return 'time';
   if (type === 'answer') return 'answer';
   // the winner's card (the operator's CL-2, journal Passe CV1) waits first: it changes the next bout

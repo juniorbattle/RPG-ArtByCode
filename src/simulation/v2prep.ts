@@ -44,13 +44,13 @@ export interface Rehearsal {
 export function shadowBout(s: GameState): { ren: AutoFighter; foe: AutoFighter; foeId: string; stage: Stage; round: number; tier: ScoutTier } | null {
   const n = nextBoutOf(s);
   if (!n) return null;
-  const seen = knownPlan(s, n.foe), tier: ScoutTier = seen !== null ? 2 : scoutTier(s, n.foe), round = n.stage === 0 ? autoRound(n.day) : 0, f = autoFightersFor(s, n.foe, n.stage, round);
+  const seen = knownPlan(s, n.foe), tier: ScoutTier = seen !== null ? 2 : scoutTier(s, n.foe), round = n.stage === 0 ? autoRound(n.day) : 0, f = autoFightersFor(s, n.foe, n.stage, round, { day: n.day });
   const plan = seen !== null ? autoPlanOf(AUTO_FOES[n.foe] ? n.foe : 'marek', seen) : null;
   const foe: AutoFighter = { ...f.foe, tactic: f.foe.skills.map((k): AutoCond => (plan ? plan[k.id] ?? 'auto' : 'auto')) };
   return { ren: f.ren, foe, foeId: n.foe, stage: n.stage, round, tier };
 }
 /** the player's side of a set-up (Ren, and the shadow's plan), canonical */
-export const shadowKey = (b: { ren: AutoFighter; foe: AutoFighter }): string => fnv64(canonical({ ren: b.ren, plan: b.foe.tactic ?? null }));
+export const shadowKey = (b: { ren: AutoFighter; foe: AutoFighter }): string => fnv64(canonical({ ren: b.ren, plan: b.foe.tactic ?? null, ...(b.foe.taken && b.foe.taken !== 1 ? { cut: b.foe.taken } : {}) }));
 
 /** the rehearsal's seeds: its own, by the game, the rival, the day and the slot (never the real bout's: src/combat/match.ts mixes the match's id) */
 export function rehearsalSeeds(s: GameState, foe: string): number[] {

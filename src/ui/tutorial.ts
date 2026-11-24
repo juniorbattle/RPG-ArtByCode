@@ -9,6 +9,7 @@ import { ADVANCE, GEAR, STAGE_PRICE } from '../simulation/gear';
 import { LAW, marksOf } from '../simulation/v2law';
 import { CHALLENGERS, STAKE, STEAL_FINE } from '../simulation/v2town';
 import { RUMOUR, STRONGROOM } from '../simulation/v2intel';
+import { EVES, SAB, forcePct, grudgeAttack } from '../simulation/v2sabotage';
 import { argChance, DISCOUNT } from '../simulation/v2barter';
 import { fameTier, type FameTier } from '../simulation/v2react';
 import { INJURY_HP, TRAIN_MAX } from '../simulation/v2gear';
@@ -187,7 +188,7 @@ export function spotlight(sel: string): () => void {
 
 // ------------------------------------------------------------------------------------------------ the hints (TU-3, TU-8)
 
-export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor' | 'vigour' | 'npcMark' | 'notebook' | 'card';
+export type HintId = 'square' | 'shop' | 'steal' | 'mark' | 'eve' | 'challenge' | 'evening' | 'hurt' | 'guide' | 'poor' | 'vigour' | 'npcMark' | 'notebook' | 'card' | 'sabotage';
 const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> = {
   square: { title: 'tut.hint.square.title', body: 'tut.hint.square.body', chapter: 'places' },
   shop: { title: 'tut.hint.shop.title', body: 'tut.hint.shop.body', chapter: 'shops' },
@@ -208,6 +209,8 @@ const HINT: Record<HintId, { title: TextKey; body: TextKey; chapter: string }> =
   notebook: { title: 'tut.hint.notebook.title', body: 'tut.hint.notebook.body', chapter: 'prepare' },
   // a winner's card left waiting (the operator's CL-2, journal Passe CV1): the list holds it until it is taken
   card: { title: 'tut.hint.card.title', body: 'tut.hint.card.body', chapter: 'prepare' },
+  // the first sabotage step the list offers (the operator's SB-1, journal Passes CL2 / SB4, src/simulation/v2sabotage.ts): what the three steps are and what being seen costs
+  sabotage: { title: 'tut.hint.sabotage.title', body: 'tut.hint.sabotage.body', chapter: 'events' },
 };
 function hintText(s: GameState, id: HintId, who?: string): string {
   const k = HINT[id].body;
@@ -219,6 +222,7 @@ function hintText(s: GameState, id: HintId, who?: string): string {
   if (id === 'evening') return tx(k, { lio: RUMOUR.lio.coins, stranger: RUMOUR.stranger.coins });
   if (id === 'poor') return tx(k, { pay: WORK.pay, jobs: jobsLine(), mara: nameOf('mara') });
   if (id === 'vigour') return tx(k, { n: VIGOUR_HP, train: TRAIN_HP });
+  if (id === 'sabotage') return tx(k, { tool: SAB.toolCoins, acc: SAB.accompliceCoins, pct: forcePct() });
   return tx(k);
 }
 export const hintChapter = (id: HintId): string => HINT[id].chapter;
@@ -293,7 +297,9 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'challenges': return tx(c.body, { names: list(Object.keys(CHALLENGERS).map(nameOf)), coins: STAKE.coins, name: STAKE.name, day: dayOf('semis'), cap: TRAIN_CAP });
     // what watching gives since lot 3 of « La Brute » (the style, then the plan, the rehearsal opened: src/simulation/v2scout.ts), said since GP-16
     case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM, corvin: nameOf('corvin') });
-    case 'events': return tx(c.body, { mara: nameOf('mara'), hale: nameOf('hale'), odo: nameOf('odo'), room: STRONGROOM, hilde: nameOf('hilde'), tam: nameOf('tam'), anwen: nameOf('anwen'), corvin: nameOf('corvin'), lio: nameOf('lio') });
+    // the player's own sabotage (the operator's SB-1, journal Passes CL2 / SB4): the three steps, the chance of being seen by eve, what being seen costs, a paragraph after the chapter's text
+    case 'events': return `${tx(c.body, { mara: nameOf('mara'), hale: nameOf('hale'), odo: nameOf('odo'), room: STRONGROOM, hilde: nameOf('hilde'), tam: nameOf('tam'), anwen: nameOf('anwen'), corvin: nameOf('corvin'), lio: nameOf('lio') })}
+${tx('tut.ch.events.sabotage', { eves: list([...EVES]), odo: nameOf('odo'), lock: SAB.lockFrom, tool: SAB.toolCoins, acc: SAB.accompliceCoins, watch: pct(SAB.accomplice), sa: pct(SAB.seen[EVES[0]]), sb: pct(SAB.seen[EVES[1]]), sc: pct(SAB.seen[EVES[2]]), da: EVES[0], db: EVES[1], dc: EVES[2], pulse: SAB.pulse, pct: forcePct(), rel: -SAB.grudgeRel, atk: num(grudgeAttack()), stepA: Math.round((STAGE_PRICE[0].k - 1) * 100), dayA: STAGE_PRICE[0].from, stepB: Math.round((STAGE_PRICE[1].k - 1) * 100), dayB: STAGE_PRICE[1].from })}`;
     // the duel played by the computer (lot 3, journal Passe LC5): the order of the four, the match sheet, the health of a bout (AUTO_RULES.hpScale, DB5)
     case 'prepare': return `${tx(c.body, { train: TRAIN_POINT, trainHp: TRAIN_HP, base: REN_BASE.hp, vigour: VIGOUR_HP, sessions: TRAIN_MAX, hp: AUTO_RULES.hpScale, wound: pct(INJURY_HP), anwen: nameOf('anwen'), rehearse: REHEARSAL.n, cap: SAND_LESSON.cap, sday: SIGNATURE_DAY, lday: LESSON.day, pnext: lessonPrice(4), plast: lessonPrice(5) })}
 ${tx('tut.ch.prepare.cards', { offered: CARD_RULES.offered, point: CARD.point, cap: CARD_RULES.levelCap, picks: CARD_RULES.picks, chal: CARD_RULES.challengeOffered })}`;

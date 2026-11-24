@@ -1825,7 +1825,7 @@ Le joueur ne peut pas saboter un rival ; le sabotage du jeu est subi. Écart ent
 
 ## 44. Le joueur saboteur : une forme décidée (23/11/2026, journal Passe CL2)
 
-Statut : décidé (SB-1 à SB-3, puis la fiche des étapes SA-1 à SA-6, § 44.2) ; la force mesurée (§ 44.3), sa fiche SF-1 à SF-4 relue (§ 44.4) ; **à construire**. Aucune décision A3 ; aucun contrat ne change. Il lève l'écart du § 43.4.
+Statut : décidé (SB-1 à SB-3, puis la fiche des étapes SA-1 à SA-6, § 44.2) ; la force mesurée (§ 44.3), sa fiche SF-1 à SF-4 relue (§ 44.4) ; **construit** (§ 44.5, journal Passe SB5). Aucune décision A3 ; aucun contrat ne change. Il lève l'écart du § 43.4.
 
 - **SB-1 « Oui, une forme : couper une sangle de l’adversaire la veille d’un combat de tableau »**, sa note : « Il faudrait que cela soit sophistique afin de pas rendre l'action facile et accessible pour tous... plus on avance dans les jours et donc le tournoi, plus le sabotage en devient plus dur ».
 - **SB-2 « Plus dur que le vol : vu, c’est tout de suite l’avertissement du greffier et un point de la poule »**.
@@ -1859,6 +1859,13 @@ Statut : décidé (SB-1 à SB-3, puis la fiche des étapes SA-1 à SA-6, § 44.2
 - **SF-3 « C · Les riches, un jour sur deux (le repérage le dit) »** : **remplace le deuxième levier de SA-3** (« au jour 9, les deux finalistes » rangent leur matériel) : Cassius, Marek et Rhosk (fortune de 60 ou plus) rangent leur matériel à la salle forte d'Odo à partir du jour 7, une partie sur deux, tirée par la graine ; le repérage le dit avant l'achat de l'outil.
 - **SF-4 « B · +50 : deux points d’Attaque de plus pour le rival »** : la rancune d'un sabotage vu (SA-5) : la préparation du rival + 50 pour son combat de demain ; la moitié de la bourse (SA-4) reste comme décidée.
 - Aucune décision A3 : aucun verrou des contrats ne change. Statut : décidé, **à construire** (journal Passe SB4).
+
+### 44.5 Construit (journal Passe SB5, `src/simulation/v2sabotage.ts`, `tests/v2-sabotage.test.mjs`, `tools/sabotage-flow.mjs`)
+- **L'action** : trois temps, un créneau chacun, dans le jeu par défaut, anglais et français : `caseLockers` (de jour, au parvis, la veille elle-même ; il dit si le prochain adversaire range son matériel chez Odo), `buyTool` (l'inconnu à capuche, le soir sur le quai, avant la veille, dès le jour 3, 8 pièces), `cutStrap` (la nuit de la veille au parvis, seul ou avec Corra Dunmere, 20 pièces) ; les veilles sont les soirs des jours 5, 7 et 9 quand un combat du tableau suit ; prix × le palier des boutiques (×1,15 dès le jour 6, ×1,3 dès le jour 9). L'état `V2State.sabotage` est absent tant que le joueur n'a rien commencé.
+- **Les chiffres** (`SAB`, un tableau) : la force ×1,15 (`AutoFighter.taken`) ; être vu 15 / 35 / 55 % au pouls de 50 du soir, un point par point de pouls, le complice −15 points, entre 5 et 95 % ; les riches (Cassius, Marek, Rhosk) à la salle forte dès le jour 7, une partie sur deux (la graine) ; la rancune +50 de préparation (deux points d'Attaque) et la relation −30 ; la bourse du combat de demain à moitié.
+- **Ce que le lendemain lit** : `autoFightersFor(…, { day })` (le combat du jour, la fiche de l'avant-veille, la répétition), `boutPurse`, `memoryOf` (la cause sur la page du tournoi), la fiche de match (la sangle coupée, la rancune) ; un coup réussi ne laisse rien (SA-6).
+- **Mesuré au jeu** : le soir des jours 5, 7 et 9 la sécurité vaut en moyenne 43, 47,5 et 47 dans les parties du laboratoire : seul, on y est vu en moyenne 8, 32 et 52 % du temps (la fiche : 15, 35, 55 % au pouls de 50) ; non ajusté (`SAB.pulse`), à régler à l'essai de l'opérateur.
+- Aucune décision A3, aucun contrat touché. Les joueurs du laboratoire ne sabotent pas : la course n'est pas touchée.
 
 ## 45. Le choix du vainqueur : les cartes (23-24/11/2026, journal Passes CL1, CV1, CV3)
 

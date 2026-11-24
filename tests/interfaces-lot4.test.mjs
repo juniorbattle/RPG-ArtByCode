@@ -125,7 +125,7 @@ test('IA-09, C-14: what a theft seen costs is said on its line, and it is the si
   assert.equal(TX.tx('ui.steal.risk', { n: 8 }), 'if seen: −8 reputation');
   assert.equal(inFrench(() => TX.tx('ui.steal.risk', { n: 8 })), 'si l’on vous voit : −8 de réputation');
   // the first theft's hint waits for the line to reach a theft (IA-10)
-  assert.match(TOWN, /if \(grp === 'steal' && o\.ok\) b\.addEventListener\('focus', \(\) => this\.hint\('steal'\), \{ once: true \}\)/);
+  assert.match(TOWN, /if \(grp === 'steal' && o\.ok\) b\.addEventListener\('focus', \(\) => this\.hint\(isSabotage\(o\.action\.type\) \? 'sabotage' : 'steal'\), \{ once: true \}\)/);
   assert.ok(!/this\.hint\('steal'\);\n/.test(TOWN.replace(/\(\) => this\.hint\('steal'\)/g, '')), 'not on opening the list');
 });
 

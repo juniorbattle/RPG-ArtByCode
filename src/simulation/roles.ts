@@ -20,6 +20,7 @@ import { V2_PREP_ACTIONS } from './v2prep';
 import { V2_QUEST_ACTIONS } from './v2quests';
 import { QUEST } from './v2questData';
 import { V2_ENCOUNTER_ACTIONS } from './v2encounter';
+import { V2_SABOTAGE_ACTIONS } from './v2sabotage';
 import { TRAINED_STATS, trainGain, type TrainedStat } from '../combat/stats';
 /** the Wyrmsteel temper's price: 10 coins in every game. In a version 2 game the Wyrmsteel is no longer a forge tier (the operator's Q-02 « Attaque +1, en plus des paliers, tout de suite »), so the forge's tiers keep
  *  TIER_PRICE alone and the temper stays at 10 whatever their order (GP-20's order-free total holds: tiers cost 10 + 25 + 40, the temper 10 more); never refused at a tier. */
@@ -29,7 +30,7 @@ const REPORT_PAY = 15;
 /** the stats' names (keys written whole: tests/texts.test.mjs) */
 const SPAR_STAT: Record<TrainedStat, TextKey> = { atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv', hp: 'ui.stat.hp' };
 
-const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS, ...V2_WORK_ACTIONS, ...V2_PREP_ACTIONS, ...V2_QUEST_ACTIONS, ...V2_ENCOUNTER_ACTIONS };
+const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS, ...V2_WORK_ACTIONS, ...V2_PREP_ACTIONS, ...V2_QUEST_ACTIONS, ...V2_ENCOUNTER_ACTIONS, ...V2_SABOTAGE_ACTIONS };
 
 /** The town's people in game roles (choice P4, journal Passe L4): the district's existing characters offer services, quests and clues;
  *  the forecourt's officials and the rivals offer care, sparring and scouting (choice K3: portraits and dialogues). Each action names who
