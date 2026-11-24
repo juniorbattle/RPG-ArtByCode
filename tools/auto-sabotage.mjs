@@ -14,6 +14,8 @@
 //   a second gesture, the blunted blade (the operator's idea of 24/11/2026: « le sabotage peut aussi passer par l'arme afin de la rendre emousse et donc infliger moins de degats »): in `games`
 //       `--bladepct=15,20,25` the rival's Attack lowered by that share, `--blades=1,2,3` by that many points (their blows weigh 2·Att/(Att+Def)) instead of the strap, `--dull=1` also taking the state their weapon carries off (a rival's
 //       `gfx.inflict`: Vessa's bleeding, Tobin's blinding, Cassius's poison, Marek's burn); in `duel` the rows « lame émoussée » and the two gestures together; the same chance, costs, grudge and half purse
+//   both gestures the same night (the operator's note on SG-2, journal Passe SB9): in `games` `--both=1` takes the first of `--ks` (the strap) and of `--bladepct` (the blade) together;
+//       `--tool2=8` a second fine blade bought the evening before that one (a slot and its price at that day's stage)
 //   every command: --seeds=a..b or a,b,c (default 101..300, the held-out seeds of the race's fit)
 process.argv.splice(2, 0, 'lib');
 const AL = await import('./auto-lab.mjs');
@@ -118,6 +120,7 @@ if (command === 'games') {
   for (const part of lockSpec.split(',').filter(Boolean)) { const [e, who] = part.split(':'); lockBy[+e] = who === '*' ? '*' : who.split('+'); }
   const lockedAt = (eve, opp) => !!lockBy[eve] && (lockBy[eve] === '*' || lockBy[eve].includes(opp));
   const blades = arg('blades', '').split(',').filter(Boolean).map(Number), bladePct = arg('bladepct', '').split(',').filter(Boolean).map(Number), dull = flag('dull', false);
+  const both = flag('both', false), TOOL2 = +arg('tool2', '0');
   const useSeen = flag('seen', true), grudge = flag('grudge', true), GRUDGE_PREP = +arg('prep', '15'), costs = flag('costs', false), TOOL = +arg('tool', '8'), ACC = +arg('acc', '0');
   const hash01 = (seed, day) => { let h = (seed ^ 0x9e3779b9) >>> 0; h = Math.imul(h ^ (day * 0x85ebca6b), 0xc2b2ae35) >>> 0; h ^= h >>> 15; h = Math.imul(h, 0x2c1b3c6d) >>> 0; h ^= h >>> 12; return (h >>> 0) / 4294967296; };
   const eveOf = (day) => day - 1;
@@ -135,6 +138,11 @@ if (command === 'games') {
       if (st.day === E && st.slot === 'evening') { const m = st.tournament.matches.find((x) => x.day === E + 1 && x.stage && (x.a === 'player' || x.b === 'player')); if (m && lockedAt(E, oppOf(m))) return null; return { E, kind: 'act' }; }
       if (st.day === E - 1 && st.slot === 'evening') return { E, kind: 'equip' };
     }
+    // the second blade, two evenings before the eve: the day-9 eve's falls on day 7, when the final is not on the board yet (the semi-final won is what says it will be)
+    for (const E of cfg.eves) {
+      if (!(cfg.tool2 > 0) || st.day !== E - 2 || st.slot !== 'evening') continue;
+      if (E === 5 || (E === 9 && st.tournament.matches.some((m) => m.stage === 'semi' && m.winner === 'player'))) return { E, kind: 'equip2' };
+    }
     return null;
   };
   /** the shops' stage price (EQ-7) on what is bought the evening before / on the eve */
@@ -145,6 +153,7 @@ if (command === 'games') {
     const o = ADV.actions(st).find((x) => JSON.stringify(x.action) === JSON.stringify(a));
     if (!o || o.cost <= 0) return a;
     if (s.kind === 'equip') st.player.coins = Math.max(0, st.player.coins - Math.round(cfg.tool * price(st.day)));
+    if (s.kind === 'equip2') st.player.coins = Math.max(0, st.player.coins - Math.round(cfg.tool2 * price(st.day)));
     if (s.kind === 'act') st.player.coins = Math.max(0, st.player.coins - Math.round(cfg.acc * price(st.day)));
     return { type: 'wait' };
   } });
@@ -194,17 +203,17 @@ if (command === 'games') {
       console.log(`  ${line('témoin (aucune sangle)', C)}  (${((performance.now() - t0) / 1000).toFixed(0)} s)`); out[pn].control = C;
     }
     for (const n of blades) {
-      const R = run(pn, { k: 0, blade: n, dull, eves, pBy, half: useSeen, grudge, prep: GRUDGE_PREP, costs, tool: TOOL, acc: ACC });
+      const R = run(pn, { k: 0, blade: n, dull, eves, pBy, half: useSeen, grudge, prep: GRUDGE_PREP, costs, tool: TOOL, tool2: TOOL2, acc: ACC });
       const lab = `lame émoussée −${n} Attaque${dull ? ' + état retiré' : ''}, veilles ${eves.join('+')}, réussite ${pSpec}${lockSpec ? `, gardés ${lockSpec}` : ''}${costs ? `, 3 créneaux + ${TOOL}${ACC ? ` + ${ACC}` : ''} p.` : ''}`;
       console.log(`  ${line(lab, R)}`); out[pn][lab] = R;
     }
     for (const p of bladePct) {
-      const R = run(pn, { k: 0, blade: 0, bladeMul: 1 - p / 100, dull, eves, pBy, half: useSeen, grudge, prep: GRUDGE_PREP, costs, tool: TOOL, acc: ACC });
-      const lab = `lame émoussée : Attaque du rival −${p} %${dull ? ' + état retiré' : ''}, veilles ${eves.join('+')}, réussite ${pSpec}${costs ? `, 3 créneaux + ${TOOL}${ACC ? ` + ${ACC}` : ''} p.` : ''}`;
+      const R = run(pn, { k: both ? ks[0] : 0, blade: 0, bladeMul: 1 - p / 100, dull, eves, pBy, half: useSeen, grudge, prep: GRUDGE_PREP, costs, tool: TOOL, tool2: TOOL2, acc: ACC });
+      const lab = `${both ? `sangle ×${(1 + ks[0]).toFixed(2)} ET lame` : 'lame émoussée :'} Attaque du rival −${p} %${dull ? ' + état retiré' : ''}${TOOL2 ? ` + 2e outil ${TOOL2}` : ''}, veilles ${eves.join('+')}, réussite ${pSpec}${costs ? `, 3 créneaux + ${TOOL}${ACC ? ` + ${ACC}` : ''} p.` : ''}`;
       console.log(`  ${line(lab, R)}`); out[pn][lab] = R;
     }
     for (const k of blades.length || bladePct.length ? [] : ks) {
-      const R = run(pn, { k, eves, pBy, half: useSeen, grudge, prep: GRUDGE_PREP, costs, tool: TOOL, acc: ACC });
+      const R = run(pn, { k, eves, pBy, half: useSeen, grudge, prep: GRUDGE_PREP, costs, tool: TOOL, tool2: TOOL2, acc: ACC });
       const lab = `sangle ×${(1 + k).toFixed(2)}, veilles ${eves.join('+')}, réussite ${pSpec}${lockSpec ? `, gardés ${lockSpec}` : ''}${costs ? `, 3 créneaux + ${TOOL}${ACC ? ` + ${ACC}` : ''} p.` : ''}`;
       console.log(`  ${line(lab, R)}`); out[pn][lab] = R;
     }
