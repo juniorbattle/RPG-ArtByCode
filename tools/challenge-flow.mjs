@@ -118,6 +118,8 @@ try {
     const model = GENERICS[foeId] ? RIVALS[GENERICS[foeId].profile]?.name : null;
     if (model) check(sheet.text.includes(`fights on the model of ${model}`), `a fighter of the town: the rival they fight like is said (${model})`);
     check(kind === 'challenge' ? /At stake: 10 coins, 20 back if you win\./.test(sheet.text) : /A reprisal: nothing staked/.test(sheet.text), 'the stake said');
+    // the winner's card (the operator's CV-3, journal Passe CV3): a challenge won offers three cards of stats, a reprisal none
+    check(kind === 'challenge' ? /A win also offers 3 cards of stats: you take one\./.test(sheet.text) : !/cards of stats/.test(sheet.text), 'the sheet says what a win offers in cards');
     check(kind === 'challenge' ? sheet.text.includes('A challenge won adds no health') : !sheet.text.includes('A challenge won adds no health'), 'the vigour: a challenge gives none (GP-14), a reprisal says nothing of it');
     check(sheet.foot.some((t) => /Go onto the sand with these four/.test(t)), `its way in: ${sheet.foot.join(' | ')}`);
     // a plan for them: C on the first skill selected, kept for that fighter (the page's own action, replayed in Node)
@@ -168,6 +170,9 @@ try {
   check(won.over && won.winner === (mode === 'win' ? 'player' : 'opponent'), `the bout ends: ${won.winner} wins at ${won.t.toFixed(1)} s`);
   await page.waitForSelector('.pm-overlay .pm-btn', { timeout: 20000 });
   await page.screenshot({ path: path.join(outDir, `${kind}-${mode}-4-result.png`) });
+  // the winner's card (CV-3): a challenge won shows three tiles of stats alone on its result page, a challenge lost and a reprisal none
+  { const tiles = await page.evaluate(() => [...document.querySelectorAll('.pm-cardrow .cd-tile')].map((t) => t.dataset.kind));
+    check(kind === 'challenge' && mode === 'win' ? tiles.length === 3 && tiles.every((k) => k === 'stat') : tiles.length === 0, `the result page's cards: ${tiles.join(', ') || 'none'}`); }
   const outcome = await page.evaluate(() => window.__outcome);
   console.log(`outcome ${JSON.stringify(outcome)}`);
   check(outcome.winner === node.winner && outcome.playerHp === node.playerHp && outcome.opponentHp === node.opponentHp, `the arena's duel is the game's (${node.winner} at ${node.duel.t} s)`);

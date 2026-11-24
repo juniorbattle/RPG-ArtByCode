@@ -190,7 +190,7 @@ test('the laboratory\'s players take the card: the planner, the reference and th
 test('the pages: the result page draws the row and takes the pick through the game; the list holds the card first; a hint and a guide line say it; the number keys and the arrows are the row\'s', () => {
   const src = (f) => fs.readFileSync(`${ROOT}/${f}`, 'utf8').replace(/\r\n/g, '\n');
   const arena = src('src/ui/playArena.ts'), page = src('src/ui/cardsPage.ts'), town = src('src/ui/townUi.ts'), tut = src('src/ui/tutorial.ts'), todo = src('src/ui/todo.ts');
-  assert.match(arena, /const offer = won && v2 && !challenge \? pendingOffer\(st\) : null;/, 'a bout won, not a challenge');
+  assert.match(arena, /offered = \(res\.events as Array<\{ id: string \}>\)\.some\(\(e\) => e\.id === 'cards:offered'\), offer = won && v2 && offered \? pendingOffer\(st\) : null;/, 'a result that just offered cards, a bout\'s or a challenge\'s');
   assert.match(arena, /mountCards\(\{ slot: o\.root\.querySelector<HTMLElement>\('\.pm-cards-slot'\)!/);
   assert.match(arena, /e\.id !== 'cards:offered'/, 'the log line is not said twice on the page');
   assert.match(page, /act\(\{ type: 'takeCard', card: id \}\)/); assert.match(page, /\/\^\[1-9\]\$\/\.test\(e\.key\)/, 'the number keys');
@@ -200,4 +200,36 @@ test('the pages: the result page draws the row and takes the pick through the ga
   assert.match(tut, /card: \{ title: 'tut\.hint\.card\.title'/); assert.match(tut, /tut\.ch\.prepare\.cards/); assert.match(todo, /ui\.todo\.card/);
   // the guide's line reads the numbers from the data (TU-6): no digit of its own
   for (const k of ['tut.hint.card.body', 'tut.ch.prepare.cards']) { assert.doesNotMatch(EN[k], /\d/, k); assert.doesNotMatch(FR_TEXTS[k], /\d/, k); }
+});
+
+test('a challenge won in town (the operator\'s CV-3, journal Passe CV3) offers three cards of stats alone, one taken; a challenge lost, a thief caught, a piece taken by force and a reprisal offer none', () => {
+  const v2 = () => G.makeV2(G.namedState('day1-morning'));
+  const challenge = (win) => { let st = act(v2(), { type: 'move', to: 'training' }).state; st = act(st, { type: 'challenge', who: 'orla', stake: 'coins' }).state; return { st, r: act(st, { type: 'challengeResult', outcome: win ? WIN : LOSS }) }; };
+  assert.equal(C.CARD_RULES.challengeOffered, 3, 'the operator\'s « uniquement 3 cartes de la famille des stats »');
+  const { st, r: won } = challenge(true), o = won.state.v2.cards.offers[0];
+  assert.equal(o.stage, 'challenge'); assert.equal(o.foe, 'orla'); assert.equal(o.picks, 1, 'one taken (CV-2)');
+  assert.equal(o.cards.length, 3); assert.ok(o.cards.every((c) => c.k === 'stat'), 'stats alone: no skill, no purse');
+  assert.equal(new Set(o.cards.map(C.cardId)).size, 3, 'three of the four stats');
+  assert.ok(won.events.some((e) => e.id === 'cards:offered' && e.visible), 'said in the log');
+  assert.deepEqual(act(st, { type: 'challengeResult', outcome: WIN }).state.v2.cards, won.state.v2.cards, 'the same state draws the same cards');
+  // one taken: a lasting point of the stat
+  const take = act(won.state, { type: 'takeCard', card: C.cardId(o.cards[0]) }).state;
+  assert.equal(take.v2.cards.stats[o.cards[0].stat], ST.CARD.point); assert.deepEqual(take.v2.cards.offers, []);
+  // the challenge's own prizes stay (the skill, the stake)
+  assert.ok(won.state.player.coins > st.player.coins, 'the stake given back twice');
+  // a challenge lost: none
+  assert.equal(challenge(false).r.state.v2.cards, undefined);
+  // the other fights on the sand: none (a thief caught, a piece by force, a reprisal)
+  const caught = v2(); caught.v2.challenge = { who: 'mara', day: 1, kind: 'caught', caught: { by: 'mara', from: 'mara', item: 'whetstone', fine: 15, shop: 'mara' } };
+  assert.equal(act(caught, { type: 'challengeResult', outcome: WIN }).state.v2.cards, undefined, 'a thief caught');
+  const seize = v2(); seize.v2.challenge = { who: 'edda', day: 1, kind: 'seize' };
+  assert.equal(act(seize, { type: 'challengeResult', outcome: WIN }).state.v2.cards, undefined, 'a piece taken by force');
+  const reprisal = v2(); reprisal.v2.challenge = { who: 'corra', day: 1, reprisal: true }; reprisal.v2.reprisal = { by: 'corra', until: 3 };
+  assert.equal(act(reprisal, { type: 'challengeResult', outcome: WIN }).state.v2.cards, undefined, 'a reprisal');
+  // in the source: the offer comes after the early returns of the kinds that are no challenge
+  const src = fs.readFileSync(`${ROOT}/src/simulation/v2town.ts`, 'utf8').replace(/\r\n/g, '\n'), at = src.indexOf('offerChallengeCards(s, who, emit);');
+  assert.ok(at > src.indexOf("if (ch.kind === 'encounter')") && at > src.indexOf("if (ch.kind === 'seize')") && at > src.indexOf('if (ch.reprisal)') && at > src.indexOf("if (ch.kind === 'caught')"), 'after the four early returns');
+  // the page: a result that just offered shows the tiles, an older offer left for later does not
+  assert.match(fs.readFileSync(`${ROOT}/src/ui/playArena.ts`, 'utf8'), /offered = \(res\.events as Array<\{ id: string \}>\)\.some\(\(e\) => e\.id === 'cards:offered'\), offer = won && v2 && offered \? pendingOffer\(st\) : null/);
+  assert.match(T.tx('prep.challenge.cards', { n: 3 }), /3 cards of stats/); assert.match(FR_TEXTS['prep.challenge.cards'], /cartes de statistique/);
 });

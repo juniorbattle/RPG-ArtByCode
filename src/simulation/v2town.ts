@@ -5,6 +5,7 @@ import { drinkDraught } from './v2questData';
 import { isV2 } from './v2';
 import { learnFromChallenge, sandLesson, challengeSkill } from './v2skills';
 import { keepOutcomeNote } from './v2notes';
+import { offerChallengeCards } from './v2cards';
 import { GEAR, SHOPS, soldAt, type ShopId } from './gear';
 import { gearOf, itemName } from './v2gear';
 import { holds, recordTheft, registrarOnCatch, wanted } from './v2law';
@@ -403,6 +404,8 @@ export function applyChallenge(s: GameState, o: DuelOutcome, emit: Emit): void {
     adaptPlan(s, who, 'beaten');
     // the sand's lesson (BL1-4 « Au lot 3 : la ville nourrit le build »): the first blow of the plan under the cap rises a level
     sandLesson(s, who, emit);
+    // the winner's card (the operator's CV-3, journal Passe CV3): three cards of stats, one taken
+    offerChallengeCards(s, who, emit);
   } else {
     if (stake === 'name') s.player.reputation = clamp(s.player.reputation - STAKE.name);
     const c = s.competitors[who]; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) + 3, -100, 100);
