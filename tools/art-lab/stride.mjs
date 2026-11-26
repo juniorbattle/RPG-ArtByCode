@@ -17,7 +17,7 @@ try {
   const { PIXEL_WORLD, WALK_CADENCE } = await server.ssrLoadModule('/src/characters/SpriteRenderer.ts');
   const ROLE = { 'dockworker-x2-v2': ['porter', 0.9] }, CROWD = ['artisan', 'traveler', 'townswoman', 'older-merchant', 'courier'];
   const ids = fs.readdirSync(path.join(ROOT, 'art-lab/characters/manifests')).filter((f) => f.endsWith('.manifest.json'))
-    .map((f) => JSON.parse(fs.readFileSync(path.join(ROOT, 'art-lab/characters/manifests', f), 'utf8'))).filter((m) => m.runtimeUse === 'production').map((m) => m.id).sort();
+    .map((f) => JSON.parse(fs.readFileSync(path.join(ROOT, 'art-lab/characters/manifests', f), 'utf8'))).filter((m) => m.runtimeUse === 'production' && !/combat/.test(m.id) && !/-x2-v1$/.test('') ).map((m) => m.id).sort();
   for (const id of ids) {
     const img = await decodePng(new Uint8Array(fs.readFileSync(path.join(ROOT, `art-lab/characters/exports/${id}.png`))));
     const { k, frames } = sheetFrames(id, img, JSON.parse(fs.readFileSync(path.join(ROOT, `art-lab/characters/exports/${id}.json`), 'utf8')));

@@ -650,6 +650,42 @@ https://claude.ai/artifact/9An4GqtYdbdsQUEzKz5Jii (`briefs/fiche-sabotage-deux.h
 - **Un état qui passe de booléen à nombre doit se lire des deux manières** : `toolsHeld` accepte `true` et un nombre, si bien qu'une sauvegarde d'avant se lit comme avant et qu'une partie qui ne prend jamais de seconde lame garde son empreinte.
 - **Brancher un geste de plus sur deux lectures déjà écrites** : « les deux » n'a demandé aucune ligne de combat, seulement que les deux fonctions de lecture reconnaissent son nom ; l'effort est allé à ce que le joueur voit (les lignes, les prix, le texte) et au risque.
 
+## Passe MV1 — Les déplacements : mesure du héros et des passants, la fiche publiée (2026-11-26)
+
+### Demande
+- Demande de l'opérateur, mot pour mot : « la derniere chose que je veux faire est l'amelioration des deplacements du joueur heros... je trouve qu'il se deplace trop lentement surtout qu'il a une animation " courir " , il faut ameliorer cela et rendre tout cela plus fluide ... puis concernant les pnjs qui se deplace je remarque encore des deplacements avec une pose du corps de travers encore mais je pense que les pnjs ne devraient pas etablir de longue marche mais plutot se deplacer en marquant plus d'arrets meme si ils reprennent par la suite leur marche... comprends tu ? ». Séance lancée par la séance qui coordonne, depuis `main` `1fa07c2`, aucune image nouvelle, aucune décision A3 ni contrat touchés.
+- Lecture du journal : l'index, « À reprendre », « Principes à garder » et les passes d'orientation et de vitesse (H6, F1 à F3, K9, K10, MD1) ; les passes récentes (CL1 à SB11) ne touchent pas la marche, lues seulement par leur titre.
+
+### Mesures — [OK] (deux outils nouveaux, pas fixes de 1/60 s, graine 1842, 1280 × 720, `Math.random` semé, boucle de la page jamais lancée)
+- `tools/hero-motion.mjs` : un script de touches tenues (ou du stick) ; à chaque pas la vitesse au sol, la vitesse au sol en largeurs d'écran visibles par seconde le long de la droite de la caméra, le débit des images du cycle, le plus grand saut de la position du héros à l'écran entre deux pas.
+- `tools/npc-walk.mjs` : chaque passant qui marche (quai : `__app`, places : `__plaza`) suivi 120 s : la part du temps en marche, la longueur et la durée d'un trajet et d'un arrêt, la part des pas dont la vue est de travers (une vue de face ou de dos qui traverse l'écran à plus de 35° de la verticale ; un profil qui avance à moins de 55°, le trois-quarts de face accepté en F3 compté à part), le patinage du pied d'appui (le sol que le cycle dessine à l'horloge joué contre le sol parcouru).
+- `tools/art-lab/stride.mjs` réparé (il plantait sur les feuilles de combat, `tag "ready-side"`) : elles sont écartées de sa liste.
+- **Le héros** : au quai (la ville et « Explore ») **3,73 m/s** à la marche, **4,48** avec Maj (×1,2), les jambes à 11,25 puis 15 images par seconde (l'horloge ×1,5, bornée à 2) ; sur les **trois places 2,22 m/s** (le `walkSpeed` du cycle, 2,22 m/s à l'échelle 1, sans l'horloge ni le coefficient du quai) et 2,66 avec Maj, **les jambes à 7,5 images par seconde**. Les places sont donc 40 % plus lentes que le quai. À l'écran, le long de la droite de la caméra : places 0,10 à 0,112 largeur visible par seconde (festival 0,086, parvis très peu en profondeur : 0,004 à 0,012), quai 0,109 à 0,135. Le départ et l'arrêt sont **instantanés** (0 pas de montée, 0 pas de descente : la vitesse est celle de la touche). Une enjambée dessinée de 14 texels est fixe : aller plus vite, c'est jouer les jambes plus vite.
+- **La caméra des places** : `PlazaApp.applyCamera` glisse la pose vers la pose voulue de `k = dt × 3` par pas (une exponentielle) : **la vitesse du glissement est maximale au premier pas**. Un changement de cadrage fait donc démarrer la caméra à pleine vitesse (le lacet de la place de la halle passe de −12° à −34° à 1,1° par pas, 66°/s dès le premier) ; le héros saute à l'écran de **32 px en un pas** à la frontière « halle → place » (13 px en entrant dans la halle, 3 à 4,5 px aux autres frontières des places ; le quai 4,5 px à A → B). Une règle de l'opérateur (6 bis : « des mouvements de caméra qui entrent et sortent en douceur ») le demande.
+- **Les passants** (120 s, 7 à 14 marcheurs) :
+
+| | quai | « Explore » midi | parvis | lices | place de la halle |
+|---|---|---|---|---|---|
+| en marche | 75 % | 74 % | 62,5 % | 59 % | 60 % |
+| trajet : médiane / le plus long | 2 m, 2,1 s / 30,7 s | 5 m, 5,4 s / 34 s | 9,4 m, 18 s / 35 s | 6 m, 12 s / 32 s | 8 m, 14,5 s / 43 s |
+| arrêt : médiane | 1,5 s | 2,5 s | 8,6 s | 8,6 s | 8,6 s |
+| pas montrés de travers | 0,4 % (+ 14 % de trois-quarts de face accepté) | 15,2 % (+ 20,1 %) | **44,1 %** | **69,2 %** | **46 %** |
+| patinage du pied d'appui | −12 % | 0 % (12 % des pas à plus de 15 %) | **+30 %** | **+29 %** | **+29 %** |
+
+- **La cause du corps de travers sur les places** — `PlazaApp.walk` choisit la vue d'un passant d'après les axes du sol (`Math.abs(ux) > Math.abs(uz) × 1,2 ? 'side' : uz > 0 ? 'down' : 'up'`) sans tenir compte de la caméra, alors que le quai choisit d'après le pas à l'écran (`screenFacing`, `npcfacing=34`, décisions F2 / F3). Sur les lices (lacet 52 à 64°) les deux axes du sol traversent l'écran presque à l'horizontale : 57 % des pas sont une vue de face ou de dos qui glisse en travers. **La cause du patinage** : le passant des places avance à `walkSpeed × 0,8` (0,5 à 0,57 m/s) avec l'horloge à 1, alors que son cycle dessine 0,7 à 0,8 m/s à l'échelle de la place : le pied recule de 30 % à chaque pas. Au quai l'horloge suit les pas (`walkClock`) : pied planté.
+- Les trajets : un passant des places prend un point de la place, y va d'un trait (6 à 9 m, 12 à 43 s), puis s'arrête une fois (8,6 s) ; au quai il va à un point pris dans tout le quai (médiane 2 à 5 m mais jusqu'à 34 s), s'arrête 1,5 à 6,5 s. C'est la demande : « de longues marches ».
+
+### La fiche — [OK] publiée, en attente de l'opérateur
+- https://claude.ai/artifact/WCudyo5ttorfhtUatKbzhS (`briefs/fiche-deplacements-mv1.html`, MV-1 à MV-6, la base `decisions` vide à la publication) : MV-1 la vitesse de Ren (recommandé : 3,73 m/s partout), MV-2 la course (garder ×1,2), MV-3 l'élan (montée 0,12 s, arrêt 0,10 s), MV-4 la longueur d'un trajet (une halte tous les 4 m au plus), MV-5 les haltes (2 à 4 s, arrêt long 8 à 14 s, un regard de côté, environ 40 % en marche visé), MV-6 l'allure des passants des places (0,8 à 0,95 m/s, pieds plantés).
+- **Sans choix de l'opérateur, dit sur la fiche** : la vue des passants des places d'après le pas à l'écran (sa règle F2 / F3, déjà décidée), l'entrée en douceur des changements de cadrage (sa règle 6 bis), l'horloge qui suit les pas ; ni image, ni règle du jeu, ni empreinte.
+
+### Reste — [?]
+- Attendre la fiche, consigner les réponses mot pour mot, construire, prouver (tests de vitesse, de vue et d'arrêts, `tools/hero-motion.mjs` et `tools/npc-walk.mjs` après, `hero-slip`, `camsim`, `visproof-walk`, navigateur en anglais et en français, avec et sans réduction de mouvement), puis fusionner.
+
+### Pensée
+- **Une vitesse se mesure à l'écran et au sol** : avec la caméra qui suit, le héros ne bouge presque pas à l'écran (0,02 largeur par seconde) ; ce qui se voit est le sol qui défile, ramené à la largeur visible à sa profondeur. Mesurer ce que l'œil voit avant de proposer un nombre.
+- **Deux chemins pour la même règle** : la règle des vues des passants était décidée et prouvée pour le quai ; les places en avaient une autre, plus ancienne. Un défaut « encore de travers » avait donc une cause connue d'avance dans le code, que seule une mesure par place faisait voir (44 à 69 % contre 0,4 %).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
