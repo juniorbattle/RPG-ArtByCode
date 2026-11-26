@@ -5,10 +5,10 @@ import { Rng } from '../core/rng';
 
 /** MV-1 « A · 3,73 m/s partout, comme le quai »: the hero walks at the stride his cycle draws (the cast's walkSpeed) x the character scale of the
  *  quay's B / D framings (and the squares' CHAR_SCALE) x HERO_CLOCK: his frames play at HERO_CLOCK x the base cadence with the planted foot on the
- *  ground, on the quay and on the three squares alike (3.73 m/s with the 14-texel stride of hero-x2-v4, 11.25 frames / s) */
-export const HERO_CLOCK = 1.5, HERO_REF_SCALE = 1.12;
-/** MV-2 « A · Garder ×1,2 »: the run key (Shift, the pad's B) is a second gear on the speed MV-1 gives (4.48 m/s); its clock is bounded at HERO_CLOCK_MAX */
-export const HERO_RUN = 1.2, HERO_CLOCK_MAX = 2;
+ *  ground, on the quay and on the three squares alike (3.73 m/s with the 14-texel stride of hero-x2-v4, 11.25 frames / s; x1.25 since journal Passe MV2: 4.66 m/s, 14.1 frames / s) */
+export const HERO_CLOCK = 1.875, HERO_REF_SCALE = 1.12;
+/** MV-2 « A · Garder ×1,2 »: the run key (Shift, the pad's B) is a second gear on the speed MV-1 gives (4.48 m/s, 5.60 since MV2); its clock is bounded at HERO_CLOCK_MAX */
+export const HERO_RUN = 1.2, HERO_CLOCK_MAX = 2.5;
 export function heroSpeed(walkSpeed: number): number { return walkSpeed * HERO_REF_SCALE * HERO_CLOCK; }
 
 /** a baked walker's animation clock runs at the speed its steps show over the ground speed its cycle draws, within these bounds: above, a cycle

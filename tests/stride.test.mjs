@@ -97,16 +97,16 @@ test('the player: a baked hero runs at the speed its cycle draws (journal Passe 
   const near = (a, b, what) => assert.ok(Math.abs(a - b) < 1e-9, `${what}: ${a} vs ${b}`);
   const b = run(true, false);
   assert.equal(b.base, 'player'); assert.equal(b.dir, 'side');
-  // the oracle in numbers, not through the code's constants: walkSpeed 1.4 m/s x 1.12 x 1.5 = 2.352 m/s
-  near(b.speed, 2.352, 'speed: the stride the cycle draws at x1.5 in B / D');
-  near(b.x, 2.352 * 0.02, 'it moves at that speed');
-  near(b.t, 0.02 * 1.5, 'its frames at x1.5 in B / D: the planted foot stays put');
-  near(run(true, false, 1.15).t, 0.02 * 2.352 / (1.4 * 1.15), 'in C (x1.15) a little slower');
+  // the oracle in numbers, not through the code's constants: walkSpeed 1.4 m/s x 1.12 x 1.875 = 2.94 m/s
+  near(b.speed, 2.94, 'speed: the stride the cycle draws at x1.875 in B / D');
+  near(b.x, 2.94 * 0.02, 'it moves at that speed');
+  near(b.t, 0.02 * 1.875, 'its frames at x1.875 in B / D: the planted foot stays put');
+  near(run(true, false, 1.15).t, 0.02 * 2.94 / (1.4 * 1.15), 'in C (x1.15) a little slower');
   const s = run(true, true);
-  near(s.x, 2.352 * 1.2 * 0.02, 'the run key: a sprint at x1.2');
-  near(s.t, 0.02 * 1.8, 'the sprint\'s clock (x1.8, above the NPC bound of 1.6)');
-  near(run(true, true, 1).t, 0.02 * 2, 'the sprint in A (character scale 1): bounded at x2');
-  near(run(true, false, 1.12, 14 * 7.5 * 0.0235 * 0.9).speed, 3.73086, 'a 14-texel stride (the Pass H6 rig): 3.73 m/s');
+  near(s.x, 2.94 * 1.2 * 0.02, 'the run key: a sprint at x1.2');
+  near(s.t, 0.02 * 2.25, 'the sprint\'s clock (x2.25, above the NPC bound of 1.6)');
+  near(run(true, true, 1).t, 0.02 * 2.5, 'the sprint in A (character scale 1): bounded at x2.5');
+  near(run(true, false, 1.12, 14 * 7.5 * 0.0235 * 0.9).speed, 4.663575, 'a 14-texel stride (the Pass H6 rig): 4.66 m/s');
   const g = run(false, false), gs = run(false, true);
   near(g.speed, 2.5, 'generated: 2.5 m/s'); near(g.x, 0.05, 'generated: moves 2.5 m/s');
   near(g.t, 0.02, 'generated: x1'); near(gs.t, 0.02 * 1.7, 'generated: the run key x1.7'); near(gs.x, 0.02 * 2.5 * 1.7, 'generated: runs x1.7');
@@ -132,7 +132,7 @@ test('a walker pushed along a collider faces, and steps, the way it actually mov
   assert.ok(slid.pos.z === 0 && slid.pos.x > 0, 'blocked toward the camera, slid to the right');
   assert.equal(slid.dir, 'side', 'it faces the way it moves (profile), not the way it was heading');
   assert.equal(slid.flip, true, 'to the right');
-  // its clock follows the slide (the speed along the camera right), not the intended diagonal (the hero's speed: 1.4 x 1.12 x 1.5 m/s)
-  const v = 2.352 * Math.SQRT1_2;
+  // its clock follows the slide (the speed along the camera right), not the intended diagonal (the hero's speed: 1.4 x 1.12 x 1.875 m/s)
+  const v = 2.94 * Math.SQRT1_2;
   assert.ok(Math.abs(slid.t - 0.02 * (v / (1.4 * 1.12))) < 1e-9, 'clock at the slide speed');
 });

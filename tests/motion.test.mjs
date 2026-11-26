@@ -15,14 +15,14 @@ const src = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const near = (a, b, what, e = 1e-9) => assert.ok(Math.abs(a - b) < e, `${what}: ${a} vs ${b}`);
 const DT = 1 / 60;
 
-test('MV-1 / MV-2: the hero walks at the stride his cycle draws x 1.12 x 1.5 and runs at x1.2 of it, bounded clock 2', () => {
-  near(M.heroSpeed(1.4), 2.352, 'a 1.4 m/s cycle: 1.4 x 1.12 x 1.5');
-  near(M.heroSpeed(14 * 7.5 * 0.0235 * 0.9), 3.73086, 'the 14-texel stride of hero-x2-v4: 3.73 m/s');
-  near(M.heroSpeed(2.221) * M.HERO_RUN, 4.48, 'the run key: 4.48 m/s', 0.01);
-  assert.equal(M.HERO_CLOCK_MAX, 2);
+test('MV-1 / MV-2: the hero walks at the stride his cycle draws x 1.12 x 1.875 and runs at x1.2 of it, bounded clock 2.5', () => {
+  near(M.heroSpeed(1.4), 2.94, 'a 1.4 m/s cycle: 1.4 x 1.12 x 1.875');
+  near(M.heroSpeed(14 * 7.5 * 0.0235 * 0.9), 4.663575, 'the 14-texel stride of hero-x2-v4: 4.66 m/s');
+  near(M.heroSpeed(2.221) * M.HERO_RUN, 5.6, 'the run key: 5.6 m/s', 0.01);
+  assert.equal(M.HERO_CLOCK_MAX, 2.5);
   // the clock follows the speed over the ground the cycle draws, bounded, with no floor while the hero eases (MV-3)
-  near(M.walkerClock(2.221, 1.12, 3.73), 1.4996, 'the quay and the squares: x1.5', 1e-3);
-  assert.equal(M.walkerClock(2.221, 1.12, 20, true), 2, 'the hero\'s bound');
+  near(M.walkerClock(2.221, 1.12, 4.6636, true), 1.875, 'the quay and the squares: x1.875', 1e-3);
+  assert.equal(M.walkerClock(2.221, 1.12, 20, true), 2.5, 'the hero\'s bound');
   assert.equal(M.walkerClock(2.221, 1.12, 20, false), 1.6, 'a walker\'s bound');
   assert.equal(M.walkerClock(2.221, 1.12, 0.05, true, false), 0.4, 'the floor of a walk');
   near(M.walkerClock(2.221, 1.12, 0.05, true, true), 0.05 / (2.221 * 1.12), 'no floor while easing');
@@ -38,7 +38,7 @@ test('the squares read the same speed as the quay and no longer their own 2.22 m
 });
 
 test('MV-3: the gait climbs to the speed in 0.12 s, stops in 0.10 s, keeps heading and speed through a turn, glides about 20 cm', () => {
-  const T = 3.73086, g = M.newGait();
+  const T = 4.663575, g = M.newGait();
   const first = M.stepGait(g, 1, 0, T, DT);
   near(first.speed, T * DT / 0.12, 'the first step: a seventh of the speed (T x dt / 0.12)');
   let n = 1, v = first.speed;
@@ -84,7 +84,7 @@ test('the town\'s hero with v2Motion eases in and out; without it (today\'s game
   // the frames follow the ground the hero covers: the clock at the first step is small, then x1.5
   const clocks = []; const b = hero(true); press(b, 'd');
   for (let i = 0; i < 10; i++) { const t0 = b.player.t; b.update(DT, i * DT); clocks.push((b.player.t - t0) / DT); }
-  assert.ok(clocks[0] < 0.25, `the first clock is slow: ${clocks[0]}`); near(clocks[9], 1.5, 'then x1.5', 1e-3);
+  assert.ok(clocks[0] < 0.3, `the first clock is slow: ${clocks[0]}`); near(clocks[9], 1.875, 'then x1.875', 1e-3);
   // released: he keeps walking a moment, then stands
   b.keys.clear(); const x0 = b.player.pos.x; let moved = 0, ws = 0;
   for (let i = 0; i < 12; i++) { const px = b.player.pos.x; b.update(DT, i * DT); if (b.player.pos.x > px + 1e-9) { ws++; moved = b.player.pos.x - x0; } }
@@ -95,7 +95,7 @@ test('the town\'s hero with v2Motion eases in and out; without it (today\'s game
   c.keys.clear(); const cx = c.player.pos.x; c.update(DT, 0); near(c.player.pos.x, cx, 'stops dead');
   // the run key: x1.2 of the walk, reached by the ramp
   const r = hero(true, true); press(r, 'd'); press(r, 'shift'); for (let i = 0; i < 12; i++) r.update(DT, i * DT);
-  const rx = r.player.pos.x; r.update(DT, 0); near((r.player.pos.x - rx) / DT, T * 1.2, 'the run: 4.48 m/s', 1e-6);
+  const rx = r.player.pos.x; r.update(DT, 0); near((r.player.pos.x - rx) / DT, T * 1.2, 'the run: 5.6 m/s', 1e-6);
 });
 
 test('npcWalkView: the squares\' walkers use the quay\'s rule (npcfacing=34), by the step on screen', () => {
