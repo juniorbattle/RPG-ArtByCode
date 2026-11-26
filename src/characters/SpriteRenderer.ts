@@ -46,7 +46,9 @@ export interface Actor {
   height: number;
   radius: number;
   hidden?: boolean;
-  behaviour?: { kind: 'idle' | 'patrol' | 'wander' | 'work' | 'player'; waypoints?: THREE.Vector3[]; wait?: number; idx?: number; target?: THREE.Vector3 | null; seed: number };
+  behaviour?: { kind: 'idle' | 'patrol' | 'wander' | 'work' | 'player'; waypoints?: THREE.Vector3[]; wait?: number; idx?: number; target?: THREE.Vector3 | null; seed: number;
+    /** the walker's stages and halts (journal Passe MV1, src/characters/motion.ts): its halt count, the metres left before its next halt, a look aside at its next halt */
+    n?: number; hopLeft?: number; look?: { at: number; side: number } | null };
   /** world-space facing (x, z); dir / flip are re-derived from it against the camera every frame */
   faceVec?: [number, number];
   /** faceVec is a walking heading: shown by its on-screen direction instead of the world rule (`ActorSystem.screenFacing`) */

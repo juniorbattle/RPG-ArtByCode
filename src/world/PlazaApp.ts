@@ -24,7 +24,8 @@ import { loadProductionCast, type CastMember } from '../characters/BakedCast';
 import { plazaCastEntries } from '../characters/PlazaCast';
 import { heroEntries } from '../characters/HeroLookCast';
 import { variantOf } from '../characters/Variants';
-import { fiveViewFacing, heroWalkFacing } from '../characters/ActorSystem';
+import { fiveViewFacing, heroWalkFacing, npcWalkView } from '../characters/ActorSystem';
+import { HERO_CLOCK_MAX, HERO_RUN, heroSpeed, hopPlan, newGait, smoothDamp, stepGait, walkerClock, walkerSpeed } from '../characters/motion';
 import type { Anim, Dir } from '../characters/SpriteGenerator';
 import type { BuntingTier } from '../simulation/v2react';
 import { buildPlaza, plazaGroundDefines, type PlazaPeriod, steer, walkTo, type PlazaBuild, type PlazaExit, type PlazaKind } from './Plazas';
@@ -125,6 +126,8 @@ const CROWD_TURN: Record<PlazaPeriod, string[]> = {
 };
 /** the characters' scale in the squares: B's (journal Passe VP1) */
 const CHAR_SCALE = 1.12;
+/** the follow camera's response time (s) */
+const POSE_SMOOTH = 1 / 6;
 /** the squares' moon: below the first build's (journal Passe VP1, third critique: the moonlit plaster outshone the lamps, the night's
  *  brightest quarter lilac where the district's is amber; 0.8 x warmed it half way); 0.68 x from VP1 to VP7's fourth iteration, 0.8 x since
  *  its fifth, the lamp posts gone from the floor (« the night floors go warm sepia instead of indigo ») */
@@ -179,6 +182,11 @@ export class PlazaApp {
   framing: PlazaFraming | null = null;
   /** the yaw the movement keys were pressed under: kept until they are all released (the district's rule, AGENTS.md) */
   private moveYaw: number | null = null;
+  /** the hero's gait (MV-3: he eases in and out of a walk) and the camera pose's velocities (the framing's change starts gently, rule 6 bis) */
+  private gait = newGait();
+  private poseVel: Record<'yaw' | 'pitch' | 'dist' | 'fov' | 'tx' | 'ty' | 'tz', number> = { yaw: 0, pitch: 0, dist: 0, fov: 0, tx: 0, ty: 0, tz: 0 };
+  private poseMid: CamPose = { ...lookPose('festival', 0, 0, 20) };
+  private midVel: Record<'yaw' | 'pitch' | 'dist' | 'fov' | 'tx' | 'ty' | 'tz', number> = { yaw: 0, pitch: 0, dist: 0, fov: 0, tx: 0, ty: 0, tz: 0 };
   private lastT = performance.now();
   private cast: Map<string, CastMember> | null = null;
 
@@ -361,17 +369,25 @@ export class PlazaApp {
     this.post.setSize(w, h, pr);
     this.reflection.setSize(w * pr, h * pr);
     U.uResolution.value.set(this.post.width, this.post.height);
-    this.applyCamera(1);
+    this.applyCamera(null);
   }
 
   /** the square's framing (journal Passe VP7): the one of the zone the hero stands in (src/world/PlazaCamera.ts), its pivot following them by
    *  its gain, or a dialogue's or a cutscene's look; the page eases every field of the pose toward it (a framing's change glides, no cut) */
-  private applyCamera(k: number): void {
+  private applyCamera(dt: number | null): void {
     const f = this.focus, p = this.player?.pos ?? new THREE.Vector3(0, 0, 1.5);
     this.framing = framingAt(this.opts.kind, p.x, p.z, this.framing?.id ?? null);
     const want = f ? lookPose(this.opts.kind, f.x, f.z, f.dist) : framingPose(this.framing, p.x, p.z);
     const P = this.pose;
-    for (const key of ['yaw', 'pitch', 'dist', 'fov', 'tx', 'ty', 'tz'] as const) P[key] += (want[key] - P[key]) * k;
+    // the pose follows its target through two critically damped springs of 1/6 s each (the exponential it replaces, 3 / s, trailed as far behind a
+    // walk, 1/3 s, but began a framing's change at its fastest: the squares' camera turned at 66 deg / s on its first frame and the hero jumped on
+    // screen by 32 px; one spring starts without a velocity and still with its largest acceleration, two start without either); null = at once
+    const M = this.poseMid;
+    for (const key of ['yaw', 'pitch', 'dist', 'fov', 'tx', 'ty', 'tz'] as const) {
+      if (dt === null) { P[key] = M[key] = want[key]; this.poseVel[key] = this.midVel[key] = 0; continue; }
+      const [m, mv] = smoothDamp(M[key], want[key], this.midVel[key], POSE_SMOOTH, dt); M[key] = m; this.midVel[key] = mv;
+      const [v, vel] = smoothDamp(P[key], m, this.poseVel[key], POSE_SMOOTH, dt); P[key] = v; this.poseVel[key] = vel;
+    }
     // a window wider than the frame the visibility bake covered shows a vertical crop of it (never a culled part: AGENTS.md, window formats)
     applyFrame(this.camera, P, window.innerWidth / Math.max(1, window.innerHeight), PLAZA_FRAME, this.player?.pos ?? null);
   }
@@ -382,33 +398,66 @@ export class PlazaApp {
     const k = this.keys, kx = (actHeld(k, 'right') ? 1 : 0) - (actHeld(k, 'left') ? 1 : 0), kz = (actHeld(k, 'down') ? 1 : 0) - (actHeld(k, 'up') ? 1 : 0);
     // the gamepad's walk while no movement key asks for one (journal Passe MN2: the stick's tilt sets the speed, B held runs, MN-2)
     const pw = !kx && !kz ? this.pad : null, ix = pw ? pw.x : kx, iz = pw ? -pw.y : kz;
-    const P = this.player, speed = (this.cast?.get('player')?.walkSpeed ?? 3.2) * (actHeld(k, 'run') || pw?.run ? 1.2 : 1) * (pw ? pw.speed : 1);
+    // MV-1: a baked hero walks the stride his cycle draws x the character scale x HERO_CLOCK, as on the quay (3.73 m/s; the Shift key x1.2); MV-3: he
+    // eases in and out of a walk (src/characters/motion.ts); the generated hero (no measured cycle) keeps 3.2 m/s and its old clock
+    const P = this.player, ws = this.cast?.get('player')?.walkSpeed ?? null;
+    const target = (ws ? heroSpeed(ws) : 3.2) * (actHeld(k, 'run') || pw?.run ? (ws ? HERO_RUN : 1.2) : 1) * (pw ? pw.speed : 1);
     this.moving = !!(ix || iz) && !this.locked;
     if (!ix && !iz) this.moveYaw = null;
-    if ((ix || iz) && !this.locked) {
+    if (this.locked) this.gait.v = 0;
+    const want = (ix || iz) && !this.locked;
+    let dx = 0, dz = 0, alongF = 1;
+    if (want) {
       const yaw = (this.moveYaw ??= this.pose.yaw), c = Math.cos(yaw), s = Math.sin(yaw), n = Math.hypot(ix, iz);
-      const dx = (ix * c + iz * s) / n, dz = (-ix * s + iz * c) / n;
-      const [nx, nz] = walkTo(this.place, P.pos.x, P.pos.z, P.pos.x + dx * speed * dt, P.pos.z + dz * speed * dt);
+      dx = (ix * c + iz * s) / n; dz = (-ix * s + iz * c) / n;
+    }
+    const r = ws ? stepGait(this.gait, dx, dz, want ? target : 0, dt) : { dx: dx * (want ? target : 0) * dt, dz: dz * (want ? target : 0) * dt, speed: want ? target : 0 };
+    if (r.speed > 0 && !this.locked) {
+      const [nx, nz] = walkTo(this.place, P.pos.x, P.pos.z, P.pos.x + r.dx, P.pos.z + r.dz);
       P.pos.x = nx; P.pos.z = nz;
-      // the keys (or the stick) against the camera pick the view, the step on screen turns a three-quarter crossing the screen into a profile
-      // (heroWalkFacing, journal Passe MD1); a profile's clock follows its step along the camera's right, where its cycle draws the planted
-      // foot's drift: a profile the keys give keeps today's clock, one the step gives runs at its share along the right
-      const [sx, sy, along] = this.screenStep(dx, dz), byKeys = fiveViewFacing(P.dir, ix, -iz);
-      P.dir = heroWalkFacing(P.dir, ix, -iz, sx, sy); P.flip = ix > 0; P.anim = 'walk' as Anim;
-      P.t += (pw ? dt * pw.speed : dt) * (P.dir === 'side' && byKeys !== 'side' ? along : 1);
+      if (want) {
+        // the keys (or the stick) against the camera pick the view, the step on screen turns a three-quarter crossing the screen into a profile
+        // (heroWalkFacing, journal Passe MD1); a profile's clock follows its step along the camera's right, where its cycle draws the planted
+        // foot's drift: a profile the keys give keeps today's clock, one the step gives runs at its share along the right
+        const [sx, sy, along] = this.screenStep(dx, dz), byKeys = fiveViewFacing(P.dir, ix, -iz);
+        P.dir = heroWalkFacing(P.dir, ix, -iz, sx, sy); P.flip = ix > 0;
+        if (P.dir === 'side' && byKeys !== 'side') alongF = along;
+      }
+      P.anim = 'walk' as Anim;
+      // the frames run at the speed he has over the ground his cycle draws: the planted foot stays put through the ramp and the glide too
+      P.t += dt * (ws ? Math.min(HERO_CLOCK_MAX, r.speed / (ws * CHAR_SCALE)) : pw ? pw.speed : 1) * alongF;
     } else if (!this.scripted(P, dt)) { P.anim = 'idle' as Anim; P.t += dt; if (P.dir === 'downSide' || P.dir === 'upSide') P.dir = 'side'; }
     for (const a of this.people) {
       a.t += dt;
       // a cutscene's walker: straight to its point, then idle
       if (this.scripted(a, dt)) continue;
       const b = a.behaviour; if (!b || b.kind !== 'wander') continue;
-      if ((b.wait ?? 0) > 0) { b.wait! -= dt; a.anim = 'idle' as Anim; continue; }
-      const tgt = this.place.wander[b.idx ?? 0], dx = tgt[0] - a.pos.x, dz = tgt[1] - a.pos.z, d = Math.hypot(dx, dz), v = (this.cast?.get(a.base ?? '')?.walkSpeed ?? 1.4) * 0.8;
-      if (d < 0.3) { const L = CROWD[this.period].linger; b.idx = ((b.idx ?? 0) + 1 + (b.seed % 3)) % this.place.wander.length; b.wait = L[0] + ((b.seed + (b.idx ?? 0)) % 5) * L[1]; continue; }
+      if ((b.wait ?? 0) > 0) {
+        b.wait! -= dt; a.anim = 'idle' as Anim;
+        // a halt that looks aside (MV-5): once, partway through, the resting view turns to the left, the right or the camera
+        if (b.look && b.wait! <= b.look.at) { a.dir = (b.look.side === 2 ? 'down' : 'side') as Dir; a.flip = b.look.side === 1; b.look = null; }
+        continue;
+      }
+      const tgt = this.place.wander[b.idx ?? 0], tx = tgt[0] - a.pos.x, tz = tgt[1] - a.pos.z, d = Math.hypot(tx, tz), v = walkerSpeed(/^crowd/.test(a.base ?? ''));
+      if (d < 0.3) {
+        // at its point: a long stop (MV-5), then the next point, walked in hops (MV-4)
+        b.idx = ((b.idx ?? 0) + 1 + (b.seed % 3)) % this.place.wander.length;
+        const pl = hopPlan(b.seed, b.n = (b.n ?? 0) + 1); b.wait = pl.linger; b.hopLeft = pl.hop; b.look = null; continue;
+      }
       // round what stands on the square (the fountain, the bandstand: journal Passe VP6)
-      const [ux, uz] = steer(this.place.blockers, a.pos.x, a.pos.z, dx / d, dz / d);
+      const [ux, uz] = steer(this.place.blockers, a.pos.x, a.pos.z, tx / d, tz / d);
       a.pos.x += ux * v * dt; a.pos.z += uz * v * dt; a.anim = 'walk' as Anim;
-      a.dir = Math.abs(ux) > Math.abs(uz) * 1.2 ? 'side' : uz > 0 ? 'down' : 'up'; a.flip = ux > 0;
+      // its view from its step ON SCREEN, as on the quay (npcWalkView, the operator's npcfacing=34, journal Passes F2 / F3): the ground's axes showed
+      // 44-69 % of the squares' steps sideways (journal Passe MV1); its frames at the speed it shows over the ground its cycle draws (MV-6)
+      const [sx, sy, along] = this.screenStep(ux, uz, a.pos), cm = this.cast?.get(a.base ?? '');
+      const view = npcWalkView({ dir: a.dir, flip: a.flip }, sx, sy, !!cm?.frontLeft);
+      a.dir = view.dir; a.flip = view.flip;
+      if (cm?.walkSpeed) a.t += dt * (walkerClock(cm.walkSpeed, CHAR_SCALE, view.dir === 'side' ? v * along : v) - 1);
+      b.hopLeft = (b.hopLeft ?? hopPlan(b.seed, b.n ?? 0).hop) - v * dt;
+      if (b.hopLeft <= 0 && d - v * dt > 0.8) {
+        const pl = hopPlan(b.seed, b.n = (b.n ?? 0) + 1);
+        b.wait = pl.halt; b.hopLeft = pl.hop; b.look = pl.look === null ? null : { at: pl.halt * (1 - pl.look), side: pl.lookSide };
+      }
     }
   }
 
@@ -424,8 +473,8 @@ export class PlazaApp {
     return new Promise((done) => this.walking.set(a, { to, done, speed: who === 'player' ? 2.2 : 1.5 }));
   }
   /** a unit step (dx, dz) of the hero on screen (x to the right, y up, in units of half the height) and its share along the camera's right */
-  private screenStep(dx: number, dz: number): [number, number, number] {
-    const c = this.camera, p = this.player.pos;
+  private screenStep(dx: number, dz: number, p: THREE.Vector3 = this.player.pos): [number, number, number] {
+    const c = this.camera;
     c.updateMatrixWorld();
     this.ndc.set(p.x, p.y, p.z).project(c);
     const x0 = this.ndc.x, y0 = this.ndc.y;
@@ -490,7 +539,7 @@ export class PlazaApp {
     U.uTime.value = this.time;
     U.uMoonDir.value.copy(this.keyDir);
     if (dt > 0) this.walk(dt);
-    this.applyCamera(dt > 0 ? Math.min(1, dt * 3) : 1);
+    this.applyCamera(dt > 0 ? dt : null);
     // a walker of the crowd whose feet leave the frame's bottom edge is not drawn (journal Passe VP6: « heads cut at the bottom edge »; the
     // follow camera passes behind the crowd on an open square)
     this.camera.updateMatrixWorld();

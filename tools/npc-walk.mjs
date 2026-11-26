@@ -34,7 +34,7 @@ try {
       let clock = 0; const n0 = performance.now;
       performance.now = () => clock;
       const st = new Map(), trips = [], pauses = [];
-      const tot = { frames: 0, walk: 0, steps: 0, skew: 0, skewFront: 0, skewSide: 0, accepted: 0, bins: {}, slips: [] };
+      const tot = { frames: 0, walk: 0, steps: 0, skew: 0, skewFront: 0, skewSide: 0, accepted: 0, beyond: 0, bins: {}, skewBy: {}, slips: [] };
       const castOf = T === 'town' ? app.actors.cast : app.cast, CS = T === 'town' ? app.actors.charScale : 1.12;
       const yawOf = () => (T === 'town' ? app.actors.camYaw : app.pose.yaw);
       const V0 = new cam.position.constructor(), V1 = new cam.position.constructor();
@@ -55,8 +55,9 @@ try {
               const bin = ang < 22.5 ? 'v' : ang < 67.5 ? 'q' : 'h';
               const k = `${view}:${bin}`; tot.bins[k] = (tot.bins[k] ?? 0) + 1;
               // a 'down' drawn turned to the left (frontLeft) is a light three-quarter front, accepted up to 72.5 deg (journal Passe F3)
-              const fl = T === 'town' && app.actors.frontLeft(a.spec) && a.dir === 'down';
-              if (view === 'fb' && ang > 35) { if (fl && ang <= 72.5) tot.accepted++; else { tot.skew++; tot.skewFront++; } }
+              const fl = !!castOf?.get(a.base ?? '')?.frontLeft && a.dir === 'down';
+              if (view === 'fb' && ang > 35) { if (fl && ang <= 72.5) tot.accepted++; else { tot.skew++; tot.skewFront++; const kb = `${a.spec}@${Math.floor(ang / 5) * 5}`; tot.skewBy[kb] = (tot.skewBy[kb] ?? 0) + 1; } }
+              if ((view === 'fb' && ang > 50 && !(fl && ang <= 72.5)) || (view === 'side' && ang < 40)) tot.beyond++;
               if (view === 'side' && ang < 55) { tot.skew++; tot.skewSide++; }
             }
             if (walking) {
@@ -82,12 +83,13 @@ try {
     const row = {
       walkers: res.walkers, walkShare: pct(res.walk, res.frames), trips: res.trips.length,
       tripLenMed: +med(lens).toFixed(1), tripLenMean: +(lens.reduce((x, y) => x + y, 0) / (lens.length || 1)).toFixed(1), tripSecMed: +med(durs).toFixed(1), tripSecMax: +Math.max(0, ...durs).toFixed(1),
-      pauseSecMed: +med(res.pauses).toFixed(1), pauses: res.pauses.length, skewShare: pct(res.skew, res.steps), accepted: pct(res.accepted, res.steps), slipMed: Math.round(100 * med(res.slips)), slipBad: pct(res.slips.filter((x) => Math.abs(x) > 0.15).length, res.slips.length), skewFront: pct(res.skewFront, res.steps), skewSide: pct(res.skewSide, res.steps), bins: res.bins,
+      pauseSecMed: +med(res.pauses).toFixed(1), pauses: res.pauses.length, skewBy: Object.entries(res.skewBy).sort((x, y) => y[1] - x[1]).slice(0, 6).map(([k, v]) => `${k} ${v}`).join(', '), skewShare: pct(res.skew, res.steps), accepted: pct(res.accepted, res.steps), beyond: pct(res.beyond, res.steps), slipMed: Math.round(100 * med(res.slips)), slipBad: pct(res.slips.filter((x) => Math.abs(x) > 0.15).length, res.slips.length), skewFront: pct(res.skewFront, res.steps), skewSide: pct(res.skewSide, res.steps), bins: res.bins,
     };
     report[r.label] = row;
     console.log(`== ${r.label} (${res.T}, ${secs} s, ${row.walkers} walkers)`);
     console.log(`  walking ${row.walkShare} % of the time; ${row.trips} trips: length median ${row.tripLenMed} m (mean ${row.tripLenMean}), ${row.tripSecMed} s (longest ${row.tripSecMax} s); ${row.pauses} pauses, median ${row.pauseSecMed} s`);
-    console.log(`  steps shown sideways: ${row.skewShare} % (a front or back view crossing the screen ${row.skewFront} %, a profile walking into the depth ${row.skewSide} %); ${row.accepted} % more are the front three-quarter accepted in Passe F3`);
+    console.log(`  steps shown sideways: ${row.skewShare} % (a front or back view crossing the screen ${row.skewFront} %, a profile walking into the depth ${row.skewSide} %); ${row.accepted} % more are the front three-quarter accepted in Passe F3; ${row.beyond} % are past the edges of that rule itself (a front or back beyond 50 deg, a profile under 40)`);
+    if (row.skew || row.skewFront) console.log(`  where: ${row.skewBy}`);
     console.log(`  the planted foot: the cycle draws ${row.slipMed} % more ground than the walker covers (median, + = the feet slide back); ${row.slipBad} % of the steps are off by more than 15 %`);
     console.log(`  view : step on screen (v < 22.5, q 22.5-67.5, h > 67.5 deg from the vertical): ${Object.entries(row.bins).sort().map(([k, v]) => `${k} ${pct(v, res.steps)}%`).join('  ')}`);
     await page.close();

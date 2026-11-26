@@ -10,26 +10,15 @@ import type { CastMember } from './BakedCast';
 import { variantOf } from './Variants';
 import { actHeld, actsOf } from '../settings/settings';
 import { keyId } from '../settings/keys';
+import { HERO_RUN, hopPlan, heroSpeed, newGait, stepGait, walkerClock } from './motion';
 
 /** Player control + NPC behaviours + a tiny circle-vs-box collision solver. */
 
 const HEIGHT: Record<string, number> = { player: 1.78, blacksmith: 1.82, merchant: 1.66, guardA: 1.8, guardB: 1.8, hooded: 1.84, porter: 1.62, cat: 0.5 };
 
-/** a baked walker's animation clock runs at the speed its steps show over the ground speed its cycle draws (walkClock), within these
- *  bounds: above, a cycle drawn for a much slower walk would race (the dock worker's); below, a profile seen walking almost into the depth
- *  would freeze (journal Passe S2) */
-const WALK_CLOCK_MIN = 0.4, WALK_CLOCK_MAX = 1.6;
 /** the generated player: 2.5 m/s, x1.7 with the run key (its frames simply play faster) */
 const PLAYER_SPEED = 2.5, PLAYER_RUN = 1.7;
-/** a baked player runs at the speed its run cycle draws (journal Passe H6, the operator's « Héros plus rapide (Recommandé) »: the sheet's
- *  stride kept, the speed follows it): the cast's walkSpeed x the character scale of B / D x HERO_CLOCK, i.e. its frames play at
- *  HERO_CLOCK x the base cadence in B / D with the planted foot on the ground. A 14-texel stride (hero-x2-v2 rebuilt from its Pass H6 rig):
- *  3.73 m/s; the 9-texel export of Pass H5: 2.40 m/s */
-const HERO_CLOCK = 1.5, HERO_REF_SCALE = 1.12;
-/** the run key on a baked hero: its cycle is already a run, a sprint at x1.2 (4.48 m/s with a 14-texel stride); its clock bound is
- *  HERO_CLOCK_MAX (the cycle is drawn for the hero's own speed: the NPCs' bound, a slow cycle racing, does not apply), which keeps the sprint
- *  within its cycle in A too (character scale 1: clock 2.02, 1 % of slip) */
-const HERO_RUN = 1.2, HERO_CLOCK_MAX = 2;
+/** the hero's and the walkers' speeds, clocks and stops: src/characters/motion.ts (journal Passe MV1) */
 /** a walking facing turns to profile beyond 50 deg from the screen vertical and back to front / back below 40 deg (see screenFacing) */
 const SIDE_IN = Math.tan(THREE.MathUtils.degToRad(50)), SIDE_OUT = Math.tan(THREE.MathUtils.degToRad(40));
 /** the five-view rule (journal Passe V5; the study's sectors, art-lab/characters/briefs/three-quarter-views.md): the on-screen step's angle
@@ -66,6 +55,16 @@ const MIRROR_HOLD = 8;
 export function npcSideEdges(mode: string, frontLeft: boolean, down: boolean): [number, number] {
   if (mode === '34' || mode === 'wide') { if (frontLeft && down) return [72.5, 62.5]; if (mode === 'wide') return [65, 55]; }
   return [50, 40];
+}
+/** an NPC's walking view from the way its step moves ON SCREEN (dx right, dy up, any unit): the profile beyond the edge npcSideEdges gives, else the
+ *  front or the back, a frontLeft sheet's 'down' mirrored toward a rightward step and held within MIRROR_HOLD deg of the vertical. Pure: the town's
+ *  walkers (screenFacing) and the squares' (journal Passe MV1: the squares chose it by the ground's axes, 44-69 % of their steps shown sideways) */
+export function npcWalkView(prev: { dir: Dir; flip: boolean }, dx: number, dy: number, frontLeft: boolean, mode = '34'): { dir: Dir; flip: boolean } {
+  const down = dy <= 0, ang = THREE.MathUtils.radToDeg(Math.atan2(Math.abs(dx), Math.abs(dy)));
+  const [inE, outE] = npcSideEdges(mode, frontLeft, down);
+  if (ang > (prev.dir === 'side' ? outE : inE)) return { dir: 'side' as Dir, flip: dx > 0 };
+  const dir: Dir = down ? 'down' : 'up';
+  return { dir, flip: dir === 'down' && frontLeft ? (prev.dir === 'down' && ang < MIRROR_HOLD ? prev.flip : dx > 0) : false };
 }
 const _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3();
 
@@ -104,6 +103,11 @@ export class ActorSystem {
   /** the hero's view by its heading, turned to profile when its step crosses the screen (heroWalkFacing, journal Passe MD1): a version 2
    *  game's town and « Explore the district » (App, `herolook`); false = the heading's view alone (today's game, the district's addresses) */
   heroStepView = false;
+  /** a version 2 game's town and « Explore the district » (`herolook`, with heroStepView): the hero eases in and out of a walk (MV-3) and the walkers
+   *  walk in hops with halts (MV-4, MV-5); false = today's game and the district's addresses, which keep the walk as it was (journal Passe MV1) */
+  v2Motion = false;
+  /** the hero's gait while v2Motion: his speed, heading and the speed asked last */
+  gait = newGait();
 
   /** the five-view rule for walking facings (fiveViewFacing, journal Passe V5; the default since the operator's decision of 2026-10-19,
    *  Passes D3 / H10; `?views=3` turns it off), for the sheets that have the two three-quarter facings only: every other sprite keeps the
@@ -297,13 +301,8 @@ export class ActorSystem {
       return true;
     }
     if (this.npcFacing && a !== this.player) {
-      const fl = this.frontLeft(a.spec), down = dy <= 0, ang = THREE.MathUtils.radToDeg(Math.atan2(Math.abs(dx), Math.abs(dy)));
-      const [inE, outE] = npcSideEdges(this.npcFacing, fl, down);
-      a.sideFlip = dx > 0;
-      if (ang > (a.dir === 'side' ? outE : inE)) { a.dir = 'side'; a.flip = dx > 0; return true; }
-      const wasDown = a.dir === 'down', prevFlip = a.flip;
-      a.dir = down ? 'down' : 'up';
-      a.flip = a.dir === 'down' && fl ? (wasDown && ang < MIRROR_HOLD ? prevFlip : dx > 0) : false;
+      const v = npcWalkView({ dir: a.dir, flip: a.flip }, dx, dy, this.frontLeft(a.spec), this.npcFacing);
+      a.sideFlip = dx > 0; a.dir = v.dir; a.flip = v.flip;
       return true;
     }
     const side = Math.abs(dx) > Math.abs(dy) * (a.dir === 'side' ? SIDE_OUT : SIDE_IN);
@@ -362,9 +361,16 @@ export class ActorSystem {
     const run = actHeld(k, 'run') || pw?.run ? (hero ? HERO_RUN : PLAYER_RUN) : 1;
     // screen right = (c, -s), toward-camera = (s, c); "up" on screen = away from camera
     const mv = new THREE.Vector3(c * ix - s * iy, 0, -s * ix - c * iy);
-    if (mv.lengthSq() > 0) {
+    let walking = mv.lengthSq() > 0;
+    if (this.v2Motion && hero) {
+      // the gait (MV-3): the speed climbs to the one asked in 0.12 s and falls in 0.10 s, the heading kept while he glides to a stop
+      const r = stepGait(this.gait, mv.x, mv.z, walking ? this.playerSpeed() * run * (pw ? pw.speed : 1) : 0, dt);
+      mv.set(r.dx, 0, r.dz); walking = r.speed > 0;
+    } else if (walking) {
       // the stick's tilt sets the speed (MN-2: from 30 % to the keyboard's walk); a key walks at 1
       mv.normalize().multiplyScalar(this.playerSpeed() * run * dt * (pw ? pw.speed : 1));
+    }
+    if (walking) {
       const ox = p.pos.x, oz = p.pos.z;
       this.resolve(p, p.pos.x + mv.x, p.pos.z + mv.z);
       const step = this.shownStep(mv, p.pos.x - ox, p.pos.z - oz);
@@ -404,7 +410,16 @@ export class ActorSystem {
       return;
     }
     if (a.spec === 'cat') { a.anim = 'idle'; return; }
-    if ((b.wait ?? 0) > 0) { b.wait = (b.wait ?? 0) - dt; if (a.anim !== 'talk') this.setAnim(a, 'idle'); return; }
+    if ((b.wait ?? 0) > 0) {
+      b.wait = (b.wait ?? 0) - dt; if (a.anim !== 'talk') this.setAnim(a, 'idle');
+      // a halt that looks aside (MV-5): the resting view turns to the left, the right or the camera once, partway through
+      if (b.look && b.wait <= b.look.at) {
+        const c = Math.cos(this.camYaw), s = Math.sin(this.camYaw), sx = b.look.side === 2 ? 0 : b.look.side === 0 ? -1 : 1, sd = b.look.side === 2 ? 1 : 0;
+        this.face(a, new THREE.Vector3(sx * c + sd * s, 0, -sx * s + sd * c));
+        b.look = null;
+      }
+      return;
+    }
     if (!b.target) {
       if (b.kind === 'patrol' && b.waypoints) { b.idx = ((b.idx ?? 0) + 1) % b.waypoints.length; b.target = b.waypoints[b.idx].clone(); }
       else {
@@ -418,7 +433,12 @@ export class ActorSystem {
     }
     const to = b.target!.clone().sub(a.pos); to.y = 0;
     const dist = to.length();
-    if (dist < 0.2) { b.target = null; b.wait = 1.5 + (b.seed % 5); return; }
+    if (dist < 0.2) {
+      b.target = null;
+      if (this.v2Motion) { const pl = hopPlan(b.seed, b.n = (b.n ?? 0) + 1); b.wait = pl.linger; b.hopLeft = pl.hop; b.look = null; }
+      else b.wait = 1.5 + (b.seed % 5);
+      return;
+    }
     to.normalize();
     const speed = (a.base ?? a.spec) === 'porter' ? 0.9 : a.detail === 'crowd' ? 0.95 : 0.8;
     const nx = a.pos.x + to.x * speed * dt, nz = a.pos.z + to.z * speed * dt;
@@ -427,6 +447,14 @@ export class ActorSystem {
     if (Math.abs(a.pos.x - ox) + Math.abs(a.pos.z - oz) < speed * dt * 0.2) { b.target = null; b.wait = 0.8; return; }
     const step = this.shownStep(to.clone().multiplyScalar(speed * dt), a.pos.x - ox, a.pos.z - oz);
     this.face(a, step, true);
+    // in hops (MV-4): after 2.4 to 4 m a walker halts, 2 to 4 s (MV-5), and goes on to the same destination
+    if (this.v2Motion) {
+      b.hopLeft = (b.hopLeft ?? hopPlan(b.seed, b.n ?? 0).hop) - Math.hypot(a.pos.x - ox, a.pos.z - oz);
+      if (b.hopLeft <= 0 && dist - speed * dt > 0.8) {
+        const pl = hopPlan(b.seed, b.n = (b.n ?? 0) + 1);
+        b.wait = pl.halt; b.hopLeft = pl.hop; b.look = pl.look === null ? null : { at: pl.halt * (1 - pl.look), side: pl.lookSide };
+      }
+    }
     // the porter's crate walk where the sheet has one (the generated porter), the plain walk otherwise
     this.setAnim(a, this.atlas.counts.has(`${a.spec}/carry`) ? 'carry' : 'walk');
     // a baked walker's clock (its frame) advances at the speed its steps show over the speed its cycle draws: the planted foot stays put
@@ -438,7 +466,7 @@ export class ActorSystem {
   private heroWalkSpeed(): number | null { return this.player?.base ? this.cast.get(this.player.base)?.walkSpeed ?? null : null; }
 
   /** the player's walking speed (m/s, before the run key): a baked hero's follows the stride its cycle draws (HERO_CLOCK) */
-  playerSpeed(): number { const ws = this.heroWalkSpeed(); return ws ? ws * HERO_REF_SCALE * HERO_CLOCK : PLAYER_SPEED; }
+  playerSpeed(): number { const ws = this.heroWalkSpeed(); return ws ? heroSpeed(ws) : PLAYER_SPEED; }
 
   /** animation clock rate of a walking baked actor (1 for a generated sprite or a sheet without a measured cycle): the speed its steps show
    *  over the ground speed its cycle draws at the current character scale. In profile the cycle slides the planted foot along the
@@ -448,6 +476,6 @@ export class ActorSystem {
     const ws = a.base ? this.cast.get(a.base)?.walkSpeed : null;
     if (!ws) return 1;
     const shown = a.dir === 'side' ? Math.abs(vx * Math.cos(this.camYaw) - vz * Math.sin(this.camYaw)) : Math.hypot(vx, vz);
-    return Math.min(a === this.player ? HERO_CLOCK_MAX : WALK_CLOCK_MAX, Math.max(WALK_CLOCK_MIN, shown / (ws * this.charScale)));
+    return walkerClock(ws, this.charScale, shown, a === this.player, this.v2Motion);
   }
 }
